@@ -4466,7 +4466,7 @@
         else if(a==="logout"){ if(currentUserId) doLogout(); else requireLogin(); }
         else if(a==="skiplogin"){ overlay.style.display="none"; }
         else if(a==="list"){ if(!currentUserId){ requireLogin(); } else if(panel.classList.contains("open")) panel.classList.remove("open"); else openPanel(); } else if(a==="closepanel"){ panel.classList.remove("open"); }
-        else if(a==="new"){ if(confirm("¿Empezar una quote nueva? Se limpiará el formulario.")){ clearForm(); currentId=null; showToast("Quote nueva"); } }
+        else if(a==="new"){ if(confirm("¿Empezar una quote nueva? Se limpiará el formulario.")){ clearForm(); currentId=null; window.__qqCurrentId=null; showToast("Quote nueva"); } }
         else if(a==="save") doSave();
       });
     }
@@ -4672,7 +4672,7 @@ pgRevisarNovedades(sb,'general');
     /* Sin sesión NO se bloquea: el documento queda usable y el login
        solo aparece al Guardar / Mis Quotes / botón Entrar. */
     function onSignedOut(){
-      userEmail=""; currentUserId=null; currentId=null;
+      userEmail=""; currentUserId=null; currentId=null; window.__qqCurrentId=null;
       var u=document.getElementById("qqUser"); if(u) u.textContent="sin sesión";
       var lo=bar.querySelector('[data-act="logout"]'); if(lo) lo.textContent="Entrar";
       panel.classList.remove("open");
@@ -4692,10 +4692,17 @@ pgRevisarNovedades(sb,'general');
       if(!currentUserId){ requireLogin(); return; }
       var snap=snapshot(); var row={account_name:accountName(),quote_number:(document.getElementById("metaQuote")||{}).value||"",status:(document.getElementById("metaStatus")||{}).value||"Draft",data:snap};
       var q;
-      if(currentId){ q=sb.from("quick_quotes").update(row).eq("id",currentId).select("id").single(); }
-      else { q=sb.from("quick_quotes").insert(row).select("id").single(); }
+      if(currentId){ q=sb.from("quick_quotes").update(row).eq("id",currentId).select("id,quote_number").single(); }
+      else { q=sb.from("quick_quotes").insert(row).select("id,quote_number").single(); }
       showToast("Guardando…");
-      q.then(function(r){ if(r.error){ showToast("Error al guardar"); alert("No se pudo guardar: "+r.error.message); return; } if(r.data&&r.data.id) currentId=r.data.id; showToast("Quote guardada ✓"); }); }
+      q.then(function(r){ if(r.error){ showToast("Error al guardar"); alert("No se pudo guardar: "+r.error.message); return; }
+        if(r.data&&r.data.id){ currentId=r.data.id; window.__qqCurrentId=currentId; }
+        /* v12: la base puede corregir el número (guardián anti-duplicados). Lo que diga la base manda. */
+        if(r.data&&r.data.quote_number&&r.data.quote_number!==row.quote_number){
+          if(window.__qqSetNum) window.__qqSetNum(r.data.quote_number);
+          else { var qi=document.getElementById("metaQuote"); if(qi){ qi.value=r.data.quote_number; qi.dispatchEvent(new Event("input",{bubbles:true})); } }
+          showToast("Guardada como "+r.data.quote_number+" ✓");
+        } else showToast("Quote guardada ✓"); }); }
     function openPanel(){ panel.classList.add("open"); var ttl=document.getElementById("qqPanelTitle"); if(ttl) ttl.textContent=(EDITORES.indexOf((userEmail||"").toLowerCase())>=0)?"Todas las Quotes":"Mis Quotes"; var srch=document.getElementById("qqSearch"); if(srch) srch.value=""; var list=document.getElementById("qqList"); list.innerHTML='<div class="qq-empty">Cargando…</div>';
       sb.from("quick_quotes").select("id,account_name,quote_number,status,updated_at").order("updated_at",{ascending:false}).then(function(r){
         if(r.error){ list.innerHTML='<div class="qq-empty">Error: '+r.error.message+'</div>'; return; }
@@ -4708,11 +4715,11 @@ pgRevisarNovedades(sb,'general');
           d.querySelectorAll(".mt")[0].textContent=(it.quote_number||"")+"   ·   "+(it.status||"");
           d.querySelectorAll(".mt")[1].textContent=when;
           d.addEventListener("click",function(e){ if(e.target.closest("[data-del]")) return; openQuote(it.id); });
-          d.querySelector("[data-del]").addEventListener("click",function(e){ e.stopPropagation(); if(!confirm("¿Eliminar esta quote?")) return; sb.from("quick_quotes").delete().eq("id",it.id).then(function(rr){ if(rr.error){alert(rr.error.message);return;} if(currentId===it.id) currentId=null; openPanel(); }); });
+          d.querySelector("[data-del]").addEventListener("click",function(e){ e.stopPropagation(); if(!confirm("¿Eliminar esta quote?")) return; sb.from("quick_quotes").delete().eq("id",it.id).then(function(rr){ if(rr.error){alert(rr.error.message);return;} if(currentId===it.id){ currentId=null; window.__qqCurrentId=null; } openPanel(); }); });
           list.appendChild(d);
         });
       }); }
-    function openQuote(id){ showToast("Abriendo…"); sb.from("quick_quotes").select("data,user_id").eq("id",id).single().then(function(r){ if(r.error){ alert(r.error.message); return; } restore(r.data&&r.data.data?r.data.data:{}); var esEditor=EDITORES.indexOf((userEmail||"").toLowerCase())>=0; var mine=!r.data||!r.data.user_id||r.data.user_id===currentUserId||esEditor; currentId=mine?id:null; panel.classList.remove("open"); showToast(mine?"Quote cargada ✓":"Quote de agente — al Guardar se crea tu copia"); window.scrollTo(0,0); }); }
+    function openQuote(id){ showToast("Abriendo…"); sb.from("quick_quotes").select("data,user_id").eq("id",id).single().then(function(r){ if(r.error){ alert(r.error.message); return; } restore(r.data&&r.data.data?r.data.data:{}); var esEditor=EDITORES.indexOf((userEmail||"").toLowerCase())>=0; var mine=!r.data||!r.data.user_id||r.data.user_id===currentUserId||esEditor; currentId=mine?id:null; window.__qqCurrentId=currentId; panel.classList.remove("open"); showToast(mine?"Quote cargada ✓":"Quote de agente — al Guardar se crea tu copia"); window.scrollTo(0,0); }); }
 
     function init(){
       buildUI();
@@ -4777,7 +4784,7 @@ pgRevisarNovedades(sb,'general');
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="quick-quote.html";
-var PGV_VERSION=11;
+var PGV_VERSION=12;
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;
@@ -5160,9 +5167,17 @@ try{ new MutationObserver(function(){ Object.keys(window.__pvCarrierMask||{}).fo
     var q=qNo(); if(!q) return;
     var c=await getSB(); if(!c) return;
     try{
-      var r=await c.from("quick_quotes").select("id,data").eq("quote_number",q).limit(2);
-      if(r.error||!r.data||r.data.length!==1) return; /* numero duplicado o inexistente: no tocar */
-      var row=r.data[0]; var d=row.data||{}; d.pv=collect();
+      var row=null, id=window.__qqCurrentId;
+      if(id){ /* v12: por id, nunca por número */
+        var r0=await c.from("quick_quotes").select("id,data").eq("id",id).maybeSingle();
+        if(r0.error||!r0.data) return; row=r0.data;
+      } else {
+        var r=await c.from("quick_quotes").select("id,data").eq("quote_number",q).limit(2);
+        if(r.error||!r.data||!r.data.length) return;
+        if(r.data.length!==1){ if(window.__qqAviso) window.__qqAviso("La quote "+q+" tiene número repetido: el panel de propuesta NO se guardó. Ábrela desde Mis Quotes y vuelve a guardar."); return; }
+        row=r.data[0];
+      }
+      var d=row.data||{}; d.pv=collect();
       await c.from("quick_quotes").update({data:d}).eq("id",row.id);
     }catch(_){}
   }
@@ -5182,12 +5197,15 @@ try{ new MutationObserver(function(){ Object.keys(window.__pvCarrierMask||{}).fo
     });
   }
   async function loadExtras(){
-    var q=qNo(); if(!q||window.__pvHydratedFor===q) return;
+    var q=qNo(); var id=window.__qqCurrentId; var key=id||q;
+    if(!key||window.__pvHydratedFor===key) return;
     var c=await getSB(); if(!c) return;
     try{
-      var r=await c.from("quick_quotes").select("data").eq("quote_number",q).limit(2);
-      if(r.error||!r.data||r.data.length!==1){ window.__pvHydratedFor=q; return; } /* numero duplicado: no hidratar */
-      window.__pvHydratedFor=q;
+      var r;
+      if(id){ r=await c.from("quick_quotes").select("data").eq("id",id).limit(1); } /* v12: por id */
+      else { r=await c.from("quick_quotes").select("data").eq("quote_number",q).limit(2); }
+      if(r.error||!r.data||r.data.length!==1){ window.__pvHydratedFor=key; return; }
+      window.__pvHydratedFor=key;
       var p=(r.data[0].data||{}).pv; if(!p) return;
       hydrate(p);
       setTimeout(function(){ hydrate(p); },2500);
@@ -5215,6 +5233,7 @@ try{ new MutationObserver(function(){ Object.keys(window.__pvCarrierMask||{}).fo
     return sb;
   }
   function numActual(){ var i=document.getElementById("metaQuote"); return i?String(i.value).trim():""; }
+  window.__qqSetNum=function(v){ setNum(v); };
   function setNum(v){
     var i=document.getElementById("metaQuote");
     if(i){ i.value=v; i.dispatchEvent(new Event("input",{bubbles:true})); i.dispatchEvent(new Event("change",{bubbles:true})); }
@@ -5226,6 +5245,9 @@ try{ new MutationObserver(function(){ Object.keys(window.__pvCarrierMask||{}).fo
   async function siguienteNumero(){
     var year=new Date().getFullYear(), max=0;
     var c=await getSB();
+    /* v12: el número lo asigna la base (contador atómico, sin RLS de por medio). */
+    if(c){ try{ var rr=await c.rpc("siguiente_quote_number"); if(!rr.error&&rr.data&&/^QC-\d{4}-\d+$/.test(String(rr.data))) return String(rr.data); }catch(_){} }
+    /* respaldo (solo si la función no responde): lógica anterior */
     if(c){
       try{
         var r=await c.from("quick_quotes").select("quote_number").limit(2000);
@@ -5259,6 +5281,7 @@ try{ new MutationObserver(function(){ Object.keys(window.__pvCarrierMask||{}).fo
       setNum(await siguienteNumero());
     }catch(_){}
   },4500);
+  window.__qqAviso=function(m,c){ aviso(m,c); };
   function aviso(msg,color){
     var ahora=Date.now(), ult=window.__lastAviso;
     if(ult && ult.msg===msg && (ahora-ult.t)<10000) return; /* mismo mensaje en menos de 10 s: ignorar */
@@ -5274,7 +5297,9 @@ try{ new MutationObserver(function(){ Object.keys(window.__pvCarrierMask||{}).fo
     if(!q) return;
     var c=await getSB(); if(!c) return;
     try{
-      var r=await c.from("quick_quotes").select("updated_at").eq("quote_number",q).order("updated_at",{ascending:false}).limit(1);
+      var r=window.__qqCurrentId
+        ? await c.from("quick_quotes").select("updated_at").eq("id",window.__qqCurrentId).limit(1)
+        : await c.from("quick_quotes").select("updated_at").eq("quote_number",q).order("updated_at",{ascending:false}).limit(1);
       if(r.error||!r.data||!r.data.length){ aviso("No se pudo confirmar el guardado de "+q+". Verifica tu conexion."); return; }
       var t3=new Date(r.data[0].updated_at).getTime();
       if(Date.now()-t3>120000)
