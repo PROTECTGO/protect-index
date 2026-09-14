@@ -66,6 +66,25 @@ body{margin:0;background:var(--pg-bg);overflow-y:scroll}
 .pg-grid-2{display:grid;grid-template-columns:1.25fr 1fr;gap:20px}
 .pg-grid-11{display:grid;grid-template-columns:1fr 1fr;gap:20px}
 @media(max-width:980px){.pg-grid-2,.pg-grid-11{grid-template-columns:1fr}}
+/* v16 - En telefono el menu lateral de 262px se comia dos tercios de la pantalla y la
+   tabla quedaba fuera de vista. Por debajo de 760px el menu se acuesta arriba, se
+   desplaza en horizontal, y el contenido usa todo el ancho. Solo aplica en pantalla
+   angosta: en escritorio no cambia absolutamente nada. */
+@media(max-width:760px){
+  .pg-app{display:block}
+  .pg-side{width:auto;height:auto;position:static;padding:14px 14px 10px;overflow:visible}
+  .pg-side .pg-brand{margin-bottom:6px}
+  .pg-side .pg-tagline{margin:-2px 0 10px 0}
+  /* Los enlaces cuelgan directo de .pg-side, sin contenedor propio: se vuelven
+     pildoras en linea y se acomodan solas en dos renglones. */
+  .pg-side a[data-go]{display:inline-flex;padding:7px 13px;border-radius:999px;margin:0 5px 6px 0;font-size:13px}
+  .pg-side a[data-go].on{box-shadow:none;background:var(--pg-mint);color:var(--pg-ink)}
+  .pg-side .pg-foot{margin-top:10px;padding-top:10px}
+  .pg-main{padding:18px 14px 44px;max-width:none}
+  .pg-card{padding:16px 14px}
+  table.pg-table,table.act-tab,table.det-tab{min-width:560px}
+  .pg-card>div[style*="overflow-x"],.pg-card table{max-width:100%}
+}
 .pg-chart-wrap{position:relative;height:260px} .pg-chart-wrap.tall{height:320px} .pg-chart-wrap.short{height:200px}
 .pg-footnote{font-size:11.5px;color:var(--pg-muted);margin-top:26px;border-top:1px solid var(--pg-line);padding-top:14px;line-height:1.6}
 select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;border:1px solid var(--pg-line);border-radius:999px;background:#fff;color:var(--pg-ink);font-weight:700;min-width:260px}
@@ -108,9 +127,10 @@ select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;b
 .al .a-n{font-size:11px;color:var(--pg-muted);text-align:right;margin-top:3px}
 .al.sev-alta{border-left:5px solid var(--pg-neg)} .al.sev-alta .a-v{color:var(--pg-neg)}
 .al.sev-media{border-left:5px solid var(--pg-warn)} .al.sev-media .a-v{color:#8a6a1d}
-.tag-nofee{background:#FCEEEC;color:#9c3d35} .tag-caida{background:#FBF3E2;color:#8a6a1d} .tag-mixto{background:#EDEFFB;color:#3f4bab}
+.tag-nofee{background:#FCEEEC;color:#9c3d35} .tag-caida{background:#FBF3E2;color:#8a6a1d}
 .tag-premium{background:#E6F0FA;color:#1f5b8f}
 .tag-llamadas{background:#FBF3E2;color:#B07E12}
+.al1 .a-tag{display:inline-block;margin-left:9px;padding:3px 10px;border-radius:999px;font-size:10.5px;font-weight:700;letter-spacing:.03em}
 
 .chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
 .chip{border:1px solid var(--pg-line);background:#fff;color:var(--pg-muted);border-radius:999px;padding:8px 15px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:var(--pg-font-body)}
@@ -175,6 +195,56 @@ select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;b
 .act-bar{position:relative;height:7px;border-radius:999px;background:#EDF1F5;overflow:hidden;min-width:70px}
 .act-bar i{position:absolute;left:0;top:0;bottom:0;border-radius:999px;background:var(--pg-mint)}
 .act-bar i.w{background:var(--pg-warn)} .act-bar i.r{background:var(--pg-neg)}
+/* separador entre el bloque del día y el del mes: un rótulo con regla, nada más */
+.pg-sub-top{display:flex;align-items:center;gap:12px;margin:30px 0 4px;
+  font-family:var(--pg-font-num);font-size:11px;letter-spacing:.16em;font-weight:700;
+  text-transform:uppercase;color:var(--pg-muted)}
+.pg-sub-top::after{content:"";height:2px;flex:1;border-radius:2px;
+  background:linear-gradient(90deg,var(--pg-mint),transparent 45%)}
+/* filas del día: se pueden tocar */
+#dia-lista .act-tab tbody tr{cursor:pointer}
+#dia-lista .act-tab tbody tr:hover{background:var(--pg-mint-soft,#E4F4EF)}
+#dia-lista .act-tab tbody tr.sel{background:var(--pg-mint-soft,#E4F4EF);box-shadow:inset 3px 0 0 var(--pg-mint)}
+#dia-lista .act-tab{table-layout:fixed}
+#dia-lista .act-tab th:first-child{width:auto}
+#dia-lista .act-tab th.n{width:104px}
+#dia-lista .act-tab th:last-child{width:60px}
+@media (max-width:860px){ #dia-lista .act-tab{table-layout:auto;min-width:700px} }
+/* el detalle de una persona */
+.det-cab{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:4px}
+.det-cab h2{margin:0}
+.det-x{margin-left:auto;background:none;border:1px solid var(--pg-line);border-radius:var(--pg-r-pill,999px);
+  color:var(--pg-muted);font:600 12px/1 inherit;padding:7px 13px;cursor:pointer}
+.det-x:hover{color:var(--pg-ink);border-color:var(--pg-muted)}
+.det-tab{width:100%;border-collapse:collapse;font-size:13px;max-width:520px}
+.det-tab td{padding:7px 8px;border-bottom:1px solid var(--pg-line)}
+.det-tab td.n{text-align:right;font-family:var(--pg-font-num);font-weight:600;color:var(--pg-ink);width:110px}
+.det-tab tr:last-child td{border-bottom:none}
+.det-tab .cab td{font-family:var(--pg-font-num);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--pg-muted);font-weight:700;border-bottom:1px solid var(--pg-line)}
+.det-vacio{color:var(--pg-muted);font-size:13px;padding:10px 0}
+.det-pulso{border-collapse:collapse;font-family:var(--pg-font-num);font-size:12px}
+.det-pulso td{padding:4px 0;text-align:center;min-width:30px;color:var(--pg-muted);font-size:10.5px}
+.det-pulso td.v{font-size:13.5px;font-weight:700;padding-bottom:6px}
+.det-pulso td.v.si{color:var(--pg-mint)}
+.det-pulso td.v.no{color:var(--pg-line,#D7DEE4)}
+.det-pulso td.hoy{color:var(--pg-ink);position:relative}
+.det-pulso td.v.hoy.no{color:var(--pg-neg)}
+.emb-res{display:flex;gap:26px;flex-wrap:wrap;margin-bottom:14px}
+.emb-res > div{min-width:120px}
+.emb-res .l{font-family:var(--pg-font-num);font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--pg-muted)}
+.emb-res .v{font-family:var(--pg-font-num);font-size:26px;font-weight:700;color:var(--pg-ink);line-height:1.15}
+.emb-res .s{font-size:12px;color:var(--pg-muted)}
+.emb-paso{font-size:12.5px;font-weight:600}
+/* Reparto de columnas solo para esta tabla: el nombre se queda con el sobrante y las
+   cifras van parejas, para que la vista baje en línea recta por cada paso. */
+#emb-lista .act-tab{table-layout:fixed}
+#emb-lista .act-tab th:first-child{width:auto}
+#emb-lista .act-tab th.n{width:112px}
+#emb-lista .act-tab th:last-child{width:170px}
+@media (max-width:860px){ #emb-lista .act-tab{table-layout:auto;min-width:720px} }
+.emb-paso.ok{color:var(--pg-mint)} .emb-paso.w{color:var(--pg-warn)} .emb-paso.r{color:var(--pg-neg)}
+.emb-paso.q{color:var(--pg-muted);font-weight:400}
 .act-res{display:flex;gap:26px;flex-wrap:wrap;margin-bottom:14px}
 .act-res > div{min-width:120px}
 .act-res .l{font-family:var(--pg-font-num);font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--pg-muted)}
@@ -248,9 +318,9 @@ select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;b
  <aside class="pg-side">
   <div class="pg-brand"><div class="pg-logo">G</div><div class="pg-wordmark">gabi</div></div>
   <div class="pg-tagline">EQUIPO COMERCIAL</div>
-  <a data-go="mes" class="on"><span class="ico">◆</span> El mes</a>
-  <a data-go="hoy"><span class="ico">◔</span> Hoy</a>
-  <a data-go="alertas"><span class="ico">▲</span> Alertas</a>
+  <a data-go="mes" class="on"><span class="ico">◆</span> Meta</a>
+  <a data-go="hoy"><span class="ico">◔</span> Equipo</a>
+  <a data-go="alertas"><span class="ico">▲</span> Sentarse</a>
   <a data-go="persona"><span class="ico">●</span> Persona</a>
   <a data-go="bitacora"><span class="ico">✎</span> Bitácora</a>
   <a data-go="ano"><span class="ico">▤</span> Año</a>
@@ -263,7 +333,7 @@ select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;b
   <section class="pg-section on" id="s-mes">
     <div class="pg-top">
       <div class="pg-eyebrow">Dirección comercial</div>
-      <h1>El mes<button class="hq" type="button" data-h="lo_que_va">?</button></h1>
+      <h1>Meta<button class="hq" type="button" data-h="lo_que_va">?</button></h1>
     </div>
 
     <div class="fr hero">
@@ -323,54 +393,59 @@ select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;b
 
     <div class="pg-card">
       <h2>Cuánto falta para la meta mínima<button class="hq" type="button" data-h="meta_minima">?</button></h2>
-      <div class="pg-chart-wrap" style="height:520px"><canvas id="chFalta"></canvas></div>
-      <div class="leg"><span><b style="background:#5B6BD6"></b>Lo que le falta para su meta mínima</span><span>Sin barra: ya está en su meta mínima</span></div>
+      <div style="overflow-x:auto"><table class="pg-table" id="tb-falta"><thead><tr>
+        <th>Persona</th><th class="num">Lo que lleva</th><th class="num">Su meta mínima</th><th class="num">Le falta</th>
+      </tr></thead><tbody></tbody></table></div>
     </div>
   </section>
 
-  <!-- ============ 2 · HOY ============ -->
+  <!-- ============ 2 · EQUIPO ============
+       v16 - dia-card + act-card + emb-card de la v15 se funden en una sola tabla
+       con interruptor Ayer | Este mes (menos informacion a la vez, mismo dato). -->
   <section class="pg-section" id="s-hoy">
     <div class="pg-top">
-      <div class="pg-eyebrow">Actividad del día</div>
-      <h1>Hoy<button class="hq" type="button" data-h="positivo">?</button></h1>
+      <div class="pg-eyebrow">Actividad del equipo</div>
+      <h1 id="dia-titulo">Ayer<button class="hq" type="button" data-h="positivo">?</button></h1>
     </div>
-    <div class="pg-card" id="act-card">
-      <h2>Quién está registrando su trabajo<button class="hq" type="button" data-h="cero">?</button></h2>
-      <div class="act-res" id="act-res"></div>
-      <div id="act-lista"></div>
-      <div class="mini" style="margin-top:12px;line-height:1.5" id="act-pie"></div>
+
+    <div class="pg-card" id="dia-card">
+      <div class="pg-actions" style="margin:0 0 16px">
+        <div class="pg-toggle" id="tg-act">
+          <button class="on" data-v="ayer">Ayer</button>
+          <button data-v="mes">Este mes</button>
+        </div>
+      </div>
+      <h2 id="dia-h2">Ayer, persona por persona</h2>
+      <p class="pg-purpose" style="margin:0 0 14px"><b>Toca una persona</b> para ver su mes y qué registró.</p>
+      <div class="act-res" id="dia-res"></div>
+      <div id="dia-lista"></div>
+      <div class="mini" style="margin-top:12px;line-height:1.5" id="dia-pie"></div>
     </div>
+
+    <div class="pg-card" id="det-card" hidden></div>
   </section>
 
   <!-- ============ 3 · ALERTAS ============ -->
   <section class="pg-section" id="s-alertas">
     <div class="pg-top">
-      <div class="pg-eyebrow">Alertas</div>
-      <h1>Con quién sentarse esta semana<button class="hq" type="button" data-h="mesa">?</button></h1>
-    </div>
-    <div class="pg-kpis">
-      <div class="pg-kpi r"><div class="lbl">Sobre la mesa · <span id="p-mes-l">último mes</span></div><div class="val neg" id="p-mesa">—</div><div class="sub" id="p-mesa-s"></div></div>
-      <div class="pg-kpi w"><div class="lbl">Ventas sin fee</div><div class="val" id="p-sinfee">—</div><div class="sub" id="p-sinfee-s"></div></div>
-      <div class="pg-kpi a"><div class="lbl">Cumplen el estándar de fee</div><div class="val" id="p-est">—</div><div class="sub" id="p-est-s"></div></div>
-      <div class="pg-kpi"><div class="lbl">Sobre la mesa · en el año</div><div class="val neg" id="p-ano">—</div><div class="sub" id="p-ano-s"></div></div>
+      <div class="pg-eyebrow">Sentarse</div>
+      <h1>Con quién sentarse esta semana</h1>
     </div>
     <div class="pg-headline">
-      <div class="pg-semaforo red"></div>
+      <div class="pg-semaforo red" id="p-titular-sem"></div>
       <div><p class="pg-headline-text" id="p-titular">—</p></div>
     </div>
     <div class="pg-card">
-      <h2>Alertas del mes<button class="hq" type="button" data-h="fee">?</button></h2>
+      <h2>La lista, en orden de prioridad</h2>
+      <p class="pg-purpose">No por plata estimada: primero quien más urge, según el patrón, no según quién mueve más dinero.</p>
       <div id="alertas"></div>
     </div>
     <div class="pg-card">
-      <h2>Vende mucho, cobra poco</h2>
-      <div class="pg-chart-wrap tall"><canvas id="chScatter"></canvas></div>
-      <div class="leg"><span>Horizontal: volumen vendido</span><span>Vertical: % de ventas con fee</span><span>Abajo a la derecha: vende y no cobra</span></div>
-    </div>
-    <div class="pg-card">
-      <h2>Fee cobrado contra el estándar</h2>
-      <div class="pg-chart-wrap" style="height:440px"><canvas id="chEstandar"></canvas></div>
-      <div class="leg"><span><b style="background:#229A82"></b>En el estándar</span><span><b style="background:#D9A520"></b>A medio camino</span><span><b style="background:#D5594F"></b>Muy por debajo</span><span><b style="background:#1B2D3A;width:3px"></b>Estándar: $1.500</span></div>
+      <h2>Fee cobrado este mes contra el estándar<button class="hq" type="button" data-h="fee">?</button></h2>
+      <table class="pg-table">
+        <thead><tr><th>Persona</th><th class="num">Cuentas</th><th class="num">Con fee</th><th class="num">Fee cobrado</th><th class="num">Estándar</th><th class="num">Le falta</th></tr></thead>
+        <tbody id="tb-estandar"></tbody>
+      </table>
     </div>
   </section>
 
@@ -448,38 +523,17 @@ select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;b
     <div class="pg-kpis">
       <div class="pg-kpi"><div class="lbl">Volumen del año</div><div class="val" id="c-vol">—</div><div class="sub" id="c-vol-s"></div></div>
       <div class="pg-kpi w"><div class="lbl">Fee del año<button class="hq" type="button" data-h="fee">?</button></div><div class="val" id="c-fee">—</div><div class="sub" id="c-fee-s"></div></div>
-      <div class="pg-kpi a"><div class="lbl">Ventas del año</div><div class="val" id="c-pol">—</div><div class="sub" id="c-pol-s"></div></div>
+      <div class="pg-kpi a"><div class="lbl">Cuentas del año</div><div class="val" id="c-pol">—</div><div class="sub" id="c-pol-s"></div></div>
       <div class="pg-kpi"><div class="lbl">Utilidad del año<button class="hq" type="button" data-h="utilidad">?</button></div><div class="val pos" id="c-util">—</div><div class="sub" id="c-util-s"></div></div>
     </div>
     <div class="pg-card">
       <h2>Consolidado por persona</h2>
-      <table class="pg-table"><thead><tr><th>Persona</th><th>Nivel</th><th class="num">Volumen año</th><th class="num">Fee año</th><th class="num">% fee</th><th class="num">Ventas</th><th class="num">Sin fee</th><th class="num">Utilidad</th></tr></thead><tbody id="tb-cons"></tbody><tfoot id="tf-cons"></tfoot></table>
-    </div>
-    <div class="pg-grid-2">
-      <div class="pg-card">
-        <h2>Volumen del equipo, mes a mes</h2>
-        <div class="pg-chart-wrap tall"><canvas id="chVol"></canvas></div>
-        <div class="leg"><span><b style="background:#229A82"></b>Volumen vendido</span></div>
-      </div>
-      <div class="pg-card">
-        <h2>Utilidad del equipo<button class="hq" type="button" data-h="utilidad">?</button></h2>
-        <div class="pg-chart-wrap tall"><canvas id="chUtil"></canvas></div>
-      </div>
-    </div>
-    <div class="pg-grid-2">
-      <div class="pg-card">
-        <h2>Tu ingreso, mes a mes<button class="hq" type="button" data-h="ingreso">?</button></h2>
-        <div class="pg-chart-wrap"><canvas id="chIng"></canvas></div>
-      </div>
-      <div class="pg-card">
-        <h2>Fee cobrado y qué parte del volumen fue<button class="hq" type="button" data-h="fee">?</button></h2>
-        <div class="pg-chart-wrap"><canvas id="chFee"></canvas></div>
-        <div class="leg"><span><b style="background:#5B6BD6"></b>Fee cobrado</span><span><b style="background:#D9A520"></b>Qué parte del volumen fue fee</span></div>
-      </div>
+      <table class="pg-table"><thead><tr><th>Persona</th><th class="num">Volumen</th><th class="num">% del equipo</th><th class="num">Fee</th><th class="num">% fee</th><th class="num">Cuentas</th><th class="num">Utilidad</th></tr></thead><tbody id="tb-cons"></tbody><tfoot id="tf-cons"></tfoot></table>
     </div>
     <div class="pg-card">
-      <h2>Cómo se reparte el volumen</h2>
-      <div class="pg-chart-wrap" style="height:460px"><canvas id="chReparto"></canvas></div>
+      <h2>Volumen del equipo, mes a mes</h2>
+      <div class="pg-chart-wrap tall"><canvas id="chVol"></canvas></div>
+      <div class="leg"><span><b style="background:#229A82"></b>Volumen vendido</span></div>
     </div>
   </section>
 
@@ -557,30 +611,42 @@ async function cargarDatos(sb){
   const utilPP = {};
   (rU.data||[]).forEach(u=>{ const k=ym(u.mes); if(k in idx){ (utilPP[u.nombre] ||= Array(8).fill(0))[idx[k]] += N(u.utilidad_360_total); } });
 
-  /* Llamadas de hoy por persona (v_actividad_equipo_visible, RingCentral cada 15 min),
-     solo para alimentar la alerta SIN_LLAMAR. No es fatal si falla o si a alguien le falta
-     el paquete: se queda en null y esa persona simplemente no genera la alerta — la misma
-     vista se vuelve a leer más abajo en actividadEquipo() para pintar su propia tabla. */
+  /* Llamadas de hoy/mes, conversaciones del mes y ventas del mes (v_actividad_equipo_visible,
+     RingCentral cada 15 min), para las alertas SIN_LLAMAR y MARCA_NO_CONVERSA y para contar
+     "vende y no cobra" en CUENTAS (ventas_mes ya viene en cuentas, no en pólizas). No es fatal
+     si falla o si a alguien le falta el paquete: queda en null y esa persona simplemente no
+     genera esas alertas — la misma vista se vuelve a leer más abajo en actividadEquipo(). */
+  const claveAg = x => String(x||'').replace(/\s*\([^)]*\)\s*$/,'').trim().toLowerCase();
   let llamByAgente = {};
   try{
-    const rAct = await sb.from('v_actividad_equipo_visible').select('agente,llamadas_hoy');
-    if(!rAct.error) llamByAgente = Object.fromEntries((rAct.data||[]).map(r=>[r.agente, r.llamadas_hoy]));
-  }catch(e){ /* sin datos de llamadas: la alerta SIN_LLAMAR no aplica y ya */ }
+    const rAct = await sb.from('v_actividad_equipo_visible').select('agente,llamadas_hoy,llamadas_mes,conversaciones_mes,ventas_mes,cuentas_con_fee_mes,cuentas_sin_fee_mes');
+    /* El cruce va por nombre NORMALIZADO: en v_meta_por_agente Daniela figura como
+       "Daniela Arbelaez (R)" y en las vistas de actividad como "Daniela Arbelaez".
+       Cruzar crudo la dejaba sin llamadas, sin conversaciones y sin cuentas con fee. */
+    if(!rAct.error) llamByAgente = Object.fromEntries((rAct.data||[]).map(r=>[claveAg(r.agente), r]));
+  }catch(e){ /* sin datos de llamadas: esas alertas no aplican y ya */ }
 
   const semMap = s => s==='verde'?'verde':(s==='ambar'?'ambar':(s==='rojo'?'rojo':'sin'));
   const agentes = meta.map(a=>{
     const s = serie.filter(x=>x.agente===a.agente);
     const arr = () => Array(8).fill(0);
-    const mc=arr(), fees=arr(), ven=arr(), sf=arr();
-    s.forEach(x=>{ const k=ym(x.mes); if(k in idx){ mc[idx[k]]=N(x.mc); fees[idx[k]]=N(x.fees); ven[idx[k]]=N(x.ventas); sf[idx[k]]=N(x.sin_fee); } });
+    const mc=arr(), fees=arr(), ven=arr(), sf=arr(), cu=Array(8).fill(null);
+    /* cuentas por mes: v_brahian_serie_agente_visible ya las expone (migracion v16_brahian_anio_cuentas). Si llegara null se pinta guion, nunca cero. */
+    s.forEach(x=>{ const k=ym(x.mes); if(k in idx){ mc[idx[k]]=N(x.mc); fees[idx[k]]=N(x.fees); ven[idx[k]]=N(x.ventas); sf[idx[k]]=N(x.sin_fee); if(x.cuentas!=null) cu[idx[k]]=N(x.cuentas); } });
     return {
       n:a.agente, niv:a.nivel_rampa, cam:!!a.camada, mop:a.meses_en_operacion,
       min:N(a.meta_min_mes), norte:N(a.meta_norte_mes),
       /* Un solo reloj: el mes calendario por MES DE VENTA. La ventana móvil de 28 días
          (mc_ultimas_4sem) queda jubilada: mostraba más de lo que el mes realmente lleva. */
       s4:N(a.mc_mes_actual), ant:N(a.mc_mes_anterior), nuevo:!!a.primera_vez_este_mes, prom:N(a.mc_promedio_mes),
-      sem:semMap(a.semaforo), llamadas_hoy: llamByAgente[a.agente] ?? null,
-      mc, fees, ven, sf, util: utilPP[a.nombre_nomina] || arr(),
+      sem:semMap(a.semaforo),
+      llamadas_hoy: (llamByAgente[claveAg(a.agente)]||{}).llamadas_hoy ?? null,
+      llamadas_mes: (llamByAgente[claveAg(a.agente)]||{}).llamadas_mes ?? null,
+      conversaciones_mes: (llamByAgente[claveAg(a.agente)]||{}).conversaciones_mes ?? null,
+      cuentas_con_fee_mes: (llamByAgente[claveAg(a.agente)]||{}).cuentas_con_fee_mes ?? null,
+      cuentas_sin_fee_mes: (llamByAgente[claveAg(a.agente)]||{}).cuentas_sin_fee_mes ?? null,
+      ventas_mes: (llamByAgente[claveAg(a.agente)]||{}).ventas_mes ?? null,
+      mc, fees, ven, sf, cuentas:cu, util: utilPP[a.nombre_nomina] || arr(),
       m:{ mc:N(a.mc_mes_actual), fees:N(a.fees_mes_actual), ven:N(a.ventas_mes_actual), sf:N(a.ventas_sin_fee_mes_actual),
           pct:N(a.pct_del_minimo_mes), sem: a.semaforo_mes==='arranque del mes' ? 'sin' : semMap(a.semaforo_mes),
           deberia:N(a.ritmo_piso_a_la_fecha), proy:N(a.proyeccion_cierre_mes) }
@@ -592,6 +658,7 @@ async function cargarDatos(sb){
     const e = eqm.find(x=>ym(x.mes)===k) || {};
     const u = utilByMes[k] || {};
     return { mes:k, mc:N(e.mc), fees:N(e.fees), ven:N(e.ventas), sf:N(e.sin_fee), activos:N(e.activos),
+             cuentas:(e.cuentas==null?null:N(e.cuentas)),
              med:N(e.mediana_fee), util:N(u.utilidad_equipo) };
   });
   const brahian = cerrados.map(k=>{ const u=utilByMes[k]||{}; return { mes:k, override:N(u.comision_lider), gen_equipo:N(u.generacion_equipo), util_rol:N(u.utilidad_rol_lider), per:N(u.personas_equipo) }; });
@@ -606,6 +673,7 @@ async function cargarDatos(sb){
     proy: hh>0 ? Math.round(mesMc*hm/hh) : 0, hab_hoy:hh, hab_mes:hm, pct_mes:N(M0.pct_mes_transcurrido) };
 
   return { meses:cerrados.map(lbl), equipo, mes, agentes, brahian,
+    enCurso: enCurso ? { mes:ym(enCurso.mes), mc:N(enCurso.mc), fees:N(enCurso.fees), cuentas:(enCurso.cuentas==null?null:N(enCurso.cuentas)) } : null,
     meta:{ min_equipo:minE, norte_equipo:norteE, ritmo, min_cabeza:N(M0.minimo_plena_mes), norte_cabeza:N(M0.norte_plena_mes),
            personas:agentes.length, prom_cabeza:Math.round(ritmo/agentes.length),
            camada:agentes.filter(a=>a.cam).length, min_camada:Math.round(N(M0.minimo_plena_mes)*0.5), norte_camada:Math.round(N(M0.norte_plena_mes)*0.5) },
@@ -916,35 +984,6 @@ new Chart(document.getElementById('chVol'),{type:'line',
     scales:{y:AXIS_Y([TOPE_VOL],{max:TOPE_VOL}),x:AXIS_X},
     plugins:{tooltip:Object.assign({},TIP,{callbacks:{label:c=>"Volumen: "+usdS(c.parsed.y)}})}}),
   plugins:[SOMBRA,referencias([{v:M.min_equipo,t:'meta mínima',peso:'fuerte'}],PERIODO)]});
-
-/* chUtil · no hay meta contra la cual compararla: un solo color neutro. */
-new Chart(document.getElementById('chUtil'),{type:'bar',
-  data:{labels:ML,datasets:[BARRA(AZUL,{data:E.map(m=>m.util)})]},
-  options:Object.assign({},BASE,{
-    scales:{y:AXIS_Y(E.map(m=>m.util),{max:techoOnda(E.map(m=>m.util),1000)}),x:AXIS_X},
-    plugins:{tooltip:Object.assign({},TIP,{callbacks:{label:c=>"Utilidad: "+usdS(c.parsed.y)}})}})});
-
-/* chIng · tampoco tiene meta: onda azul, sin bandas. */
-new Chart(document.getElementById('chIng'),{type:'line',
-  data:{labels:ML,datasets:[Object.assign({data:B.map(m=>m.override)},LINEA(AZUL))]},
-  options:Object.assign({},BASE,{
-    scales:{y:AXIS_Y(B.map(m=>m.override),{max:techoOnda(B.map(m=>m.override),1000)}),x:AXIS_X},
-    plugins:{tooltip:Object.assign({},TIP,{callbacks:{label:c=>"Tu comisión: "+usdS(c.parsed.y)}})}}),
-  plugins:[SOMBRA]});
-
-/* chFee · barras del fee (neutro, sin meta de equipo) y la onda del % del volumen. */
-new Chart(document.getElementById('chFee'),{
-  data:{labels:ML,datasets:[
-    BARRA(AZUL,{type:'bar',data:E.map(m=>m.fees),yAxisID:'y'}),
-    Object.assign({type:'line',data:E.map(m=>+(m.fees/m.mc*100).toFixed(1)),yAxisID:'y1'},
-                  LINEA(AMBAR,{fill:false}))]},
-  options:Object.assign({},BASE,{
-    scales:{y:AXIS_Y(E.map(m=>m.fees),{max:techoOnda(E.map(m=>m.fees),1000)}),
-      y1:{position:'right',grid:{display:false},border:{display:false},beginAtZero:true,max:6,
-          ticks:{font:{family:"'JetBrains Mono', monospace",size:10.5},color:'#6B7D89',maxTicksLimit:5,callback:v=>v+"%"}},
-      x:AXIS_X},
-    plugins:{tooltip:Object.assign({},TIP,{callbacks:{label:c=>c.datasetIndex===0?"Fee: "+usd(c.parsed.y):"Fue el "+c.parsed.y+"% del volumen"}})}}),
-  plugins:[SOMBRA]});
 }
 
 /* ===== 1b · LA GRAFICA GENERAL DEL EQUIPO (la pieza central) =====
@@ -1001,15 +1040,26 @@ document.querySelectorAll('#tg-vista button').forEach(bt=>bt.onclick=()=>{
    Cada pestaña arma las suyas la primera vez que se abre, y nunca mas.
    "El mes" es la pestaña que abre por defecto: sus graficas si se arman de una. */
 const GRAF={}, LISTO={};
-const falta=A.map(a=>({n:nom(a.n),f:Math.max(0,a.min-a.m.mc)})).sort((a,b)=>b.f-a.f);
-new Chart(document.getElementById('chFalta'),{type:'bar',
-  data:{labels:falta.map(a=>a.n),datasets:[BARRA(AZUL,{data:falta.map(a=>a.f)})]},
-  options:Object.assign({},BASE,{indexAxis:'y',
-    scales:{x:AXIS_Y(falta.map(a=>a.f)),y:AXIS_CAT},
-    plugins:{tooltip:Object.assign({},TIP,{callbacks:{label:c=>c.parsed.x===0?"Ya está en su meta mínima":"Le faltan "+usd(c.parsed.x)}})}})});
+/* v16 - era la ultima grafica de BARRAS viva del tablero y la regla de la casa es
+   cero barras de datos. Dice lo mismo en tabla, se lee mas rapido y no hay que
+   interpretar un eje: quien ya llego a su minima sale con la pildora, no con un
+   espacio en blanco que habia que adivinar. */
+const falta=A.map(a=>({n:nom(a.n),lleva:a.m.mc,min:a.min,f:Math.max(0,a.min-a.m.mc)}))
+             .sort((a,b)=>b.f-a.f || b.lleva-a.lleva);
+document.querySelector('#tb-falta tbody').innerHTML = falta.map(r=>
+  '<tr><td><b>'+r.n+'</b></td>'
+  +'<td class="num">'+usd(r.lleva)+'</td>'
+  +'<td class="num" style="color:var(--pg-muted)">'+usd(r.min)+'</td>'
+  +'<td class="num'+(r.f>0?' neg':'')+'">'
+    +(r.f>0 ? usd(r.f) : '<span class="pg-pill ok">Ya está en su mínima</span>')
+  +'</td></tr>').join('');
 
-/* ===== PATRONES ===== */
-const iA = E.length-1, MED = ago.med;
+/* ===== PATRONES · con quién sentarse esta semana =====
+   Seis patrones, en un orden de prioridad FIJO (nunca por plata estimada — ver
+   CONTRATO_v16). ALERTAS trae todos los patrones que dispara cada quien (la ficha
+   de Persona sigue usándola tal cual); SENTARSE deduplica a una línea por persona,
+   quedándose con su patrón de mayor prioridad — así arma "la lista" y el titular. */
+const iA = E.length-1;
 /* Hora de Colombia (UTC-5, sin horario de verano) para la alerta SIN_LLAMAR — nunca la
    hora del navegador de quien mira la pantalla. */
 const HORA_COL = new Date(Date.now() - 5*3600000);
@@ -1017,106 +1067,97 @@ const diaColHoy = HORA_COL.getUTCDay(); // 0 domingo … 6 sábado
 const esHabilHoy = diaColHoy>=1 && diaColHoy<=5;
 const horaColHoy = HORA_COL.getUTCHours();
 function detecta(a){
-  const v=a.ven[iA], f=a.fees[iA], s=a.sf[iA], mc=a.mc[iA];
-  const conVenta=a.mc.filter((x,i)=>a.ven[i]>0);
-  const promMes=conVenta.length?Math.round(sum(conVenta)/conVenta.length):0;
-  const prev=a.mc[iA-1], prevV=a.ven[iA-1];
   const out=[];
-  if(v>=3 && s/v>=0.66)
-    out.push({n:a.n,p:'VENDE_SIN_COBRAR',v:s*MED,u:'en juego',d:s+' de '+v+' sin fee',
-      t:v+' ventas y '+s+' salieron sin fee. Vendió '+usd(mc)+' y entraron '+usd(f)+' de fee.'});
-  if(!a.cam && prevV>0 && v>0 && mc < prev*0.5 && prev>=15000)
-    out.push({n:a.n,p:'CAIDA_DE_RITMO',v:prev-mc,u:'menos',d:'de '+usd(prev)+' a '+usd(mc),
-      t:'Venía de '+usd(prev)+' y bajó a '+usd(mc)+'. Su promedio de los meses que vendió es '+usd(promMes)+'.'});
-  if(v>0 && f<EST && mc>=15000 && s/v<0.66)
-    out.push({n:a.n,p:'VENDE_MAS_COBRA_MENOS',v:EST-f,u:'bajo el estándar',d:usd(f)+' de fee en '+v+' ventas',
-      t:'Movió '+usd(mc)+' en '+v+' ventas y cobró '+usd(f)+' de fee. El estándar son '+usd(EST)+'.'});
-  if(v>0 && f>=2500 && (mc-f)<35000)
-    out.push({n:a.n,p:'COBRA_Y_NO_VENDE',v:35000-(mc-f),u:'de premium le faltan',d:usd(f)+' de fee \u00b7 solo '+usd(mc-f)+' de premium',
-      t:'Cobr\u00f3 '+usd(f)+' de fee y movi\u00f3 '+usd(mc-f)+' de premium en '+v+(v===1?' venta':' ventas')+'. La escala de fee pide las dos cosas: el 30 % necesita $2.500 de fee Y $35.000 de premium. Con este premium la escala se le queda en la base, as\u00ed cobre bien.'});
-  if(!a.cam && v===0 && prevV>0)
-    out.push({n:a.n,p:'SE_APAGO',v:prev,u:'dejó de entrar',d:'0 ventas · venía de '+usd(prev),
-      t:'No registró ventas. El mes anterior había hecho '+usd(prev)+' en '+prevV+' ventas.'});
-  /* SIN_LLAMAR: día hábil, 11:00 o más hora Colombia, y llamadas_hoy en 0 EXACTO (no null:
-     quien no tiene usuario de RingCentral no trae el dato y no genera esta alerta). */
+  /* 1 · sin llamar: día hábil, 11:00 o más hora Colombia, y llamadas_hoy en 0 EXACTO
+     (no null: quien no tiene usuario de RingCentral no trae el dato y no alerta). */
   if(esHabilHoy && horaColHoy>=11 && a.llamadas_hoy===0)
-    out.push({n:a.n,p:'SIN_LLAMAR',v:0,u:'llamadas hoy',d:'va el día en cero · son las '+horaColHoy+':00',
+    out.push({n:a.n,p:'SIN_LLAMAR',d:'va el día en cero · son las '+horaColHoy+':00',
       t:'No registró ninguna llamada hoy. Van las '+horaColHoy+':00 (hora Colombia) y sigue en cero.'});
+  /* 2 · marca, no conversa: sale del embudo antes de la conversación. Necesita dato
+     real de RingCentral (null = sin paquete, no alerta) y algo de volumen de llamadas. */
+  /* El umbral de 1 cada 100 marcaba a 9 de 13 personas: en este equipo conversar el
+     1 % de lo marcado es lo NORMAL, no la excepcion. Con 1 cada 300 y un piso de 300
+     llamadas queda una lista con la que de verdad se puede uno sentar. */
+  if(a.llamadas_mes!=null && a.llamadas_mes>=300 && N(a.conversaciones_mes)*300 < a.llamadas_mes)
+    out.push({n:a.n,p:'MARCA_NO_CONVERSA',d:a.conversaciones_mes+' conversaciones de '+a.llamadas_mes+' llamadas',
+      t:'Hizo '+a.llamadas_mes+' llamadas este mes y solo '+a.conversaciones_mes+' pasaron de dos minutos. Marca, pero no llega a conversar.'});
+  /* 3 · cobra y no vende: el fee del mes ya llegó a $2.500 pero el premium no llega a
+     $35.000 — la escala de fee pide las dos puertas del 30 %, no solo el fee. */
+  if(a.m.ven>0 && a.m.fees>=2500 && (a.m.mc-a.m.fees*10)<35000)
+    out.push({n:a.n,p:'COBRA_Y_NO_VENDE',d:usd(a.m.fees)+' de fee · solo '+usd(a.m.mc-a.m.fees*10)+' de premium',
+      t:'Cobró '+usd(a.m.fees)+' de fee y movió '+usd(a.m.mc-a.m.fees*10)+' de premium en '+a.m.ven+(a.m.ven===1?' cuenta':' cuentas')+' este mes. La escala pide $2.500 de fee Y $35.000 de premium.'});
+  /* 4 · vende y no cobra: 3 o más CUENTAS este mes (ventas_mes del contrato, ya viene
+     en cuentas — no en pólizas) y 66 % o más de esas cuentas sin fee. */
+  const vCuentas = a.ventas_mes!=null ? a.ventas_mes : a.m.ven;
+  /* Las cuentas SIN fee las cuenta el motor. Antes se usaba a.m.sf, que va en POLIZAS:
+     con eso Dayanna salia "4 de 4 cuentas sin fee" teniendo $450 de fee cobrado. */
+  const cSinFee = a.cuentas_sin_fee_mes;
+  if(cSinFee!=null && vCuentas>=3 && cSinFee/vCuentas>=0.66)
+    out.push({n:a.n,p:'VENDE_SIN_COBRAR',d:cSinFee+' de '+vCuentas+' cuentas sin fee',
+      t:'Vendió '+vCuentas+' cuentas y '+cSinFee+' salieron sin fee. Movió '+usd(a.m.mc)+' y solo entraron '+usd(a.m.fees)+' de fee.'});
+  /* 5 · se apagó: vendió el mes pasado (cerrado) y este mes, en curso, va en cero. */
+  if(!a.cam && a.mc[iA]>0 && a.m.mc<=0)
+    out.push({n:a.n,p:'SE_APAGO',d:'0 en '+MESLBL+' · el mes pasado movió '+usd(a.mc[iA]),
+      t:'No ha registrado ventas en '+MESLBL+'. El mes anterior había movido '+usd(a.mc[iA])+' en '+a.ven[iA]+' cuentas.'});
+  /* 6 · perdió el ritmo: va en menos de la mitad de lo que movió el mes pasado (piso de
+     $15.000 para no alertar variaciones chiquitas). */
+  if(!a.cam && a.m.mc>0 && a.mc[iA]>=15000 && a.m.mc<a.mc[iA]*0.5)
+    out.push({n:a.n,p:'CAIDA_DE_RITMO',d:'de '+usd(a.mc[iA])+' a '+usd(a.m.mc),
+      t:'El mes pasado movió '+usd(a.mc[iA])+' y este mes va en '+usd(a.m.mc)+'.'});
   return out;
 }
 const TAGS={
- VENDE_SIN_COBRAR:{t:'vende y no cobra',c:'tag-nofee',s:'alta',do:'sentarse a mirar por qué salen sin fee'},
- CAIDA_DE_RITMO:{t:'perdió el ritmo',c:'tag-caida',s:'media',do:'revisar la agenda de la semana'},
- VENDE_MAS_COBRA_MENOS:{t:'volumen sin fee',c:'tag-mixto',s:'media',do:'acordar el fee mínimo por póliza'},
- SE_APAGO:{t:'se apagó',c:'tag-caida',s:'alta',do:'primera conversación de la semana'},
+ SIN_LLAMAR:{t:'sin llamar',c:'tag-llamadas',s:'alta',do:'preguntar qué pasó antes del mediodía'},
+ MARCA_NO_CONVERSA:{t:'marca, no conversa',c:'tag-llamadas',s:'alta',do:'escuchar una llamada suya con esa persona'},
  COBRA_Y_NO_VENDE:{t:'cobra y no vende',c:'tag-premium',s:'alta',do:'mirar el tamaño de lo que está cotizando, no el fee'},
- SIN_LLAMAR:{t:'sin llamar hoy',c:'tag-llamadas',s:'alta',do:'preguntar qué pasó antes del mediodía',raw:true}
+ VENDE_SIN_COBRAR:{t:'vende y no cobra',c:'tag-nofee',s:'alta',do:'sentarse a mirar por qué salen sin fee'},
+ SE_APAGO:{t:'se apagó',c:'tag-caida',s:'alta',do:'primera conversación de la semana'},
+ CAIDA_DE_RITMO:{t:'perdió el ritmo',c:'tag-caida',s:'media',do:'revisar la agenda de la semana'}
 };
-const PRIO={VENDE_SIN_COBRAR:0,COBRA_Y_NO_VENDE:1,SE_APAGO:2,SIN_LLAMAR:3,CAIDA_DE_RITMO:4,VENDE_MAS_COBRA_MENOS:5};
-const ALERTAS=A.flatMap(detecta).sort((x,y)=>PRIO[x.p]-PRIO[y.p] || y.v-x.v);
-const cumplen=A.filter(a=>a.fees[iA]>=EST).length, vendieron=A.filter(a=>a.ven[iA]>0).length;
-document.getElementById('p-mes-l').textContent=MESLBL.toLowerCase();
-document.getElementById('p-mesa').textContent=usd(mesaAgo);
-document.getElementById('p-mesa-s').textContent=ago.sf+" sin fee × "+usd(MED)+" (fee típico)";
-document.getElementById('p-sinfee').textContent=ago.sf+" de "+ago.ven;
-document.getElementById('p-sinfee-s').textContent=Math.round(ago.sf/ago.ven*100)+"% de las ventas";
-document.getElementById('p-est').textContent=cumplen+" de "+vendieron;
-document.getElementById('p-est-s').textContent="Estándar: "+usd(EST)+" de fee al mes";
-document.getElementById('p-ano').textContent=usd(mesaAno);
-document.getElementById('p-ano-s').textContent=sfAno+" de "+venAno+" ventas sin fee";
-document.getElementById('p-titular').textContent="En el año el equipo dejó sobre la mesa "+usd(mesaAno)+" de fee — más de lo que cobró ("+usd(feeAno)+").";
+const PRIO={SIN_LLAMAR:0,MARCA_NO_CONVERSA:1,COBRA_Y_NO_VENDE:2,VENDE_SIN_COBRAR:3,SE_APAGO:4,CAIDA_DE_RITMO:5};
+const ALERTAS=A.flatMap(detecta).sort((x,y)=>PRIO[x.p]-PRIO[y.p] || nom(x.n).localeCompare(nom(y.n)));
+/* SENTARSE: una línea por persona. Si dispara varios patrones a la vez se queda con
+   el de mayor prioridad — eso, y nunca la plata, es lo que decide el orden. */
+const porPersona={};
+ALERTAS.forEach(al=>{ if(!porPersona[al.n] || PRIO[al.p]<PRIO[porPersona[al.n].p]) porPersona[al.n]=al; });
+const SENTARSE=Object.values(porPersona).sort((x,y)=>PRIO[x.p]-PRIO[y.p] || nom(x.n).localeCompare(nom(y.n)));
+
+document.getElementById('p-titular-sem').className='pg-semaforo '+(!SENTARSE.length?'green':(TAGS[SENTARSE[0].p].s==='alta'?'red':'amber'));
+document.getElementById('p-titular').textContent = !SENTARSE.length
+  ? 'Esta semana: nadie en la lista.'
+  : 'Esta semana: '+SENTARSE.length+(SENTARSE.length===1?' persona. Es ':' personas. La primera es ')+nom(SENTARSE[0].n)+'.';
+
 function lineaAlerta(al){
   const t=TAGS[al.p];
-  /* raw:true → al.v es una cuenta (llamadas), no plata: se escribe tal cual, sin usd(). */
-  const valor = t.raw ? al.v : usd(al.v);
   return '<div class="al1 sev-'+t.s+'"><span class="a-l">'+nom(al.n)+'</span>'
    +'<span class="sep">·</span><span class="a-tag '+t.c+'">'+t.t+'</span>'
    +'<span class="sep">·</span><span class="a-c">'+(al.d||'')+'</span>'
-   +'<span class="sep">·</span><span class="a-v">'+valor+' '+al.u+'</span>'
    +'<span class="a-do">→ '+t.do+'</span></div>';
 }
-document.getElementById('alertas').innerHTML=ALERTAS.map(lineaAlerta).join('')
-  ||'<div class="bt-vacio">Ninguna alerta este mes.</div>';
+document.getElementById('alertas').innerHTML=SENTARSE.map(lineaAlerta).join('')
+  ||'<div class="bt-vacio">Nadie en la lista esta semana.</div>';
 
-const NAMES={id:'names',afterDatasetsDraw(c){if(!c.chartArea)return;const m=c.getDatasetMeta(0);const ctx=c.ctx;ctx.save();
-  ctx.font='600 10.5px Inter, Arial';ctx.fillStyle=INK;ctx.textAlign='center';
-  const put=[];
-  m.data.map((p,i)=>({p,d:c.data.datasets[0].data[i]})).sort((a,b)=>a.p.x-b.p.x).forEach(({p,d})=>{
-    let y=p.y-13, tries=0;
-    while(put.some(q=>Math.abs(q.x-p.x)<52 && Math.abs(q.y-y)<12) && tries<4){ y = tries%2===0 ? p.y+21 : y-13; tries++; }
-    put.push({x:p.x,y});ctx.fillText(d.nn, p.x, y);});
-  ctx.restore();}};
-const QUAD={id:'quad',beforeDatasetsDraw(c){if(!c.chartArea||!c.scales.y)return;const {ctx,chartArea:a,scales}=c;const yM=scales.y.getPixelForValue(50);
-  ctx.save();ctx.fillStyle='rgba(213,89,79,.05)';ctx.fillRect((a.left+a.right)/2,yM,a.right-(a.left+a.right)/2,a.bottom-yM);
-  ctx.strokeStyle='rgba(107,125,137,.45)';ctx.setLineDash([]);ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(a.left,yM);ctx.lineTo(a.right,yM);ctx.stroke();
-  ctx.fillStyle='#6B7D89';ctx.font='700 10.5px Inter, Arial';ctx.textAlign='right';
-  ctx.fillText('VENDE Y NO COBRA', a.right-10, yM+16);ctx.restore();}};
-const pts=A.filter(a=>a.ven[iA]>0).map(a=>{const pc=Math.round((1-a.sf[iA]/a.ven[iA])*100);
-  const p=nom(a.n).split(' ');return {x:a.mc[iA],y:pc,r:8,nn:p[0]+' '+(p[1]||'').charAt(0)+'.',
-          c:Z_CLA[zona(pc,34,67)],full:nom(a.n),f:a.fees[iA]};});
-GRAF.alertas=()=>{
-new Chart(document.getElementById('chScatter'),{type:'bubble',
-  data:{datasets:[{data:pts,backgroundColor:pts.map(p=>p.c+'CC'),borderColor:pts.map(p=>p.c),borderWidth:2}]},
-  options:Object.assign({},BASE,{layout:{padding:{top:18}},
-    scales:{x:AXIS_Y(pts.map(p=>p.x),{title:{display:true,text:'Volumen vendido en '+MESLBL,color:'#8AA0AD',font:{size:11.5,weight:'700'}}}),
-      y:AXIS_Y([100],{min:-5,max:110,beginAtZero:false,title:{display:true,text:'% de ventas CON fee',color:'#8AA0AD',font:{size:11.5,weight:'700'}},
-        ticks:{font:{family:"'JetBrains Mono', monospace",size:11},color:'#8AA0AD',padding:8,maxTicksLimit:5,callback:v=>v+"%"}})},
-    plugins:{tooltip:Object.assign({},TIP,{callbacks:{label:c=>c.raw.full+" · "+usd(c.raw.x)+" · "+c.raw.y+"% con fee · "+usd(c.raw.f)+" de fee"}})}}),
-  plugins:[QUAD,NAMES]});
-
-const EL={id:'est',afterDatasetsDraw(c){if(!c.chartArea||!c.scales.x)return;const {ctx,chartArea:a,scales}=c;const x=scales.x.getPixelForValue(EST);
-  if(x>a.right||x<a.left)return;ctx.save();ctx.setLineDash([]);ctx.strokeStyle='rgba(107,125,137,.75)';ctx.lineWidth=1;
-  ctx.beginPath();ctx.moveTo(x,a.top);ctx.lineTo(x,a.bottom);ctx.stroke();
-  ctx.fillStyle='#6B7D89';ctx.font='600 10px Inter, Arial';ctx.textAlign='left';
-  ctx.fillText('estándar '+usd(EST),x+6,a.top+11);ctx.restore();}};
-const fe=A.filter(a=>a.ven[iA]>0).sort((a,b)=>b.fees[iA]-a.fees[iA]);
-new Chart(document.getElementById('chEstandar'),{type:'bar',
-  data:{labels:fe.map(a=>nom(a.n)),datasets:[BARRA(fe.map(a=>Z_CLA[zona(a.fees[iA],EST/2,EST)]),{data:fe.map(a=>a.fees[iA])})]},
-  options:Object.assign({},BASE,{indexAxis:'y',
-    scales:{x:AXIS_Y([EST*1.3].concat(fe.map(a=>a.fees[iA])),{suggestedMax:EST*1.3}),y:AXIS_CAT},
-    plugins:{tooltip:Object.assign({},TIP,{callbacks:{label:c=>usd(c.parsed.x)+" de fee · estándar "+usd(EST)}})}}),
-  plugins:[EL]});
-};
+/* La única plata de la pestaña, y es plata real: fee cobrado este mes contra el
+   estándar de la casa, todo el equipo, peor brecha primero. */
+const tEstandar=A.map(a=>{
+  /* Cuentas con fee las cuenta el motor (cuentas_con_fee_mes). Antes se restaba
+     ventas_sin_fee, que va en POLIZAS, de ventas_mes, que desde la v16 va en CUENTAS:
+     restar polizas de cuentas pintaba "con fee 0" en filas con $2.850 cobrados. */
+  const cu=a.ventas_mes!=null?a.ventas_mes:a.m.ven;
+  const conFee=a.cuentas_con_fee_mes!=null?a.cuentas_con_fee_mes:null;
+  const falta=Math.max(0,EST-a.m.fees);
+  return {n:nom(a.n),cu,conFee,fee:a.m.fees,falta};
+}).sort((x,y)=>y.falta-x.falta || y.fee-x.fee);
+document.getElementById('tb-estandar').innerHTML=tEstandar.map(r=>
+  '<tr><td><b>'+r.n+'</b></td><td class="num">'+r.cu+'</td><td class="num">'+(r.conFee==null?'—':r.conFee)+'</td>'
+  +'<td class="num">'+usd(r.fee)+'</td><td class="num">'+usd(EST)+'</td>'
+  /* Si no vendio ni una cuenta no le "falta" fee: no hay de donde cobrarlo. Guion,
+     que es lo que significa que del dato no se sabe nada. Un rojo ahi hacia pensar
+     que dejo de cobrar, cuando lo que pasa es que no ha vendido. */
+  +'<td class="num'+(r.cu>0&&r.falta>0?' neg':'')+'">'
+    +(!r.cu ? '<span style="color:var(--pg-muted)">—</span>'
+            : (r.falta>0 ? usd(r.falta) : '<span class="pg-pill ok">Cumple</span>'))
+  +'</td></tr>').join('');
 
 /* ===== PERSONA ===== */
 const sel=document.getElementById('selPersona');
@@ -1182,26 +1223,27 @@ sel.value=ordS4[0].n;
 GRAF.persona=()=>pintaPersona(sel.value);
 
 /* ===== CONSOLIDADO ===== */
-const cons=A.map(a=>({n:nom(a.n),niv:nivC(a.niv),v:sum(a.mc),f:sum(a.fees),p:sum(a.ven),s:sum(a.sf),u:sum(a.util)}))
-  .map(c=>({...c,pct:c.v>0?c.f/c.v*100:0})).sort((x,y)=>y.v-x.v);
+/* La columna "% del equipo" absorbe chReparto y "% fee" absorbe chFee: ya no son graficas, son columnas.
+   Las cuentas salen de v_brahian_serie_agente_visible y v_brahian_equipo_mes_visible;
+   mientras no llegue, cuTot()/cuentasAno dan null y se pinta guion, nunca cero. */
+const cuTot = a => a.cuentas.some(v=>v!=null) ? sum(a.cuentas.map(v=>v||0)) : null;
+const cons=A.map(a=>({n:nom(a.n),v:sum(a.mc),f:sum(a.fees),u:sum(a.util),cu:cuTot(a)}))
+  .map(c=>({...c,pct:c.v>0?c.f/c.v*100:0,pv:volAno>0?c.v/volAno*100:0})).sort((x,y)=>y.v-x.v);
+const cuentasAno = E.some(m=>m.cuentas!=null) ? sum(E.map(m=>m.cuentas||0)) : null;
 document.getElementById('c-vol').textContent=usd(volAno);
 document.getElementById('c-vol-s').textContent="Mejor mes: "+usd(Math.max(...E.map(m=>m.mc)))+" · "+ML[E.map(m=>m.mc).indexOf(Math.max(...E.map(m=>m.mc)))];
 document.getElementById('c-fee').textContent=usd(feeAno);
 document.getElementById('c-fee-s').textContent=(feeAno/volAno*100).toFixed(1)+"% del volumen del año";
-document.getElementById('c-pol').textContent=venAno;
+document.getElementById('c-pol').textContent=cuentasAno==null?'—':cuentasAno;
 document.getElementById('c-pol-s').textContent=sfAno+" salieron sin fee";
 document.getElementById('c-util').textContent=usd(utilAno);
 document.getElementById('c-util-s').textContent="Tu ingreso del año: "+usd(ingAno);
 document.getElementById('tb-cons').innerHTML=cons.map(c=>
- '<tr><td><b>'+c.n+'</b></td><td class="mini">'+c.niv+'</td><td class="num">'+usd(c.v)+'</td><td class="num">'+usd(c.f)+'</td><td class="num">'+c.pct.toFixed(1)+'%</td><td class="num">'+c.p+'</td><td class="num'+(c.s>0?' neg':'')+'">'+c.s+'</td><td class="num '+(c.u<0?'neg':'pos')+'">'+usdS(c.u)+'</td></tr>').join('');
+ '<tr><td><b>'+c.n+'</b></td><td class="num">'+usd(c.v)+'</td><td class="num">'+c.pv.toFixed(1)+'%</td><td class="num">'+usd(c.f)+'</td><td class="num">'+c.pct.toFixed(1)+'%</td><td class="num">'+(c.cu==null?'—':c.cu)+'</td><td class="num '+(c.u<0?'neg':'pos')+'">'+usdS(c.u)+'</td></tr>').join('');
 document.getElementById('tf-cons').innerHTML=
- '<tr style="background:#F7FAFB"><td><b>Equipo</b></td><td class="mini">'+M.personas+' personas</td><td class="num">'+usd(volAno)+'</td><td class="num">'+usd(feeAno)+'</td><td class="num">'+(feeAno/volAno*100).toFixed(1)+'%</td><td class="num">'+venAno+'</td><td class="num neg">'+sfAno+'</td><td class="num pos">'+usdS(utilAno)+'</td></tr>';
-const rep=cons.filter(c=>c.v>0);
-GRAF.ano=()=>{ chartsAno(); new Chart(document.getElementById('chReparto'),{type:'bar',
-  data:{labels:rep.map(c=>c.n),datasets:[BARRA(AZUL,{data:rep.map(c=>c.v)})]},
-  options:Object.assign({},BASE,{indexAxis:'y',
-    scales:{x:AXIS_Y(rep.map(c=>c.v)),y:AXIS_CAT},
-    plugins:{tooltip:Object.assign({},TIP,{callbacks:{label:c=>usd(c.parsed.x)+" · "+(c.parsed.x/volAno*100).toFixed(1)+"% del año"}})}})}); };
+ '<tr style="background:#F7FAFB"><td><b>Equipo</b> <span class="mini">'+M.personas+' personas</span></td><td class="num">'+usd(volAno)+'</td><td class="num">100%</td><td class="num">'+usd(feeAno)+'</td><td class="num">'+(feeAno/volAno*100).toFixed(1)+'%</td><td class="num">'+(cuentasAno==null?'—':cuentasAno)+'</td><td class="num pos">'+usdS(utilAno)+'</td></tr>'
+ +(D.enCurso?'<tr style="background:#F7FAFB"><td><b>'+lbl(D.enCurso.mes)+'</b> <span class="pg-pill muted">en curso</span></td><td class="num">'+usd(D.enCurso.mc)+'</td><td class="num">—</td><td class="num">'+usd(D.enCurso.fees)+'</td><td class="num">'+(D.enCurso.mc>0?(D.enCurso.fees/D.enCurso.mc*100).toFixed(1)+'%':'—')+'</td><td class="num">'+(D.enCurso.cuentas==null?'—':D.enCurso.cuentas)+'</td><td class="num">—</td></tr>':'');
+GRAF.ano=()=>{ chartsAno(); };
 
 /* ===== NAV ===== */
 document.querySelectorAll('.pg-side a[data-go]').forEach(a=>a.onclick=()=>{
@@ -1225,7 +1267,7 @@ document.querySelectorAll('.pg-side a[data-go]').forEach(a=>a.onclick=()=>{
    ============================================================ */
 const MANUAL=[
 ['lo_que_va','Lo que va del mes',
- 'Premium + fee de las ventas nuevas del equipo con mes de venta = este mes.',
+ 'Premium + fee × 10 de las ventas nuevas del equipo con mes de venta = este mes. Cada $100 de fee cuentan como $1.000 de premium, igual que en el reporte financiero.',
  'Del BOS: columnas SALES MONTH, POLICY PREMIUM y SELLER FEES, solo "Sale - New Sale".',
  'Va del 1 al último día del mes y se pone en cero el día 1.',
  'Es el número que se compara contra las metas.'],
@@ -1267,13 +1309,8 @@ const MANUAL=[
 ['fee','Fee',
  'Lo que la agencia cobra de fee en cada venta.',
  'Del BOS: columna SELLER FEES.',
- 'El estándar es $'+EST.toLocaleString('en-US')+' al mes por persona; la mediana del equipo hoy es '+usd(D.mediana_fee)+'.',
- 'Una venta sin fee es plata que se dejó sobre la mesa.'],
-['mesa','Sobre la mesa',
- 'Ventas sin fee multiplicadas por la mediana del fee del mes.',
- 'Del BOS.',
- 'Es lo que se hubiera cobrado si cada venta trajera el fee típico.',
- 'La palanca más barata: no hay que vender más.'],
+ 'El estándar es $'+EST.toLocaleString('en-US')+' al mes por persona; la mediana del equipo hoy es '+usd(D.mediana_fee)+'. Para la combinada, cada $100 de fee valen $1.000.',
+ 'Una venta sin fee es una venta que no dejó lo que podía dejar.'],
 ['utilidad','Utilidad del equipo',
  'Lo que genera el equipo menos la comisión de los agentes y el costo de nómina del equipo.',
  'Del BOS (comisión y fee) más la nómina.',
@@ -1285,10 +1322,40 @@ const MANUAL=[
  'Sube cuando sube el equipo.',
  'Es la misma onda de la utilidad, con otra escala.'],
 ['positivo','Positivo',
- 'Un negocio mandado a cotizar: llegó a Audit / Quote en HubSpot con contacto, empresa y negocio completos.',
- 'De HubSpot.',
- 'Montarlo no basta: tiene que entrar a esa etapa.',
+ 'Un contacto que la persona creó ese día en HubSpot. Crear el contacto, o el contacto y el negocio, cuenta igual: uno.',
+ 'De HubSpot: la fecha de creación del contacto, atribuida a quien lo creó.',
+ 'Es el gesto que sí es suyo y en el momento en que ocurre. El negocio y la cotización vienen después, cuando ya reunió la documentación.',
  'El estándar es uno por día hábil por persona.'],
+['cotizado','Cotizado',
+ 'Un negocio mandado a cotizar: llegó a la etapa Audit / Quote en HubSpot.',
+ 'De HubSpot.',
+ 'Es el paso siguiente al positivo, no el mismo. Hasta la v15 esto era lo que el tablero llamaba positivo.',
+ 'Sirve para ver cuánto de lo que se registra llega a cotizarse.'],
+['cuenta','Cuenta vendida',
+ 'Un cliente, con todas sus pólizas. Tres pólizas al mismo asegurado son una venta, no tres.',
+ 'Del BOS: asegurados distintos con "Sale - New Sale".',
+ 'El premium y el fee se suman por cuenta. Los dólares no cambian; lo que cambia es el conteo.',
+ 'Comparar cuentas contra cuentas: una persona con pocas cuentas grandes no vende menos.'],
+['dos_min','De más de 2 minutos',
+ 'Llamadas que se contestaron y pasaron de dos minutos: ahí hubo conversación.',
+ 'De RingCentral, por la API, cada 15 minutos.',
+ 'Es la medida honesta del teléfono. Marcar mucho y conversar poco no es trabajar el teléfono.',
+ 'Si alguien marca cientos y no conversa ninguna, el problema es la lista o el guion, no las ganas.'],
+['timbre','Solo timbre',
+ 'Todo lo demás: no contestaron, o contestaron y no pasó de dos minutos.',
+ 'De RingCentral.',
+ 'No es malo en sí: la mayoría de las marcadas son timbre. Se mira la proporción, no el número.',
+ 'Vive en la ficha de la persona, no en la tabla del equipo.'],
+['queda','Dónde se le queda',
+ 'En qué paso del camino se le detiene el trabajo a cada persona.',
+ 'Del cruce de sus llamadas, conversaciones, positivos y ventas del mes.',
+ 'El camino es: llamar, conversar, registrar el positivo, cotizarlo, cerrar. Se nombra el último paso que sí alcanzó.',
+ 'Dice de qué hay que hablar con esa persona, sin tener que adivinar.'],
+['guion','El guion (—)',
+ 'Que de ese dato no se sabe nada, que es distinto de cero.',
+ 'Sale donde la persona no tiene usuario de RingCentral.',
+ 'Un cero quiere decir que no marcó. Un guion quiere decir que el teléfono no la está midiendo.',
+ 'Nunca leer un guion como si fuera un cero.'],
 ['cero','Días en cero',
  'Días hábiles del mes sin ningún positivo.',
  'De HubSpot.',
@@ -1477,76 +1544,417 @@ function renderLogin(){
 }
 
 
-/* ============ ACTIVIDAD REGISTRADA POR PERSONA ============
-   Sale de public.v_actividad_equipo_visible (compuerta: paquete incentivos).
-   El estandar es un positivo por dia habil. No mide ventas: mide registro. */
-async function actividadEquipo(sb){
-  const cont = document.getElementById('act-lista');
+/* ============ EL DÍA QUE CERRÓ ============
+   Sale de public.v_equipo_dia_visible: el último día HÁBIL antes de hoy, ya completo.
+   Es lo que Andrés pidió el 11-sep: a las 8 de la mañana el número de hoy siempre es
+   cero, así que el que sirve para hablar con la gente es el día cerrado.
+   Al tocar una persona se pide public.equipo_agente_detalle(nombre) y se abre su ficha. */
+const MESES_L = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+const DIAS_L  = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'];
+function fechaLarga(iso){
+  if (!iso) return '';
+  const p = String(iso).split('-'), d = new Date(Date.UTC(+p[0], +p[1]-1, +p[2]));
+  return DIAS_L[d.getUTCDay()] + ' ' + d.getUTCDate() + ' de ' + MESES_L[d.getUTCMonth()];
+}
+const esc = s => String(s == null ? '' : s).replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+function usdCorto(v){
+  const n = Number(v) || 0, s = n < 0 ? '-' : '', a = Math.abs(n);
+  return s + '$' + (a >= 1000 ? Math.round(a).toLocaleString('es-CO') : a.toFixed(0));
+}
+
+/* ============ TABLA UNICA DEL EQUIPO: AYER | ESTE MES ============
+   v16 - dia-card, act-card y emb-card de la v15 se funden en una sola tabla con
+   interruptor "Ayer | Este mes". Ayer sale de v_equipo_dia_visible, Este mes de
+   v_actividad_equipo_visible (misma forma de fila, mismo orden de columnas).
+   "Dónde se le queda" ya no tiene card propio: embudoEquipo() calcula el paso de
+   cada quien y pintarMes() lo agrega como una columna más. */
+let EQ_MODO = 'ayer';
+let EQ_AYER = null;   // { data, dia }
+let EQ_MES  = null;   // { data }
+const N16 = v => (v == null ? null : Number(v));
+
+function pintarCabeceraEquipo(){
+  const tit = document.getElementById('dia-titulo');
+  const h2  = document.getElementById('dia-h2');
+  if (EQ_MODO === 'ayer') {
+    const dia = EQ_AYER && EQ_AYER.dia;
+    if (tit) tit.innerHTML = (dia ? fechaLarga(dia).replace(/^./, c => c.toUpperCase()) : 'Ayer')
+      + (tit.querySelector('.hq') ? tit.querySelector('.hq').outerHTML : '');
+    if (h2) h2.textContent = dia ? 'Ayer, ' + fechaLarga(dia) : 'Ayer, persona por persona';
+  } else {
+    const hoyCol = new Date(Date.now() - 5*3600000);
+    const txt = MESES_L[hoyCol.getUTCMonth()].replace(/^./, c => c.toUpperCase())
+      + ', del 1 al ' + hoyCol.getUTCDate();
+    if (tit) tit.innerHTML = txt + (tit.querySelector('.hq') ? tit.querySelector('.hq').outerHTML : '');
+    if (h2) h2.textContent = txt + ', persona por persona';
+  }
+}
+
+/* Pie fijo de dos líneas, igual en los dos modos: qué es un positivo, y quién no
+   tiene RingCentral (para que el guion de esas filas no se lea como un cero). */
+function pintarPieEquipo(sinRc){
+  const pie = document.getElementById('dia-pie');
+  if (!pie) return;
+  const l2 = sinRc.length
+    ? '<b>Sin usuario de RingCentral:</b> ' + sinRc.map(n => esc(n)).join(', ')
+      + ' — de ellos no se sabe nada del teléfono, el guion no quiere decir cero.'
+    : 'Todo el equipo tiene usuario de RingCentral asignado.';
+  pie.innerHTML = '<b>Un positivo es un contacto que la persona creó ese día.</b><br>' + l2;
+}
+
+function pintarTablaEquipo(){
+  const cont = document.getElementById('dia-lista');
   if (!cont) return;
-  const { data, error } = await sb.from('v_actividad_equipo_visible').select('*');
+  if (EQ_MODO === 'ayer') {
+    if (!EQ_AYER) { cont.innerHTML = '<div class="act-vacio">Cargando…</div>'; return; }
+    pintarAyer(EQ_AYER.data);
+  } else {
+    if (!EQ_MES) { cont.innerHTML = '<div class="act-vacio">Cargando…</div>'; return; }
+    pintarMes(EQ_MES.data);
+  }
+}
+
+function wireToggleEquipo(){
+  const tg = document.getElementById('tg-act');
+  if (!tg || tg.dataset.wired) return;
+  tg.dataset.wired = '1';
+  tg.querySelectorAll('button').forEach(function(bt){
+    bt.addEventListener('click', function(){
+      tg.querySelectorAll('button').forEach(x => x.classList.remove('on'));
+      bt.classList.add('on');
+      EQ_MODO = bt.dataset.v;
+      pintarCabeceraEquipo();
+      pintarTablaEquipo();
+    });
+  });
+}
+
+async function diaEquipo(sb){
+  const cont = document.getElementById('dia-lista');
+  if (!cont) return;
+  wireToggleEquipo();
+  const { data, error } = await sb.from('v_equipo_dia_visible').select('*');
   if (error || !data || !data.length) {
-    cont.innerHTML = '<div class="act-vacio">No pude traer la actividad. '
-      + (error ? String(error.message).replace(/[<>&]/g,'') : 'No hay filas: revisar el paquete de la cuenta.') + '</div>';
+    if (EQ_MODO === 'ayer') cont.innerHTML = '<div class="act-vacio">No pude traer el día. '
+      + (error ? esc(error.message) : 'No hay filas: revisar el paquete de la cuenta.') + '</div>';
     return;
   }
-  const orden = { rojo: 0, ambar: 1, verde: 2 };
-  data.sort((a, b) => (orden[a.semaforo] - orden[b.semaforo]) || (a.positivos_mes - b.positivos_mes) || a.agente.localeCompare(b.agente));
-  const hab = data[0].habiles_corridos || 1, habMes = data[0].habiles_mes || 22;
-  const total = data.reduce((x, r) => x + (r.positivos_mes || 0), 0);
-  const enCero = data.filter(r => (r.positivos_mes || 0) === 0).length;
-  const enEstandar = data.filter(r => r.semaforo === 'verde').length;
-  document.getElementById('act-res').innerHTML =
-      '<div><div class="l">Mandados a cotizar</div><div class="v">' + total + '</div><div class="s">van ' + hab + ' de ' + habMes + ' días hábiles</div></div>'
-    + '<div><div class="l">En el estándar</div><div class="v' + (enEstandar >= data.length / 2 ? '' : ' mal') + '">' + enEstandar + ' de ' + data.length + '</div><div class="s">uno o más por día hábil</div></div>'
-    + '<div><div class="l">Sin mandar nada a cotizar</div><div class="v' + (enCero ? ' mal' : '') + '">' + enCero + '</div><div class="s">' + (enCero ? 'con estas hay que hablar hoy' : 'todo el mundo anotó algo') + '</div></div>'
-    + '<div><div class="l">Promedio por persona</div><div class="v">' + (data.length ? (total / data.length).toFixed(1).replace('.', ',') : '0') + '</div><div class="s">el estándar a hoy son ' + hab + '</div></div>';
+  EQ_AYER = { data: data, dia: data[0].dia };
+  pintarCabeceraEquipo();
+  pintarTablaEquipo();
+}
 
-  /* Celda combinada "Llamadas hoy · mes": hoy destacado, mes chiquito y gris al lado.
-     — nunca 0 en vez de null: si viene null (sin usuario de RingCentral), guion gris. */
-  function celdaLlamadas(lh, lm){
-    const MUT = 'color:var(--pg-muted)';
-    if (lh == null && lm == null) {
-      return '<td class="n" title="Sin usuario de RingCentral asignado"><span style="' + MUT + '">—</span></td>';
-    }
-    const hTxt = lh == null ? '<span style="' + MUT + '">—</span>' : lh;
-    const mTxt = lm == null ? '<span style="' + MUT + '">—</span>' : lm;
-    const hNum = lh == null ? '—' : lh, mNum = lm == null ? '—' : lm;
-    const ttl = hNum + (lh === 1 ? ' llamada hoy' : ' llamadas hoy') + ' · ' + mNum + ' este mes';
-    return '<td class="n" title="' + ttl.replace(/"/g, '&quot;') + '"><b>' + hTxt + '</b> <span style="' + MUT + ';font-size:11px">· ' + mTxt + '</span></td>';
-  }
-  /* Línea del equipo, arriba de la tabla: suma de llamadas_hoy (null cuenta como 0) y la
-     hora de la última sincronización (igual para todas las filas). Si da 0 y es temprano,
-     se muestra igual — el dato es el dato. */
-  const totalLlamHoy = data.reduce((s, r) => s + (Number(r.llamadas_hoy) || 0), 0);
-  const actzEquipo = data[0] && data[0].llamadas_actualizado;
-  const lineaEquipoLlam = '<div class="mini" style="margin-bottom:10px;font-size:12.5px">El equipo lleva '
-    + '<b style="color:var(--pg-ink)">' + totalLlamHoy + '</b> llamada' + (totalLlamHoy === 1 ? '' : 's') + ' hoy'
-    + (actzEquipo ? ' · actualizado a las ' + actzEquipo : '') + '</div>';
+/* Modo Ayer: v_equipo_dia_visible. positivos = contactos creados ese día (la
+   medida nueva) — ya NO es "mandado a cotizar", ese ahora se llama cotizados y
+   solo vive en la ficha. ventas ya es CUENTAS (clientes distintos), no pólizas. */
+function pintarAyer(data){
+  const cont = document.getElementById('dia-lista');
+  if (!cont) return;
+  const N = N16;
+  const sum = k => data.reduce((s, r) => s + (N(r[k]) || 0), 0);
+  const tLl = sum('llamadas'), tCv = sum('conversaciones'), tTi = sum('solo_timbre'),
+        tPo = sum('positivos'), tVe = sum('ventas'), tPrem = sum('premium');
+  const conPos = data.filter(r => (N(r.positivos)||0) > 0).length;
 
-  cont.innerHTML = lineaEquipoLlam
-    + '<div style="overflow-x:auto"><table class="act-tab">'
-    + '<thead><tr><th>Persona</th><th class="n">Mandados a cotizar</th><th style="width:120px">Contra el estándar</th><th class="n">Montados</th><th class="n">Llamadas hoy · mes</th>'
-    + '<th class="n">Días en cero</th><th class="n">Sin subir hace</th><th class="n">Ventas del mes</th></tr></thead><tbody>'
-    + data.map(function(r){
-        const pct = Math.min(100, Math.round((r.pct_estandar == null ? 0 : Number(r.pct_estandar))));
-        const cls = r.semaforo === 'verde' ? '' : (r.semaforo === 'ambar' ? 'w' : 'r');
-        const sin = r.dias_sin_subir == null ? 'nunca' : (r.dias_sin_subir === 0 ? 'hoy' : r.dias_sin_subir + (r.dias_sin_subir === 1 ? ' día' : ' días'));
-        return '<tr><td class="per"><span class="sem ' + r.semaforo + '"></span>' + r.agente + '</td>'
-          + '<td class="n' + ((r.positivos_mes || 0) === 0 ? ' cero' : '') + '">' + (r.positivos_mes || 0) + '</td>'
-          + '<td><div class="act-bar"><i class="' + cls + '" style="width:' + pct + '%"></i></div></td>'
-          + '<td class="n">' + (r.creados_mes || 0) + '</td>'
-          + celdaLlamadas(r.llamadas_hoy, r.llamadas_mes)
-          + '<td class="n' + (r.dias_en_cero >= hab ? ' cero' : '') + '">' + (r.dias_en_cero || 0) + '</td>'
-          + '<td class="n">' + sin + '</td>'
-          + '<td class="n">' + (r.ventas_mes || 0) + '</td></tr>';
+  document.getElementById('dia-res').innerHTML =
+      '<div><div class="l">Llamadas</div><div class="v">' + tLl.toLocaleString('es-CO') + '</div>'
+      + '<div class="s">' + tTi.toLocaleString('es-CO') + ' fueron solo timbre</div></div>'
+    + '<div><div class="l">De más de 2 min</div><div class="v">' + tCv + '</div>'
+      + '<div class="s">' + (tLl ? 'una de cada ' + Math.round(tLl / Math.max(tCv,1)) + ' marcadas' : '—') + '</div></div>'
+    + '<div><div class="l">Positivos</div><div class="v' + (tPo ? '' : ' mal') + '">' + tPo + '</div>'
+      + '<div class="s">' + (conPos ? conPos + (conPos === 1 ? ' persona registró' : ' personas registraron') : 'nadie registró nada') + '</div></div>'
+    + '<div><div class="l">Ventas</div><div class="v">' + tVe + '</div>'
+      + '<div class="s">' + (tVe ? tVe + (tVe === 1 ? ' cliente' : ' clientes')
+          + (tPrem ? ' · ' + usdCorto(tPrem) : '') : 'nadie cerró') + '</div></div>';
+
+  const gris = 'color:var(--pg-muted)';
+  const orden = data.slice().sort((a,b) =>
+       (N(b.ventas)||0) - (N(a.ventas)||0)
+    || (N(b.positivos)||0) - (N(a.positivos)||0)
+    || (N(b.llamadas)||0) - (N(a.llamadas)||0)
+    || a.agente.localeCompare(b.agente));
+
+  cont.innerHTML = '<div style="overflow-x:auto"><table class="act-tab"><thead><tr>'
+    + '<th>Persona</th><th class="n">Llamadas</th><th class="n">De +2 min</th>'
+    + '<th class="n">Positivos</th><th class="n">Ventas</th><th></th>'
+    + '</tr></thead><tbody>'
+    + orden.map(function(r){
+        const cel = v => v == null
+          ? '<td class="n"><span style="' + gris + '">—</span></td>'
+          : '<td class="n">' + Number(v).toLocaleString('es-CO') + '</td>';
+        const po = N(r.positivos), ve = N(r.ventas), pz = N(r.polizas) || 0, pr = N(r.premium) || 0;
+        /* Ventas ya es CUENTAS (clientes distintos); las pólizas solo se dicen al pasar el mouse. */
+        const ttlVe = ve ? pz + (pz === 1 ? ' póliza' : ' pólizas') + (pr ? ' · ' + usdCorto(pr) : '') : '';
+        return '<tr data-ag="' + esc(r.agente) + '" tabindex="0">'
+          + '<td class="per">' + esc(r.agente) + '</td>'
+          + cel(r.tiene_rc ? (N(r.llamadas) || 0) : N(r.llamadas))
+          + cel(r.tiene_rc ? (N(r.conversaciones) || 0) : N(r.conversaciones))
+          /* En un solo día, cero positivos le pasa a casi todo el mundo: pintar media
+             tabla de rojo le quita el sentido al color. Aquí el número que se resalta
+             es el que SÍ pasó. */
+          + (po == null ? '<td class="n"><span style="' + gris + '">—</span></td>'
+             : '<td class="n"' + (po > 0 ? ' style="color:var(--pg-ink);font-weight:700"' : ' style="' + gris + '"') + '>' + po + '</td>')
+          + (ve == null ? '<td class="n"><span style="' + gris + '">—</span></td>'
+             : '<td class="n"' + (ve > 0 ? ' style="color:var(--pg-mint);font-weight:700" title="' + ttlVe + '"' : ' style="' + gris + '"') + '>' + ve + '</td>')
+          + '<td class="n" style="' + gris + '">→</td></tr>';
       }).join('')
     + '</tbody></table></div>';
 
-  const conVentaSinPos = data.filter(r => (r.ventas_mes || 0) > 0 && (r.positivos_mes || 0) === 0);
-  document.getElementById('act-pie').innerHTML = conVentaSinPos.length
-    ? '<b>Ojo:</b> ' + conVentaSinPos.map(r => r.agente).join(', ') + (conVentaSinPos.length === 1 ? ' vendió' : ' vendieron')
-      + ' este mes sin haber mandado un solo negocio a cotizar. El trabajo existe, pero no está pasando por el sistema — y así la conversión del equipo sale inflada.'
-    : 'Positivos de HubSpot (cada mañana) y llamadas de RingCentral (cada 15 minutos' + (data[0].llamadas_actualizado ? ', última a las ' + data[0].llamadas_actualizado : '') + ').';
+  cont.querySelectorAll('tbody tr').forEach(function(tr){
+    const abrir = function(){
+      cont.querySelectorAll('tbody tr').forEach(x => x.classList.remove('sel'));
+      tr.classList.add('sel');
+      detalleAgente(SB, tr.getAttribute('data-ag'));
+    };
+    tr.addEventListener('click', abrir);
+    tr.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); abrir(); } });
+  });
+
+  pintarPieEquipo(orden.filter(r => !r.tiene_rc).map(r => r.agente));
+}
+
+/* La ficha de una persona: su día contra su mes, y qué registró con nombre propio. */
+async function detalleAgente(sb, agente){
+  const card = document.getElementById('det-card');
+  if (!card) return;
+  card.hidden = false;
+  card.innerHTML = '<div class="det-vacio">Abriendo ' + esc(agente) + '…</div>';
+  card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  const { data, error } = await sb.rpc('equipo_agente_detalle', { p_agente: agente });
+  if (error || !data || data.error) {
+    card.innerHTML = '<div class="det-vacio">No pude abrir a ' + esc(agente) + '. '
+      + esc((data && data.error) || (error && error.message) || '') + '</div>';
+    return;
+  }
+  const A = data.ayer || {}, M = data.mes || {};
+  const n = v => (v == null ? '—' : Number(v).toLocaleString('es-CO'));
+  const usd = v => (v == null ? '—' : (Number(v) < 0 ? '-$' : '$') + Math.abs(Number(v)).toLocaleString('es-CO', {maximumFractionDigits:0}));
+  const diaCorta = data.dia ? data.dia.slice(8,10) + '/' + data.dia.slice(5,7) : 'ese día';
+
+  /* Su día contra su mes. positivos = contactos creados (la medida nueva),
+     cotizados = lo que antes se llamaba positivos (negocio mandado a cotizar). */
+  const fila = (rot, a, m) => '<tr><td>' + rot + '</td><td class="n">' + n(a) + '</td><td class="n">' + n(m) + '</td></tr>';
+  const cuadro = '<table class="det-tab">'
+    + '<tr class="cab"><td></td><td class="n">' + (data.dia ? data.dia.slice(8,10) + '/' + data.dia.slice(5,7) : 'Ese día') + '</td><td class="n">Este mes</td></tr>'
+    + fila('Llamadas', A.llamadas, M.llamadas)
+    + fila('De más de 2 minutos', A.conversaciones, M.conversaciones)
+    + fila('Solo timbre', A.soloTimbre, M.soloTimbre)
+    + fila('Minutos al teléfono', A.minutos, M.minutos)
+    + fila('Positivos', A.contactos, M.contactos)
+    + fila('Cotizados', A.cotizados, M.cotizados)
+    + fila('Ventas', A.ventas, M.ventas)
+    + '</table>';
+
+  /* El pulso del mes: un positivo por día hábil es el estándar, así que los ceros
+     tienen que verse. Son números en fila, no barras. pulsoContactos trae {dia,n}
+     por cada día hábil del mes; el día que se mira se marca comparando con data.dia. */
+  const PD = data.pulsoContactos || [];
+  const diaNum = iso => iso ? String(iso).slice(8,10).replace(/^0/,'') : '';
+  const pulso = !PD.length ? '' :
+      '<h2 style="margin:22px 0 6px;font-size:15px">Positivos día a día</h2>'
+    + '<p class="pg-purpose" style="margin:0 0 10px">El estándar es uno por día hábil. '
+      + '<b>' + PD.filter(p => Number(p.n) > 0).length + '</b> de ' + PD.length + ' días con algo.</p>'
+    + '<div style="overflow-x:auto"><table class="det-pulso"><tr>'
+      + PD.map(p => '<td' + (p.dia === data.dia ? ' class="hoy"' : '') + '>' + diaNum(p.dia) + '</td>').join('') + '</tr><tr>'
+      + PD.map(p => '<td class="v' + (Number(p.n) > 0 ? ' si' : ' no') + (p.dia === data.dia ? ' hoy' : '') + '">'
+                  + (Number(p.n) || 0) + '</td>').join('') + '</tr></table></div>';
+
+  /* Qué positivos montó: nombre del contacto y fecha, más reciente primero,
+     lo del día que se mira resaltado. */
+  const PM = data.positivosMontados || [];
+  const montados = !PM.length
+    ? '<div class="det-vacio">No montó positivos este mes.</div>'
+    : '<div style="overflow-x:auto"><table class="act-tab"><thead><tr>'
+      + '<th>Contacto</th><th class="n" style="width:80px">Fecha</th></tr></thead><tbody>'
+      + PM.map(function(p){
+          return '<tr' + (p.dia === data.dia ? ' style="background:var(--pg-mint-soft,#E4F4EF)"' : '') + '>'
+            + '<td class="per">' + esc(p.nombre) + '</td>'
+            + '<td class="n" style="color:var(--pg-muted)">' + esc(p.dia ? p.dia.slice(8,10) + '/' + p.dia.slice(5,7) : '—') + '</td></tr>';
+        }).join('')
+      + '</tbody></table></div>';
+
+  /* El paquete, no la póliza: una fila por cuenta, con el premium ya sumado. */
+  const PQ = data.paquetes || [];
+  const T  = data.totalMes || {};
+  const etiqueta = c => ({venta:'Venta', endoso:'Endoso', negativo:'Cancelación',
+                          renovacion:'Renovación', fee_admin:'Fee administrativo'}[c] || (c || '—'));
+  const paquetes = !PQ.length
+    ? '<div class="det-vacio">No registró nada en el BOS este mes.</div>'
+    : '<div style="overflow-x:auto"><table class="act-tab"><thead><tr>'
+      + '<th>Cuenta</th><th>Qué fue</th><th class="n" style="width:84px">Pólizas</th>'
+      + '<th class="n" style="width:130px">Premium</th><th class="n" style="width:100px">Fee</th>'
+      + '<th class="n" style="width:74px">Fecha</th></tr></thead><tbody>'
+      + PQ.map(function(p){
+          const neg = Number(p.premium) < 0;
+          return '<tr' + (p.enElDia ? ' style="background:var(--pg-mint-soft,#E4F4EF)"' : '') + '>'
+            + '<td class="per">' + esc(p.insured) + '</td>'
+            + '<td>' + etiqueta(p.categoria) + '</td>'
+            + '<td class="n">' + p.polizas + '</td>'
+            + '<td class="n"' + (neg ? ' style="color:var(--pg-neg)"' : '') + '>' + usdCorto(p.premium) + '</td>'
+            + '<td class="n">' + (Number(p.fee) ? usdCorto(p.fee) : '<span style="color:var(--pg-muted)">—</span>') + '</td>'
+            + '<td class="n" style="color:var(--pg-muted)">' + esc(p.ultima || p.primera || '') + '</td></tr>';
+        }).join('')
+      + '</tbody></table></div>';
+
+  /* Los totales del mes, ya sumados. Se separa lo vendido de todo lo demás, porque
+     endosos y cancelaciones también son registro pero no son venta. */
+  const totales = !PQ.length ? '' :
+      '<div class="emb-res" style="margin:14px 0 0">'
+    + '<div><div class="l">Clientes con venta</div><div class="v">' + (T.cuentasVenta || 0) + '</div>'
+      + '<div class="s">' + (T.polizasVenta || 0) + (T.polizasVenta === 1 ? ' póliza' : ' pólizas') + '</div></div>'
+    + '<div><div class="l">Premium vendido</div><div class="v">' + usdCorto(T.premiumVenta) + '</div>'
+      + '<div class="s">' + (Number(T.feeVenta) ? usdCorto(T.feeVenta) + ' de fee' : 'sin fee cobrado') + '</div></div>'
+    + '<div><div class="l">Cuentas tocadas</div><div class="v">' + (T.cuentas || 0) + '</div>'
+      + '<div class="s">' + (T.polizas || 0) + ' filas en el BOS</div></div>'
+    + '<div><div class="l">Premium neto</div><div class="v"' + (Number(T.premium) < 0 ? ' style="color:var(--pg-neg)"' : '')
+      + '>' + usdCorto(T.premium) + '</div><div class="s">ya con endosos y cancelaciones</div></div>'
+    + '</div>';
+
+  /* Las dos listas del mes, lado a lado: qué positivos montó (HubSpot) y qué
+     registró en el BOS (por cuenta, no por póliza). */
+  const doslistas = '<div class="pg-grid-2" style="margin-top:24px;align-items:start">'
+    + '<div><h2 style="margin:0 0 6px;font-size:15px">Qué positivos montó este mes</h2>'
+      + '<p class="pg-purpose" style="margin:0 0 8px">Cada contacto que creó, más reciente primero. En verde, lo de ' + esc(diaCorta) + '.</p>'
+      + montados + '</div>'
+    + '<div><h2 style="margin:0 0 6px;font-size:15px">Qué registró en el BOS este mes</h2>'
+      + '<p class="pg-purpose" style="margin:0 0 8px">Un renglón por cliente — <b>por cuenta, no por póliza</b>. En verde, lo de ' + esc(diaCorta) + '.</p>'
+      + totales + '<div style="margin-top:14px">' + paquetes + '</div></div>'
+    + '</div>';
+
+  card.innerHTML =
+      '<div class="det-cab"><h2>' + esc(data.agente) + '</h2>'
+    + '<button class="det-x" type="button" id="det-cerrar">cerrar</button></div>'
+    + '<p class="pg-purpose" style="margin:0 0 14px">Su día cerrado contra su mes, su pulso de positivos '
+      + 'y lo que lleva registrado en el mes — <b>por cuenta, no por póliza</b>.</p>'
+    + cuadro
+    + pulso
+    + doslistas;
+
+  const x = document.getElementById('det-cerrar');
+  if (x) x.addEventListener('click', function(){
+    card.hidden = true; card.innerHTML = '';
+    document.querySelectorAll('#dia-lista tbody tr').forEach(t => t.classList.remove('sel'));
+  });
+}
+
+/* ============ DÓNDE SE LE QUEDA ============
+   v16 - Ya no tiene card propio (emb-card se elimina). Sigue siendo el mismo criterio
+   de la v15 -- se evalúa de abajo hacia arriba de la cadena, quien ya vendió no se
+   juzga por los pasos previos -- pero ahora DEVUELVE un mapa agente→[texto,clase]
+   en vez de pintar su tabla: pintarMes() lo agrega como una columna más. */
+function embudoEquipo(data){
+  const N = N16;
+  function paso(r){
+    const ll = N(r.llamadas_mes), cv = N(r.conversaciones_mes),
+          po = N(r.contactos_mes) || 0, co = N(r.cotizados_mes) || 0, ve = N(r.ventas_mes) || 0;
+    if (ve > 0)     return ['cierra', 'ok'];
+    if (co >= 1)    return ['cotiza, no cierra', 'w'];
+    if (po >= 1)    return ['contacta, no cotiza', 'w'];
+    if (ll == null) return ['sin RingCentral', 'q'];
+    if (ll < 30)    return ['poca actividad', 'r'];
+    /* Menos de una conversación por cada cien marcadas: el teléfono suena, nadie habla. */
+    if (ll >= 300 && (cv || 0) * 300 < ll) return ['marca, no conversa', 'r'];
+    return ['conversa, no contacta', 'w'];
+  }
+  const m = new Map();
+  (data || []).forEach(r => m.set(r.agente, paso(r)));
+  return m;
+}
+
+/* ============ MODO ESTE MES: MISMA TABLA, v_actividad_equipo_visible ============
+   v16 - act-card se elimina como card propio; sus dos columnas que valían la pena
+   (Días con positivo y Dónde se le queda) pasan a la tabla única de EQUIPO.
+   positivos = contactos_mes (LA MEDIDA NUEVA) — nunca positivos_mes, que ahora
+   equivale a cotizados_mes y solo se conserva por compatibilidad hacia atrás. */
+async function actividadEquipo(sb){
+  const { data, error } = await sb.from('v_actividad_equipo_visible').select('*');
+  if (error || !data || !data.length) {
+    if (EQ_MODO === 'mes') {
+      const cont = document.getElementById('dia-lista');
+      if (cont) cont.innerHTML = '<div class="act-vacio">No pude traer el mes. '
+        + (error ? String(error.message).replace(/[<>&]/g,'') : 'No hay filas: revisar el paquete de la cuenta.') + '</div>';
+    }
+    return;
+  }
+  EQ_MES = { data: data };
+  if (EQ_MODO === 'mes') { pintarCabeceraEquipo(); pintarTablaEquipo(); }
+}
+
+function pintarMes(data){
+  const cont = document.getElementById('dia-lista');
+  if (!cont) return;
+  const N = N16;
+  const sum = k => data.reduce((s, r) => s + (N(r[k]) || 0), 0);
+  const tLl = sum('llamadas_mes'), tCv = sum('conversaciones_mes'), tTi = sum('solo_timbre_mes'),
+        tPo = sum('contactos_mes'), tVe = sum('ventas_mes'), tPrem = sum('premium_mes');
+  const habiles = data[0].habiles_corridos || 0;
+
+  document.getElementById('dia-res').innerHTML =
+      '<div><div class="l">Llamadas</div><div class="v">' + tLl.toLocaleString('es-CO') + '</div>'
+      + '<div class="s">' + tTi.toLocaleString('es-CO') + ' fueron solo timbre</div></div>'
+    + '<div><div class="l">De más de 2 min</div><div class="v">' + tCv + '</div>'
+      + '<div class="s">' + (tLl ? 'una de cada ' + Math.round(tLl / Math.max(tCv,1)) + ' marcadas' : '—') + '</div></div>'
+    + '<div><div class="l">Positivos</div><div class="v' + (tPo ? '' : ' mal') + '">' + tPo + '</div>'
+      + '<div class="s">contactos creados · ' + habiles + (habiles === 1 ? ' día hábil' : ' días hábiles') + '</div></div>'
+    + '<div><div class="l">Ventas</div><div class="v">' + tVe + '</div>'
+      + '<div class="s">' + (tVe ? tVe + (tVe === 1 ? ' cliente' : ' clientes')
+          + (tPrem ? ' · ' + usdCorto(tPrem) : '') : 'nadie cerró') + '</div></div>';
+
+  const gris = 'color:var(--pg-muted)';
+  const orden = data.slice().sort((a,b) =>
+       (N(b.ventas_mes)||0) - (N(a.ventas_mes)||0)
+    || (N(b.contactos_mes)||0) - (N(a.contactos_mes)||0)
+    || (N(b.llamadas_mes)||0) - (N(a.llamadas_mes)||0)
+    || a.agente.localeCompare(b.agente));
+
+  const pasos = embudoEquipo(data);
+
+  /* Celda combinada de llamadas: nunca 0 en vez de null — si no hay usuario de
+     RingCentral, guion gris con el porqué en el title. */
+  function celdaLlamadas(lm, st, cv){
+    if (lm == null) return '<td class="n" title="Sin usuario de RingCentral asignado"><span style="' + gris + '">—</span></td>';
+    const ttl = Number(lm).toLocaleString('es-CO') + ' llamadas este mes'
+      + ((st == null && cv == null) ? ''
+         : ' · ' + (Number(st) || 0) + ' solo timbre · ' + (Number(cv) || 0) + ' de más de 2 minutos');
+    return '<td class="n" title="' + ttl.replace(/"/g, '&quot;') + '">' + Number(lm).toLocaleString('es-CO') + '</td>';
+  }
+
+  cont.innerHTML = '<div style="overflow-x:auto"><table class="act-tab"><thead><tr>'
+    + '<th>Persona</th><th class="n">Llamadas</th><th class="n">De +2 min</th>'
+    + '<th class="n">Positivos</th><th class="n">Ventas</th>'
+    + '<th class="n">Días con positivo</th><th>Dónde se le queda</th><th></th>'
+    + '</tr></thead><tbody>'
+    + orden.map(function(r){
+        const cv = N(r.conversaciones_mes);
+        const po = N(r.contactos_mes), ve = N(r.ventas_mes),
+              dc = N(r.dias_con_contacto) || 0, hb = N(r.habiles_corridos) || 0;
+        const p = pasos.get(r.agente) || ['—', 'q'];
+        return '<tr data-ag="' + esc(r.agente) + '" tabindex="0">'
+          + '<td class="per">' + esc(r.agente) + '</td>'
+          + celdaLlamadas(r.llamadas_mes, r.solo_timbre_mes, r.conversaciones_mes)
+          + (cv == null ? '<td class="n"><span style="' + gris + '">—</span></td>' : '<td class="n">' + cv.toLocaleString('es-CO') + '</td>')
+          + (po == null ? '<td class="n"><span style="' + gris + '">—</span></td>'
+             : '<td class="n"' + (po > 0 ? ' style="color:var(--pg-ink);font-weight:700"' : ' style="' + gris + '"') + '>' + po + '</td>')
+          + (ve == null ? '<td class="n"><span style="' + gris + '">—</span></td>'
+             : '<td class="n"' + (ve > 0 ? ' style="color:var(--pg-mint);font-weight:700"' : ' style="' + gris + '"') + '>' + ve + '</td>')
+          + '<td class="n">' + dc + ' de ' + hb + '</td>'
+          + '<td><span class="emb-paso ' + p[1] + '">' + esc(p[0]) + '</span></td>'
+          + '<td class="n" style="' + gris + '">→</td></tr>';
+      }).join('')
+    + '</tbody></table></div>';
+
+  cont.querySelectorAll('tbody tr').forEach(function(tr){
+    const abrir = function(){
+      cont.querySelectorAll('tbody tr').forEach(x => x.classList.remove('sel'));
+      tr.classList.add('sel');
+      detalleAgente(SB, tr.getAttribute('data-ag'));
+    };
+    tr.addEventListener('click', abrir);
+    tr.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); abrir(); } });
+  });
+
+  pintarPieEquipo(data.filter(r => r.llamadas_mes == null).map(r => r.agente));
 }
 
 let YA_PINTADO = false;
@@ -1563,6 +1971,7 @@ async function renderShell(session){
   try {
     await esperarChart();
     const D = await cargarDatos(SB); render(D); bitacora(D);
+    diaEquipo(SB).catch(e => console.error('dia', e));
     actividadEquipo(SB).catch(e => console.error('actividad', e));
   } catch (e) {
     console.error(e);
@@ -1590,7 +1999,7 @@ boot();
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="gabi-brahian.html";
-var PGV_VERSION=13; // v13 - Llamadas por persona: en la tabla de Hoy, "Llamadas hoy" y "Llamadas mes" se vuelven una sola columna combinada (hoy destacado, mes chiquito y gris, con title al pasar el mouse), guion cuando la persona no tiene usuario de RingCentral (nunca 0 ni null); arriba de la tabla, una línea con el total de llamadas de hoy del equipo y la hora de la última sincronización; y sexta alerta "sin llamar hoy" — salta en día hábil desde las 11:00 hora Colombia (UTC-5, calculada aparte de la del navegador) cuando llamadas_hoy da 0 exacto (null no cuenta: sin RingCentral no hay alerta). v_actividad_equipo_visible ahora también se lee, aparte, dentro de cargarDatos() para alimentar esa alerta. // v12 - Quinta alerta: "cobra y no vende". Es la primera del tablero que mira el PREMIUM: salta cuando el fee del mes llega a $2.500 (la puerta de fee del 30 %) pero el premium no llega a $35.000 (la puerta de premium del mismo 30 %), o sea el mes que se ve bien de fee y deja la escala en la base. Las otras cuatro alertas miraban solo el fee. // v11 - v11 - Tablero simple: cinco pestanas de lectura (El mes, Hoy, Alertas, Persona, Ano) + Bitacora + Manual de lectura. Meta minima / Meta plena en toda la pantalla. Anillos y barras con la regla de la casa: avance real contra la meta plena, pista por zonas y tick del deberia ir hoy; el ritmo en palabra. Cero parrafos de explicacion fija fuera del manual. // v9 - Llamadas de hoy por persona (API de RingCentral cada 15 min) y hora de actualizacion. // v8 - Columna Llamadas del mes (RingCentral, por correo diario) en el card de actividad. // v7 - Un positivo pasa a ser el negocio que ENTRA a Audit / Quote (mandado a cotizar); columna Creados aparte; sin subir hace mira todo el historial. // v6 - Card "Quien esta registrando su trabajo" en El equipo hoy: positivos por persona contra el estandar de uno por dia habil, dias en cero, dias sin subir y ventas del mes. Sale de public.v_actividad_equipo_visible. Sin graficas nuevas: NO entra en GRAF/LISTO. // v8 - Columna Llamadas del mes (RingCentral, por correo diario) en el card de actividad. // v7 - Un positivo pasa a ser el negocio que ENTRA a Audit / Quote (mandado a cotizar); columna Creados aparte; sin subir hace mira todo el historial. // v6 - Card "Quien esta registrando su trabajo" en El equipo hoy: positivos por persona contra el estandar de uno por dia habil, dias en cero, dias sin subir y ventas del mes. Sale de public.v_actividad_equipo_visible. Sin graficas nuevas: NO entra en GRAF/LISTO. // v7 - Un positivo pasa a ser el negocio que ENTRA a Audit / Quote (mandado a cotizar); columna Creados aparte; sin subir hace mira todo el historial. // v6 - Card "Quien esta registrando su trabajo" en El equipo hoy: positivos por persona contra el estandar de uno por dia habil, dias en cero, dias sin subir y ventas del mes. Sale de public.v_actividad_equipo_visible. Sin graficas nuevas: NO entra en GRAF/LISTO. // v6 - Card "Quien esta registrando su trabajo" en El equipo hoy: positivos por persona contra el estandar de uno por dia habil, dias en cero, dias sin subir y ventas del mes. Sale de public.v_actividad_equipo_visible. Sin graficas nuevas: NO entra en GRAF/LISTO. // v5 — pestana Bitacora (public.equipo_bitacora): anotar que se hablo, que quedo acordado y cuando se revisa; casilla Cumplido. Sin graficas nuevas: NO entra en GRAF/LISTO. El pie ahora muestra la fecha del dia. // v4 — estilos de la pantalla de login (.pg-login-wrap, .pg-btn) que faltaban: Brahian entra por ahi. // v3 — graficas perezosas por pestana, sin resize manual, body con overflow-y:scroll y guardas de chartArea.
+var PGV_VERSION=17; // v17 - combinada = premium + fee x10 (decision de Andres 14-sep, igual que el reporte de Jeff); el motor ya la manda asi; la alerta cobra-y-no-vende deriva el premium como mc - fee x10. // v16 - Pestana "Hoy" pasa a llamarse EQUIPO: dia-card + act-card + emb-card de la v15 (las tres con la misma lista de 21 nombres) se funden en UNA tabla con interruptor Ayer | Este mes, misma fila de cifras en los dos modos (Llamadas, De +2 min, Positivos, Ventas). Columna Cuentas se elimina; Dias con positivo y Donde se le queda (antes en sus propios cards) pasan a ser columnas del modo Este mes. positivos ahora sale de la columna nueva contactos/contactos_mes (contactos creados), no de positivos_mes; lo que antes se llamaba positivos (negocio mandado a cotizar) se renombra cotizados y vive en la ficha. Ventas ya es CUENTAS (clientes distintos), no polizas -- polizas queda solo para el tooltip. Pestana "El mes" se renombra Meta y se queda solo con anillos/barra/lista de meta (no tenia actividad colada). Ficha de persona (det-card): cuadro llamadas/+2min/solo timbre/minutos/positivos/cotizados/ventas con los nombres de campo correctos del RPC (solo_timbre, no soloTimbre); "Positivos dia a dia" lee pulsoContactos (antes positivosDia); lista nueva "Que positivos monto este mes" con positivosMontados, al lado de "Que registro en el BOS" (paquetes/totalMes, sin cambios, por cuenta). Pie de la tabla de EQUIPO fijo en dos lineas: que es un positivo, y quien no tiene RingCentral. TODO v16: no se re-agrego el pulso "sin una sola senal" ni el senalamiento de "quien mas marca sin cotizar" de la v15 -- se recorto a proposito para cumplir el pie de dos lineas que pidio Andres; si hace falta se puede regresar como una tercera linea opcional. // v15 - La pestana del dia se reorganiza: arriba "El dia que cerro" (public.v_equipo_dia_visible = ultimo dia HABIL antes de hoy) con las cifras del equipo y la tabla persona por persona -- llamadas, de mas de 2 min, mandados a cotizar, ventas y cuantas filas dejo en el BOS. Al tocar una persona se abre su ficha con public.equipo_agente_detalle(nombre): su dia contra su mes y QUE REGISTRO, con el nombre de cada cuenta. Debajo, separado con el rotulo "El mes", quedan los dos cards mensuales; el de "quien esta registrando" ya NO muestra llamadas de hoy (a media manana siempre eran cero) sino solo el mes. // v14 - Llamadas del equipo con el desglose de la casa: la linea de arriba de la tabla y el tooltip de la celda muestran cuantas fueron solo timbre y cuantas pasaron de 2 minutos (v_actividad_equipo ahora trae solo_timbre_mes/hoy y conversaciones_mes/hoy). Card nuevo "De la llamada a la venta" en la pestana Hoy: los cuatro pasos del mes por persona -- llamadas, de mas de 2 min, mandados a cotizar, ventas -- con la columna "Donde se le queda" en palabras y el caso mas fuerte en el pie. Mismos datos de v_actividad_equipo_visible, sin segunda consulta. Sin barras. // v13 - Llamadas por persona: en la tabla de Hoy, "Llamadas hoy" y "Llamadas mes" se vuelven una sola columna combinada (hoy destacado, mes chiquito y gris, con title al pasar el mouse), guion cuando la persona no tiene usuario de RingCentral (nunca 0 ni null); arriba de la tabla, una línea con el total de llamadas de hoy del equipo y la hora de la última sincronización; y sexta alerta "sin llamar hoy" — salta en día hábil desde las 11:00 hora Colombia (UTC-5, calculada aparte de la del navegador) cuando llamadas_hoy da 0 exacto (null no cuenta: sin RingCentral no hay alerta). v_actividad_equipo_visible ahora también se lee, aparte, dentro de cargarDatos() para alimentar esa alerta. // v12 - Quinta alerta: "cobra y no vende". Es la primera del tablero que mira el PREMIUM: salta cuando el fee del mes llega a $2.500 (la puerta de fee del 30 %) pero el premium no llega a $35.000 (la puerta de premium del mismo 30 %), o sea el mes que se ve bien de fee y deja la escala en la base. Las otras cuatro alertas miraban solo el fee. // v11 - v11 - Tablero simple: cinco pestanas de lectura (El mes, Hoy, Alertas, Persona, Ano) + Bitacora + Manual de lectura. Meta minima / Meta plena en toda la pantalla. Anillos y barras con la regla de la casa: avance real contra la meta plena, pista por zonas y tick del deberia ir hoy; el ritmo en palabra. Cero parrafos de explicacion fija fuera del manual.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;
