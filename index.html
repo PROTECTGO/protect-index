@@ -51,6 +51,7 @@ body{font-family:var(--font-text);color:var(--ink);background:var(--papel);min-h
 .pgh-nums .k{font-size:10.5px;letter-spacing:.12em;font-weight:700;color:var(--muted);text-transform:uppercase;}
 .pgh-nums .n{font-family:var(--font-mono);font-size:22px;font-weight:700;color:var(--navy);margin-top:2px;}
 .pgh-nums .n.m{color:#186F5D;} .pgh-nums .n.a{color:#B07E12;}
+.pgh-nums .sub{font-family:var(--font-body);font-size:11px;font-weight:600;color:var(--muted);margin-top:3px;letter-spacing:.01em;}
 .pgh-linea{margin-top:12px;font-size:13.5px;color:var(--navy);}
 .pgh-linea b{color:#B07E12;} .pgh-linea a{color:#1a7a68;font-weight:700;text-decoration:none;}
 .pgh-ring{position:relative;width:112px;height:112px;flex:none;}
@@ -329,6 +330,7 @@ body{font-family:var(--font-text);color:var(--ink);background:var(--papel);min-h
 .pgh-p .pgh-nums .k{font-size:10px;letter-spacing:.13em;font-weight:700;color:#7E95A4;text-transform:uppercase;}
 .pgh-p .pgh-nums .n{font-family:var(--font-mono);font-size:23px;font-weight:700;color:#fff;margin-top:3px;letter-spacing:-.01em;}
 .pgh-p .pgh-nums .n.m{color:#2DBFA3;} .pgh-p .pgh-nums .n.a{color:#F0C55A;}
+.pgh-p .pgh-nums .sub{color:#7E95A4;}
 .pgh-p .pgh-linea{margin-top:14px;font-size:13px;color:#CBD6DE;}
 .pgh-p .pgh-linea b{color:#F0C55A;}
 .pgh-p .pgh-linea a{color:#2DBFA3;font-weight:700;text-decoration:none;}
@@ -1964,8 +1966,13 @@ function pintarHero(h){
     var mc=num(h.mc)||0, meta=num(h.meta)||0, pct=num(h.pct)||0;
     var falta=Math.max(0, meta-mc);
     var esEq=h.tipo==="equipo";
+    // Combinada = premium neto + fee x 10 (regla del 14-sep). El desglose deja ver
+    // de donde sale el numero grande, sin agrandar el hero.
+    var prem=num(h.premium), fee=num(h.fee)||0, fx10=num(h.feeX10)||0;
+    var desg = (prem===null) ? ""
+      : '<div class="sub">'+usd(prem)+' de premium'+(fx10>0?' + '+usd(fee)+' de fee ×10':'')+'</div>';
     izq+='<div class="pgh-nums">'
-      + '<div><div class="k">'+(esEq?"El equipo lleva":"Llevo este mes")+'</div><div class="n m">'+usd(mc)+'</div></div>'
+      + '<div title="combinada = premium + fee × 10"><div class="k">'+(esEq?"Combinada del equipo":"Mi combinada")+'</div><div class="n m">'+usd(mc)+'</div>'+desg+'</div>'
       + '<div><div class="k">'+(esEq?"Meta del equipo":"Mi meta")+'</div><div class="n">'+usd(meta)+'</div></div>'
       + '<div><div class="k">'+(esEq?"Falta":"Me falta")+'</div><div class="n'+(falta?"":" m")+'">'+usd(falta)+'</div></div>'
       + (esEq&&num(h.ventas)!==null?'<div><div class="k">Ventas</div><div class="n">'+num(h.ventas)+'</div></div>':"")
@@ -2206,7 +2213,7 @@ document.addEventListener("visibilitychange",function(){ if(!document.hidden) se
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="index.html";
-var PGV_VERSION=19; // v19 - El portal con relieve y el portal de otra persona: saludo por rol (mi_hero: quien tiene meta ve la suya, direccion y el lider ven la del equipo, el resto su nombre y su herramienta), onda del mes, una tarjeta principal que manda, novedades compactas y las herramientas agrupadas por area. Con ?ver_como=<correo> un director abre el portal tal como lo ve esa persona, en solo lectura. REGLA: este numero y portal.app_versiones.version deben ir juntos; si la tabla va adelante del archivo, el verificador recarga el portal en bucle para todo el mundo (paso el 4-sep-2026).
+var PGV_VERSION=20; // v20 - el hero muestra la combinada (premium + fee x10) con su desglose; antes sumaba premium + fee y mostraba menos de lo que la persona lleva. La onda del mes quedo en la misma combinada y leyendo de bos_v, asi termina exactamente en el numero grande. // v19 - El portal con relieve y el portal de otra persona: saludo por rol (mi_hero: quien tiene meta ve la suya, direccion y el lider ven la del equipo, el resto su nombre y su herramienta), onda del mes, una tarjeta principal que manda, novedades compactas y las herramientas agrupadas por area. Con ?ver_como=<correo> un director abre el portal tal como lo ve esa persona, en solo lectura. REGLA: este numero y portal.app_versiones.version deben ir juntos; si la tabla va adelante del archivo, el verificador recarga el portal en bucle para todo el mundo (paso el 4-sep-2026).
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;
