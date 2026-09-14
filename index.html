@@ -1968,9 +1968,9 @@ function pintarHero(h){
     var esEq=h.tipo==="equipo";
     // Combinada = premium neto + fee x 10 (regla del 14-sep). El desglose deja ver
     // de donde sale el numero grande, sin agrandar el hero.
-    var prem=num(h.premium), fee=num(h.fee)||0, fx10=num(h.feeX10)||0;
+    var prem=num(h.premium), fx10=num(h.feeX10)||0;
     var desg = (prem===null) ? ""
-      : '<div class="sub">'+usd(prem)+' de premium'+(fx10>0?' + '+usd(fee)+' de fee ×10':'')+'</div>';
+      : '<div class="sub">'+usd(prem)+' de premium'+(fx10>0?' + '+usd(fx10)+' de fee ×10':'')+'</div>';
     izq+='<div class="pgh-nums">'
       + '<div title="combinada = premium + fee × 10"><div class="k">'+(esEq?"Combinada del equipo":"Mi combinada")+'</div><div class="n m">'+usd(mc)+'</div>'+desg+'</div>'
       + '<div><div class="k">'+(esEq?"Meta del equipo":"Mi meta")+'</div><div class="n">'+usd(meta)+'</div></div>'
@@ -2213,7 +2213,7 @@ document.addEventListener("visibilitychange",function(){ if(!document.hidden) se
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="index.html";
-var PGV_VERSION=20; // v20 - el hero muestra la combinada (premium + fee x10) con su desglose; antes sumaba premium + fee y mostraba menos de lo que la persona lleva. La onda del mes quedo en la misma combinada y leyendo de bos_v, asi termina exactamente en el numero grande. // v19 - El portal con relieve y el portal de otra persona: saludo por rol (mi_hero: quien tiene meta ve la suya, direccion y el lider ven la del equipo, el resto su nombre y su herramienta), onda del mes, una tarjeta principal que manda, novedades compactas y las herramientas agrupadas por area. Con ?ver_como=<correo> un director abre el portal tal como lo ve esa persona, en solo lectura. REGLA: este numero y portal.app_versiones.version deben ir juntos; si la tabla va adelante del archivo, el verificador recarga el portal en bucle para todo el mundo (paso el 4-sep-2026).
+var PGV_VERSION=20; // v20 - el hero muestra la combinada (premium + fee x10) con su desglose; antes sumaba premium + fee y mostraba menos de lo que la persona lleva. La onda del mes quedo en la misma combinada y leyendo de bos_v, asi termina exactamente en el numero grande. El desglose lo ve tambien la direccion (hero de equipo) y dice lo que el fee APORTA (fee x10 ya multiplicado), no el fee suelto: las dos cifras de la linea chica suman exacto el numero grande. // v19 - El portal con relieve y el portal de otra persona: saludo por rol (mi_hero: quien tiene meta ve la suya, direccion y el lider ven la del equipo, el resto su nombre y su herramienta), onda del mes, una tarjeta principal que manda, novedades compactas y las herramientas agrupadas por area. Con ?ver_como=<correo> un director abre el portal tal como lo ve esa persona, en solo lectura. REGLA: este numero y portal.app_versiones.version deben ir juntos; si la tabla va adelante del archivo, el verificador recarga el portal en bucle para todo el mundo (paso el 4-sep-2026).
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;
