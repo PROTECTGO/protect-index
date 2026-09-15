@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GABI · Renovaciones</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,1,800&family=Montserrat:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,1,800&family=Montserrat:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="ver-como-helper.js"></script>
 <style>
@@ -14,7 +14,7 @@
   --pg-ink-2:      #1B2D3A;
   --pg-mint:       #2DBFA3;
   --pg-mint-dark:  #229A82;
-  --pg-mint-deep:  #1B8E78;
+  --pg-mint-deep:  #229A82;
   --pg-mint-soft:  #C4E8DF;
   --pg-bg:         #F4F7FA;
   --pg-card:       #FFFFFF;
@@ -32,7 +32,7 @@
   /* ---- v24: tokens de la maqueta aprobada, pixel exacto ---- */
   --ink:#1B2D3A;--ink2:#152430;--mint:#2DBFA3;--mint-deep:#229A82;--mint-soft:#C4E8DF;
   --bg:#F4F7FA;--card:#FFF;--line:#E7EDF2;--txt:#28323B;--muted:#6B7D89;
-  --renov:#229A82;--falta:#5B6BD6;--ambar:#D9A520;--rojo:#D5594F;
+  --renov:#229A82;--falta:#5B6BD6;--ambar:#D9A520;--rojo:#D5594F;--rojo-claro:#FF8A80;
   --f-tit:'Montserrat',system-ui,sans-serif;--f-body:'Inter',system-ui,sans-serif;
   --f-num:'JetBrains Mono',ui-monospace,monospace;--f-gabi:'Fraunces',Georgia,serif;
 }
@@ -271,13 +271,82 @@ body { margin: 0; background: var(--bg); font-family: var(--f-body); color: var(
   @page{margin:1.5cm}
 }
 @media(max-width:1080px){.grid2{grid-template-columns:1fr}.kpis{grid-template-columns:repeat(2,1fr)}}
+
+/* ============================================================
+   v29 · ronda visual — piezas que faltaban del ESTANDAR VISUAL
+   PROTECTGO. Solo estetica y navegacion; cero logica de negocio.
+   ============================================================ */
+
+/* B1 · buscador de la cola (pieza 4.4 del estandar) */
+.chips-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:20px 0 14px}
+.chips-row .chips{margin:0;flex:1 1 auto}
+.buscar{margin-left:auto;position:relative;display:flex;align-items:center}
+.buscar:before{content:'';position:absolute;left:13px;width:9px;height:9px;border:1.5px solid #B6C2CB;border-radius:50%;pointer-events:none}
+.buscar:after{content:'';position:absolute;left:21px;top:19px;width:5px;height:1.5px;background:#B6C2CB;transform:rotate(45deg);pointer-events:none}
+.buscar input{font-family:var(--f-body);font-size:12.5px;color:var(--txt);padding:8px 14px 8px 30px;border-radius:999px;border:1px solid var(--line);background:#fff;min-width:270px}
+.buscar input::placeholder{color:#9FB0BC}
+.buscar input:focus{outline:none;border-color:var(--mint);box-shadow:0 0 0 3px rgba(45,191,163,.16)}
+
+/* B2 · teclado y foco visible */
+.nv{font:inherit;border:none;background:none;border-bottom:3px solid transparent;text-align:left}
+.mo{font:inherit;border:none;background:none;width:100%;display:block}
+.chip:focus-visible,.btn:focus-visible,.mini:focus-visible,.nv:focus-visible,.mo:focus-visible,
+.card:focus-visible,.fi-chip:focus-visible,.buscar input:focus-visible{outline:2px solid var(--mint);outline-offset:2px}
+.card:focus-visible{outline-offset:3px}
+.card:focus-visible .acciones,.card:focus-within .acciones{opacity:1;max-height:44px}
+
+/* B9 · clases del catalogo que faltaban */
+.card.abierta{box-shadow:0 0 0 2px var(--mint)}
+.card.abierta:hover{transform:none}
+.card.u-mint{border-left-color:var(--mint-deep)}
+.st-n .v.ambar{color:var(--ambar)}
+.st-aviso{background:rgba(217,165,32,.16);border:1px solid rgba(217,165,32,.4);color:#FBE6B4;border-radius:10px;padding:9px 13px;font-size:12.5px;margin-top:16px;max-width:560px;line-height:1.5}
+.mo.futuro{opacity:.42}
+.mo.futuro .seg-f{opacity:1}
+
+/* B7 · error por bloque */
+.bloque-err{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;
+  background:#fff;border:1px dashed #E3B5B0;border-radius:13px;padding:16px 18px;font-size:13px;color:#8A4038;margin:9px 24px}
+.bloque-err b{color:#A63F36}
+
+/* B3 · movil */
+.months-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.months-scroll .months{min-width:760px}
+@media(max-width:1080px){
+  .wrap{padding:0 16px 60px}
+  /* el boton fijo "Volver al portal" va encima: se le deja el renglon libre */
+  .top{padding-left:0;padding-top:58px;flex-wrap:wrap;gap:10px}
+  .strip{grid-template-columns:1fr;gap:20px}
+  .strip .ring{justify-self:center}
+  .vr,.barrow,.er,.al{grid-template-columns:1fr;gap:8px}
+  .vr .vnum,.barrow .n,.er .n,.al .p{text-align:left}
+  .vbars{height:26px}
+  .card{grid-template-columns:1fr;gap:12px}
+  .card .c-prem{text-align:left}
+  .acciones{opacity:1;max-height:none;flex-wrap:wrap}
+  .pel{grid-template-columns:1fr;gap:8px}
+  .pel .b{text-align:left}
+}
+@media(max-width:860px){
+  .kpis{grid-template-columns:1fr}
+  .st-big{font-size:44px}
+  .st-nums{gap:18px}
+  .buscar{margin-left:0;width:100%}
+  .buscar input{min-width:0;width:100%}
+  .nav{gap:2px}
+  .nv{padding:11px 11px 12px}
+  .estados,.esc{padding-left:16px;padding-right:16px}
+  .vr,.barrow,.al{padding-left:16px;padding-right:16px}
+  .ph{padding:16px 16px 0}
+  .months{padding-left:16px;padding-right:16px}
+}
 </style>
 <!-- ProtectGo · scripts compartidos (recuperacion de clave + novedades en tiempo real) -->
 <script src="https://protectgo.github.io/quick-quotes/pg-novedades.js"></script>
 <script src="https://protectgo.github.io/quick-quotes/pg-sombra.js"></script>
 </head>
 <body>
-<a href="index.html" id="pgVolver" class="noprint" aria-label="Volver" style="position:fixed;top:14px;left:14px;z-index:2147483000;display:inline-flex;align-items:center;padding:9px 15px;border-radius:999px;background:#0D3040;color:#fff;font:700 12.5px/1 Arial,Helvetica,sans-serif;text-decoration:none;box-shadow:0 3px 12px rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.18);-webkit-tap-highlight-color:transparent;">← Volver al portal</a>
+<a href="index.html" id="pgVolver" class="noprint" aria-label="Volver" style="position:fixed;top:14px;left:14px;z-index:2147483000;display:inline-flex;align-items:center;padding:9px 15px;border-radius:999px;background:#0D3040;color:#fff;font-weight:700;font-size:12.5px;line-height:1;font-family:'Inter',system-ui,-apple-system,sans-serif;text-decoration:none;box-shadow:0 3px 12px rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.18);-webkit-tap-highlight-color:transparent;">← Volver al portal</a>
 
 <!-- ============================================================================
   GABI · Renovaciones (pantalla propia, paquete "renovaciones")
@@ -348,9 +417,9 @@ body { margin: 0; background: var(--bg); font-family: var(--f-body); color: var(
           <div><div class="pt">Tu año <span id="tuAnio"></span></div><div class="ps" id="rbSub"></div></div>
           <div class="leg"><span><i style="background:#229A82"></i>Renovadas</span>
             <span><i style="background:#5B6BD6"></i>Por renovar</span>
-            <span><i style="background:#D9A520"></i>Meta 70% del mes</span></div>
+            <span><i style="background:#D9A520"></i><span id="legMeta">Meta 70% del mes</span></span></div>
         </div>
-        <div class="months" id="months"></div>
+        <div class="months-scroll"><div class="months" id="months" role="tablist"></div></div>
       </div>
 
       <div class="strip">
@@ -361,13 +430,13 @@ body { margin: 0; background: var(--bg); font-family: var(--f-body); color: var(
             <div class="st-n"><div class="k">En juego</div><div class="v" id="stP"></div></div>
             <div class="st-n"><div class="k">Con señal de vida</div><div class="v mint" id="stS"></div></div>
             <div class="st-n"><div class="k">Por confirmar</div><div class="v" id="stX"></div></div>
-            <div class="st-n"><div class="k">Meta 70%</div><div class="v" id="stM"></div></div>
+            <div class="st-n"><div class="k" id="stMk">Meta 70%</div><div class="v ambar" id="stM"></div></div>
           </div>
         </div>
         <div>
           <svg width="128" height="128" viewBox="0 0 128 128" class="ring">
             <circle cx="64" cy="64" r="52" fill="none" stroke="rgba(255,255,255,.16)" stroke-width="13"/>
-            <circle id="arc" cx="64" cy="64" r="52" fill="none" stroke="#2DBFA3" stroke-width="13"
+            <circle id="arc" cx="64" cy="64" r="52" fill="none" stroke="var(--mint)" stroke-width="13"
               stroke-linecap="round" transform="rotate(-90 64 64)" stroke-dasharray="0 327"
               style="transition:stroke-dasharray .7s cubic-bezier(.2,.8,.2,1)"/>
             <text class="pct" x="64" y="72" text-anchor="middle" id="arcT">0%</text></svg>
@@ -377,7 +446,7 @@ body { margin: 0; background: var(--bg); font-family: var(--f-body); color: var(
 
       <div class="sec-t">Mi cola</div>
       <div class="sec-s" id="colaSub"></div>
-      <div class="chips" id="chips"></div>
+      <div class="chips-row"><div class="chips" id="chips"></div><div class="buscar"><input id="colaQ" type="search" autocomplete="off" placeholder="Buscar por empresa, DOT o vendedor" aria-label="Buscar en la cola de renovaciones"></div></div>
       <div id="cola"></div>
     </div>
 
@@ -420,7 +489,7 @@ body { margin: 0; background: var(--bg); font-family: var(--f-body); color: var(
           <div class="leg"><span><i style="background:#229A82"></i>Bolsa del mes</span>
             <span><i style="background:#D9A520"></i>Renovaciones con fee</span></div>
         </div>
-        <svg id="svgBolsa" viewBox="0 0 820 260" preserveAspectRatio="none" style="height:260px"></svg>
+        <svg id="svgBolsa" viewBox="0 0 820 260" preserveAspectRatio="xMidYMid meet" style="aspect-ratio:820/260;height:auto"></svg>
       </div>
     </div>
 
@@ -633,12 +702,64 @@ let ESCALERA = [];       // bono_escalera, area=renovaciones tipo=anual activo=t
 let CARTERA = [];        // v_cartera_estado_v3_visible
 let CHIP_SEL = 'todas';
 let TAB = 'cola';
+let COLA_Q = '';        // v29 · texto del buscador de la cola
+let META_PCT = 70;      // v29 · meta del area; sale de estandar_pct, no del codigo
 const $ = id => document.getElementById(id);
+/* --- v29 · helpers de la ronda visual --------------------------------- */
+function norm(v){ return String(v==null?'':v).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(); }
+function skel(cont, cuantos, alto){
+  const el = (typeof cont==='string') ? $(cont) : cont; if(!el) return;
+  let h=''; for(let i=0;i<cuantos;i++) h += '<div class="pg-skel" style="height:'+alto+'px;margin:8px 24px"></div>';
+  el.innerHTML = h;
+}
+function errBloque(id, nombre){
+  const el = $(id); if(!el) return;
+  el.innerHTML = '<div class="bloque-err"><span>No se pudo cargar <b>'+nombre+'</b>.</span>'+
+    '<button type="button" class="mini" data-reintentar="1">Reintentar</button></div>';
+}
+function bloque(id, nombre, fn){
+  try{ fn(); }
+  catch(e){ console.warn('bloque '+nombre+':', e); errBloque(id, nombre); }
+}
+/* hash de navegacion — nunca pisa el hash de recuperacion de clave */
+function hashUsable(){ return !_IS_RECOVERY && !/access_token|type=recovery/.test(window.location.hash||''); }
+function leerHash(){
+  if(!hashUsable()) return null;
+  const h = (window.location.hash||'').replace(/^#/,''); if(!h) return null;
+  const o = {};
+  h.split('&').forEach(function(p){ const i=p.indexOf('='); if(i>0) o[decodeURIComponent(p.slice(0,i))]=decodeURIComponent(p.slice(i+1)); });
+  return Object.keys(o).length ? o : null;
+}
+function escribirHash(){
+  if(!hashUsable()) return;
+  const p = [];
+  if(TAB && TAB!=='cola') p.push('v='+TAB);
+  if(MES_SEL && MES_SEL!==MES_ACTUAL) p.push('m='+MES_SEL);
+  if(CHIP_SEL && CHIP_SEL!=='todas') p.push('f='+CHIP_SEL);
+  if(COLA_Q) p.push('q='+encodeURIComponent(COLA_Q));
+  if(FICHA_ABIERTA) p.push('c='+FICHA_ABIERTA);
+  const nuevo = p.length ? '#'+p.join('&') : '';
+  const actual = window.location.hash||'';
+  if(nuevo !== actual){
+    try{ history.replaceState(null,'',window.location.pathname+window.location.search+(nuevo||'#')); }catch(e){}
+  }
+}
+function aplicarHash(){
+  const o = leerHash(); if(!o) return;
+  if(o.v && TABS.some(function(t){return t[0]===o.v;})) TAB = o.v;
+  const m = Number(o.m); if(m>=1 && m<=12) MES_SEL = m;
+  if(o.f) CHIP_SEL = o.f;
+  if(o.q){ COLA_Q = o.q; const inp = $('colaQ'); if(inp) inp.value = o.q; }
+  if(o.c) FICHA_ABIERTA = o.c;
+}
 function rowIdAno(r){ return 'rf_'+String(r.llave+'|'+r.vence).replace(/[^a-zA-Z0-9]/g,'_'); }
 function mesISO(anio, mesNum){ return anio+'-'+String(mesNum).padStart(2,'0')+'-01'; }
 
 async function cargarTodo(){
   const stampEl = $('pg-stamp'); if(stampEl) stampEl.textContent = 'cargando…';
+  /* v29 · esqueleto por bloque mientras llegan las consultas */
+  skel('months',1,104); skel('cola',3,58); skel('vlist',4,36); skel('grandes',3,36);
+  skel('vnr',3,36); skel('escalera',3,58); skel('estados',4,36); skel('bolsaKpis',1,74);
 
   const { data: enCurso } = await SB.from('v_indice_renovaciones_v3_visible').select('mes').eq('estado_mes','en_curso').maybeSingle();
   if(enCurso && enCurso.mes){
@@ -677,7 +798,24 @@ async function cargarTodo(){
   ESCALERA = escR.data || [];
   CARTERA = cartR.data || [];
 
-  nav(); pintarMes(); vend(); muro(); bolsa(); bonos(); area();
+  /* v29 · la meta del area sale del dato (estandar_pct), no del codigo */
+  const _est = Number((ALERTA_VNR[0]||{}).estandar_pct);
+  META_PCT = (_est>0 && _est<=100) ? _est : 70;
+  const _legM = $('legMeta'); if(_legM) _legM.textContent = 'Meta '+META_PCT+'% del mes';
+  const _stMk = $('stMk'); if(_stMk) _stMk.textContent = 'Meta '+META_PCT+'%';
+
+  /* v29 · el estado viene de la URL (casilla, mes, filtro, busqueda, ficha) */
+  aplicarHash();
+
+  /* v29 · cada bloque se pinta aparte: si uno falla, los demas siguen vivos */
+  nav();
+  bloque('cola','tu cola del mes', pintarMes);
+  if(agR.error) errBloque('vlist','vendedores'); else bloque('vlist','vendedores', vend);
+  if(grR.error||vnrR.error) errBloque('grandes','el muro'); else bloque('grandes','el muro', muro);
+  if(bolsaR.error) errBloque('bolsaKpis','la bolsa'); else bloque('bolsaKpis','la bolsa', bolsa);
+  if(escR.error) errBloque('escalera','la escalera'); else bloque('escalera','la escalera', bonos);
+  if(cartR.error) errBloque('estados','tu cartera'); else bloque('estados','tu cartera', area);
+  escribirHash();
 
   const hhmm = new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
   if(stampEl) stampEl.textContent = 'datos al '+hhmm;
@@ -702,14 +840,15 @@ const TABS = [['cola','01','Mi cola'],['vend','02','Vendedores'],['muro','03','E
   ['bolsa','04','La bolsa'],['bonos','05','Bonos'],['area','06','El área']];
 function nav(){
   const badges = { muro: ALERTA_GRANDES.length };
+  const navEl = $('nav'); if(navEl && !navEl.getAttribute('role')) navEl.setAttribute('role','tablist');
   $('nav').innerHTML = TABS.map(([k,n,t])=>{
     const b = badges[k]||0;
-    return '<div class="nv'+(TAB===k?' on':'')+'" data-tab="'+k+'"><span class="k">'+n+'</span><span class="t">'+t+'</span>'+(b?'<span class="b">'+b+'</span>':'')+'</div>';
+    return '<button type="button" role="tab" aria-selected="'+(TAB===k?'true':'false')+'" class="nv'+(TAB===k?' on':'')+'" data-tab="'+k+'"><span class="k">'+n+'</span><span class="t">'+t+'</span>'+(b?'<span class="b">'+b+'</span>':'')+'</button>';
   }).join('');
   document.querySelectorAll('#nav .nv').forEach(el=> el.onclick = ()=> setTab(el.dataset.tab));
   TABS.forEach(([k])=>{ const p = $('p-'+k); if(p) p.classList.toggle('on', k===TAB); });
 }
-function setTab(k){ TAB=k; nav(); window.scrollTo({top:0,behavior:'smooth'}); }
+function setTab(k){ TAB=k; nav(); escribirHash(); window.scrollTo({top:0,behavior:'smooth'}); }
 
 /* ---------- tooltip ---------- */
 function tip(e, html){
@@ -737,15 +876,16 @@ function cinta(){
     const mesNum = Number(String(x.mes).slice(5,7));
     const c = Number(x.vencieron||0), r = Number(x.renovaron||0);
     const h = 104*(c/max), hr = c ? h*(r/c) : 0;
-    const d = document.createElement('div');
+    const d = document.createElement('button');
+    d.type = 'button'; d.setAttribute('role','tab');
+    d.setAttribute('aria-selected', mesNum===MES_SEL ? 'true' : 'false');
     d.className = 'mo'+(mesNum===MES_SEL?' on':'')+(mesNum>MES_ACTUAL?' futuro':'');
     d.innerHTML = '<div class="bar"><div class="seg-f" style="height:0"></div>'+
       '<div class="seg-r" style="height:0"></div></div>'+
       '<div class="lbl">'+MESES_CORTOS[mesNum-1]+'</div><div class="num">'+c+'</div>';
-    d.querySelector('.bar').insertAdjacentHTML('beforeend', '<div class="tick" style="bottom:'+(0.7*h)+'px"></div>');
-    d.onclick = ()=>{ MES_SEL=mesNum; CHIP_SEL='todas'; pintarMes(); };
-    d.onmousemove = e=> tip(e, '<span class="tt">'+NOM_MESES[mesNum]+' '+AÑO_ACTUAL+'</span><b>'+c+'</b> cuentas · <b>'+r+'</b> renovadas<br>'+fmtUSD(x.premium_vencido)+' en juego');
-    d.onmouseleave = ocultar;
+    d.querySelector('.bar').insertAdjacentHTML('beforeend', '<div class="tick" style="bottom:'+((META_PCT/100)*h)+'px"></div>');
+    d.onclick = ()=>{ MES_SEL=mesNum; CHIP_SEL='todas'; pintarMes(); escribirHash(); };
+    d.dataset.tip = '<span class="tt">'+NOM_MESES[mesNum]+' '+AÑO_ACTUAL+'</span><b>'+c+'</b> cuentas · <b>'+r+'</b> renovadas<br>'+fmtUSD(x.premium_vencido)+' en juego';
     cont.appendChild(d);
     requestAnimationFrame(()=>{
       const sf = d.querySelector('.seg-f'), sr = d.querySelector('.seg-r');
@@ -765,7 +905,7 @@ function franja(){
   $('stP').textContent = fmtUSD(x.premium_vencido);
   $('stS').textContent = fmtUSD(x.premium_con_senal);
   $('stX').textContent = fmtUSD(x.premium_por_confirmar);
-  $('stM').textContent = Math.ceil(Number(x.vencieron||0)*0.7)+' cuentas';
+  $('stM').textContent = Math.ceil(Number(x.vencieron||0)*(META_PCT/100))+' cuentas';
   const pct = x.pct_renovado==null ? 0 : Number(x.pct_renovado);
   const C = 2*Math.PI*52;
   $('arc').style.strokeDasharray = (C*Math.min(pct,100)/100)+' '+C;
@@ -776,8 +916,16 @@ function filasDelMes(){
   const iso = mesISO(AÑO_ACTUAL, MES_SEL);
   return AÑO_FILAS.filter(r=> String(r.mes_vence)===iso);
 }
+function buscadas(){
+  const f = filasDelMes();
+  if(!COLA_Q) return f;
+  const q = norm(COLA_Q);
+  return f.filter(r=> norm(r.cuenta_nombre||r.llave).includes(q)
+                   || norm(r.dot).includes(q)
+                   || norm(r.agente).includes(q));
+}
 function filtradas(){
-  let f = filasDelMes();
+  let f = buscadas();
   if(CHIP_SEL==='pend') f = f.filter(r=>(r.estado_trabajo||'pendiente')==='pendiente');
   if(CHIP_SEL==='proc') f = f.filter(r=>['contactado','cotizando'].includes(r.estado_trabajo));
   if(CHIP_SEL==='sen')  f = f.filter(r=>r.sin_senal);
@@ -786,7 +934,7 @@ function filtradas(){
   return f.slice().sort((a,b)=> Number(b.premium_activo||0)-Number(a.premium_activo||0));
 }
 function chips(){
-  const f = filasDelMes();
+  const f = buscadas();
   const d = [
     ['todas','Todas', f.length],
     ['pend','Pendientes', f.filter(r=>(r.estado_trabajo||'pendiente')==='pendiente').length],
@@ -796,7 +944,7 @@ function chips(){
     ['urg','Urgente', f.filter(r=>r.en_ventana).length],
   ];
   $('chips').innerHTML = d.map(([k,t,n])=> '<button type="button" class="chip'+(CHIP_SEL===k?' on':'')+'" data-chip="'+k+'">'+t+'<span class="n">'+n+'</span></button>').join('');
-  document.querySelectorAll('#chips .chip').forEach(b=> b.onclick = ()=>{ CHIP_SEL = b.dataset.chip; chips(); cola(); });
+  document.querySelectorAll('#chips .chip').forEach(b=> b.onclick = ()=>{ CHIP_SEL = b.dataset.chip; chips(); cola(); escribirHash(); });
 }
 
 function filaCola(r){
@@ -804,10 +952,14 @@ function filaCola(r){
   const estado = r.estado_trabajo || 'pendiente';
   const pillInfo = PILL[estado] || PILL.pendiente;
   const bloq = r.sin_senal && !r.verificado_financiera && estado==='pendiente';
-  const uClase = { rojo:'u-rojo', ambar:'u-ambar', gris:'u-gris' }[r.urgencia] || 'u-gris';
+  let uClase = { rojo:'u-rojo', ambar:'u-ambar', gris:'u-gris' }[r.urgencia] || 'u-gris';
+  if(estado==='renovado') uClase = 'u-mint';
   const hecha = estado==='renovado' ? ' hecha' : '';
+  const abierta = (FICHA_ABIERTA===id) ? ' abierta' : '';
   const fe = fmtFecha(r.vence).replace(/ de \d{4}$/,'');
-  return '<div class="card '+uClase+hecha+'" data-id="'+id+'">'+
+  return '<div class="card '+uClase+hecha+abierta+'" data-id="'+id+'" tabindex="0" role="button" '+
+      'aria-expanded="'+(FICHA_ABIERTA===id?'true':'false')+'" '+
+      'aria-label="'+esc(r.cuenta_nombre||r.llave)+' — abrir ficha">'+
       '<div><div class="c-nom">'+esc(r.cuenta_nombre||r.llave)+'</div>'+
         '<div class="c-meta"><span class="mono">DOT '+esc(r.dot||'—')+'</span><span class="dot"></span>'+
           '<span>'+esc(r.agente||'—')+'</span><span class="dot"></span><span class="mono">vence '+fe+'</span>'+
@@ -833,6 +985,9 @@ function cola(){
     const card = document.querySelector('.card[data-id="'+FICHA_ABIERTA+'"]');
     const row = card ? AÑO_FILAS.find(r=>rowIdAno(r)===FICHA_ABIERTA) : null;
     if(card && row){
+      if(FICHA_ESTADO_SEL == null) FICHA_ESTADO_SEL = row.estado_trabajo || 'pendiente';
+      card.classList.add('abierta');
+      card.setAttribute('aria-expanded','true');
       card.insertAdjacentHTML('afterend', fichaHtml(row));
       cablearFicha(row);
       cargarNotasFicha(row);
@@ -860,6 +1015,42 @@ $('cola').addEventListener('click', (e)=>{
   if(e.target.closest('.ficha')) return;
   const card = e.target.closest('.card');
   if(card) toggleFicha(card.dataset.id);
+});
+/* v29 · la cola se abre tambien con el teclado (Enter / Espacio sobre la tarjeta) */
+$('cola').addEventListener('keydown', (e)=>{
+  if(e.key!=='Enter' && e.key!==' ' && e.key!=='Spacebar') return;
+  if(e.target.closest('.ficha')) return;
+  if(e.target.closest('button,input,textarea,select,a')) return;
+  const card = e.target.closest('.card'); if(!card) return;
+  e.preventDefault();
+  toggleFicha(card.dataset.id);
+});
+/* v29 · buscador: repinta SOLO los conteos y la lista, nunca el input */
+(function(){
+  const inp = $('colaQ'); if(!inp) return;
+  let t = null;
+  inp.addEventListener('input', ()=>{
+    COLA_Q = inp.value.trim();
+    clearTimeout(t);
+    t = setTimeout(()=>{ chips(); cola(); escribirHash(); }, 90);
+  });
+  inp.addEventListener('search', ()=>{ COLA_Q = inp.value.trim(); chips(); cola(); escribirHash(); });
+})();
+/* v29 · un solo tooltip para toda la pantalla (delegado, sin onmousemove por elemento) */
+let _TIP_ON = false;
+document.addEventListener('mousemove', (e)=>{
+  const el = e.target.closest ? e.target.closest('[data-tip]') : null;
+  if(el){ tip(e, el.dataset.tip); _TIP_ON = true; }
+  else if(_TIP_ON){ ocultar(); _TIP_ON = false; }
+}, true);
+/* v29 · volver a pintar cuando cambia el hash (link compartido, atras del navegador) */
+window.addEventListener('hashchange', ()=>{
+  if(!hashUsable()) return;
+  aplicarHash(); nav(); pintarMes();
+});
+/* v29 · reintentar desde cualquier bloque que fallo */
+document.addEventListener('click', (e)=>{
+  if(e.target.closest && e.target.closest('[data-reintentar]')) cargarTodo();
 });
 
 /* ---- escritura en renov_trabajo (mismo candado y motivo obligatorio de siempre) ---- */
@@ -951,17 +1142,25 @@ function fichaHtml(row){
 function toggleFicha(id){
   if(FICHA_ABIERTA===id){
     const existing = $('ficha_'+id); if(existing) existing.remove();
+    const abierta = document.querySelector('.card[data-id="'+id+'"]');
+    if(abierta){ abierta.classList.remove('abierta'); abierta.setAttribute('aria-expanded','false'); }
     FICHA_ABIERTA = null;
+    FICHA_ESTADO_SEL = null;
+    escribirHash();
     return;
   }
   document.querySelectorAll('.ficha').forEach(f=>f.remove());
+  document.querySelectorAll('.card.abierta').forEach(c=>{ c.classList.remove('abierta'); c.setAttribute('aria-expanded','false'); });
   const row = AÑO_FILAS.find(r=>rowIdAno(r)===id); if(!row) return;
   const card = document.querySelector('.card[data-id="'+id+'"]'); if(!card) return;
+  card.classList.add('abierta');
+  card.setAttribute('aria-expanded','true');
   FICHA_ABIERTA = id;
   FICHA_ESTADO_SEL = row.estado_trabajo || 'pendiente';
   card.insertAdjacentHTML('afterend', fichaHtml(row));
   cablearFicha(row);
   cargarNotasFicha(row);
+  escribirHash();
 }
 
 function seleccionarEstadoFicha(estado){
@@ -1092,8 +1291,7 @@ function vend(){
   }).join('');
   document.querySelectorAll('#vlist .vr').forEach((row,i)=>{
     const a = ordenados[i];
-    row.onmousemove = e=> tip(e, '<span class="tt">'+esc(a.agente)+'</span>Vencen <b>'+(a.vencio_n||0)+'</b> · renovadas <b>'+(a.renovo_n||0)+'</b><br>'+fmtUSD(a.vencio_premium)+' en premium');
-    row.onmouseleave = ocultar;
+    row.dataset.tip = '<span class="tt">'+esc(a.agente)+'</span>Vencen <b>'+(a.vencio_n||0)+'</b> · renovadas <b>'+(a.renovo_n||0)+'</b><br>'+fmtUSD(a.vencio_premium)+' en premium';
   });
   requestAnimationFrame(()=>document.querySelectorAll('.vb').forEach(b=>b.style.width=b.dataset.w+'%'));
 }
@@ -1133,8 +1331,7 @@ function muro(){
     '&nbsp;&nbsp;<span style="display:inline-block;width:2px;height:11px;background:#D9A520;vertical-align:-1px;margin-right:6px"></span>Estándar '+estandar+'%</div>';
   document.querySelectorAll('#vnr .barrow').forEach((row,i)=>{
     const v = ordenados[i];
-    row.onmousemove = e=> tip(e, '<span class="tt">'+esc(v.dueno)+'</span>Renovó <b>'+(v.renovaron||0)+'</b> de <b>'+(v.vencieron||0)+'</b><br>Premium perdido: '+fmtUSD(v.premium_perdido));
-    row.onmouseleave = ocultar;
+    row.dataset.tip = '<span class="tt">'+esc(v.dueno)+'</span>Renovó <b>'+(v.renovaron||0)+'</b> de <b>'+(v.vencieron||0)+'</b><br>Premium perdido: '+fmtUSD(v.premium_perdido);
   });
   requestAnimationFrame(()=>document.querySelectorAll('.fillb').forEach(b=>b.style.width=b.dataset.w+'%'));
 }
@@ -1184,8 +1381,7 @@ function dibujarSvgBolsa(filas){
   $('svgBolsa').innerHTML = s;
   $('svgBolsa').querySelectorAll('rect[data-idx]').forEach(rect=>{
     const b = filas[Number(rect.dataset.idx)];
-    rect.onmousemove = e=> tip(e, '<span class="tt">'+mesCorto(b.mes)+'</span>Bolsa <b>'+fmtUSD2(b.bolsa_persona)+'</b><br><b>'+(b.renovaciones_con_fee||0)+'</b> de <b>'+(b.renovaciones||0)+'</b> renovaciones con fee (<b>'+Number(b.pct_cobertura_fee||0).toFixed(1)+'%</b>)');
-    rect.onmouseleave = ocultar;
+    rect.dataset.tip = '<span class="tt">'+mesCorto(b.mes)+'</span>Bolsa <b>'+fmtUSD2(b.bolsa_persona)+'</b><br><b>'+(b.renovaciones_con_fee||0)+'</b> de <b>'+(b.renovaciones||0)+'</b> renovaciones con fee (<b>'+Number(b.pct_cobertura_fee||0).toFixed(1)+'%</b>)';
   });
 }
 
@@ -1265,7 +1461,7 @@ function imprimir(alc){
      '<div><div class="k">Entraron a renovar</div><div class="v">'+cc+'</div></div>'+
      '<div><div class="k">Renovadas</div><div class="v">'+rr+'</div></div>'+
      '<div><div class="k">% renovado</div><div class="v">'+pct.toFixed(1)+'%</div></div>'+
-     '<div><div class="k">Meta 70%</div><div class="v">'+Math.ceil(cc*.7)+'</div></div>'+
+     '<div><div class="k">Meta '+META_PCT+'%</div><div class="v">'+Math.ceil(cc*(META_PCT/100))+'</div></div>'+
      '<div><div class="k">Premium en juego</div><div class="v">'+fmtUSD(pp)+'</div></div></div>'+
    '<table><thead><tr><th>Cuenta</th><th>DOT</th><th>Vendedor</th><th>Vence</th>'+
      '<th style="text-align:right">Premium</th><th>Estado final</th></tr></thead><tbody>'+
@@ -1296,7 +1492,7 @@ $('btn-imprimir-ano').addEventListener('click', ()=> imprimir('ano'));
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="renovaciones.html";
-var PGV_VERSION=28; // Ficha de cuenta: se abre al hacer clic en una tarjeta de la cola (acordeon, no modal). Cuatro bloques: Estado (los mismos de siempre, "retirado" ahora se lee "Cancelada / Retirada"), Por que (motivo obligatorio a renov_trabajo.motivo_perdido en Perdida/Cancelada-Retirada, opcional como nota suelta a renov_notas en cualquier otro estado, con historial de notas), Corregir fecha de renovacion (inserta en renov_ajustes con ajustado_user_id=SESION_UID -- mismo bug de uuid que se acaba de arreglar, aviso claro antes de guardar), y el aviso a Financiera que es automatico (v_ajustes_pendientes_bos). Nada se borra.
+var PGV_VERSION=29; // v29 (15-sep-2026) RONDA VISUAL, cero cambios de datos: buscador en la cola (empresa/DOT/vendedor, repinta solo la lista); teclado real (casillas y meses son <button role=tab>, la tarjeta abre con Enter/Espacio, foco menta visible); movil de verdad a 1080 y 860 (la cinta desliza en su propio carril, franja/tarjeta/filas a una columna); el estado vive en la URL (#v casilla, #m mes, #f filtro, #q busqueda, #c ficha abierta) sin pisar el hash de recuperacion de clave; esqueleto de carga y error por bloque con Reintentar (un bloque caido ya no deja la pantalla en blanco); un solo tooltip delegado en vez de cuatro onmousemove; la meta del area sale de estandar_pct y no del codigo (estaba quemada en 3 sitios); svgBolsa con xMidYMid meet; clases que faltaban del estandar (.card.abierta, .u-mint, .st-n .v.ambar, .st-aviso, --rojo-claro); Arial fuera del boton Volver y JetBrains Mono 700 en el link de fuentes. --- v28: Ficha de cuenta: se abre al hacer clic en una tarjeta de la cola (acordeon, no modal). Cuatro bloques: Estado (los mismos de siempre, "retirado" ahora se lee "Cancelada / Retirada"), Por que (motivo obligatorio a renov_trabajo.motivo_perdido en Perdida/Cancelada-Retirada, opcional como nota suelta a renov_notas en cualquier otro estado, con historial de notas), Corregir fecha de renovacion (inserta en renov_ajustes con ajustado_user_id=SESION_UID -- mismo bug de uuid que se acaba de arreglar, aviso claro antes de guardar), y el aviso a Financiera que es automatico (v_ajustes_pendientes_bos). Nada se borra.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;
