@@ -100,11 +100,25 @@ body { margin: 0; background: var(--bg); font-family: var(--f-body); color: var(
 .months{display:grid;grid-template-columns:repeat(12,1fr);gap:8px;margin:16px 0 0;padding:0 24px 14px;align-items:end}
 .mo{cursor:pointer;text-align:center;border-radius:10px;padding:6px 3px 8px;transition:background .16s}
 .mo:hover{background:#F4F7FA}
-.mo .bar{height:104px;display:flex;flex-direction:column;justify-content:flex-end;gap:2px;margin-bottom:7px;position:relative}
-.mo .tick{position:absolute;left:-3px;right:-3px;border-top:2px dashed rgba(217,165,32,.85);z-index:2}
-.mo .seg-f{background:var(--falta);border-radius:4px 4px 0 0;transition:height .45s cubic-bezier(.2,.8,.2,1)}
-.mo .seg-r{background:var(--renov);border-radius:0 0 4px 4px;transition:height .45s cubic-bezier(.2,.8,.2,1)}
-.mo.futuro .seg-f{opacity:.42}
+/* v30 · la cinta ya no son barras: es una curva de lo que vence contra lo que quedo */
+.cinta-wrap{position:relative;height:118px;margin-bottom:6px}
+.cinta-wrap svg{display:block;width:100%;height:118px;overflow:visible}
+.cinta-wrap .cx-vence{fill:none;stroke:var(--ink);stroke-width:1.6;stroke-dasharray:5 4;opacity:.55}
+.cinta-wrap .cx-quedo{fill:none;stroke:var(--mint);stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.cinta-wrap .cx-area{fill:var(--mint);opacity:.13}
+.cinta-wrap .cx-p{fill:var(--mint);stroke:#fff;stroke-width:2}
+.cinta-wrap .cx-p.hueco{fill:#fff;stroke:var(--muted);stroke-width:1.6;stroke-dasharray:2 2}
+.cinta-wrap .cx-sel{fill:none;stroke:var(--mint);stroke-width:2}
+.mo .bar{height:0;margin:0;position:relative}
+.mo.futuro{opacity:1}
+.mo .sc{font-family:var(--f-num);font-size:10px;color:var(--muted);display:block;margin-top:1px}
+.mo.nocart .lbl,.mo.nocart .num{color:#C9D4DC;font-style:italic}
+.c-sen{margin-top:7px;background:#FFF9EC;border:1px solid #F2E3BC;border-left:4px solid #D9A520;border-radius:8px;padding:7px 9px;font-size:12px;color:#6B5320;line-height:1.45}
+.c-sen b{color:#8A6A14}
+.c-sen + .c-sen{margin-top:5px}
+.c-ren{margin-top:7px;background:#EAF7F3;border:1px solid #C7E9DE;border-radius:8px;padding:7px 9px;font-size:12px;color:#1D6A58;line-height:1.45}
+.c-ren b{color:#145445}
+.st-aviso{margin-top:10px;background:rgba(217,165,32,.16);border:1px solid rgba(217,165,32,.45);border-radius:9px;padding:7px 10px;font-size:12px;color:#F2D38A;max-width:520px}
 .mo .lbl{font-family:var(--f-tit);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
 .mo .num{font-family:var(--f-num);font-size:12px;font-weight:600;color:var(--ink);margin-top:2px}
 .mo.on{background:#fff;box-shadow:0 0 0 2px var(--mint)}
@@ -301,8 +315,7 @@ body { margin: 0; background: var(--bg); font-family: var(--f-body); color: var(
 .card.u-mint{border-left-color:var(--mint-deep)}
 .st-n .v.ambar{color:var(--ambar)}
 .st-aviso{background:rgba(217,165,32,.16);border:1px solid rgba(217,165,32,.4);color:#FBE6B4;border-radius:10px;padding:9px 13px;font-size:12.5px;margin-top:16px;max-width:560px;line-height:1.5}
-.mo.futuro{opacity:.42}
-.mo.futuro .seg-f{opacity:1}
+.mo.futuro{opacity:.75}
 
 /* B7 · error por bloque */
 .bloque-err{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;
@@ -419,19 +432,20 @@ body { margin: 0; background: var(--bg); font-family: var(--f-body); color: var(
             <span><i style="background:#5B6BD6"></i>Por renovar</span>
             <span><i style="background:#D9A520"></i><span id="legMeta">Meta 70% del mes</span></span></div>
         </div>
-        <div class="months-scroll"><div class="months" id="months" role="tablist"></div></div>
+        <div class="months-scroll"><div class="cinta-wrap" id="cintaSvg"></div><div class="months" id="months" role="tablist"></div></div>
       </div>
 
       <div class="strip">
         <div>
           <div class="st-eye" id="stMes"></div>
-          <div class="st-big"><span id="stC"></span><small>cuentas entran a renovar</small></div>
+          <div class="st-big"><span id="stC"></span><small id="stCsub">renovado este mes</small></div>
           <div class="st-nums">
-            <div class="st-n"><div class="k">En juego</div><div class="v" id="stP"></div></div>
-            <div class="st-n"><div class="k">Con señal de vida</div><div class="v mint" id="stS"></div></div>
-            <div class="st-n"><div class="k">Por confirmar</div><div class="v" id="stX"></div></div>
+            <div class="st-n"><div class="k">Que vence</div><div class="v" id="stP"></div></div>
+            <div class="st-n"><div class="k">En juego</div><div class="v" id="stS"></div></div>
+            <div class="st-n"><div class="k">Renovadas</div><div class="v mint" id="stX"></div></div>
             <div class="st-n"><div class="k" id="stMk">Meta 70%</div><div class="v ambar" id="stM"></div></div>
           </div>
+          <div class="st-aviso" id="stAviso" hidden></div>
         </div>
         <div>
           <svg width="128" height="128" viewBox="0 0 128 128" class="ring">
@@ -688,16 +702,21 @@ const PILL = {
   pendiente:['p-pend','Pendiente'], contactado:['p-cont','Contactada'], cotizando:['p-cot','Cotizando'],
   renovado:['p-ren','Renovada'], perdido:['p-per','Perdida'], retirado:['p-per','Cancelada / Retirada'],
 };
+const PILL_V30 = {
+  renovada:['p-ren','Renovada'], vencida_en_juego:['p-per','Vencida · en juego'],
+  perdida:['p-per','Perdida'], retirada:['p-per','Cancelada / Retirada'], en_curso:['p-cot','En curso'],
+};
+let VEND_SEL = null;   /* v30 · vendedor seleccionado en la pestaña Vendedores */
 const ESTADOS_CARTERA_ORDEN = ['ACTIVA','ACTIVA SIN SENAL','RENOVADA','VENCIDA'];
 const ESTADOS_CARTERA_COLOR = {'ACTIVA':'#229A82','ACTIVA SIN SENAL':'#D9A520','RENOVADA':'#5B6BD6','VENCIDA':'#C9D4DC'};
 
 let AÑO_ACTUAL = null, MES_ACTUAL = null, MES_SEL = null;
-let IDX_MESES = [];      // v_indice_renovaciones_v3_visible, 12 meses del año en curso
-let AÑO_FILAS = [];      // v_renov_ano_visible, area=KAREN
-let AGENTES_RESUMEN = [];// v_agente_resumen_ano_visible
+let IDX_MESES = [];      // v30 · v_renov_cartera_graficas_visible nivel 'mes'
+let AÑO_FILAS = [];      // v30 · v_renov_cartera_estado_visible (la cartera de HubSpot)
+let AGENTES_RESUMEN = [];// v30 · se calcula de la cola, por vendedor de la cuenta
 let ALERTA_VNR = [];     // v_alerta_vende_no_renueva_visible
 let ALERTA_GRANDES = []; // v_alerta_cuenta_grande_visible
-let BOLSA_FILAS = [];    // v_bolsa_persona_mensual, alias_bos='Karen Suaza'
+let BOLSA_FILAS = [];    // v_bolsa_persona_mensual, alias_bos='Karen Suaza', cuenta_en_firme
 let ESCALERA = [];       // bono_escalera, area=renovaciones tipo=anual activo=true
 let CARTERA = [];        // v_cartera_estado_v3_visible
 let CHIP_SEL = 'todas';
@@ -752,7 +771,7 @@ function aplicarHash(){
   if(o.q){ COLA_Q = o.q; const inp = $('colaQ'); if(inp) inp.value = o.q; }
   if(o.c) FICHA_ABIERTA = o.c;
 }
-function rowIdAno(r){ return 'rf_'+String(r.llave+'|'+r.vence).replace(/[^a-zA-Z0-9]/g,'_'); }
+function rowIdAno(r){ return 'rf_'+String(r.id||(r.llave+'|'+r.vence)).replace(/[^a-zA-Z0-9]/g,'_'); }
 function mesISO(anio, mesNum){ return anio+'-'+String(mesNum).padStart(2,'0')+'-01'; }
 
 async function cargarTodo(){
@@ -761,25 +780,24 @@ async function cargarTodo(){
   skel('months',1,104); skel('cola',3,58); skel('vlist',4,36); skel('grandes',3,36);
   skel('vnr',3,36); skel('escalera',3,58); skel('estados',4,36); skel('bolsaKpis',1,74);
 
-  const { data: enCurso } = await SB.from('v_indice_renovaciones_v3_visible').select('mes').eq('estado_mes','en_curso').maybeSingle();
-  if(enCurso && enCurso.mes){
-    AÑO_ACTUAL = Number(String(enCurso.mes).slice(0,4));
-    MES_ACTUAL = Number(String(enCurso.mes).slice(5,7));
-  } else {
-    const hoy = new Date(); AÑO_ACTUAL = hoy.getFullYear(); MES_ACTUAL = hoy.getMonth()+1;
-  }
+  /* v30 · el mes en curso es el de hoy: la cartera la monta Andres en HubSpot y puede tener
+     meses por delante sin cerrar. */
+  const hoy = new Date(); AÑO_ACTUAL = hoy.getFullYear(); MES_ACTUAL = hoy.getMonth()+1;
   if(!MES_SEL) MES_SEL = MES_ACTUAL;
   const sec = $('secLabel'); if(sec) sec.textContent = 'Renovaciones · Karen · '+AÑO_ACTUAL;
   const tuAnio = $('tuAnio'); if(tuAnio) tuAnio.textContent = AÑO_ACTUAL;
 
+  /* v30 · la cola y las cifras salen de la CARTERA (lo que Andres monta en HubSpot).
+     El motor solo marca la renovacion cuando Jeff la registra en el BOS. */
   const [idxR, añoR, agR, vnrR, grR, bolsaR, escR, cartR] = await Promise.all([
-    SB.from('v_indice_renovaciones_v3_visible').select('mes,vencieron,renovaron,pct_renovado,premium_vencido,premium_con_senal,premium_por_confirmar,estado_mes')
+    SB.from('v_renov_cartera_graficas_visible').select('*').eq('nivel','mes')
       .gte('mes', mesISO(AÑO_ACTUAL,1)).lte('mes', mesISO(AÑO_ACTUAL,12)).order('mes',{ascending:true}),
-    fetchPaginado(()=> SB.from('v_renov_ano_visible').select('*').eq('area','KAREN')),
-    SB.from('v_agente_resumen_ano_visible').select('*'),
+    fetchPaginado(()=> SB.from('v_renov_cartera_estado_visible').select('*')
+      .gte('mes', mesISO(AÑO_ACTUAL,1)).lte('mes', mesISO(AÑO_ACTUAL,12))),
+    Promise.resolve({ data: [] }),   /* v30 · los vendedores se calculan de la cola, no de otra vista */
     SB.from('v_alerta_vende_no_renueva_visible').select('*'),
     SB.from('v_alerta_cuenta_grande_visible').select('*').order('dias_restantes',{ascending:true}),
-    SB.from('v_bolsa_persona_mensual').select('*').eq('alias_bos','Karen Suaza').order('mes',{ascending:true}),
+    SB.from('v_bolsa_persona_mensual').select('*').eq('alias_bos','Karen Suaza').eq('cuenta_en_firme',true).order('mes',{ascending:true}),
     SB.from('bono_escalera').select('*').eq('area','renovaciones').eq('tipo','anual').eq('activo',true).order('umbral',{ascending:true}),
     SB.from('v_cartera_estado_v3_visible').select('*'),
   ]);
@@ -810,7 +828,7 @@ async function cargarTodo(){
   /* v29 · cada bloque se pinta aparte: si uno falla, los demas siguen vivos */
   nav();
   bloque('cola','tu cola del mes', pintarMes);
-  if(agR.error) errBloque('vlist','vendedores'); else bloque('vlist','vendedores', vend);
+  bloque('vlist','vendedores', vend);
   if(grR.error||vnrR.error) errBloque('grandes','el muro'); else bloque('grandes','el muro', muro);
   if(bolsaR.error) errBloque('bolsaKpis','la bolsa'); else bloque('bolsaKpis','la bolsa', bolsa);
   if(escR.error) errBloque('escalera','la escalera'); else bloque('escalera','la escalera', bonos);
@@ -827,6 +845,7 @@ async function cargarEstadoDato(hhmm){
   let extra = '';
   try{
     const { data, error } = await SB.from('v_renov_estado_dato').select('*').maybeSingle();
+    /* v30 · nada mas */
     if(!error && data){
       const rojo = data.semaforo === 'rojo';
       extra = ' · datos al minuto '+fmtHora(data.foto_at)+(rojo?' · revisar sincronización':'');
@@ -862,130 +881,238 @@ function ocultar(){ $('tip').style.opacity = 0; }
    4) 01 MI COLA — cinta del año, franja del mes, chips, cola
    ===================================================================== */
 function pctAno(){
-  const cerrados = IDX_MESES.filter(m=>m.estado_mes==='cerrado');
-  const vs = cerrados.reduce((s,m)=>s+Number(m.vencieron||0),0);
-  const rs = cerrados.reduce((s,m)=>s+Number(m.renovaron||0),0);
-  return vs ? 100*rs/vs : 0;
+  /* v30 · el ano se lee en premium sobre los meses que ya tienen todos sus montos */
+  const con = IDX_MESES.filter(m=>m.monto_completo && Number(m.premium_vence||0)>0);
+  const v = con.reduce((a,m)=>a+Number(m.premium_vence||0),0);
+  const r = con.reduce((a,m)=>a+Number(m.premium_renovado_comp||0),0);
+  return v ? 100*r/v : null;
 }
 function pintarMes(){ cinta(); franja(); chips(); cola(); }
 
 function cinta(){
+  /* v30 · cero barras: dos curvas (lo que vence y lo que quedo) y un boton por mes.
+     Un mes sin cartera sale en guion, nunca en cero. */
   const cont = $('months'); cont.innerHTML = '';
-  const max = Math.max(1, ...IDX_MESES.map(x=>Number(x.vencieron||0)));
-  IDX_MESES.forEach(x=>{
-    const mesNum = Number(String(x.mes).slice(5,7));
-    const c = Number(x.vencieron||0), r = Number(x.renovaron||0);
-    const h = 104*(c/max), hr = c ? h*(r/c) : 0;
+  const svgBox = $('cintaSvg'); if(svgBox) svgBox.innerHTML = '';
+  const porMes = {}; IDX_MESES.forEach(x=>{ porMes[Number(String(x.mes).slice(5,7))] = x; });
+  const W = 1200, H = 118, PT = 14, PB = 10;
+  const n = 12, paso = W/n, cx = i => paso*i + paso/2;
+  const vals = IDX_MESES.map(x=>Math.max(Number(x.premium_vence||0), Number(x.premium_renovado||0)));
+  const max = Math.max(1, ...vals);
+  const cy = v => H - PB - (H-PT-PB)*(Math.max(0,Number(v||0))/max);
+
+  const ptsV = [], ptsQ = [], marcas = [];
+  for(let m=1;m<=12;m++){
+    const x = porMes[m]; if(!x) continue;
+    const hayMonto = x.monto_completo && Number(x.premium_vence||0)>0;
+    const yv = hayMonto ? cy(x.premium_vence) : (H-PB) - (H-PT-PB)*0.5;
+    ptsV.push([cx(m-1), yv, hayMonto]);
+    if(Number(x.premium_renovado||0)>0) ptsQ.push([cx(m-1), cy(x.premium_renovado)]);
+    marcas.push({m, x:cx(m-1), y:yv, hayMonto, q:Number(x.premium_renovado||0)});
+  }
+  if(ptsV.length){
+    const dV = ptsV.map((p,i)=> (i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+    const dQ = ptsQ.map((p,i)=> (i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+    const dA = ptsQ.length ? dQ+' L'+ptsQ[ptsQ.length-1][0].toFixed(1)+' '+(H-PB)+' L'+ptsQ[0][0].toFixed(1)+' '+(H-PB)+' Z' : '';
+    const selX = cx(MES_SEL-1);
+    svgBox.innerHTML = '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" aria-hidden="true">'+
+      (dA?'<path class="cx-area" d="'+dA+'"/>':'')+
+      '<path class="cx-vence" d="'+dV+'"/>'+
+      (dQ?'<path class="cx-quedo" d="'+dQ+'"/>':'')+
+      marcas.map(k=> k.q>0 ? '<circle class="cx-p" cx="'+k.x.toFixed(1)+'" cy="'+cy(k.q).toFixed(1)+'" r="4.5"/>' : '').join('')+
+      marcas.filter(k=>!k.hayMonto).map(k=> '<circle class="cx-p hueco" cx="'+k.x.toFixed(1)+'" cy="'+k.y.toFixed(1)+'" r="4"/>').join('')+
+      '<line class="cx-sel" x1="'+(selX-paso*0.34).toFixed(1)+'" y1="'+(H-PB+6)+'" x2="'+(selX+paso*0.34).toFixed(1)+'" y2="'+(H-PB+6)+'" opacity=".85"/>'+
+      '</svg>';
+  }
+
+  for(let m=1;m<=12;m++){
+    const x = porMes[m];
     const d = document.createElement('button');
-    d.type = 'button'; d.setAttribute('role','tab');
-    d.setAttribute('aria-selected', mesNum===MES_SEL ? 'true' : 'false');
-    d.className = 'mo'+(mesNum===MES_SEL?' on':'')+(mesNum>MES_ACTUAL?' futuro':'');
-    d.innerHTML = '<div class="bar"><div class="seg-f" style="height:0"></div>'+
-      '<div class="seg-r" style="height:0"></div></div>'+
-      '<div class="lbl">'+MESES_CORTOS[mesNum-1]+'</div><div class="num">'+c+'</div>';
-    d.querySelector('.bar').insertAdjacentHTML('beforeend', '<div class="tick" style="bottom:'+((META_PCT/100)*h)+'px"></div>');
-    d.onclick = ()=>{ MES_SEL=mesNum; CHIP_SEL='todas'; pintarMes(); escribirHash(); };
-    d.dataset.tip = '<span class="tt">'+NOM_MESES[mesNum]+' '+AÑO_ACTUAL+'</span><b>'+c+'</b> cuentas · <b>'+r+'</b> renovadas<br>'+fmtUSD(x.premium_vencido)+' en juego';
+    d.type='button'; d.setAttribute('role','tab');
+    d.setAttribute('aria-selected', m===MES_SEL ? 'true':'false');
+    d.className = 'mo'+(m===MES_SEL?' on':'')+(m>MES_ACTUAL?' futuro':'')+(x?'':' nocart');
+    const c = x ? Number(x.cuentas||0) : null;
+    const q = x ? Number(x.premium_renovado||0) : 0;
+    d.innerHTML = '<div class="bar"></div><div class="lbl">'+MESES_CORTOS[m-1]+'</div>'+
+      '<div class="num">'+(x? c : '—')+'</div>'+
+      '<span class="sc">'+(x ? (q>0?fmtUSD(q):'—') : 'sin cartera')+'</span>';
+    d.onclick = ()=>{ MES_SEL=m; CHIP_SEL='todas'; pintarMes(); escribirHash(); };
+    d.dataset.tip = x
+      ? '<span class="tt">'+NOM_MESES[m]+' '+AÑO_ACTUAL+'</span><b>'+c+'</b> cuentas · <b>'+(x.renovadas||0)+'</b> renovadas<br>'+
+        'vence '+(x.monto_completo?fmtUSD(x.premium_vence):'—')+' · quedo '+(q>0?fmtUSD(q):'—')+
+        (x.monto_completo?'':'<br><i>faltan '+(x.sin_monto_n||0)+' montos en HubSpot</i>')
+      : '<span class="tt">'+NOM_MESES[m]+' '+AÑO_ACTUAL+'</span>Sin cartera cargada todavia.';
     cont.appendChild(d);
-    requestAnimationFrame(()=>{
-      const sf = d.querySelector('.seg-f'), sr = d.querySelector('.seg-r');
-      sf.style.height = (h-hr)+'px'; sr.style.height = hr+'px';
-    });
-  });
-  const tot = IDX_MESES.reduce((s,x)=>s+Number(x.vencieron||0),0);
-  const tp = IDX_MESES.reduce((s,x)=>s+Number(x.premium_vencido||0),0);
-  $('rbSub').innerHTML = '<b style="font-family:var(--f-num)">'+tot+'</b> cuentas renuevan este año · <b style="font-family:var(--f-num)">'+fmtUSD(tp)+'</b> en juego · meses cerrados: <b style="font-family:var(--f-num)">'+pctAno().toFixed(1)+'%</b> renovado';
+  }
+  const tot = IDX_MESES.reduce((a,x)=>a+Number(x.cuentas||0),0);
+  const tq  = IDX_MESES.reduce((a,x)=>a+Number(x.premium_renovado||0),0);
+  const pa  = pctAno();
+  const cola = (pa===null || pa===0)
+    ? 'el % del año espera montos en HubSpot'
+    : 'meses con monto completo: <b style="font-family:var(--f-num)">'+pa.toFixed(1)+'%</b> retenido';
+  $('rbSub').innerHTML = '<b style="font-family:var(--f-num)">'+tot+'</b> cuentas en cartera este año · '+
+    '<b style="font-family:var(--f-num)">'+(tq>0?fmtUSD(tq):'—')+'</b> ya renovado · '+cola;
 }
 
 function franja(){
+  /* v30 · la plata primero: cuanto vence, cuanto quedo, y el % despues.
+     Guion, nunca cero, cuando a HubSpot le faltan montos. */
   const x = IDX_MESES.find(m=> Number(String(m.mes).slice(5,7))===MES_SEL);
-  if(!x){ return; }
   $('stMes').textContent = NOM_MESES[MES_SEL]+' '+AÑO_ACTUAL;
-  $('stC').textContent = x.vencieron||0;
-  $('stP').textContent = fmtUSD(x.premium_vencido);
-  $('stS').textContent = fmtUSD(x.premium_con_senal);
-  $('stX').textContent = fmtUSD(x.premium_por_confirmar);
-  $('stM').textContent = Math.ceil(Number(x.vencieron||0)*(META_PCT/100))+' cuentas';
-  const pct = x.pct_renovado==null ? 0 : Number(x.pct_renovado);
+  const av = $('stAviso');
+  if(!x){
+    $('stC').textContent = '—'; $('stCsub').textContent = 'sin cartera cargada este mes';
+    $('stP').textContent = '—'; $('stS').textContent = '—'; $('stX').textContent = '—'; $('stM').textContent = '—';
+    $('arc').style.strokeDasharray = '0 327'; $('arcT').textContent = '—';
+    if(av){ av.hidden = false; av.textContent = 'Este mes todavia no tiene cartera montada en HubSpot.'; }
+    return;
+  }
+  const completo = !!x.monto_completo;
+  const quedo = Number(x.premium_renovado||0);
+  $('stC').textContent = quedo>0 ? fmtUSD(quedo) : '—';
+  $('stCsub').textContent = (x.renovadas||0)+' de '+(x.cuentas||0)+' cuentas renovadas';
+  $('stP').textContent = completo ? fmtUSD(x.premium_vence) : '—';
+  $('stS').textContent = (completo && x.en_juego_premium!=null && Number(x.en_juego_premium)>0)
+    ? fmtUSD(x.en_juego_premium) : (x.en_juego_n||0)+' cuentas';
+  $('stX').textContent = (x.renovadas||0)+' cuentas';
+  $('stM').textContent = Math.ceil(Number(x.cuentas||0)*(META_PCT/100))+' cuentas';
+  const pct = (x.pct_premium==null) ? null : Number(x.pct_premium);
   const C = 2*Math.PI*52;
-  $('arc').style.strokeDasharray = (C*Math.min(pct,100)/100)+' '+C;
-  $('arcT').textContent = pct.toFixed(0)+'%';
+  if(pct===null){
+    const pc = Number(x.pct_cuentas||0);
+    $('arc').style.strokeDasharray = (C*Math.min(pc,100)/100)+' '+C;
+    $('arcT').textContent = pc.toFixed(0)+'%';
+    $('arc').setAttribute('stroke','#6B7D89');
+  } else {
+    $('arc').style.strokeDasharray = (C*Math.min(pct,100)/100)+' '+C;
+    $('arcT').textContent = pct.toFixed(0)+'%';
+    $('arc').setAttribute('stroke','var(--mint)');
+  }
+  const capEl = document.querySelector('.strip .cap');
+  if(capEl) capEl.textContent = pct===null ? 'renovado del mes (en cuentas)' : 'del premium retenido';
+  if(av){
+    const partes = [];
+    if(!completo) partes.push('Faltan <b>'+(x.sin_monto_n||0)+'</b> montos en HubSpot — por eso el <b>que vence</b> y el <b>% retenido</b> salen en guion.');
+    if(Number(x.sin_registro_bos_n||0)>0) partes.push('<b>'+x.sin_registro_bos_n+'</b> renovaron en HubSpot y falta registrarlas en el BOS.');
+    if(Number(x.senal_equipo_n||0)>0) partes.push('<b>'+x.senal_equipo_n+'</b> el equipo las da por perdidas y esperan tu decision.');
+    av.hidden = partes.length===0;
+    av.innerHTML = partes.join(' ');
+  }
 }
 
 function filasDelMes(){
   const iso = mesISO(AÑO_ACTUAL, MES_SEL);
-  return AÑO_FILAS.filter(r=> String(r.mes_vence)===iso);
+  return AÑO_FILAS.filter(r=> String(r.mes)===iso);
 }
 function buscadas(){
   const f = filasDelMes();
-  if(!COLA_Q) return f;
+  let base = f;
+  if(VEND_SEL) base = base.filter(r=> (r.vendedor||'') === VEND_SEL);
+  if(!COLA_Q) return base;
   const q = norm(COLA_Q);
-  return f.filter(r=> norm(r.cuenta_nombre||r.llave).includes(q)
-                   || norm(r.dot).includes(q)
-                   || norm(r.agente).includes(q));
+  return base.filter(r=> norm(r.cliente||r.llave).includes(q)
+                      || norm(r.dot).includes(q)
+                      || norm(r.vendedor).includes(q)
+                      || norm(r.trabaja).includes(q));
 }
 function filtradas(){
   let f = buscadas();
-  if(CHIP_SEL==='pend') f = f.filter(r=>(r.estado_trabajo||'pendiente')==='pendiente');
-  if(CHIP_SEL==='proc') f = f.filter(r=>['contactado','cotizando'].includes(r.estado_trabajo));
-  if(CHIP_SEL==='sen')  f = f.filter(r=>r.sin_senal);
-  if(CHIP_SEL==='ren')  f = f.filter(r=>r.estado_trabajo==='renovado');
-  if(CHIP_SEL==='urg')  f = f.filter(r=>r.en_ventana);
-  return f.slice().sort((a,b)=> Number(b.premium_activo||0)-Number(a.premium_activo||0));
+  if(CHIP_SEL==='juego') f = f.filter(r=>r.en_juego);
+  if(CHIP_SEL==='venc')  f = f.filter(r=>r.estado_final==='vencida_en_juego');
+  if(CHIP_SEL==='ren')   f = f.filter(r=>r.estado_final==='renovada');
+  if(CHIP_SEL==='sen')   f = f.filter(r=>r.senal_equipo_perdida);
+  if(CHIP_SEL==='cerr')  f = f.filter(r=>r.estado_final==='perdida'||r.estado_final==='retirada');
+  const ord = { vencida_en_juego:0, en_curso:1, renovada:2, perdida:3, retirada:4 };
+  return f.slice().sort((a,b)=>{
+    const d = (ord[a.estado_final]??9) - (ord[b.estado_final]??9);
+    if(d) return d;
+    return Number(b.premium_vence_neto||0) - Number(a.premium_vence_neto||0);
+  });
 }
 function chips(){
   const f = buscadas();
+  const nCerr = f.filter(r=>r.estado_final==='perdida'||r.estado_final==='retirada').length;
   const d = [
     ['todas','Todas', f.length],
-    ['pend','Pendientes', f.filter(r=>(r.estado_trabajo||'pendiente')==='pendiente').length],
-    ['proc','En proceso', f.filter(r=>['contactado','cotizando'].includes(r.estado_trabajo)).length],
-    ['sen','Sin señal de vida', f.filter(r=>r.sin_senal).length],
-    ['ren','Renovadas', f.filter(r=>r.estado_trabajo==='renovado').length],
-    ['urg','Urgente', f.filter(r=>r.en_ventana).length],
+    ['juego','En juego', f.filter(r=>r.en_juego).length],
+    ['venc','Vencidas', f.filter(r=>r.estado_final==='vencida_en_juego').length],
+    ['ren','Renovadas', f.filter(r=>r.estado_final==='renovada').length],
+    ['sen','Señal del equipo', f.filter(r=>r.senal_equipo_perdida).length],
   ];
+  if(nCerr) d.push(['cerr','Cerradas', nCerr]);
   $('chips').innerHTML = d.map(([k,t,n])=> '<button type="button" class="chip'+(CHIP_SEL===k?' on':'')+'" data-chip="'+k+'">'+t+'<span class="n">'+n+'</span></button>').join('');
   document.querySelectorAll('#chips .chip').forEach(b=> b.onclick = ()=>{ CHIP_SEL = b.dataset.chip; chips(); cola(); escribirHash(); });
 }
 
 function filaCola(r){
   const id = rowIdAno(r);
-  const estado = r.estado_trabajo || 'pendiente';
-  const pillInfo = PILL[estado] || PILL.pendiente;
-  const bloq = r.sin_senal && !r.verificado_financiera && estado==='pendiente';
+  const estado = r.estado_karen || 'pendiente';
+  const pillInfo = PILL_V30[r.estado_final] || PILL[estado] || PILL.pendiente;
   let uClase = { rojo:'u-rojo', ambar:'u-ambar', gris:'u-gris' }[r.urgencia] || 'u-gris';
-  if(estado==='renovado') uClase = 'u-mint';
-  const hecha = estado==='renovado' ? ' hecha' : '';
+  if(r.estado_final==='renovada') uClase = 'u-mint';
+  if(r.estado_final==='perdida'||r.estado_final==='retirada') uClase = 'u-gris';
+  const hecha = r.estado_final==='renovada' ? ' hecha' : '';
   const abierta = (FICHA_ABIERTA===id) ? ' abierta' : '';
   const fe = fmtFecha(r.vence).replace(/ de \d{4}$/,'');
+  const cuando = r.estado_final==='renovada' ? 'vencia ' : 'vence ';
+  const dias = r.dias_vencida>0 ? '<span class="sen">vencida hace '+r.dias_vencida+' d</span>'
+             : (r.dias_para_vencer!=null && r.dias_para_vencer<=7 && r.estado_final!=='renovada'
+                ? '<span class="sen">'+(r.dias_para_vencer===0?'vence hoy':'vence en '+r.dias_para_vencer+' d')+'</span>' : '');
+
+  const senales = [];
+  if(r.senal_equipo_perdida) senales.push('<div class="c-sen"><b>⚠ El equipo la da por perdida — decide tú.</b>'+
+    (r.estado_karen ? '<br>Karen: '+esc(r.estado_karen)+(r.motivo_karen?' · '+esc(r.motivo_karen):'') : '')+
+    (r.etapa_hubspot ? '<br>Etapa HubSpot: '+esc(r.etapa_hubspot) : '')+'</div>');
+  if(r.renovada_hubspot_sin_bos) senales.push('<div class="c-sen"><b>⚠ Renovó y falta registrarla en el BOS.</b><br>HubSpot: '+esc(r.etapa_hubspot||'')+'</div>');
+  if(r.posible_renovacion) senales.push('<div class="c-sen"><b>⚠ Hay una venta nueva en la ventana</b> — puede ser esta renovación sin marcar como renewal.</div>');
+  if(r.sin_premium) senales.push('<div class="c-sen"><b>⚠ Renovada con premium $0 en el BOS.</b></div>');
+  if(r.duplicado_hubspot) senales.push('<div class="c-sen"><b>⚠ Esta cuenta está dos veces en HubSpot este mes.</b></div>');
+  if(r.llave_ambigua) senales.push('<div class="c-sen"><b>⚠ El DOT sirve a dos empresas en el BOS.</b></div>');
+  if(r.estado_andres && r.estado_andres!=='ACTIVA') senales.push('<div class="c-sen"><b>Andrés la marcó '+esc(r.estado_andres)+'.</b>'+(r.estado_andres_nota?'<br>'+esc(r.estado_andres_nota):'')+'</div>');
+
+  const ren = r.estado_final==='renovada'
+    ? '<div class="c-ren"><b>Renovada'+(r.fecha_renovacion?' el '+fmtFecha(r.fecha_renovacion).replace(/ de \d{4}$/,''):'')+
+      (r.agente_renovacion?' por '+esc(r.agente_renovacion):'')+'</b>'+
+      (Number(r.premium_renovado||0)>0 ? '<br>Quedó '+fmtUSD(r.premium_renovado) : '<br>Quedó —')+
+      (r.coberturas_renovadas?' · '+esc(r.coberturas_renovadas):'')+'</div>'
+    : '';
+
   return '<div class="card '+uClase+hecha+abierta+'" data-id="'+id+'" tabindex="0" role="button" '+
       'aria-expanded="'+(FICHA_ABIERTA===id?'true':'false')+'" '+
-      'aria-label="'+esc(r.cuenta_nombre||r.llave)+' — abrir ficha">'+
-      '<div><div class="c-nom">'+esc(r.cuenta_nombre||r.llave)+'</div>'+
+      'aria-label="'+esc(r.cliente||r.llave)+' — abrir ficha">'+
+      '<div><div class="c-nom">'+esc(r.cliente||r.llave)+'</div>'+
         '<div class="c-meta"><span class="mono">DOT '+esc(r.dot||'—')+'</span><span class="dot"></span>'+
-          '<span>'+esc(r.agente||'—')+'</span><span class="dot"></span><span class="mono">vence '+fe+'</span>'+
-          (r.sin_senal?'<span class="sen">Sin señal de vida</span>':'')+'</div>'+
+          '<span>'+esc(r.vendedor||'—')+'</span><span class="dot"></span><span class="mono">'+cuando+fe+'</span>'+dias+
+          (r.trabaja && r.trabaja!==r.vendedor ? '<span class="dot"></span><span>trabaja '+esc(r.trabaja)+'</span>' : '')+'</div>'+
         '<div class="acciones">'+
-          '<button type="button" class="mini" '+(bloq?'disabled title="Financiera debe verificarla primero"':'')+' data-marcar="contactado">Contactada</button>'+
+          '<button type="button" class="mini" data-marcar="contactado">Contactada</button>'+
           '<button type="button" class="mini" data-marcar="cotizando">Cotizando</button>'+
           '<button type="button" class="mini" data-marcar="renovado">Renovada</button>'+
           '<button type="button" class="mini" data-marcar="perdido">Perdida</button>'+
-          (r.sin_senal&&!r.verificado_financiera?'<button type="button" class="mini" data-verificar="1">Verificar con Jeff</button>':'')+
-        '</div></div>'+
-      '<div class="c-prem">'+fmtUSD(r.premium_activo)+'<span class="pz">'+(r.n_polizas||1)+' póliza'+((r.n_polizas||1)>1?'s':'')+'</span></div>'+
+          '<button type="button" class="mini" data-marcar="retirado">Cancelada / Retirada</button>'+
+        '</div>'+ senales.join('') + ren +
+      '</div>'+
+      '<div class="c-prem">'+(r.sin_monto ? '—' : fmtUSD(r.premium_vence_neto))+
+        '<span class="pz">'+(r.sin_monto ? 'sin monto en HubSpot' : 'que vence')+'</span></div>'+
       '<div><span class="pill '+pillInfo[0]+'">'+pillInfo[1]+'</span></div>'+
     '</div>';
 }
 function cola(){
   const f = filtradas(), tot = filasDelMes();
-  $('colaSub').textContent = tot.length
-    ? NOM_MESES[MES_SEL]+' '+AÑO_ACTUAL+': '+tot.length+' cuenta'+(tot.length===1?'':'s')+' en la cola de este mes.'
-    : NOM_MESES[MES_SEL]+' '+AÑO_ACTUAL+' no tiene cuentas cargadas.';
+  const nCuentas = new Set(tot.map(r=>r.llave)).size;
+  const dup = tot.length - nCuentas;
+  $('colaSub').innerHTML = tot.length
+    ? NOM_MESES[MES_SEL]+' '+AÑO_ACTUAL+': '+nCuentas+' cuenta'+(nCuentas===1?'':'s')+' en la cartera de este mes.'
+      + (dup>0 ? ' <span style="color:#8A6A14">'+dup+' está'+(dup===1?'':'n')+' dos veces en HubSpot.</span>' : '')
+      + (VEND_SEL ? ' · filtrando por <b>'+esc(VEND_SEL)+'</b> <button type="button" class="chip" id="limpiarVend" style="padding:2px 8px;font-size:11px">quitar</button>' : '')
+    : NOM_MESES[MES_SEL]+' '+AÑO_ACTUAL+' todavía no tiene cartera montada en HubSpot.';
   $('cola').innerHTML = f.length ? f.map(filaCola).join('') : '<div class="vacio">No hay cuentas con este filtro.</div>';
+  const lv = $('limpiarVend'); if(lv) lv.onclick = ()=>{ VEND_SEL=null; chips(); cola(); };
   if(FICHA_ABIERTA){
     const card = document.querySelector('.card[data-id="'+FICHA_ABIERTA+'"]');
     const row = card ? AÑO_FILAS.find(r=>rowIdAno(r)===FICHA_ABIERTA) : null;
     if(card && row){
-      if(FICHA_ESTADO_SEL == null) FICHA_ESTADO_SEL = row.estado_trabajo || 'pendiente';
+      if(FICHA_ESTADO_SEL == null) FICHA_ESTADO_SEL = row.estado_karen || 'pendiente';
       card.classList.add('abierta');
       card.setAttribute('aria-expanded','true');
       card.insertAdjacentHTML('afterend', fichaHtml(row));
@@ -1062,32 +1189,32 @@ async function escribirTrabajoDB(row, payloadDB){
 }
 async function marcar(id, accion){
   const row = AÑO_FILAS.find(r=>rowIdAno(r)===id); if(!row) return;
-  const estadoActual = row.estado_trabajo || 'pendiente';
-  if(row.sin_senal && !row.verificado_financiera && accion==='contactado' && estadoActual==='pendiente') return;
+  const estadoActual = row.estado_karen || 'pendiente';
   let payloadDB, localPatch;
   if(accion==='contactado'){
     const hoy = new Date().toISOString().slice(0,10);
     payloadDB = { estado:'contactado', contactado:true, fecha_contacto:hoy, contacto_por: SESION_EMAIL||null };
-    localPatch = { estado_trabajo:'contactado', contactado:true, fecha_contacto:hoy, contacto_por: SESION_EMAIL||null };
+    localPatch = { estado_karen:'contactado', contactado_karen:true, fecha_contacto_karen:hoy };
   } else if(accion==='perdido'){
     const m = window.prompt('Motivo de la pérdida (obligatorio):');
     if(m===null) return;
     if(!m.trim()){ alert('El motivo es obligatorio para marcar perdido.'); return; }
     payloadDB = { estado:'perdido', motivo_perdido: m.trim() };
-    localPatch = { estado_trabajo:'perdido', motivo_perdido: m.trim() };
+    localPatch = { estado_karen:'perdido', motivo_karen: m.trim() };
   } else {
     payloadDB = { estado: accion, motivo_perdido: null };
-    localPatch = { estado_trabajo: accion, motivo_perdido: null };
+    localPatch = { estado_karen: accion, motivo_karen: null };
   }
   const ok = await escribirTrabajoDB(row, payloadDB);
   if(!ok) return;
   Object.assign(row, localPatch);
   chips(); cola();
-  if(accion==='renovado'){
-    const { data } = await SB.from('v_indice_renovaciones_v3_visible').select('mes,vencieron,renovaron,pct_renovado,premium_vencido,premium_con_senal,premium_por_confirmar,estado_mes')
-      .gte('mes', mesISO(AÑO_ACTUAL,1)).lte('mes', mesISO(AÑO_ACTUAL,12)).order('mes',{ascending:true});
-    if(data){ IDX_MESES = data; cinta(); franja(); bonos(); area(); }
-  }
+  vend();
+  /* v30 · la senal del equipo cambia al marcar, pero el estado final lo sigue mandando el BOS
+     (o Andres): refrescamos las cifras del mes para que la franja no quede desfasada. */
+  const { data } = await SB.from('v_renov_cartera_graficas_visible').select('*').eq('nivel','mes')
+    .gte('mes', mesISO(AÑO_ACTUAL,1)).lte('mes', mesISO(AÑO_ACTUAL,12)).order('mes',{ascending:true});
+  if(data){ IDX_MESES = data; cinta(); franja(); }
 }
 async function verificar(id){
   const row = AÑO_FILAS.find(r=>rowIdAno(r)===id); if(!row) return;
@@ -1131,7 +1258,7 @@ function fichaHtml(row){
         '<label>Fecha correcta de renovación</label>'+
         '<input type="date" id="fifechanueva_'+id+'">'+
         '<label>Motivo (mínimo 5 caracteres)</label>'+
-        '<textarea id="fifechamotivo_'+id+'" placeholder="Por qué cambia la fecha…"></textarea>'+
+        '<textarea id="fifechamotivo_'+id+'" placeholder="Por qué cambia la fecha… (la fecha manda desde HubSpot: corrígela también allá)"></textarea>'+
         '<div class="fi-aviso" id="fiaviso_'+id+'" style="display:none"></div>'+
         '<button type="button" class="mini fi-guardar" id="figuardarfecha_'+id+'" data-ficha-guardar-fecha disabled>Guardar fecha</button>'+
       '</div>'+
@@ -1156,7 +1283,7 @@ function toggleFicha(id){
   card.classList.add('abierta');
   card.setAttribute('aria-expanded','true');
   FICHA_ABIERTA = id;
-  FICHA_ESTADO_SEL = row.estado_trabajo || 'pendiente';
+  FICHA_ESTADO_SEL = row.estado_karen || 'pendiente';
   card.insertAdjacentHTML('afterend', fichaHtml(row));
   cablearFicha(row);
   cargarNotasFicha(row);
@@ -1204,7 +1331,7 @@ function cablearFicha(row){
     if(val){
       const d = new Date(val+'T12:00:00');
       aviso.style.display = 'block';
-      aviso.textContent = 'La cuenta se mueve a '+NOM_MESES[d.getMonth()+1]+' '+d.getFullYear()+'. Financiera queda avisada para corregirlo en el BOS.';
+      aviso.textContent = 'La cuenta se mueve a '+NOM_MESES[d.getMonth()+1]+' '+d.getFullYear()+'. Financiera queda avisada — y acuérdate de corregir la Fecha de Renovación en HubSpot, que es la que manda.';
     } else {
       aviso.style.display = 'none';
     }
@@ -1236,7 +1363,7 @@ async function guardarFicha(id){
   const payloadDB = { estado: FICHA_ESTADO_SEL, motivo_perdido: esPerdidoORetirado ? motivo : null };
   const ok = await escribirTrabajoDB(row, payloadDB);
   if(!ok){ btn.disabled = false; return; }
-  Object.assign(row, { estado_trabajo: FICHA_ESTADO_SEL, motivo_perdido: payloadDB.motivo_perdido });
+  Object.assign(row, { estado_karen: FICHA_ESTADO_SEL, motivo_karen: payloadDB.motivo_perdido });
   if(motivo && !esPerdidoORetirado){
     const { error } = await SB.from('renov_notas').insert({ llave: row.llave, nota: motivo, autor: SESION_EMAIL||'', autor_user_id: SESION_UID||null });
     if(error) alert('El estado se guardó, pero la nota no se pudo guardar: '+error.message);
@@ -1272,26 +1399,41 @@ async function guardarAjusteFecha(id){
    5) 02 VENDEDORES
    ===================================================================== */
 function vend(){
+  /* v30 · "cada gente" es el VENDEDOR de la cuenta, y sale de la misma cola del mes:
+     una sola fuente, sin desfase con lo que Karen ve abajo. */
   const el = $('vlist');
-  if(!AGENTES_RESUMEN.length){ el.innerHTML = '<div class="vacio">Sin datos de agentes.</div>'; return; }
-  const max = Math.max(1, ...AGENTES_RESUMEN.map(a=>Number(a.vencio_n||0)));
-  const totV = AGENTES_RESUMEN.reduce((s,a)=>s+Number(a.vencio_n||0),0);
-  const totR = AGENTES_RESUMEN.reduce((s,a)=>s+Number(a.renovo_n||0),0);
-  const prom = totV ? 100*totR/totV : 0;
-  const ordenados = AGENTES_RESUMEN.slice().sort((a,b)=> Number(b.vencio_n||0)-Number(a.vencio_n||0));
-  el.innerHTML = ordenados.map(a=>{
-    const v = Number(a.vencio_n||0), r = Number(a.renovo_n||0);
-    const pct = v ? 100*r/v : 0;
-    const cls = pct>=70?'bien':(pct<prom?'bajo':'');
-    return '<div class="vr">'+
-      '<div class="vn">'+esc(a.agente)+'<small>'+r+' de '+v+' renovadas</small></div>'+
-      '<div class="vbars"><div class="vb a" data-w="'+(100*v/max)+'" style="width:0"></div>'+
-        '<div class="vb b" data-w="'+(100*r/max)+'" style="width:0"></div></div>'+
-      '<div class="vnum">'+fmtUSD(a.vencio_premium)+'<br><span class="vpct '+cls+'">'+pct.toFixed(0)+'%</span></div></div>';
+  const filas = filasDelMes().filter(r=>r.en_base);
+  if(!filas.length){ el.innerHTML = '<div class="vacio">Este mes todavía no tiene cartera montada.</div>'; return; }
+  const porV = {};
+  filas.forEach(r=>{
+    const k = r.vendedor || '(sin vendedor en el BOS)';
+    const a = porV[k] || (porV[k] = { v:k, llaves:new Set(), ren:new Set(), vence:0, quedo:0, faltan:0 });
+    a.llaves.add(r.llave);
+    if(r.estado_final==='renovada') a.ren.add(r.llave);
+    if(r.sin_monto) a.faltan++; else a.vence += Number(r.premium_vence_neto||0);
+    a.quedo += Number(r.premium_renovado||0);
+  });
+  const arr = Object.values(porV).map(a=>({ v:a.v, n:a.llaves.size, ren:a.ren.size,
+    vence:a.vence, quedo:a.quedo, faltan:a.faltan })).sort((a,b)=> b.n-a.n || b.vence-a.vence);
+  const max = Math.max(1, ...arr.map(a=>a.n));
+  const totN = arr.reduce((s,a)=>s+a.n,0), totR = arr.reduce((s,a)=>s+a.ren,0);
+  const prom = totN ? 100*totR/totN : 0;
+  el.innerHTML = arr.map(a=>{
+    const pct = a.n ? 100*a.ren/a.n : 0;
+    const cls = pct>=META_PCT?'bien':(pct<prom?'bajo':'');
+    return '<div class="vr" data-v="'+esc(a.v)+'" tabindex="0" role="button">'+
+      '<div class="vn">'+esc(a.v)+'<small>'+a.ren+' de '+a.n+' renovadas'+(a.faltan?' · '+a.faltan+' sin monto':'')+'</small></div>'+
+      '<div class="vbars"><div class="vb a" data-w="'+(100*a.n/max)+'" style="width:0"></div>'+
+        '<div class="vb b" data-w="'+(100*a.ren/max)+'" style="width:0"></div></div>'+
+      '<div class="vnum">'+(a.vence>0?fmtUSD(a.vence):'—')+'<br><span class="vpct '+cls+'">'+pct.toFixed(0)+'%</span></div></div>';
   }).join('');
   document.querySelectorAll('#vlist .vr').forEach((row,i)=>{
-    const a = ordenados[i];
-    row.dataset.tip = '<span class="tt">'+esc(a.agente)+'</span>Vencen <b>'+(a.vencio_n||0)+'</b> · renovadas <b>'+(a.renovo_n||0)+'</b><br>'+fmtUSD(a.vencio_premium)+' en premium';
+    const a = arr[i];
+    row.dataset.tip = '<span class="tt">'+esc(a.v)+'</span>'+a.n+' cuentas · <b>'+a.ren+'</b> renovadas<br>'+
+      'vence '+(a.vence>0?fmtUSD(a.vence):'—')+' · quedó '+(a.quedo>0?fmtUSD(a.quedo):'—')+
+      '<br><i>clic para ver sus cuentas</i>';
+    row.onclick = ()=>{ VEND_SEL = a.v; CHIP_SEL='todas'; chips(); cola(); setTab('cola'); };
+    row.onkeydown = (e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); row.click(); } };
   });
   requestAnimationFrame(()=>document.querySelectorAll('.vb').forEach(b=>b.style.width=b.dataset.w+'%'));
 }
@@ -1492,7 +1634,7 @@ $('btn-imprimir-ano').addEventListener('click', ()=> imprimir('ano'));
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="renovaciones.html";
-var PGV_VERSION=29; // v29 (15-sep-2026) RONDA VISUAL, cero cambios de datos: buscador en la cola (empresa/DOT/vendedor, repinta solo la lista); teclado real (casillas y meses son <button role=tab>, la tarjeta abre con Enter/Espacio, foco menta visible); movil de verdad a 1080 y 860 (la cinta desliza en su propio carril, franja/tarjeta/filas a una columna); el estado vive en la URL (#v casilla, #m mes, #f filtro, #q busqueda, #c ficha abierta) sin pisar el hash de recuperacion de clave; esqueleto de carga y error por bloque con Reintentar (un bloque caido ya no deja la pantalla en blanco); un solo tooltip delegado en vez de cuatro onmousemove; la meta del area sale de estandar_pct y no del codigo (estaba quemada en 3 sitios); svgBolsa con xMidYMid meet; clases que faltaban del estandar (.card.abierta, .u-mint, .st-n .v.ambar, .st-aviso, --rojo-claro); Arial fuera del boton Volver y JetBrains Mono 700 en el link de fuentes. --- v28: Ficha de cuenta: se abre al hacer clic en una tarjeta de la cola (acordeon, no modal). Cuatro bloques: Estado (los mismos de siempre, "retirado" ahora se lee "Cancelada / Retirada"), Por que (motivo obligatorio a renov_trabajo.motivo_perdido en Perdida/Cancelada-Retirada, opcional como nota suelta a renov_notas en cualquier otro estado, con historial de notas), Corregir fecha de renovacion (inserta en renov_ajustes con ajustado_user_id=SESION_UID -- mismo bug de uuid que se acaba de arreglar, aviso claro antes de guardar), y el aviso a Financiera que es automatico (v_ajustes_pendientes_bos). Nada se borra.
+var PGV_VERSION=30; // v30 (17-sep-2026) LA CARTERA SALE DE HUBSPOT: la cola, la cinta y la franja leen v_renov_cartera_estado_visible y v_renov_cartera_graficas_visible — lo que Andres monta en HubSpot es la lista, y el motor solo marca la renovacion cuando Jeff la registra en el BOS (Sale - Renewal en la ventana -60/+150 de la fecha de HubSpot), con fecha, quien y CUANTO QUEDO. Hero en premium (que vence · que quedo · % retenido) con GUION, nunca cero, cuando a HubSpot le faltan montos: un % sobre base incompleta miente (septiembre daba 310%). La cinta deja de ser barras y pasa a dos curvas (vence punteada, quedo en menta); meses sin cartera salen "sin cartera". Filtros nuevos: En juego / Vencidas / Renovadas / Senal del equipo. Cinco avisos en ambar que NO cierran cuentas: el equipo la da por perdida, renovo y falta registrarla en el BOS, hay una venta nueva en la ventana, renovada con premium $0, esta dos veces en HubSpot. Una cuenta solo se pierde cuando Andres la marca (renov_cartera_marcar). Vendedores se calcula de la misma cola, por vendedor de la cuenta, y filtra la cola al hacer clic. La bolsa filtra cuenta_en_firme (arranca el 1-sep). --- v29 (15-sep-2026) RONDA VISUAL, cero cambios de datos: buscador en la cola (empresa/DOT/vendedor, repinta solo la lista); teclado real (casillas y meses son <button role=tab>, la tarjeta abre con Enter/Espacio, foco menta visible); movil de verdad a 1080 y 860 (la cinta desliza en su propio carril, franja/tarjeta/filas a una columna); el estado vive en la URL (#v casilla, #m mes, #f filtro, #q busqueda, #c ficha abierta) sin pisar el hash de recuperacion de clave; esqueleto de carga y error por bloque con Reintentar (un bloque caido ya no deja la pantalla en blanco); un solo tooltip delegado en vez de cuatro onmousemove; la meta del area sale de estandar_pct y no del codigo (estaba quemada en 3 sitios); svgBolsa con xMidYMid meet; clases que faltaban del estandar (.card.abierta, .u-mint, .st-n .v.ambar, .st-aviso, --rojo-claro); Arial fuera del boton Volver y JetBrains Mono 700 en el link de fuentes. --- v28: Ficha de cuenta: se abre al hacer clic en una tarjeta de la cola (acordeon, no modal). Cuatro bloques: Estado (los mismos de siempre, "retirado" ahora se lee "Cancelada / Retirada"), Por que (motivo obligatorio a renov_trabajo.motivo_perdido en Perdida/Cancelada-Retirada, opcional como nota suelta a renov_notas en cualquier otro estado, con historial de notas), Corregir fecha de renovacion (inserta en renov_ajustes con ajustado_user_id=SESION_UID -- mismo bug de uuid que se acaba de arreglar, aviso claro antes de guardar), y el aviso a Financiera que es automatico (v_ajustes_pendientes_bos). Nada se borra.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;
