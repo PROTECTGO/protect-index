@@ -1369,11 +1369,11 @@ async function guardarFicha(id){
     if(error) alert('El estado se guardó, pero la nota no se pudo guardar: '+error.message);
   }
   chips(); cola();
-  if(FICHA_ESTADO_SEL==='renovado'){
-    const { data } = await SB.from('v_indice_renovaciones_v3_visible').select('mes,vencieron,renovaron,pct_renovado,premium_vencido,premium_con_senal,premium_por_confirmar,estado_mes')
-      .gte('mes', mesISO(AÑO_ACTUAL,1)).lte('mes', mesISO(AÑO_ACTUAL,12)).order('mes',{ascending:true});
-    if(data){ IDX_MESES = data; cinta(); franja(); bonos(); area(); }
-  }
+  vend();
+  /* v30 · las cifras del mes vienen de la cartera, no del indice viejo */
+  const { data } = await SB.from('v_renov_cartera_graficas_visible').select('*').eq('nivel','mes')
+    .gte('mes', mesISO(AÑO_ACTUAL,1)).lte('mes', mesISO(AÑO_ACTUAL,12)).order('mes',{ascending:true});
+  if(data){ IDX_MESES = data; cinta(); franja(); }
 }
 
 async function guardarAjusteFecha(id){
