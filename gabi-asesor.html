@@ -386,6 +386,48 @@ select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;b
 .pg-login-err{color:var(--pg-neg);font-size:12.5px;margin-top:10px;min-height:16px}
 .pg-logout{cursor:pointer;text-decoration:underline}
 .pg-cargando{max-width:420px;margin:120px auto;text-align:center;color:var(--pg-muted);font-size:14px}
+
+/* ---- v15: Mi mes / Mi actividad / Mi sueno en una sola pantalla ---- */
+.fr.blq-mes{display:block}
+.blq-mes .fr-ring{width:auto;max-width:230px;margin:0 auto;text-align:center}
+.blq-mes .comb-num{font-family:var(--pg-font-num);font-size:28px;font-weight:700;color:var(--pg-mint);margin-top:8px;line-height:1.15}
+.blq-mes .comb-sub{font-size:11.5px;color:#8da0ad;margin-top:4px;line-height:1.4}
+.blq-mes .cifras3{display:flex;gap:20px;flex-wrap:wrap;margin-top:22px;padding-top:20px;border-top:1px solid rgba(255,255,255,.12);justify-content:center}
+.blq-mes .cifras3 .fr-n{flex:1;min-width:100px;text-align:center}
+.blq-mes .ritmo-linea{margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,.12);font-family:var(--pg-font-title);font-weight:800;font-size:16.5px;color:#fff;text-align:center}
+.blq-mes .ritmo-linea b{color:var(--pg-mint);font-family:var(--pg-font-num)}
+.blq-act{display:flex;flex-direction:column;gap:16px}
+.blq-act .al2{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.blq-act .al2 .k{font-family:var(--pg-font-title);font-weight:700;font-size:13.5px;color:var(--pg-ink);min-width:92px}
+.blq-act .al2 .v{font-family:var(--pg-font-num);font-size:24px;font-weight:700;color:var(--pg-ink)}
+.blq-act .al2 .d{font-size:12.5px;color:var(--pg-muted)}
+.sng-form{display:grid;grid-template-columns:1fr 1fr;gap:14px 18px;margin-top:14px}
+@media(max-width:640px){.sng-form{grid-template-columns:1fr}}
+.sng-form label{display:flex;flex-direction:column;gap:6px;font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--pg-muted)}
+.sng-form input,.sng-form select{font-family:var(--pg-font-body);font-size:14px;font-weight:500;color:var(--pg-txt);padding:11px 13px;border:1px solid var(--pg-line);border-radius:12px;background:#fff;width:100%;min-width:0;text-transform:none;letter-spacing:0}
+.sng-form select{font-weight:700;color:var(--pg-ink)}
+.sng-form input:focus,.sng-form select:focus{outline:2px solid var(--pg-mint-soft);border-color:var(--pg-mint)}
+.sng-acc{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:14px}
+.sng-acc .pg-btn{width:auto;padding:12px 24px}
+.sng-linea{font-size:13.5px;color:var(--pg-txt);line-height:1.6;margin-bottom:10px}
+.sng-linea b{font-family:var(--pg-font-num);color:var(--pg-ink)}
+#sn-resultado .pg-ok-box,#sn-resultado .pg-warn-box{margin:10px 0}
+.sng-plan{background:#fff;border:1px solid var(--pg-line);border-left:4px solid var(--pg-mint);border-radius:12px;padding:14px 16px;margin-top:10px}
+.sng-plan h4{font-family:var(--pg-font-title);font-weight:700;font-size:14.5px;color:var(--pg-ink);margin:0 0 6px}
+.sng-plan p{font-size:13px;color:var(--pg-txt);margin:0;line-height:1.5}
+.sng-plan .pido{font-size:12px;color:var(--pg-muted);margin-top:6px}
+/* ---- v15: la pantalla completa, de verdad, a 400px: la barra lateral se
+   acuesta arriba en vez de robarle ancho al contenido ---- */
+@media(max-width:680px){
+  .pg-app{flex-direction:column}
+  .pg-side{width:100%;height:auto;position:relative;top:auto;padding:14px 14px 10px;display:flex;flex-wrap:wrap;align-items:center;gap:2px 8px}
+  .pg-side .pg-brand{margin-bottom:0}
+  .pg-side .pg-tagline{display:none}
+  .pg-side a{margin-bottom:0;padding:8px 11px;font-size:13px}
+  .pg-side .pg-foot{width:100%;margin-top:6px;padding-top:8px}
+  .pg-main{padding:16px 14px 40px;max-width:100%}
+  .pg-kpis{gap:10px}
+}
 </style>
 </head>
 <body>
@@ -397,30 +439,82 @@ select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;b
   <div class="pg-tagline">MI PROCESO</div>
   <a data-go="hoy" class="on"><span class="ico">◆</span> Hoy</a>
   <a data-go="historia"><span class="ico">◎</span> Mi historia</a>
-  <a data-go="meta"><span class="ico">$</span> Mi meta</a>
+  <a data-go="meta" style="display:none"><span class="ico">$</span> Mi meta</a>
   <div class="pg-foot"><span id="ft-nombre"></span><br><span id="ft-cargo"></span><br><span id="ft-fecha"></span><br><span class="pg-logout" style="cursor:pointer;text-decoration:underline">Cerrar sesión</span></div>
  </aside>
  <main class="pg-main">
 
   <section class="pg-section on" id="s-hoy">
     <div class="pg-top"><div class="pg-eyebrow" id="eb-hoy">Hoy</div><h1>¿Cómo voy?</h1>
-      <div class="pg-sub">Tu meta del mes, tu comisión y los incentivos que están en juego ahora mismo. Todo sale de lo que Financiera registra en el BOS: aquí no se llena nada.</div></div>
+      <div class="pg-sub">Tu mes, tu actividad y tu sueño — todo en una sola pantalla. Todo sale de lo que Financiera registra en el BOS: aquí no se llena nada, salvo tu sueño.</div></div>
     <div class="eco" id="eco"></div>
-    <div id="despierta"></div>
-    <div class="fr">
-      <div class="fr-nums">
-        <div class="fr-n"><div class="l">Mi meta del mes</div><div class="v" id="h-meta"></div><div class="s" id="s-formula">combinada = premium + fee × 10</div></div>
-        <div class="fr-n"><div class="l">Lo que llevo</div><div class="v mint" id="h-comb"></div><div class="s" id="h-comb-s"></div></div>
-        <div class="fr-n"><div class="l">Me falta</div><div class="v warn" id="h-falta"></div><div class="s" id="h-falta-s"></div></div>
-        <div class="fr-n"><div class="l">Fee cobrado</div><div class="v mint" id="h-fee"></div><div class="s" id="h-fee-s"></div></div>
-      </div>
-      <div class="fr-ring"><div style="position:relative;height:130px"><canvas id="ringHoy"></canvas></div><div class="cap">de mi meta</div></div>
+        <div class="pg-warn-box" id="curva-franja" style="display:none">
+      <div id="curva-titulo" style="font-weight:700"></div>
+      <div id="curva-ritmo" style="color:var(--pg-muted);margin-top:5px;font-size:12.5px"></div>
     </div>
+
+    <div class="fr blq-mes">
+      <div class="fr-ring"><div style="position:relative;height:170px"><canvas id="ringHoy"></canvas></div>
+        <div class="comb-num" id="h-comb"></div>
+        <div class="comb-sub" id="h-comb-s"></div>
+        <div class="cap">de mi meta: <b id="h-meta"></b></div>
+      </div>
+      <div class="cifras3">
+        <div class="fr-n"><div class="l">Premium</div><div class="v" id="h-premium"></div></div>
+        <div class="fr-n"><div class="l">Fee</div><div class="v mint" id="h-fee"></div><div class="s" id="h-fee-s"></div></div>
+        <div class="fr-n"><div class="l">Días que quedan del mes</div><div class="v" id="h-dias"></div></div>
+      </div>
+      <div class="ritmo-linea" id="h-ritmo"></div>
+      <div style="display:none"><div class="l">Me falta</div><div class="v warn" id="h-falta"></div><div class="s" id="h-falta-s"></div></div>
+    </div>
+
+    <div class="pg-card">
+      <div class="pg-eyebrow" style="margin-bottom:10px">Mi actividad</div>
+      <div class="blq-act" id="act2-bloque"></div>
+    </div>
+
+    <div class="pg-card" id="sn-card">
+      <div class="pg-eyebrow" style="margin-bottom:6px">Mi sueño</div>
+      <p class="pg-purpose">Dinos qué quieres y en cuánto tiempo. Te mostramos el camino con tus números reales.</p>
+      <div class="sng-form">
+        <label>Qué quiero
+          <select id="sn-que">
+            <option value="Carro">Carro</option>
+            <option value="Moto">Moto</option>
+            <option value="Viaje">Viaje</option>
+            <option value="Casa">Casa</option>
+            <option value="Otro">Otro</option>
+          </select>
+        </label>
+        <label>Cuánto tengo que juntar (pesos)<input id="sn-monto" type="number" min="0" step="100000" placeholder="Ej: 50000000"></label>
+        <label>En cuántos meses<input id="sn-meses" type="number" min="1" step="1" placeholder="Ej: 6"></label>
+        <label>Y después, ¿cuánto pago al mes? (pesos, 0 si es de contado)<input id="sn-cuota" type="number" min="0" step="10000" value="0"></label>
+      </div>
+      <div class="sng-acc"><button class="pg-btn mint" id="sn-ver" type="button">Ver mi plan</button><span class="bt-err" id="sn-err"></span></div>
+      <div id="sn-resultado"></div>
+    </div>
+
+    <div class="pg-card"><h2 id="lb-top">Los mejores del mes</h2><p class="pg-purpose">Para celebrar. Aparecen todos los días, con su foto.</p>
+      <div class="rk" id="rk"></div>
+    </div>
+  </section>
+
+  <section class="pg-section" id="s-historia">
+    <div class="pg-top"><div class="pg-eyebrow">Mi historia</div><h1>¿De dónde vengo?</h1>
+      <div class="pg-sub">Todo desde que entraste, medido como se mide tu meta: <b>combinada = premium + fee × 10</b>. La comisión punteada es "con el plan de hoy": la misma fórmula sobre tus ventas reales, para que veas cómo se mueve tu plata cuando se mueven tus ventas.</div></div>
+    <div class="pg-card"><h2>Mi meta combinada y mi comisión, mes a mes</h2><p class="pg-purpose">Onda verde: tu combinada del mes (premium + fee × 10). <span id="lb-meta-graf"></span> Azul: tu comisión — cuando la verde sube, la azul sube detrás.</p><div class="pg-chart-wrap" style="height:340px"><canvas id="chHist"></canvas></div></div>
+    <div class="rec" id="rec"></div>
+    <div class="pg-card" style="background:transparent;border:none;box-shadow:none;padding:0"><h2>Lo que me está costando</h2><p class="pg-purpose">Tres patrones tuyos, con la plata que te cuestan. Cada uno trae una sola sugerencia y un botón para volverla tu plan del mes.</p><div id="pats"></div></div>
+      <h2 style="font-family:var(--pg-font-title);font-size:17px;color:var(--pg-ink);margin:26px 0 4px">Mi día a día</h2>
+    <p class="pg-purpose" style="margin-bottom:12px">El reloj de hoy, la escalera del equipo, dos futuros y el detalle completo de tus llamadas.</p>
+    <div id="despierta"></div>
+    <h2 style="font-family:var(--pg-font-title);font-size:17px;color:var(--pg-ink);margin:26px 0 4px">Mi comisión y mis escalones</h2>
+    <p class="pg-purpose" style="margin-bottom:12px">Cómo se calcula tu comisión, los incentivos del mes y lo que puede quedarte en el aire.</p>
     <div class="pg-card" style="padding:18px 22px"><div class="mp-linea rojo" id="h-linea"></div>
       <div class="hoy"><div><div class="l" id="lb-com">Mi comisión estimada</div><div class="v mint" id="h-com"></div></div><div style="font-size:12.5px;color:#b9c6d0;max-width:420px;line-height:1.5" id="h-com-s"></div></div>
       <div class="nota">Tu comisión se liquida por el mes en que la póliza entra en vigencia; por eso a veces la ves un mes después de la venta. Solo cuenta el fee con fecha de pago.</div>
     </div>
-    <div class="pg-card" style="padding:16px 22px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap"><div><div class="pg-eyebrow" style="margin-bottom:4px"><span id="lb-plan">Mi plan del mes</span></div><div id="h-plan" style="font-family:var(--pg-font-title);font-weight:700;font-size:15px;color:var(--pg-ink)"></div></div><button class="pg-btn ghost" onclick="document.querySelector('.pg-side a[data-go=meta]').click()">Ver mi meta →</button></div>
+    <div class="pg-card" style="padding:16px 22px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap"><div><div class="pg-eyebrow" style="margin-bottom:4px"><span id="lb-plan">Mi plan del mes</span></div><div id="h-plan" style="font-family:var(--pg-font-title);font-weight:700;font-size:15px;color:var(--pg-ink)"></div></div><button class="pg-btn ghost" onclick="document.querySelector('.pg-side a[data-go=historia]').click()">Ver mi meta →</button></div>
     <div class="pg-card">
       <div class="inc-head"><div><h2 style="margin:0">Los incentivos de este mes</h2><p class="pg-purpose" style="margin:4px 0 0"><span id="lb-inc">Cambian cada mes. Estos son los de este mes: cuánto llevas y cuánto te falta para cada uno.</span></p></div><span class="vig" id="vig"></span></div>
       <div class="x10" id="x10"></div>
@@ -434,20 +528,7 @@ select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;b
           <div style="display:none"><h3 style="margin-top:14px">Mi actividad</h3><div id="act-bloque"></div></div></div>  <!-- ARREGLO 10-sep-2026: aqui habia 2 </div> de mas desde el 5 de septiembre (v4, cuando se agrego "Mi actividad"). Cerraban <main> y <section> antes de tiempo, y el navegador sacaba "Mi historia" y "Mi meta" fuera del contenedor: se pintaban 1000px mas abajo y la pantalla se veia en blanco. -->
       </div>
     </div>
-    <div class="pg-card"><h2 id="lb-top">Los mejores del mes</h2><p class="pg-purpose">Para celebrar. Aparecen todos los días, con su foto.</p>
-      <div class="rk" id="rk"></div>
-    </div>
-  </section>
-
-  <section class="pg-section" id="s-historia">
-    <div class="pg-top"><div class="pg-eyebrow">Mi historia</div><h1>¿De dónde vengo?</h1>
-      <div class="pg-sub">Todo desde que entraste, medido como se mide tu meta: <b>combinada = premium + fee × 10</b>. La comisión punteada es "con el plan de hoy": la misma fórmula sobre tus ventas reales, para que veas cómo se mueve tu plata cuando se mueven tus ventas.</div></div>
-    <div class="pg-card"><h2>Mi meta combinada y mi comisión, mes a mes</h2><p class="pg-purpose">Onda verde: tu combinada del mes (premium + fee × 10). <span id="lb-meta-graf"></span> Azul: tu comisión — cuando la verde sube, la azul sube detrás.</p><div class="pg-chart-wrap" style="height:340px"><canvas id="chHist"></canvas></div></div>
-    <div class="rec" id="rec"></div>
-    <div class="pg-card" style="background:transparent;border:none;box-shadow:none;padding:0"><h2>Lo que me está costando</h2><p class="pg-purpose">Tres patrones tuyos, con la plata que te cuestan. Cada uno trae una sola sugerencia y un botón para volverla tu plan del mes.</p><div id="pats"></div></div>
-  </section>
-
-  <section class="pg-section" id="s-meta">
+    
     <div class="pg-top"><div class="pg-eyebrow">Mi meta</div><h1>¿Qué quiero, y qué tengo que hacer para llegar?</h1>
       <div class="pg-sub">Dime qué quieres y para cuándo. Te digo cuánto vender y cuánto fee cobrar, con tus números.</div></div>
 
@@ -486,6 +567,10 @@ select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;b
         <div class="bt-acc"><button class="pg-btn mint" id="p-guardar" type="button">Guardar mi plan</button><span class="bt-err" id="p-err"></span></div></div>
       <div id="planes" style="margin-top:14px"></div>
     </div>
+  </section>
+
+  <section class="pg-section" id="s-meta">
+    <!-- v15: este contenido se movio a "Mi historia" (simulador, palanca, lo que dejas de ganar, estrategias y plan del mes). La pestana sigue aqui, oculta, para no romper nada. -->
   </section>
 
  </main>
@@ -527,7 +612,7 @@ function comDeMes(ym){ const l = A.liq[ym];
 Chart.defaults.font.family = 'Inter, Arial, sans-serif';
 
 /* ---------- perfil calculado (todo sale de sus datos) ---------- */
-let A = null, P = null;
+let A = null, P = null, DIAG = null;
 function calcP(){ P = (() => {
   const cerrados = A.serie, conVenta = cerrados.filter(r => r[3] > 0);
   const ult6 = cerrados.slice(-6), v6 = ult6.reduce((s,r) => s+r[3], 0);
@@ -550,20 +635,26 @@ function calcP(){ P = (() => {
 /* ================= HOY ================= */
 function hoy(){
   const m = A.meta, premMes = m.mc - m.fee * 10, cMes = m.mc;
-  const pct = Math.round(cMes / META * 100), arc = Math.min(100, pct);
-  const falta = Math.max(0, META - cMes), delMes = m.hab / m.habMes;
+  const metaMostrada = (DIAG && DIAG.meta && DIAG.meta.meta != null) ? DIAG.meta.meta : META;
+  const pct = Math.round(cMes / metaMostrada * 100), arc = Math.min(100, pct);
+  const falta = Math.max(0, metaMostrada - cMes), delMes = m.hab / m.habMes;
   const ventasFalta = P.pXV ? Math.max(1, Math.ceil(falta / comb(P.pXV, P.feeObjetivo))) : 1;
   const feeFalta = Math.ceil(falta / 10);
-  $('h-meta').textContent = usd(META);
+  $('h-meta').textContent = usd(metaMostrada);
   $('h-comb').textContent = usd(cMes);
   $('h-comb-s').textContent = m.ventas + (m.ventas === 1 ? ' venta · ' : ' ventas · ') + usd(premMes) + ' de premium + ' + usd(m.fee) + ' de fee';
   $('h-falta').textContent = usd(falta);
+  $('h-premium').textContent = usd(premMes);
   $('h-fee').textContent = usd(m.fee);
-  $('h-fee-s').innerHTML = m.fee > 0
-    ? 'cuenta como <b style="color:#fff">' + usd(m.fee*10) + '</b> para tu escal\u00f3n'
-    : 'a\u00fan sin cobrar este mes';
+  $('h-fee-s').innerHTML = 'Cada $1 de fee vale $10 para tu escal\u00f3n. ' + (m.fee > 0
+    ? 'Cuenta como <b>' + usd(m.fee*10) + '</b> para tu escal\u00f3n'
+    : 'A\u00fan sin cobrar este mes');
   $('h-falta-s').innerHTML = falta ? 'o <b style="color:#fff">' + usd(feeFalta) + '</b> de fee' : '¡lo lograste!';
-  const alDia = Math.round(META * delMes), marca = Math.min(100, Math.round(delMes*100));
+  const alDia = Math.round(metaMostrada * delMes), marca = Math.min(100, Math.round(delMes*100));
+  const diasQuedan = Math.max(0, Math.round((m.habMes||0) - (m.hab||0)));
+  $('h-dias').textContent = String(diasQuedan);
+  const ritmoCierre = (DIAG && DIAG.metricas && DIAG.metricas.ritmo != null) ? DIAG.metricas.ritmo : (delMes > 0 ? cMes / delMes : cMes);
+  $('h-ritmo').innerHTML = 'A este ritmo cierras en <b>' + usd(ritmoCierre) + '</b>.';
   $('h-linea').innerHTML = falta === 0
     ? '<b>Meta cumplida.</b> Lo que entre ahora sube tus bonos.'
     : (cMes >= alDia
@@ -576,13 +667,18 @@ function hoy(){
   $('vig').textContent = 'Plan de ' + A.mesTxt + (A.turbo.vigencia ? ' · vigente hasta el ' + Number(A.turbo.vigencia.slice(8)) : '');
   $('meta-st').textContent = pct >= 100 ? 'Cumplida' : pct + ' %'; $('meta-st').className = 'st ' + (pct>=100?'on':(cMes>=alDia?'warn':'off'));
   $('meta-bar').innerHTML = '<div class="bar" style="height:16px"><i class="' + (pct>=100?'':(cMes>=alDia?'':'w')) + '" style="width:' + Math.min(100,pct) + '%"></i><u style="position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--pg-ink);opacity:.5;left:' + marca + '%"></u></div>'
-    + '<div class="bar-l"><span><b>' + usd(cMes) + '</b> · ' + pct + ' %</span><span>hoy deberías ir en ' + usd(alDia) + '</span><span>' + usd(META) + '</span></div>'
+    + '<div class="bar-l"><span><b>' + usd(cMes) + '</b> · ' + pct + ' %</span><span>hoy deberías ir en ' + usd(alDia) + '</span><span>' + usd(metaMostrada) + '</span></div>'
     + '<div class="falta">' + (falta ? 'Te faltan <b>' + usd(falta) + '</b>: ' + ventasFalta + (ventasFalta===1?' venta':' ventas') + ' o <b>' + usd(feeFalta) + '</b> de fee.' : 'Cumplida.') + '</div>';
   const comSep = comDeMes(YM), comAgo = comDeMes(YMP);
   const mejor = P.cerrados.filter(r => r[0] >= ANIO0 && r[3] > 0).map(r => [r[0], comDeMes(r[0])]).filter(x => x[1] != null).sort((a,b) => b[1]-a[1])[0];
   $('h-com').textContent = usd(comSep || 0);
   $('h-com-s').innerHTML = 'Agosto: ' + usd(comAgo || 0) + (mejor ? ' · tu mejor mes: ' + usd(mejor[1]) + ' en ' + MESL[Number(mejor[0].slice(5,7))-1] : '');
-  const col = pct >= 100 ? C.mint : (cMes >= alDia ? '#5FD3BB' : (cMes >= alDia*0.6 ? '#F0C55A' : '#F08A80'));
+  /* v15.1 · A quien va en curva de aprendizaje no se le pinta el anillo en rojo:
+     esta aprendiendo y su meta sube sola. Decision de Andres, 18-sep-2026. */
+  const enCurva = !!(typeof DIAG !== 'undefined' && DIAG && DIAG.curva && DIAG.curva.activa);
+  const col = pct >= 100 ? C.mint
+            : enCurva ? '#5FD3BB'
+            : (cMes >= alDia ? '#5FD3BB' : (cMes >= alDia*0.6 ? '#F0C55A' : '#F08A80'));
   new Chart($('ringHoy'), { type:'doughnut', data:{ datasets:[{ data:[arc, 100-arc], backgroundColor:[col, 'rgba(255,255,255,.12)'], borderWidth:0 }] },
     options:{ cutout:'74%', plugins:{legend:{display:false}, tooltip:{enabled:false}}, animation:false },
     plugins:[{ id:'ctr', afterDraw(c){ if(!c.chartArea) return; const {ctx, chartArea:{left,right,top,bottom}} = c; ctx.save(); ctx.textAlign='center'; ctx.textBaseline='middle';
@@ -733,7 +829,7 @@ function simular(){
   $('t1-sub').innerHTML = '<b>' + meses + ' meses</b> · <b>' + usd(extra) + ' extra al mes</b> · tu comisión tiene que ser de <b>' + usd(hoyPago + extra) + '</b> cada mes. Tres formas:';
   tramo($('t1'), hoyPago + extra);
   if (cuota > 0) { $('t2-card').style.display = '';
-    $('t2-titulo').innerHTML = 'Y después: la cuota de <span style="color:var(--pg-mint-deep)">' + usd(cuota) + '</span> al mes es tu nuevo piso';
+    $('t2-titulo').innerHTML = 'Y después: la cuota de <span style="color:var(--pg-mint-deep)">' + usd(cuota) + '</span> al mes es tu nueva base';
     $('t2-sub').innerHTML = 'Desde el ' + fecha + ' tu comisión no puede bajar de <b>' + usd(hoyPago + cuota) + '</b> al mes. <b>Todos los meses.</b> Así se sostiene:';
     tramo($('t2'), hoyPago + cuota); } else $('t2-card').style.display = 'none';
 
@@ -798,7 +894,7 @@ function pintaFrena(){
   if (!out.length) out.push(['Nada en rojo', '—', 'Vas bien. Sostén el ritmo y sube de escalón.']);
   $('frena').innerHTML = out.map(([t,v,d]) => '<div><div class="t">' + t + '</div><div class="v">' + v + '</div><div class="d">' + d + '</div></div>').join('');
 }
-function irAPlan(t){ document.querySelector('.pg-side a[data-go="meta"]').click(); $('p-plan').value = t; $('p-plan').scrollIntoView({ behavior:'smooth', block:'center' }); }
+function irAPlan(t){ document.querySelector('.pg-side a[data-go="historia"]').click(); $('p-plan').value = t; $('p-plan').scrollIntoView({ behavior:'smooth', block:'center' }); }
 
 /* ================= MI PLAN ================= */
 let PLANES = [];
@@ -822,6 +918,9 @@ function pintaPlanes(){
 function pintarTodo(){
   try { pintaDespierta(); } catch (e) { console.error('despierta', e); }
   hoy(); reconocimientos(); pintaFrena(); pintaTips(); pintaPlanes(); pintaEco();
+  try { pintaCurva(DIAG); } catch (e) { console.error('curva', e); }
+  try { bloqueActividad(); } catch (e) { console.error('actividad2', e); }
+  try { bindSueno(); pintaSueno(DIAG); } catch (e) { console.error('sueno', e); }
   if (!SOLO_LECTURA && A.logros && A.logros.length && A.logros[0].chispa) {
     const l = A.logros[0];
     setTimeout(() => { chispazo(l.chispa); if (!SOLO_LECTURA) SB.rpc('mi_proceso_visto', { p_id: l.id }); }, 900);
@@ -1244,6 +1343,14 @@ async function renderShell(session){
       ? ('No encontré a ' + VER_COMO.email + ' como asesor. Revisa el correo en Control Maestro.')
       : 'Tu usuario todavía no está ligado a un asesor. Avísale a Andrés.');
     if (SOLO_LECTURA) { bannerConNombre(data.nombre); document.title = 'GABI · Mi proceso — ' + data.nombre; }
+    /* v15: mi_diagnostico() trae la curva de aprendizaje (si aplica) y el
+       sueno ya guardado. Si falla (RPC vieja, red, etc.) la pantalla sigue
+       con la meta plena de siempre y Mi sueno arranca vacio: nunca rompe
+       el arranque. En modo "ver como" esto lee al director/socio que abrio
+       el link, no a la persona simulada -- mismo limite que ya documenta
+       ver-como-helper.js para el resto de la pantalla. */
+    try { const diagR = await SB.rpc('mi_diagnostico'); if (!diagR.error) DIAG = diagR.data; }
+    catch (e) { console.warn('mi_diagnostico', e); DIAG = null; }
     prepararDatos(data);
     pintarCabecera();
     pintarTodo();
@@ -1265,6 +1372,123 @@ SB.auth.onAuthStateChange((_e, session) => {
   if (session) renderShell(session);
   else { YA_PINTADO = false; renderLogin(); }
 });
+
+/* ================= v15: MI MES / MI ACTIVIDAD / MI SUEÑO ================= */
+function pintaCurva(diag){
+  const el = $('curva-franja'); if (!el) return;
+  const cv = diag && diag.curva;
+  if (!cv) { el.style.display = 'none'; return; }
+  el.style.display = '';
+  const t = $('curva-titulo'), r = $('curva-ritmo');
+  if (t) t.textContent = cv.titulo || '';
+  if (r) r.textContent = cv.ritmo || '';
+}
+
+function bloqueActividad(){
+  const el = $('act2-bloque'); if (!el) return;
+  const L = A.llamadas, T = A.actividad;
+  const linL = !L
+    ? '<div class="al2"><span class="k">Llamadas</span><span class="d">Todav\u00eda no llega tu dato de llamadas.</span></div>'
+    : '<div class="al2"><span class="k">Llamadas</span><span class="v">' + (Number(L.hoy)||0) + '</span>'
+      + '<span class="d">hoy \u00b7 ' + (Number(L.mes)||0) + ' en el mes'
+      + ((L.timbreHoy == null && L.convHoy == null) ? '' : ' \u00b7 ' + (Number(L.timbreHoy)||0) + ' solo timbre hoy \u00b7 ' + (Number(L.convHoy)||0) + ' de m\u00e1s de 2 minutos hoy')
+      + '</span></div>';
+  const linP = !T
+    ? '<div class="al2"><span class="k">Positivos</span><span class="d">Todav\u00eda no llega tu actividad.</span></div>'
+    : '<div class="al2"><span class="k">Positivos</span><span class="v">' + (Number(T.hoy)||0) + '</span><span class="d">hoy \u00b7 ' + (Number(T.mes)||0) + ' en el mes</span></div>';
+  el.innerHTML = linL + linP;
+}
+
+const copFmt = n => (n == null ? '\u2014' : '$' + Math.round(n).toLocaleString('es-CO'));
+const copNum = n => (n == null ? '\u2014' : Math.round(n).toLocaleString('es-CO'));
+const usdOD  = v => (v == null ? '\u2014' : usd(v));
+const numOD  = v => (v == null ? '\u2014' : v);
+
+function leerSueno(){
+  return {
+    que: $('sn-que').value,
+    monto: Number($('sn-monto').value) || 0,
+    meses: Math.max(1, Math.round(Number($('sn-meses').value) || 0)),
+    cuota: Number($('sn-cuota').value) || 0
+  };
+}
+
+function precargaSueno(s){
+  if (!s) return;
+  if (s.que) $('sn-que').value = s.que;
+  if (s.monto != null) $('sn-monto').value = s.monto;
+  if (s.meses != null) $('sn-meses').value = s.meses;
+  if (s.cuota != null) $('sn-cuota').value = s.cuota;
+}
+
+function pintaResultadoSueno(r){
+  const el = $('sn-resultado'); if (!el) return;
+  if (!r) { el.innerHTML = ''; return; }
+  let html = '';
+  html += '<div class="sng-linea">' + copFmt(r.monto_cop) + ' son <b>' + usdOD(r.monto_usd) + '</b> a la TRM de la casa (' + copNum(r.trm) + '). Son <b>' + usdOD(r.ahorro_mes) + ' al mes</b> durante ' + numOD(r.meses) + ' meses.</div>';
+  if (r.meses_full == null) {
+    html += '<div class="sng-linea">Todav\u00eda no tengo suficiente historia tuya para calcularlo.</div>';
+  } else {
+    html += '<div class="sng-linea">Con tu comisi\u00f3n real de <b>' + usdOD(r.comision_mes) + ' al mes</b>, guard\u00e1ndola toda lo logras en <b>' + numOD(r.meses_full) + ' meses</b>; guardando la mitad, en ' + numOD(r.meses_mitad) + '.</div>';
+  }
+  if (r.nuevo) {
+    let msg = 'Vas bien: ya est\u00e1s vendiendo, y eso es lo que importa.';
+    if (r.estirado) msg += ' Est\u00e1s aprendiendo y tu meta sube sola: tu sue\u00f1o se mira a ' + numOD(r.meses) + ' meses.';
+    html += '<div class="pg-ok-box">' + msg + '</div>';
+  } else if (r.falta_pct != null) {
+    html += '<div class="sng-linea">Para hacerlo en ' + numOD(r.meses_pedidos) + ' meses tendr\u00edas que vender <b>' + usdOD(r.necesita) + ' de combinada al mes</b>. Hoy vas en ' + usdOD(r.ritmo) + '.</div>';
+    if (r.imposible) {
+      html += '<div class="pg-warn-box">Solo vendiendo no llegas en ' + numOD(r.meses_pedidos) + ' meses. <b>Con estos planes llegas en ' + numOD(r.meses_con_planes) + '.</b></div>';
+    }
+  }
+  if (r.cuota_usd != null) {
+    html += '<div class="sng-linea">Y despu\u00e9s, la cuota de <b>' + usdOD(r.cuota_usd) + ' al mes</b> es tu nueva base: tu comisi\u00f3n no puede bajar de <b>' + usdOD(r.comision_piso) + '</b>.</div>';
+  }
+  if (r.planes && r.planes.length) {
+    html += r.planes.map(p => '<div class="sng-plan"><h4>' + (p.titulo||'') + '</h4><p>' + (p.texto||'') + '</p>' + (p.que_pido ? '<div class="pido">' + p.que_pido + '</div>' : '') + '</div>').join('');
+  }
+  el.innerHTML = html;
+}
+
+async function correrSimulacion(monto, meses, cuota){
+  const errEl = $('sn-err');
+  try {
+    const { data, error } = await SB.rpc('simular_sueno', { p_monto_cop: monto, p_meses: meses, p_cuota_cop: cuota });
+    if (error) throw error;
+    pintaResultadoSueno(data);
+  } catch (e) {
+    if (errEl) errEl.textContent = 'No pude calcular tu plan: ' + (e && e.message ? e.message : e);
+  }
+}
+
+function pintaSueno(diag){
+  const s = diag && diag.sueno;
+  if (!s) return;
+  precargaSueno(s);
+  correrSimulacion(Number(s.monto) || 0, Math.max(1, Math.round(Number(s.meses) || 1)), Number(s.cuota) || 0);
+}
+
+function bindSueno(){
+  const btn = $('sn-ver'); if (!btn) return;
+  btn.onclick = async () => {
+    const errEl = $('sn-err'); if (errEl) errEl.textContent = '';
+    if (bloqueado('Est\u00e1s viendo la pantalla de otra persona: su sue\u00f1o no se puede guardar desde aqu\u00ed.')) return;
+    const s = leerSueno();
+    if (!s.que) { if (errEl) errEl.textContent = 'Escoge qu\u00e9 quieres.'; return; }
+    if (!s.monto || s.monto <= 0) { if (errEl) errEl.textContent = 'Cu\u00e1nto tienes que juntar tiene que ser mayor que cero.'; return; }
+    if (!s.meses || s.meses <= 0) { if (errEl) errEl.textContent = 'En cu\u00e1ntos meses tiene que ser al menos 1.'; return; }
+    if (errEl) errEl.textContent = 'Calculando\u2026';
+    try {
+      const g = await SB.rpc('guardar_sueno', { p_que: s.que, p_monto_cop: s.monto, p_meses: s.meses, p_cuota_cop: s.cuota });
+      if (g.error) throw g.error;
+      if (errEl) errEl.textContent = '';
+      await correrSimulacion(s.monto, s.meses, s.cuota);
+    } catch (e) {
+      if (errEl) errEl.textContent = 'No se pudo guardar: ' + (e && e.message ? e.message : e);
+    }
+  };
+}
+
 document.addEventListener('DOMContentLoaded', boot);
 
 </script>
@@ -1274,7 +1498,7 @@ document.addEventListener('DOMContentLoaded', boot);
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="gabi-asesor.html";
-var PGV_VERSION=14; // v14 - combinada vuelve a premium + fee x10, igual que el reporte financiero; el motor ya la manda asi. | v12 - ARREGLO: 'Mi historia' y 'Mi meta' se veian en blanco. Dos </div> de mas (desde v4, el 5 de septiembre) cerraban <main> antes de tiempo y el navegador sacaba esas dos secciones fuera del contenedor: se pintaban 1000px mas abajo, detras del area vacia, y la grafica de Mi historia ni siquiera se dibujaba. Ademas la meta que se le muestra al asesor pasa a ser SIEMPRE la plena (70.000): la rampa de la camada es una vara de direccion, se queda en el tablero del equipo. | v11 - Tarjeta Llamadas de hoy en Despierta: justo despues del reloj aparece cuanto lleva hoy (salientes, contestadas, minutos al telefono y mensajes si hay), cuanto llevaba ayer, cuanto en el mes, y la tira de los ultimos 10 dias. Sale de A.llamadas, el mismo dato de RingCentral que ya entraba cada 15 minutos; si el asesor no tiene usuario de RingCentral la tarjeta simplemente no aparece. La vieja llamadasHtml() de Mi actividad (oculta desde v10) queda jubilada: ya no se llama desde ningun lado. // v10 - Despierta: el primer pantallazo de Hoy. Un reloj oscuro con los dias que lleva sin mandar nada a cotizar (diciendo hasta cuando llegan los datos de HubSpot, para no acusar dias que todavia no se sincronizan), la racha de dias seguidos con un positivo y la del equipo, y la promesa del dia: 1, 2 o 3 a cotizar, que se guarda en public.asesor_promesa_dia y se ve como cinco puntos de lunes a viernes. Debajo, la escalera del equipo con meses cerrados (cuantas ventas hace un mes segun cuanto se mando a cotizar) y Dos futuros, con la misma comision() de la casa: lo que paga su ritmo de hoy contra el de su mejor mes -o el escalon de arriba de la escalera si no tiene mejor mes- de aqui a fin de ano. Mi actividad queda oculta: el reloj la reemplaza, pero la funcion sigue ahi. Nada de la meta, los incentivos, el escalon ni la comision se toco. // v9 - Una sola meta y una sola vara. La meta del mes ya no es 70.000 fijo para todos: sale de v_meta_por_agente y es la MISMA que ve el lider en el tablero del equipo, con su rampa (50% los primeros 3 meses en operacion, 75% del 4 al 6, plena despues) y diciendo a cuanto sube y cuando. Y "combinada" pasa a significar lo mismo en toda la casa: premium + fee. El x10 no se borra: se queda en el bloque de incentivos, donde es verdad, porque es la vara del ESCALON DE COMISION, no la de la meta. El piso de direccion sigue sin aparecer en esta pantalla, ni en el texto ni en los comentarios. // v8 - "Ver como" real: con ?ver_como=<correo> en la URL, y SOLO si la sesion que abre el link es director o socio de verdad (gabi_accesos), la pantalla pide mi_proceso(<correo>) y muestra las cifras REALES de esa persona, con franja fija y todo lo que escribe apagado (plan del mes y marcar chispazo visto). Sin el parametro, o para cualquier otra sesion, nada cambia. // v7 - Llamadas en tiempo casi real (API de RingCentral cada 15 min): hoy, ayer, mensajes y hora de actualizacion. // v6 - Bloque de llamadas (RingCentral por correo diario -> public.actividad_llamadas_dia): total del mes, salientes, contestadas, minutos, ayer y la tira de dias. // v5 - Un positivo pasa a ser el negocio que ENTRA a la etapa Audit / Quote (mandado a cotizar), no el creado; se muestra aparte cuantos negocios monto. // v4 - Bloque Mi actividad con el estandar de un positivo por dia habil: barra del mes, la marca de donde deberia ir hoy, la tira de los ultimos dias habiles y el promedio del equipo. Sale de public.actividad_hubspot_dia. // v3 - La meta del asesor pasa de 80.000 a 70.000 y ya no va quemada en el HTML: sale de la RPC (A.meta_combinada), asi un cambio de meta no obliga a republicar. // v2 - Mi proceso v2: tres pestanas (Hoy, Mi historia, Mi meta) sobre la RPC public.mi_proceso(). Meta combinada (entonces 80.000), incentivos del mes con barras, mejores del equipo con foto, chispazos y eco anonimo, simulador y plan del mes guardado en public.asesor_plan. // v1 - Lo que dejas de ganar.
+var PGV_VERSION=15; // v15 - "Mi proceso" pasa a ser una sola pantalla de tres bloques (Mi mes, Mi actividad, Mi sueño) mas los mejores del mes; el resto (historia mes a mes, comision y escalones, patrones, palanca, estrategias, plan del mes y el detalle de Despierta) se movio a la pestana "Mi historia" sin borrar nada. Nuevo: Mi sueño (guardar_sueno / simular_sueno) y la franja de curva de aprendizaje de mi_diagnostico(). | v14 - combinada vuelve a premium + fee x10, igual que el reporte financiero; el motor ya la manda asi. | v12 - ARREGLO: 'Mi historia' y 'Mi meta' se veian en blanco. Dos </div> de mas (desde v4, el 5 de septiembre) cerraban <main> antes de tiempo y el navegador sacaba esas dos secciones fuera del contenedor: se pintaban 1000px mas abajo, detras del area vacia, y la grafica de Mi historia ni siquiera se dibujaba. Ademas la meta que se le muestra al asesor pasa a ser SIEMPRE la plena (70.000): la rampa de la camada es una vara de direccion, se queda en el tablero del equipo. | v11 - Tarjeta Llamadas de hoy en Despierta: justo despues del reloj aparece cuanto lleva hoy (salientes, contestadas, minutos al telefono y mensajes si hay), cuanto llevaba ayer, cuanto en el mes, y la tira de los ultimos 10 dias. Sale de A.llamadas, el mismo dato de RingCentral que ya entraba cada 15 minutos; si el asesor no tiene usuario de RingCentral la tarjeta simplemente no aparece. La vieja llamadasHtml() de Mi actividad (oculta desde v10) queda jubilada: ya no se llama desde ningun lado. // v10 - Despierta: el primer pantallazo de Hoy. Un reloj oscuro con los dias que lleva sin mandar nada a cotizar (diciendo hasta cuando llegan los datos de HubSpot, para no acusar dias que todavia no se sincronizan), la racha de dias seguidos con un positivo y la del equipo, y la promesa del dia: 1, 2 o 3 a cotizar, que se guarda en public.asesor_promesa_dia y se ve como cinco puntos de lunes a viernes. Debajo, la escalera del equipo con meses cerrados (cuantas ventas hace un mes segun cuanto se mando a cotizar) y Dos futuros, con la misma comision() de la casa: lo que paga su ritmo de hoy contra el de su mejor mes -o el escalon de arriba de la escalera si no tiene mejor mes- de aqui a fin de ano. Mi actividad queda oculta: el reloj la reemplaza, pero la funcion sigue ahi. Nada de la meta, los incentivos, el escalon ni la comision se toco. // v9 - Una sola meta y una sola vara. La meta del mes ya no es 70.000 fijo para todos: sale de v_meta_por_agente y es la MISMA que ve el lider en el tablero del equipo, con su rampa (50% los primeros 3 meses en operacion, 75% del 4 al 6, plena despues) y diciendo a cuanto sube y cuando. Y "combinada" pasa a significar lo mismo en toda la casa: premium + fee. El x10 no se borra: se queda en el bloque de incentivos, donde es verdad, porque es la vara del ESCALON DE COMISION, no la de la meta. Ese limite de direccion sigue sin aparecer en esta pantalla, ni en el texto ni en los comentarios. // v8 - "Ver como" real: con ?ver_como=<correo> en la URL, y SOLO si la sesion que abre el link es director o socio de verdad (gabi_accesos), la pantalla pide mi_proceso(<correo>) y muestra las cifras REALES de esa persona, con franja fija y todo lo que escribe apagado (plan del mes y marcar chispazo visto). Sin el parametro, o para cualquier otra sesion, nada cambia. // v7 - Llamadas en tiempo casi real (API de RingCentral cada 15 min): hoy, ayer, mensajes y hora de actualizacion. // v6 - Bloque de llamadas (RingCentral por correo diario -> public.actividad_llamadas_dia): total del mes, salientes, contestadas, minutos, ayer y la tira de dias. // v5 - Un positivo pasa a ser el negocio que ENTRA a la etapa Audit / Quote (mandado a cotizar), no el creado; se muestra aparte cuantos negocios monto. // v4 - Bloque Mi actividad con el estandar de un positivo por dia habil: barra del mes, la marca de donde deberia ir hoy, la tira de los ultimos dias habiles y el promedio del equipo. Sale de public.actividad_hubspot_dia. // v3 - La meta del asesor pasa de 80.000 a 70.000 y ya no va quemada en el HTML: sale de la RPC (A.meta_combinada), asi un cambio de meta no obliga a republicar. // v2 - Mi proceso v2: tres pestanas (Hoy, Mi historia, Mi meta) sobre la RPC public.mi_proceso(). Meta combinada (entonces 80.000), incentivos del mes con barras, mejores del equipo con foto, chispazos y eco anonimo, simulador y plan del mes guardado en public.asesor_plan. // v1 - Lo que dejas de ganar.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;
