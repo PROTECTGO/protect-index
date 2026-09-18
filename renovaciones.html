@@ -714,6 +714,7 @@ let AÑO_ACTUAL = null, MES_ACTUAL = null, MES_SEL = null;
 let IDX_MESES = [];      // v30.2 · resumen del mes calculado de la cola que ve la persona
 let AÑO_FILAS = [];      // v30 · v_renov_cartera_estado_visible (la cartera de HubSpot)
 let AGENTES_RESUMEN = [];// v30 · se calcula de la cola, por vendedor de la cuenta
+let PERSONAS_KAREN = [];  // v31.1 · la lista de Karen: roster_agentes ACTIVO / KAREN. Salen TODOS, tengan o no cuentas este mes.
 let ALERTA_VNR = [];     // v_alerta_vende_no_renueva_visible
 let ALERTA_GRANDES = []; // v_alerta_cuenta_grande_visible
 let BOLSA_FILAS = [];    // v_bolsa_persona_mensual, alias_bos='Karen Suaza', cuenta_en_firme
@@ -793,7 +794,7 @@ async function cargarTodo(){
     Promise.resolve({ data: [] }),   /* v30.2 · las cifras del mes se calculan de la cola */
     fetchPaginado(()=> SB.from('v_renov_cartera_estado_visible').select('*')
       .gte('mes', mesISO(AÑO_ACTUAL,1)).lte('mes', mesISO(AÑO_ACTUAL,12))),
-    Promise.resolve({ data: [] }),   /* v30 · los vendedores se calculan de la cola, no de otra vista */
+    SB.from('roster_agentes').select('nombre').eq('estado','ACTIVO').eq('area_renovaciones','KAREN').order('nombre',{ascending:true}),   /* v31.1 · la lista de Karen */
     SB.from('v_alerta_vende_no_renueva_visible').select('*'),
     SB.from('v_alerta_cuenta_grande_visible').select('*').order('dias_restantes',{ascending:true}),
     SB.from('v_bolsa_persona_mensual').select('*').eq('alias_bos','Karen Suaza').eq('cuenta_en_firme',true).order('mes',{ascending:true}),
@@ -827,6 +828,7 @@ async function cargarTodo(){
   /* v29 · cada bloque se pinta aparte: si uno falla, los demas siguen vivos */
   nav();
   bloque('cola','tu cola del mes', pintarMes);
+  PERSONAS_KAREN = (agR && agR.data) ? agR.data.map(x=>x.nombre).filter(Boolean) : [];
   bloque('vlist','vendedores', vend);
   if(grR.error||vnrR.error) errBloque('grandes','el muro'); else bloque('grandes','el muro', muro);
   if(bolsaR.error) errBloque('bolsaKpis','la bolsa'); else bloque('bolsaKpis','la bolsa', bolsa);
@@ -1451,8 +1453,10 @@ function vend(){
      una sola fuente, sin desfase con lo que Karen ve abajo. */
   const el = $('vlist');
   const filas = filasDelMes().filter(r=>r.en_base);
-  if(!filas.length){ el.innerHTML = '<div class="vacio">Este mes todavía no tiene cartera montada.</div>'; return; }
+  if(!filas.length && !PERSONAS_KAREN.length){ el.innerHTML = '<div class="vacio">Este mes todavía no tiene cartera cargada.</div>'; return; }
   const porV = {};
+  /* v31.1 · todos los de la lista de Karen aparecen, aunque tengan cero este mes (muchos renuevan en 2027) */
+  PERSONAS_KAREN.forEach(n=>{ porV[n] = { v:n, llaves:new Set(), ren:new Set(), vence:0, quedo:0, faltan:0 }; });
   filas.forEach(r=>{
     const k = r.persona || 'Cartera agencia';   /* v31 · persona del Excel de Andrés, solo lista de Karen */
     const a = porV[k] || (porV[k] = { v:k, llaves:new Set(), ren:new Set(), vence:0, quedo:0, faltan:0 });
@@ -1462,18 +1466,18 @@ function vend(){
     a.quedo += Number(r.premium_renovado||0);
   });
   const arr = Object.values(porV).map(a=>({ v:a.v, n:a.llaves.size, ren:a.ren.size,
-    vence:a.vence, quedo:a.quedo, faltan:a.faltan })).sort((a,b)=> b.n-a.n || b.vence-a.vence);
+    vence:a.vence, quedo:a.quedo, faltan:a.faltan })).sort((a,b)=> b.n-a.n || b.vence-a.vence || a.v.localeCompare(b.v));
   const max = Math.max(1, ...arr.map(a=>a.n));
-  const totN = arr.reduce((s,a)=>s+a.n,0), totR = arr.reduce((s,a)=>s+a.ren,0);
+  const totN = arr.reduce((s,a)=>s+a.n,0), totR = arr.reduce((s,a)=>s+a.ren,0);   /* los de cero no mueven el promedio */
   const prom = totN ? 100*totR/totN : 0;
   el.innerHTML = arr.map(a=>{
     const pct = a.n ? 100*a.ren/a.n : 0;
     const cls = pct>=META_PCT?'bien':(pct<prom?'bajo':'');
     return '<div class="vr" data-v="'+esc(a.v)+'" tabindex="0" role="button">'+
-      '<div class="vn">'+esc(a.v)+'<small>'+a.ren+' de '+a.n+' renovadas'+(a.faltan?' · '+a.faltan+' sin monto':'')+'</small></div>'+
+      '<div class="vn">'+esc(a.v)+'<small>'+(a.n ? a.ren+' de '+a.n+' renovadas'+(a.faltan?' · '+a.faltan+' sin monto':'') : 'sin cuentas este mes')+'</small></div>'+
       '<div class="vbars"><div class="vb a" data-w="'+(100*a.n/max)+'" style="width:0"></div>'+
         '<div class="vb b" data-w="'+(100*a.ren/max)+'" style="width:0"></div></div>'+
-      '<div class="vnum">'+(a.vence>0?fmtUSD(a.vence):'—')+'<br><span class="vpct '+cls+'">'+pct.toFixed(0)+'%</span></div></div>';
+      '<div class="vnum">'+(a.vence>0?fmtUSD(a.vence):'—')+'<br><span class="vpct '+cls+'">'+(a.n ? pct.toFixed(0)+'%' : '—')+'</span></div></div>';
   }).join('');
   document.querySelectorAll('#vlist .vr').forEach((row,i)=>{
     const a = arr[i];
@@ -1682,7 +1686,7 @@ $('btn-imprimir-ano').addEventListener('click', ()=> imprimir('ano'));
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="renovaciones.html";
-var PGV_VERSION=31; // v31 (18-sep-2026) LA CARTERA ES EL EXCEL DE ANDRES y "cada gente" es LA PERSONA DEL EXCEL: Vendedores, la tarjeta y el filtro agrupan por persona (solo la lista de Karen: roster ACTIVO/KAREN; el resto se recoge como Cartera agencia). Quien vendio la poliza segun el BOS queda como dato chico. Y la marca de Karen SE VE: si el motor no ha cerrado la cuenta, la etiqueta es la de ella; Renovada sin BOS sale en ambar como "Renovada - falta el BOS" y no cuenta hasta que Jeff la registre. --- v30.2 (17-sep-2026) ARREGLO: el hero y la cinta se calculan de la MISMA cola que ve cada persona. Antes salian de la vista agregada por mes, que solo ve direccion: a Karen le aparecia \"sin cartera cargada este mes\" con su cola llena debajo. Ahora hero, cinta, vendedores y cola cuentan siempre lo mismo. --- v30 (17-sep-2026) LA CARTERA SALE DE HUBSPOT: la cola, la cinta y la franja leen v_renov_cartera_estado_visible y v_renov_cartera_graficas_visible — lo que Andres monta en HubSpot es la lista, y el motor solo marca la renovacion cuando Jeff la registra en el BOS (Sale - Renewal en la ventana -60/+150 de la fecha de HubSpot), con fecha, quien y CUANTO QUEDO. Hero en premium (que vence · que quedo · % retenido) con GUION, nunca cero, cuando a HubSpot le faltan montos: un % sobre base incompleta miente (septiembre daba 310%). La cinta deja de ser barras y pasa a dos curvas (vence punteada, quedo en menta); meses sin cartera salen "sin cartera". Filtros nuevos: En juego / Vencidas / Renovadas / Senal del equipo. Cinco avisos en ambar que NO cierran cuentas: el equipo la da por perdida, renovo y falta registrarla en el BOS, hay una venta nueva en la ventana, renovada con premium $0, esta dos veces en HubSpot. Una cuenta solo se pierde cuando Andres la marca (renov_cartera_marcar). Vendedores se calcula de la misma cola, por vendedor de la cuenta, y filtra la cola al hacer clic. La bolsa filtra cuenta_en_firme (arranca el 1-sep). --- v29 (15-sep-2026) RONDA VISUAL, cero cambios de datos: buscador en la cola (empresa/DOT/vendedor, repinta solo la lista); teclado real (casillas y meses son <button role=tab>, la tarjeta abre con Enter/Espacio, foco menta visible); movil de verdad a 1080 y 860 (la cinta desliza en su propio carril, franja/tarjeta/filas a una columna); el estado vive en la URL (#v casilla, #m mes, #f filtro, #q busqueda, #c ficha abierta) sin pisar el hash de recuperacion de clave; esqueleto de carga y error por bloque con Reintentar (un bloque caido ya no deja la pantalla en blanco); un solo tooltip delegado en vez de cuatro onmousemove; la meta del area sale de estandar_pct y no del codigo (estaba quemada en 3 sitios); svgBolsa con xMidYMid meet; clases que faltaban del estandar (.card.abierta, .u-mint, .st-n .v.ambar, .st-aviso, --rojo-claro); Arial fuera del boton Volver y JetBrains Mono 700 en el link de fuentes. --- v28: Ficha de cuenta: se abre al hacer clic en una tarjeta de la cola (acordeon, no modal). Cuatro bloques: Estado (los mismos de siempre, "retirado" ahora se lee "Cancelada / Retirada"), Por que (motivo obligatorio a renov_trabajo.motivo_perdido en Perdida/Cancelada-Retirada, opcional como nota suelta a renov_notas en cualquier otro estado, con historial de notas), Corregir fecha de renovacion (inserta en renov_ajustes con ajustado_user_id=SESION_UID -- mismo bug de uuid que se acaba de arreglar, aviso claro antes de guardar), y el aviso a Financiera que es automatico (v_ajustes_pendientes_bos). Nada se borra.
+var PGV_VERSION=31; // v31.1 (18-sep-2026) Vendedores muestra a TODA la lista de Karen (roster ACTIVO/KAREN), tengan o no cuentas este mes; y lo que no es de la lista (Jorge, Retencion) cae a la persona de la regla de trabajo (Karen en sep-oct), no a Cartera agencia. --- v31 (18-sep-2026) LA CARTERA ES EL EXCEL DE ANDRES y "cada gente" es LA PERSONA DEL EXCEL: Vendedores, la tarjeta y el filtro agrupan por persona (solo la lista de Karen: roster ACTIVO/KAREN; el resto se recoge como Cartera agencia). Quien vendio la poliza segun el BOS queda como dato chico. Y la marca de Karen SE VE: si el motor no ha cerrado la cuenta, la etiqueta es la de ella; Renovada sin BOS sale en ambar como "Renovada - falta el BOS" y no cuenta hasta que Jeff la registre. --- v30.2 (17-sep-2026) ARREGLO: el hero y la cinta se calculan de la MISMA cola que ve cada persona. Antes salian de la vista agregada por mes, que solo ve direccion: a Karen le aparecia \"sin cartera cargada este mes\" con su cola llena debajo. Ahora hero, cinta, vendedores y cola cuentan siempre lo mismo. --- v30 (17-sep-2026) LA CARTERA SALE DE HUBSPOT: la cola, la cinta y la franja leen v_renov_cartera_estado_visible y v_renov_cartera_graficas_visible — lo que Andres monta en HubSpot es la lista, y el motor solo marca la renovacion cuando Jeff la registra en el BOS (Sale - Renewal en la ventana -60/+150 de la fecha de HubSpot), con fecha, quien y CUANTO QUEDO. Hero en premium (que vence · que quedo · % retenido) con GUION, nunca cero, cuando a HubSpot le faltan montos: un % sobre base incompleta miente (septiembre daba 310%). La cinta deja de ser barras y pasa a dos curvas (vence punteada, quedo en menta); meses sin cartera salen "sin cartera". Filtros nuevos: En juego / Vencidas / Renovadas / Senal del equipo. Cinco avisos en ambar que NO cierran cuentas: el equipo la da por perdida, renovo y falta registrarla en el BOS, hay una venta nueva en la ventana, renovada con premium $0, esta dos veces en HubSpot. Una cuenta solo se pierde cuando Andres la marca (renov_cartera_marcar). Vendedores se calcula de la misma cola, por vendedor de la cuenta, y filtra la cola al hacer clic. La bolsa filtra cuenta_en_firme (arranca el 1-sep). --- v29 (15-sep-2026) RONDA VISUAL, cero cambios de datos: buscador en la cola (empresa/DOT/vendedor, repinta solo la lista); teclado real (casillas y meses son <button role=tab>, la tarjeta abre con Enter/Espacio, foco menta visible); movil de verdad a 1080 y 860 (la cinta desliza en su propio carril, franja/tarjeta/filas a una columna); el estado vive en la URL (#v casilla, #m mes, #f filtro, #q busqueda, #c ficha abierta) sin pisar el hash de recuperacion de clave; esqueleto de carga y error por bloque con Reintentar (un bloque caido ya no deja la pantalla en blanco); un solo tooltip delegado en vez de cuatro onmousemove; la meta del area sale de estandar_pct y no del codigo (estaba quemada en 3 sitios); svgBolsa con xMidYMid meet; clases que faltaban del estandar (.card.abierta, .u-mint, .st-n .v.ambar, .st-aviso, --rojo-claro); Arial fuera del boton Volver y JetBrains Mono 700 en el link de fuentes. --- v28: Ficha de cuenta: se abre al hacer clic en una tarjeta de la cola (acordeon, no modal). Cuatro bloques: Estado (los mismos de siempre, "retirado" ahora se lee "Cancelada / Retirada"), Por que (motivo obligatorio a renov_trabajo.motivo_perdido en Perdida/Cancelada-Retirada, opcional como nota suelta a renov_notas en cualquier otro estado, con historial de notas), Corregir fecha de renovacion (inserta en renov_ajustes con ajustado_user_id=SESION_UID -- mismo bug de uuid que se acaba de arreglar, aviso claro antes de guardar), y el aviso a Financiera que es automatico (v_ajustes_pendientes_bos). Nada se borra.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;
