@@ -983,7 +983,7 @@ const FIDELIDAD_SIMULACION = {
   gabi_360:        { nivel:'no_aplica', nota:'Vive en otro repo/dominio (gabi-liquidez.vercel.app) — no se instrumentó en esta ronda.' },
   gabi_panel:      { nivel:'no_aplica', nota:'Vive en otro repo/dominio (gabi-liquidez.vercel.app) — no se instrumentó en esta ronda.' },
   liquidez_semanal:{ nivel:'no_aplica', nota:'Vive en otro repo/dominio (gabi-liquidez.vercel.app) — no se instrumentó en esta ronda.' },
-  amazon_relay:    { nivel:'no_aplica', nota:'Vive en otro repo de GitHub (amazon-relay) — no se instrumentó en esta ronda.' },
+  amazon_relay:    { nivel:'no_aplica', nota:'Vive dentro del portal, en amazon-relay/index.html (ruta relativa) — pero no se instrumentó "Abrir como" en esta ronda.' },
   pendientes:      { nivel:'no_aplica', nota:'Vive en otro repo de GitHub (pendientes) — no se instrumentó en esta ronda.' },
   pendientes_kam:  { nivel:'no_aplica', nota:'Vive en otro repo de GitHub (pendientes) — no se instrumentó en esta ronda.' },
   business_quote:  { nivel:'no_aplica', nota:'No tiene URL registrada en widgets_registro.' },
@@ -1428,7 +1428,7 @@ document.getElementById("verComoBtn").addEventListener("click", abrirVerComo);
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="control-maestro.html";
-var PGV_VERSION=10; // v10 - Boton "Abrir su portal ->" (Por usuario y Vista Maestra): abre index.html?ver_como=<correo>, el portal real de esa persona, no una herramienta suelta. El "Ver como..." de la barra de arriba se renombra a "Previsualizar permisos..." para no confundirlo (sigue haciendo lo mismo: simular la lista de tarjetas con los cambios sin guardar). FIDELIDAD_SIMULACION suma 'index' como fiel. // v9 - Vista Maestra: gabi_asesor (GABI - Mi proceso) pasa a FIEL. Es la unica pantalla donde "Abrir como" muestra las cifras reales de la persona simulada, no solo su diseno con los datos de quien abre el link. El resto sigue en 'parcial'. // v8 - + panel Fotos: sales@ sube la foto por persona (bucket fotos + portal.fotos_personas), filtro "sin foto todavía"
+var PGV_VERSION=11; // v11 - Amazon Relay dejo de ser otro repo: ahora vive en amazon-relay/index.html dentro del portal. Se corrige la nota de FIDELIDAD_SIMULACION (sigue en 'no_aplica': no se instrumento "Abrir como", pero ya no es por vivir afuera). // v10 - Boton "Abrir su portal ->" (Por usuario y Vista Maestra): abre index.html?ver_como=<correo>, el portal real de esa persona, no una herramienta suelta. El "Ver como..." de la barra de arriba se renombra a "Previsualizar permisos..." para no confundirlo (sigue haciendo lo mismo: simular la lista de tarjetas con los cambios sin guardar). FIDELIDAD_SIMULACION suma 'index' como fiel. // v9 - Vista Maestra: gabi_asesor (GABI - Mi proceso) pasa a FIEL. Es la unica pantalla donde "Abrir como" muestra las cifras reales de la persona simulada, no solo su diseno con los datos de quien abre el link. El resto sigue en 'parcial'. // v8 - + panel Fotos: sales@ sube la foto por persona (bucket fotos + portal.fotos_personas), filtro "sin foto todavía"
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;
