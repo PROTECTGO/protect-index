@@ -738,7 +738,7 @@ const SB_URL='https://hivpqsepwsfmafamxkzy.supabase.co';
 const SB_KEY='sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt';
 const sb=window.supabase.createClient(SB_URL,SB_KEY,{db:{schema:'portal'}});
 /* ===== v6 ===== */
-const PGV_VERSION=8; // v8 - Protect Index: las direcciones internas del sitio pasan a relativas (el sitio ya no depende de como se llame el repo). Las que viajan por correo (recuperar contrasena, fotos de firma, sello de RRHH) quedan absolutas apuntando a protect-index.
+const PGV_VERSION=9; // v9 - Ronda 8 (cobro->invoice directo, monto_manual booleano, paquete Nivel 3) sobre la v8 del rename a Protect Index
 let CARGADO_EN=Date.now();
 let RENT=[], RENOV=[], RENOV_RES=null, CONFIG={}, TRM=4000, ERRORES={}, ES_DIR=false;
 let MES_SEL=new Date().getMonth();
@@ -2562,7 +2562,7 @@ async function crearCobro() {
   if (EDIT.cobro) {
     var idEd = EDIT.cobro;
     var cEd = COBROS.find(function (x) { return x.id === idEd; });
-    base.monto_manual = (cEd && Number(cEd.monto) !== monto) ? true : (cEd ? cEd.monto_manual : null);
+    base.monto_manual = !!((cEd && Number(cEd.monto) !== monto) || (cEd && cEd.monto_manual)); /* v8: bandera booleana, nunca null */
     var re = await sb.from('amazon_cobros').update(base).eq('id', idEd);
     if (re.error) return toast('Error: ' + re.error.message);
     await eventoAudit('editado', `Cobro editado · ${concepto} · ${fmt$(monto)}`, { cliente_id: cliente_id, cobro_id: idEd });
@@ -2582,7 +2582,7 @@ async function crearCobro() {
     if (!ids.length) return toast('Marca al menos un viaje');
   }
   base.gross_total = gross || null;
-  base.monto_manual = (_cbMontoManual || _cbSinOrigen) || null;
+  base.monto_manual = !!(_cbMontoManual || _cbSinOrigen); /* v8: bandera booleana, nunca null (NOT NULL en la base) */
   base.created_by = ME.email;
   if (_cbSinOrigen) base.notas = ((base.notas ? base.notas + ' · ' : '') + 'Cobro manual sin origen (admin)');
 
@@ -2606,7 +2606,9 @@ async function crearCobro() {
 
   _cbMontoManual = false; _cbConceptoManual = false; _cbOrigen = ''; _cbSinOrigen = false;
   toast(sp ? 'Cobro registrado · caso marcado Facturado' : (ids.length ? `Cobro registrado · ${ids.length} viaje${ids.length === 1 ? '' : 's'} en cobro` : 'Cobro registrado'));
-  await loadAll(); render();
+  await loadAll();
+  /* v8: del cobro se pasa directo al invoice, con el cobro ya elegido */
+  if (typeof irAInvoiceDelCobro === 'function') irAInvoiceDelCobro(cobroId); else render();
 }
 
 function editarCobro(id) {
@@ -5380,7 +5382,7 @@ function vPiloto() {
    tabla, paso automatico a Cobros, y plantilla de invoice corporativa.
    Estas funciones REEMPLAZAN a las de arriba.
    ================================================================== */
-var AMZ_VERSION = 7;
+var AMZ_VERSION = 8;
 
 /* Etiquetas del costo de operación.
    Dirección (sales@ / socio) ve el reparto con nombre propio; la operación ve
@@ -5518,6 +5520,314 @@ function imprimirInvoice(id) {
   '</div>';
   window.print();
 }
+
+
+
+/* =====================================================================
+   AMAZON RELAY · v8 · RONDA 8 (23-sep-2026)
+   1) Cobro → Invoice directo (el cobro queda preseleccionado).
+   2) Nivel 3: número de contrato PG-AR-N3-### + los tres documentos
+      diligenciados con la información del cliente (pdf-lib sobre las
+      plantillas legales del repo; solo se escriben los blancos del cliente).
+   Estas definiciones sobrescriben a las anteriores del archivo.
+   ===================================================================== */
+
+/* ---------- 1 · del cobro registrado al invoice ---------- */
+function irAInvoiceDelCobro(cobroId) {
+  window.IV_PRE = cobroId || null;
+  nav('invoices');
+}
+function invPostRender() {
+  var v = $('vista'); if (!v) return;
+  if (!v.dataset.invBound) {
+    v.dataset.invBound = '1';
+    ui.on(v, '#invChips .chip[data-chip]', function (el) { INV_F = el.dataset.chip; render(); });
+    ui.on(v, '#invLista [data-act]', function (el, ev) {
+      ev.stopImmediatePropagation();
+      var id = el.dataset.id, act = el.dataset.act;
+      if (act === 'imprimir') imprimirInvoice(id);
+      else if (act === 'pagar') marcarPagado(id);
+      else if (act === 'editar') editarInvoice(id);
+      else if (act === 'eliminar') eliminarInvoice(id);
+    });
+    v.addEventListener('input', function (e) {
+      if (e.target && e.target.id === 'invQ') { INV_Q = e.target.value; invRepintarLista(); }
+    });
+  }
+  /* v8: cobro recién registrado → ya elegido en "¿De qué cobro?" */
+  if (window.IV_PRE) {
+    var pre = window.IV_PRE; window.IV_PRE = null;
+    var sel = $('ivCobro');
+    if (sel) {
+      sel.value = pre;
+      if (sel.value === pre) {
+        ivCobroChange();
+        try { sel.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (e) { }
+        var m = $('ivMetodo'); if (m) setTimeout(function () { m.focus(); }, 350);
+        toast('Cobro registrado · elige el método de pago y genera el invoice');
+      }
+    }
+  }
+}
+
+/* ---------- 2 · Nivel 3 · documentos del contrato ---------- */
+/* ===== Ronda 8 · Nivel 3 · núcleo compartido navegador/node =====
+   Tabla de coordenadas medida con pdftotext -bbox (origen arriba-izquierda,
+   carta 612x792). yTop = línea base medida desde arriba. Solo se escriben
+   los blancos del cliente; firmas, iniciales, banco y correo quedan vacíos. */
+var N3_DOCS = [
+  { k: 'contrato', n: 1, nombre: 'Contrato Nivel 3', archivo: 'Contrato-Nivel-3', src: 'docs/nivel3/1-contrato-nivel-3.pdf',
+    campos: [
+      { p: 1, x: 215.5, yTop: 169.4, size: 9, bold: true, key: 'num' },
+      { p: 1, right: 540, yTop: 169.4, size: 7.5, key: 'ident', maxW: 225 },
+      { p: 9, x: 431, yTop: 187.6, size: 8.5, bold: true, key: 'empresa', maxW: 110, min: 5.5 }
+    ] },
+  { k: 'ach', n: 2, nombre: 'Autorización ACH', archivo: 'Autorizacion-ACH', src: 'docs/nivel3/2-autorizacion-ach.pdf',
+    campos: [
+      { p: 1, x: 215.5, yTop: 169.4, size: 9, bold: true, key: 'num' },
+      { p: 1, x: 78, yTop: 200.5, size: 9, key: 'empresa', maxW: 440 },
+      { p: 1, x: 152, yTop: 537.6, size: 8.5, key: 'empresa', maxW: 145, min: 6 }
+    ] },
+  { k: 'acceso', n: 3, nombre: 'Autorización de acceso a la cuenta Amazon Relay', archivo: 'Acceso-Relay', src: 'docs/nivel3/3-acceso-relay.pdf',
+    campos: [
+      { p: 1, x: 215.5, yTop: 169.4, size: 9, bold: true, key: 'num' },
+      { p: 1, x: 431, yTop: 534.1, size: 8.5, bold: true, key: 'empresa', maxW: 110, min: 5.5 }
+    ] }
+];
+function n3Valores(c, contratoNo) {
+  var num = String(contratoNo || '').replace(/^PG-AR-N3-/, '');
+  var emp = String(c.empresa || '').trim();
+  var ident = 'Carrier / Transportista: ' + emp + (c.dot ? ' · DOT ' + c.dot : '') + (c.mc ? ' · MC ' + c.mc : '');
+  return { num: num, empresa: emp, ident: ident };
+}
+/* Rellena una plantilla. PDFLib = window.PDFLib (o require('pdf-lib')). */
+async function n3Rellenar(PDFLib, bytes, doc, valores) {
+  var pdf = await PDFLib.PDFDocument.load(bytes);
+  var reg = await pdf.embedFont(PDFLib.StandardFonts.Helvetica);
+  var bold = await pdf.embedFont(PDFLib.StandardFonts.HelveticaBold);
+  var tinta = PDFLib.rgb(0.08, 0.10, 0.14);
+  var pages = pdf.getPages();
+  doc.campos.forEach(function (f) {
+    var txt = valores[f.key]; if (!txt) return;
+    var pg = pages[f.p - 1]; if (!pg) return;
+    var font = f.bold ? bold : reg, size = f.size;
+    var w = font.widthOfTextAtSize(txt, size);
+    if (f.maxW) { var min = f.min || 6; while (w > f.maxW && size > min) { size -= 0.25; w = font.widthOfTextAtSize(txt, size); } }
+    var x = (f.right != null) ? f.right - w : f.x;
+    var y = pg.getHeight() - f.yTop;
+    pg.drawText(txt, { x: x, y: y, size: size, font: font, color: tinta });
+  });
+  pdf.setTitle(doc.nombre + ' · ' + (valores.contratoNo || ''));
+  return await pdf.save();
+}
+
+function n3EsNivel3(c) { return !!c && nivelCliente(c) === 'Nivel 3'; }
+window._n3Hist = window._n3Hist || {};   /* cliente_id -> generaciones (amazon_dosieres tipo contrato_n3) */
+window._n3Blobs = window._n3Blobs || {}; /* cliente_id -> [{k, nombre, archivo, url}] de la última generación en esta sesión */
+var _n3Cargando = {};
+
+function n3CargarLib() {
+  if (window.PDFLib) return Promise.resolve(window.PDFLib);
+  if (window._n3LibP) return window._n3LibP;
+  window._n3LibP = new Promise(function (ok, ko) {
+    var s = document.createElement('script');
+    s.src = 'lib/pdf-lib.min.js?v=' + AMZ_VERSION;
+    s.onload = function () { window.PDFLib ? ok(window.PDFLib) : ko(new Error('pdf-lib no cargó')); };
+    s.onerror = function () { ko(new Error('No se pudo cargar lib/pdf-lib.min.js')); };
+    document.head.appendChild(s);
+  });
+  return window._n3LibP;
+}
+
+async function n3CargarHist(id) {
+  try {
+    var r = await sb.from('amazon_dosieres').select('id,numero_seq,generado_por,created_at').eq('cliente_id', id).eq('tipo', 'contrato_n3').order('created_at', { ascending: false }).limit(5);
+    window._n3Hist[id] = r.error ? [] : (r.data || []);
+  } catch (e) { window._n3Hist[id] = []; }
+  if (DETALLE === id) render();
+}
+
+function n3PanelHTML(c) {
+  var id = c.id;
+  var hist = window._n3Hist[id];
+  var ult = Array.isArray(hist) && hist.length ? hist[0] : null;
+  var blobs = window._n3Blobs[id] || null;
+  var falta = [];
+  if (!c.empresa) falta.push('la empresa');
+  if (!c.dot) falta.push('el DOT');
+
+  var estado;
+  if (c.contrato_firmado_at) estado = '<span class="pg-pill ok">Firmado · ' + ui.esc(fmtD(c.contrato_firmado_at)) + '</span>';
+  else if (ult) estado = '<span class="pg-pill warn">Enviado a firma · ' + ui.esc(new Date(ult.created_at).toLocaleDateString('es-CO', { day: '2-digit', month: 'short' })) + '</span>';
+  else estado = '<span class="pg-pill fin">Sin generar</span>';
+
+  var datos = ui.datos([
+    { l: 'Contrato N.º', v: c.contrato_no ? '<span class="mono">' + ui.esc(c.contrato_no) + '</span>' : '<span style="color:var(--pg-muted)">se asigna al generar</span>' },
+    { l: 'Estado del paquete', v: estado },
+    { l: 'Última generación', v: ult ? ui.esc(String(ult.generado_por || '—').split('@')[0] + ' · ' + new Date(ult.created_at).toLocaleString('es-CO', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })) : null, txt: true },
+    { l: 'Generaciones', v: Array.isArray(hist) ? ui.int(hist.length) : '…' }
+  ]);
+
+  var lista = N3_DOCS.map(function (d) {
+    var b = blobs && blobs.find(function (x) { return x.k === d.k; });
+    return '<div class="n3-doc"><div class="n3-doc-n">' + d.n + '</div><div class="n3-doc-t">' + ui.esc(d.nombre) +
+      (b ? '<div class="n3-doc-f mono">' + ui.esc(b.archivo) + '</div>' : '') + '</div>' +
+      (b ? '<div class="n3-doc-a"><a class="pg-btn sm secondary" href="' + b.url + '" target="_blank" rel="noopener">Abrir</a> <a class="pg-btn sm" href="' + b.url + '" download="' + ui.esc(b.archivo) + '">Descargar</a></div>' : '') +
+      '</div>';
+  }).join('');
+
+  var aviso = falta.length
+    ? '<div class="n3-aviso">Para generar los documentos falta ' + ui.esc(falta.join(' y ')) + ' del cliente. Complétalo en el formulario de abajo.</div>'
+    : '<div class="n3-aviso ok">Se diligencia solo la información del cliente: número de contrato, empresa y DOT/MC. Firmas, fechas, iniciales, datos bancarios y correo de ProtectGo quedan en blanco para el generador de firmas.</div>';
+
+  var btn = falta.length ? '' :
+    '<button type="button" class="pg-btn" id="n3Btn" onclick="n3Generar(\'' + id + '\')">' + (ult || blobs ? 'Volver a generar' : 'Generar documentos') + ' <span class="a">→</span></button>' +
+    (blobs ? ' <button type="button" class="pg-btn secondary" onclick="n3DescargarTodos(\'' + id + '\')">Descargar los 3</button>' : '');
+
+  var firmado = '<div class="n3-firma"><label>Firmado el</label><input type="date" id="n3Firmado" value="' + ui.esc(c.contrato_firmado_at || '') + '">' +
+    '<button type="button" class="pg-btn sm secondary" onclick="n3GuardarFirmado(\'' + id + '\')">Guardar</button>' +
+    (c.contrato_firmado_at ? '<span class="linkish" onclick="n3GuardarFirmado(\'' + id + '\', true)">quitar</span>' : '') + '</div>';
+
+  return datos + '<div class="n3-lista">' + lista + '</div>' + aviso + '<div class="n3-acciones">' + btn + '</div>' + firmado;
+}
+
+async function n3Generar(id) {
+  var c = cli(id); if (!c) return;
+  if (!c.empresa || !c.dot) return toast('Falta la empresa o el DOT del cliente');
+  if (_n3Cargando[id]) return;
+  _n3Cargando[id] = true;
+  var btn = $('n3Btn'); if (btn) { btn.disabled = true; btn.textContent = 'Generando…'; }
+  try {
+    /* número de contrato: solo si no tiene; nunca se reutiliza */
+    var contratoNo = c.contrato_no;
+    if (!contratoNo) {
+      var ra = await sb.rpc('amazon_asignar_contrato_n3', { p_cliente: id });
+      if (ra.error) throw new Error('No se pudo asignar el número de contrato: ' + ra.error.message);
+      contratoNo = ra.data; c.contrato_no = contratoNo;
+    }
+    var PDFLib = await n3CargarLib();
+    var valores = n3Valores(c, contratoNo); valores.contratoNo = contratoNo;
+    var salida = [];
+    for (var i = 0; i < N3_DOCS.length; i++) {
+      var d = N3_DOCS[i];
+      var rf = await fetch(d.src + '?v=' + AMZ_VERSION, { cache: 'no-store' });
+      if (!rf.ok) throw new Error('No se encontró la plantilla ' + d.src);
+      var bytes = await rf.arrayBuffer();
+      var out = await n3Rellenar(PDFLib, bytes, d, valores);
+      var archivo = contratoNo + '_' + d.n + '_' + d.archivo + '.pdf';
+      var url = URL.createObjectURL(new Blob([out], { type: 'application/pdf' }));
+      salida.push({ k: d.k, nombre: d.nombre, archivo: archivo, url: url });
+    }
+    (window._n3Blobs[id] || []).forEach(function (b) { try { URL.revokeObjectURL(b.url); } catch (e) { } });
+    window._n3Blobs[id] = salida;
+    /* registro y trazabilidad */
+    var rd = await sb.from('amazon_dosieres').insert({ cliente_id: id, tipo: 'contrato_n3', generado_por: ME ? ME.email : null });
+    if (rd.error) toast('Documentos generados, pero no se pudo registrar: ' + rd.error.message);
+    await eventoAudit('paquete_n3', 'Documentos Nivel 3 generados · ' + contratoNo + ' · ' + c.empresa, { cliente_id: id });
+    toast('Documentos generados · ' + contratoNo);
+    delete window._n3Hist[id];
+    await loadAll(); render();
+  } catch (e) {
+    console.error(e); toast('Error: ' + (e && e.message ? e.message : e));
+    if (btn) { btn.disabled = false; btn.textContent = 'Generar documentos'; }
+  } finally { _n3Cargando[id] = false; }
+}
+
+function n3DescargarTodos(id) {
+  var blobs = window._n3Blobs[id] || [];
+  blobs.forEach(function (b, i) {
+    setTimeout(function () {
+      var a = document.createElement('a'); a.href = b.url; a.download = b.archivo; document.body.appendChild(a); a.click(); a.remove();
+    }, i * 400);
+  });
+}
+
+async function n3GuardarFirmado(id, quitar) {
+  var inp = $('n3Firmado');
+  var val = quitar ? null : ((inp && inp.value) || null);
+  if (!quitar && !val) return toast('Pon la fecha de firma');
+  var r = await sb.from('amazon_clientes').update({ contrato_firmado_at: val }).eq('id', id);
+  if (r.error) return toast('Error: ' + r.error.message);
+  await eventoAudit('paquete_n3', val ? 'Contrato Nivel 3 firmado el ' + val : 'Se quitó la fecha de firma del contrato Nivel 3', { cliente_id: id });
+  toast(val ? 'Fecha de firma guardada' : 'Fecha de firma retirada');
+  await loadAll(); render();
+}
+
+/* ficha del cliente: mismo acordeón de la v6 + bloque "Paquete Nivel 3" cuando aplica */
+function clxFichaHTML(c) {
+  var id = c.id;
+  var pol = clxPolizasInfo(c);
+  var datosHTML = ui.datos([
+    { l: 'Representante', v: c.representante ? ui.esc(c.representante) : null, txt: true },
+    { l: 'Correo', v: c.email ? ui.esc(c.email) : null, txt: true },
+    { l: 'Teléfono', v: c.telefono ? ui.esc(c.telefono) : null },
+    { l: 'Nivel', v: nivelCliente(c) ? ui.esc(nivelCliente(c)) : null },
+    { l: 'Esquema', v: ui.esc(esquemaLabel(c)) },
+    { l: 'Unidades activas', v: ui.int(c.unidades_activas || 1) },
+    { l: 'Pólizas con ProtectGo', v: pol.polizas },
+    { l: 'Primer vencimiento', v: pol.primerVenc }
+  ]);
+  var cobrosCli = COBROS.filter(function (x) { return x.cliente_id === id; })
+    .slice().sort(function (a, b) { return new Date(b.periodo_desde || b.created_at || 0) - new Date(a.periodo_desde || a.created_at || 0); });
+  var cobrosHTML = cobrosCli.length ? cobrosCli.map(clxCardCobro).join('') : ui.vacio('Este cliente no tiene cobros todavía. Su cifra es <b>$0</b>.');
+  var invCli = INVOICES.filter(function (x) { return x.cliente_id === id; });
+  var invHTML = invCli.length ? invCli.map(clxCardInvoice).join('') : ui.vacio('Sin invoices para este cliente.');
+  var eventos = (window._cliEventosFor === id && Array.isArray(window._eventos)) ? window._eventos : null;
+  var trazaLista = eventos === null
+    ? '<div style="color:var(--pg-muted);font-size:12.5px">Cargando trazabilidad…</div>'
+    : (eventos.length
+      ? eventos.map(function (e) { return '<div class="evt"><div class="dot"></div><div>' + ui.esc(e.detalle || e.tipo) + '<div class="w">' + ui.esc(e.quien || '') + ' · ' + new Date(e.created_at).toLocaleString('es-CO') + '</div></div></div>'; }).join('')
+      : '<div style="color:var(--pg-muted);font-size:12.5px">Sin eventos todavía.</div>');
+  var trazaHTML = trazaLista + '<div style="margin-top:12px"><input id="notaTxt" placeholder="Agregar nota…" style="width:100%;border:1px solid var(--pg-line);border-radius:9px;padding:8px 11px;font-size:13px"><button class="pg-btn sm" style="margin-top:8px" onclick="agregarNota(\'' + id + '\')">Guardar nota</button></div>';
+
+  var bloques = [{ tit: 'Ficha', html: datosHTML }];
+  if (n3EsNivel3(c)) bloques.push({ tit: 'Paquete Nivel 3 · documentos del contrato', html: n3PanelHTML(c) });
+  bloques.push({ tit: 'Cobros del cliente', html: cobrosHTML });
+  bloques.push({ tit: 'Invoices', html: invHTML });
+  bloques.push({ tit: 'Trazabilidad', html: trazaHTML });
+  bloques.push({ tit: 'Registrar cliente / editar', html: '<div class="pb">' + clxFormHTML(c) + '</div>' });
+  return ui.ficha(bloques, id);
+}
+
+/* misma delegación de la v6 + carga perezosa del historial del paquete */
+function clxPostRender() {
+  var v = $('vista'); if (!v) return;
+  if (!v.dataset.clxBound) {
+    v.dataset.clxBound = '1';
+    ui.on(v, '#cliChips .chip[data-chip]', function (el) { CLI_F = el.dataset.chip; render(); });
+    ui.on(v, '#cliLista [data-act]', function (el, ev) {
+      ev.stopImmediatePropagation();
+      var id = el.dataset.id, act = el.dataset.act;
+      if (act === 'edit') clxEditar(id);
+      else if (act === 'cobro') toast('Próximamente: nuevo cobro directo desde la ficha del cliente.');
+      else if (act === 'dos') toast('Próximamente: generar dosier desde la ficha del cliente.');
+    });
+    ui.on(v, '#cliLista .card[data-card]', function (el) { clxToggleFicha(el.dataset.card); });
+    v.addEventListener('input', function (e) {
+      if (e.target && e.target.id === 'cliQ') { CLI_Q = e.target.value; clxRepintarLista(); }
+    });
+  }
+  if (DETALLE && window._cliEventosFor !== DETALLE) clxCargarEventos(DETALLE);
+  if (DETALLE) { var cd = cli(DETALLE); if (cd && n3EsNivel3(cd) && !(DETALLE in window._n3Hist) && !_n3Cargando['h' + DETALLE]) { _n3Cargando['h' + DETALLE] = true; n3CargarHist(DETALLE).finally(function () { _n3Cargando['h' + DETALLE] = false; }); } }
+  if (typeof cargarDirectorio === 'function') cargarDirectorio();
+}
+
+/* estilos del bloque (solo clases nuevas, tokens del sistema) */
+(function () {
+  var st = document.createElement('style');
+  st.textContent = '.n3-lista{display:flex;flex-direction:column;gap:8px;margin:12px 0}' +
+    '.n3-doc{display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--pg-line);border-radius:10px;background:#fff}' +
+    '.n3-doc-n{width:26px;height:26px;border-radius:50%;background:var(--pg-ink,#0F172A);color:#fff;font-family:"JetBrains Mono",monospace;font-size:12px;display:flex;align-items:center;justify-content:center;flex:none}' +
+    '.n3-doc-t{flex:1;font-size:13px;font-weight:600}.n3-doc-f{font-weight:400;font-size:11px;color:var(--pg-muted);margin-top:2px}' +
+    '.n3-doc-a{display:flex;gap:6px;flex-wrap:wrap}.n3-doc-a a{text-decoration:none}' +
+    '.n3-aviso{font-size:12px;color:#8A6A14;background:#FBF1D8;border-radius:10px;padding:9px 12px;line-height:1.5}' +
+    '.n3-aviso.ok{color:#12604f;background:#F2FBF8}' +
+    '.n3-acciones{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}' +
+    '.n3-firma{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12.5px}.n3-firma label{font-weight:700;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--pg-muted)}' +
+    '.n3-firma input{border:1px solid var(--pg-line);border-radius:9px;padding:6px 10px;font-size:13px}' +
+    '@media(max-width:480px){.n3-doc{flex-wrap:wrap}.n3-doc-a{width:100%;justify-content:flex-end}}';
+  document.head.appendChild(st);
+})();
 
 </script>
 </body>
