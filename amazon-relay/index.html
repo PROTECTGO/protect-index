@@ -738,7 +738,7 @@ const SB_URL='https://hivpqsepwsfmafamxkzy.supabase.co';
 const SB_KEY='sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt';
 const sb=window.supabase.createClient(SB_URL,SB_KEY,{db:{schema:'portal'}});
 /* ===== v6 ===== */
-const PGV_VERSION=9; // v9 - Ronda 8 (cobro->invoice directo, monto_manual booleano, paquete Nivel 3) sobre la v8 del rename a Protect Index
+const PGV_VERSION=10; // v10 - Ronda 9: invoice solo ProtectGo, inglés por defecto, selector EN | ES
 let CARGADO_EN=Date.now();
 let RENT=[], RENOV=[], RENOV_RES=null, CONFIG={}, TRM=4000, ERRORES={}, ES_DIR=false;
 let MES_SEL=new Date().getMonth();
@@ -5382,7 +5382,7 @@ function vPiloto() {
    tabla, paso automatico a Cobros, y plantilla de invoice corporativa.
    Estas funciones REEMPLAZAN a las de arriba.
    ================================================================== */
-var AMZ_VERSION = 8;
+var AMZ_VERSION = 9;
 
 /* Etiquetas del costo de operación.
    Dirección (sales@ / socio) ve el reparto con nombre propio; la operación ve
@@ -5826,6 +5826,215 @@ function clxPostRender() {
     '.n3-firma{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12.5px}.n3-firma label{font-weight:700;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--pg-muted)}' +
     '.n3-firma input{border:1px solid var(--pg-line);border-radius:9px;padding:6px 10px;font-size:13px}' +
     '@media(max-width:480px){.n3-doc{flex-wrap:wrap}.n3-doc-a{width:100%;justify-content:flex-end}}';
+  document.head.appendChild(st);
+})();
+
+
+
+/* =====================================================================
+   AMAZON RELAY · v9 · RONDA 9 (24-sep-2026)
+   Invoice: solo marca ProtectGo · inglés por defecto · selector EN | ES ·
+   conceptos heredados de Cobros traducidos al pintar (lo guardado no cambia).
+   Estas definiciones sobrescriben a las anteriores del archivo.
+   ===================================================================== */
+window.PG_LOGO_PROTECTGO = 'data:image/png;base64,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';
+window.INV_LANG = window.INV_LANG || 'en';
+
+var IV_TXT = {
+  en: {
+    titulo: 'INVOICE', num: 'Invoice #', fecha: 'Issue Date', metodo: 'Payment Method',
+    cliente: 'CLIENT INFORMATION', empresa: 'Company / Carrier', rep: 'Legal Representative',
+    desc: 'Service / Description', qty: 'Qty', rate: 'Unit Rate', total: 'Total',
+    subtotal: 'Subtotal', fee: 'Administrative Processing Fee: Credit Card Processing',
+    totalDue: 'TOTAL DUE',
+    termsT: 'SERVICE TERMS AND CONDITIONS (SLA) &amp; DISCLAIMER',
+    terms: 'This invoice covers professional operational management/technical consulting services. ' +
+      'Results depend strictly on Amazon Relay and FMCSA compliance decisions, which remain at their sole discretion. ' +
+      'Operations and technical filings are executed on an On-Demand basis; therefore, processed fees are considered final.',
+    foot: 'ProtectGo Services — We run operations. You scale.',
+    dispatch: 'Dispatching Service — Amazon Relay', prof: 'Professional Services / Compliance Management'
+  },
+  es: {
+    titulo: 'FACTURA', num: 'Factura #', fecha: 'Fecha de emisión', metodo: 'Método de pago',
+    cliente: 'INFORMACIÓN DEL CLIENTE', empresa: 'Compañía / Transportista', rep: 'Representante legal',
+    desc: 'Servicio / Descripción', qty: 'Cant.', rate: 'Tarifa unitaria', total: 'Total',
+    subtotal: 'Subtotal', fee: 'Cargo administrativo de procesamiento: pago con tarjeta',
+    totalDue: 'TOTAL A PAGAR',
+    termsT: 'TÉRMINOS Y CONDICIONES DEL SERVICIO (SLA) Y DESCARGO',
+    terms: 'Esta factura cubre servicios profesionales de gestión operativa y consultoría técnica. ' +
+      'Los resultados dependen estrictamente de las decisiones de cumplimiento de Amazon Relay y FMCSA, que quedan a su entera discreción. ' +
+      'Las operaciones y trámites técnicos se ejecutan bajo demanda; por lo tanto, los cargos procesados se consideran definitivos.',
+    foot: 'ProtectGo Services — Nosotros operamos. Tú escalas.',
+    dispatch: 'Servicio de Dispatching — Amazon Relay', prof: 'Servicio profesional / Gestión de cumplimiento'
+  }
+};
+
+/* nombres del tarifario de servicios profesionales → inglés */
+var IV_SERV_EN = {
+  'asesoría de leasing': 'Leasing Advisory',
+  'auditoría de score/mantenimiento de cuenta': 'Score Audit / Account Maintenance',
+  'capacitación formal (curso)': 'Formal Training (Course)',
+  'configuración inicial safer/fmcsa': 'Initial SAFER/FMCSA Setup',
+  'consultoría operativa individual': 'Individual Operations Consulting',
+  'creación / setup de cuenta': 'Account Creation / Setup',
+  'dispatching semanal': 'Weekly Dispatching',
+  'estructuración contractual': 'Contract Structuring',
+  'load board recovery': 'Load Board Recovery',
+  'migración safer/fmcsa a motus': 'SAFER/FMCSA to MOTUS Migration',
+  'recuperación de cuenta': 'Account Recovery',
+  'recuperación de cuenta amazon relay (suspensión)': 'Amazon Relay Account Recovery (Suspension)',
+  'recuperación de fondos': 'Funds Recovery',
+  'safety plan / fmcsa': 'Safety Plan / FMCSA',
+  'setup de plataformas': 'Platform Setup'
+};
+function ivServEN(t) { var k = String(t || '').trim().toLowerCase(); return IV_SERV_EN[k] || String(t || '').trim(); }
+
+/* fecha por idioma: EN "Sep 06, 2026" · ES "06 sept 2026" */
+function ivFecha(d, lang) {
+  if (!d) return '—';
+  var dt = new Date(String(d).length === 10 ? d + 'T12:00:00' : d);
+  if (isNaN(dt)) return '—';
+  if (lang === 'es') return dt.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/\./g, '').replace(/ de /g, ' ');
+  return dt.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+}
+
+/* concepto del ítem en el idioma pedido. Usa el cobro de origen cuando existe;
+   si no reconoce el texto, lo deja como está (no se inventa traducción). */
+function ivConcepto(it, inv, lang) {
+  var T = IV_TXT[lang] || IV_TXT.en;
+  var raw = String((it && it.descripcion) || '');
+  var cob = inv && inv.cobro_id ? COBROS.find(function (x) { return x.id === inv.cobro_id; }) : null;
+  var per = function (a, b) { return (a || b) ? ivFecha(a, lang) + ' – ' + ivFecha(b || a, lang) : ''; };
+  var esDisp = /dispatching/i.test(raw) || (cob && cob.tipo === 'semanal');
+  var sp = cob ? (typeof servprosDeCobro === 'function' ? servprosDeCobro(cob.id)[0] : null) : null;
+  if (cob && sp) {
+    var tipo = lang === 'en' ? ivServEN(sp.tipo_servicio) : String(sp.tipo_servicio || '').trim();
+    return T.prof + (tipo ? ': ' + tipo : '');
+  }
+  if (esDisp) {
+    var p = cob ? per(cob.periodo_desde, cob.periodo_hasta) : '';
+    if (!p) { /* sin cobro: rescatar las dos fechas ISO o "(dd de mmm. de aaaa – …)" no es fiable → dejar el texto limpio */
+      var limpio = raw.replace(/^Dispatching Service\s*—\s*Amazon Relay:\s*/i, '').replace(/\s*\([^)]*\)\s*$/, '');
+      return T.dispatch + (limpio ? ': ' + limpio : '');
+    }
+    return T.dispatch + ': ' + p;
+  }
+  if (/^service\s*\/\s*management:/i.test(raw) || /servicio profesional/i.test(raw)) {
+    var resto = raw.replace(/^service\s*\/\s*management:\s*/i, '').replace(/servicio profesional/i, '').replace(/\s*\([^)]*\)\s*$/, '').replace(/^[\s:·—-]+/, '').trim();
+    var r2 = lang === 'en' ? ivServEN(resto) : resto;
+    return T.prof + (r2 ? ': ' + r2 : '');
+  }
+  return raw;
+}
+
+function setInvLang(l) {
+  window.INV_LANG = (l === 'es') ? 'es' : 'en';
+  var box = $('invLang');
+  if (box) box.querySelectorAll('button').forEach(function (b) { b.classList.toggle('on', b.dataset.l === window.INV_LANG); });
+}
+function invLangHTML() {
+  var L = window.INV_LANG || 'en';
+  return '<div id="invLang" class="iv-lang" role="group" aria-label="Idioma del invoice">' +
+    '<span>Idioma del invoice</span>' +
+    '<button type="button" data-l="en" class="' + (L === 'en' ? 'on' : '') + '" onclick="setInvLang(\'en\')">EN</button>' +
+    '<button type="button" data-l="es" class="' + (L === 'es' ? 'on' : '') + '" onclick="setInvLang(\'es\')">ES</button></div>';
+}
+
+function imprimirInvoice(id, lang) {
+  var i = INVOICES.find(function (x) { return x.id === id; });
+  if (!i) return;
+  lang = (lang === 'es' || lang === 'en') ? lang : (window.INV_LANG || 'en');
+  var T = IV_TXT[lang];
+  var c = cli(i.cliente_id) || {};
+  var items = i.items || [];
+  var esFee = function (it) { return /administrative processing fee/i.test(it.descripcion || ''); };
+  var lineas = items.filter(function (it) { return !esFee(it); });
+  var subtotal = Number(i.subtotal != null ? i.subtotal : lineas.reduce(function (a, it) { return a + Number(it.total || 0); }, 0));
+  var feePct = Number(i.fee_pct || 0);
+  var fee = Number(i.fee != null ? i.fee : (feePct ? Math.round(subtotal * feePct) / 100 : 0));
+  var total = Number(i.total != null ? i.total : subtotal + fee);
+  var metodo = i.metodo_pago || '—';
+
+  var filas = lineas.map(function (it) {
+    return '<tr>' +
+      '<td>' + esc(ivConcepto(it, i, lang)) + '</td>' +
+      '<td class="c">' + (it.qty != null ? esc(it.qty) : 1) + '</td>' +
+      '<td class="c">' + fmt$(it.rate) + ' USD</td>' +
+      '<td class="c">' + fmt$(it.total) + ' USD</td>' +
+      '</tr>';
+  }).join('') || '<tr><td colspan="4" style="color:#777">—</td></tr>';
+
+  $('printArea').innerHTML =
+  '<div class="pgprint pgprint-page" lang="' + lang + '">' +
+    '<div class="ivhdr ivhdr-pg">' +
+      '<div class="ivlogo"><img src="' + window.PG_LOGO_PROTECTGO + '" alt="ProtectGo Services"></div>' +
+      '<div class="ivhdr-t">' + T.titulo + '</div>' +
+    '</div>' +
+    '<div class="meta">' +
+      '<div>' +
+        '<b>' + T.num + ':</b> ' + esc(i.numero || '—') + '<br>' +
+        '<b>' + T.fecha + ':</b> ' + ivFecha(i.fecha, lang) + '<br>' +
+        '<b>' + T.metodo + ':</b> ' + esc(metodo) +
+      '</div>' +
+      '<div class="r">' +
+        '<div class="ivlbl">' + T.cliente + '</div>' +
+        '<b>' + T.empresa + ':</b> ' + esc(c.empresa || '—') + (c.dba ? '<br><b>DBA:</b> ' + esc(c.dba) : '') + '<br>' +
+        '<b>' + T.rep + ':</b> ' + esc(c.representante || '—') + '<br>' +
+        '<b>USDOT #:</b> ' + esc(c.dot || '—') + ' &nbsp;|&nbsp; <b>MC #:</b> ' + esc(c.mc || '—') +
+      '</div>' +
+    '</div>' +
+    '<table class="inv">' +
+      '<tr><th>' + T.desc + '</th><th>' + T.qty + '</th><th>' + T.rate + '</th><th>' + T.total + '</th></tr>' +
+      filas +
+    '</table>' +
+    '<div class="ivtot">' +
+      '<div class="row"><span>' + T.subtotal + '</span><b>' + fmt$(subtotal) + ' USD</b></div>' +
+      (fee > 0 ? '<div class="row"><span>' + T.fee + ' (' + (feePct || 3.9) + '%)</span><b>' + fmt$(fee) + ' USD</b></div>' : '') +
+      '<div class="row tot"><span>' + T.totalDue + '</span><b>' + fmt$(total) + ' USD</b></div>' +
+    '</div>' +
+    '<div class="terms"><h3>' + T.termsT + '</h3><p>' + T.terms + '</p></div>' +
+    '<div class="footline">' + T.foot + '</div>' +
+  '</div>';
+  window.print();
+}
+
+/* Invoices: el selector EN | ES va arriba de la lista; "Imprimir" usa el idioma elegido */
+function vInvoices() {
+  if (typeof window.INV_F === 'undefined') window.INV_F = 'todos';
+  if (typeof window.INV_Q === 'undefined') window.INV_Q = '';
+  var editando = EDIT.invoice ? INVOICES.find(function (x) { return x.id === EDIT.invoice; }) : null;
+  if (EDIT.invoice && !editando) EDIT.invoice = null;
+  var chipsHTML = ui.chips([
+    { id: 'todos', lbl: 'Todos', n: INVOICES.length, on: INV_F === 'todos' },
+    { id: 'por_cobrar', lbl: 'Por cobrar', n: INVOICES.filter(function (i) { return i.estado === 'por_cobrar'; }).length, on: INV_F === 'por_cobrar' },
+    { id: 'pagado', lbl: 'Pagado', n: INVOICES.filter(function (i) { return i.estado === 'pagado'; }).length, on: INV_F === 'pagado' },
+    { id: 'anulado', lbl: 'Anulado', n: INVOICES.filter(function (i) { return i.estado === 'anulado'; }).length, on: INV_F === 'anulado' }
+  ], ui.buscar('invQ', 'Buscar por número, cliente o concepto'));
+  var formPanel = ui.panel({
+    tit: editando ? 'Editar invoice ' + esc(editando.numero) : 'Invoice suelto',
+    sub: editando ? '' : 'Uso normal: botón 🧾 en la lista de Cobros — se genera solo. Usa este formulario solo si necesitas un invoice sin llenar nada más: cliente, concepto y monto se heredan del cobro y quedan bloqueados.',
+    body: '<div class="pb">' + invFormHTML(editando) + '</div>'
+  });
+  return `
+  <div class="pg-eyebrow">Facturación</div><h1>Invoices</h1>
+  <div class="pg-sub">Numeración automática OP-${new Date().getFullYear()}-### · plantilla oficial ProtectGo · sale en inglés por defecto.</div>
+  ${invLangHTML()}
+  <div id="invChips">${chipsHTML}</div>
+  <div id="invLista">${invListaInner()}</div>
+  ${formPanel}
+  ${(function () { setTimeout(invPostRender, 0); return ''; })()}`;
+}
+
+(function () {
+  var st = document.createElement('style');
+  st.textContent =
+    '.iv-lang{display:inline-flex;align-items:center;gap:6px;margin:4px 0 12px;font-size:12px;color:var(--pg-muted)}' +
+    '.iv-lang span{font-weight:700;font-size:11px;letter-spacing:.06em;text-transform:uppercase;margin-right:4px}' +
+    '.iv-lang button{border:1px solid var(--pg-line);background:#fff;color:var(--pg-ink);font-weight:700;font-size:12px;padding:5px 12px;border-radius:999px;cursor:pointer;font-family:"JetBrains Mono",monospace}' +
+    '.iv-lang button.on{background:var(--pg-ink);color:#fff;border-color:var(--pg-ink)}' +
+    '.pgprint .ivhdr-pg{align-items:flex-end}' +
+    '.pgprint .ivhdr-pg .ivlogo img{max-height:62px;max-width:230px}' +
+    '.pgprint .ivhdr-t{font-family:Arial,Helvetica,sans-serif;font-size:28px;font-weight:700;letter-spacing:3px;color:#1B2D3A}';
   document.head.appendChild(st);
 })();
 
