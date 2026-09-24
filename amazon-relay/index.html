@@ -738,7 +738,7 @@ const SB_URL='https://hivpqsepwsfmafamxkzy.supabase.co';
 const SB_KEY='sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt';
 const sb=window.supabase.createClient(SB_URL,SB_KEY,{db:{schema:'portal'}});
 /* ===== v6 ===== */
-const PGV_VERSION=10; // v10 - Ronda 9: invoice solo ProtectGo, inglés por defecto, selector EN | ES
+const PGV_VERSION=11; // v11 - Ronda 10: importador Trips.csv/Excel + cliente del formulario sigue al filtro
 let CARGADO_EN=Date.now();
 let RENT=[], RENOV=[], RENOV_RES=null, CONFIG={}, TRM=4000, ERRORES={}, ES_DIR=false;
 let MES_SEL=new Date().getMonth();
@@ -5382,7 +5382,7 @@ function vPiloto() {
    tabla, paso automatico a Cobros, y plantilla de invoice corporativa.
    Estas funciones REEMPLAZAN a las de arriba.
    ================================================================== */
-var AMZ_VERSION = 9;
+var AMZ_VERSION = 10;
 
 /* Etiquetas del costo de operación.
    Dirección (sales@ / socio) ve el reparto con nombre propio; la operación ve
@@ -6035,6 +6035,292 @@ function vInvoices() {
     '.pgprint .ivhdr-pg{align-items:flex-end}' +
     '.pgprint .ivhdr-pg .ivlogo img{max-height:62px;max-width:230px}' +
     '.pgprint .ivhdr-t{font-family:Arial,Helvetica,sans-serif;font-size:28px;font-weight:700;letter-spacing:3px;color:#1B2D3A}';
+  document.head.appendChild(st);
+})();
+
+
+
+/* =====================================================================
+   AMAZON RELAY · v10 · RONDA 10 (24-sep-2026)
+   1) Importador masivo de viajes desde CSV / Excel (Trips.csv de Amazon Relay).
+   2) El cliente del formulario "Cargar viaje" sigue al filtro del Libro de viajes.
+   Estas definiciones sobrescriben a las anteriores del archivo.
+   ===================================================================== */
+
+/* ---------- 2 · filtro del libro → cliente del formulario ---------- */
+function ldClienteInicial(editando) {
+  if (editando) return editando.cliente_id;
+  if (_ldFiltro && CLIENTES.some(function (c) { return c.id === _ldFiltro; })) return _ldFiltro;
+  var sel = $('ldCliente');
+  return (sel && sel.value) || (CLIENTES[0] && CLIENTES[0].id) || '';
+}
+function ldTbodyHTML() {
+  var lista = _ldFiltro ? LOADS.filter(function (l) { return l.cliente_id === _ldFiltro; }) : LOADS;
+  return lista.map(rowLoad).join('') || '<tr><td colspan="7" style="color:var(--pg-muted)">Sin viajes aún.</td></tr>';
+}
+function ldFiltroChange(v) {
+  _ldFiltro = v || '';
+  var tb = $('ldTbody'); if (tb) tb.innerHTML = ldTbodyHTML();
+  /* el formulario hereda el cliente del filtro, sin borrar lo que ya se escribió */
+  if (!EDIT.load && _ldFiltro) {
+    var sel = $('ldCliente');
+    if (sel && sel.value !== _ldFiltro) { sel.value = _ldFiltro; ldClienteChange(); }
+  }
+}
+function ldClienteChange() {
+  try { ldRecalcAgencia(); } catch (e) { }
+  if (window._imp) impPreview();
+}
+
+function vLoads() {
+  var editando = EDIT.load ? LOADS.find(function (x) { return x.id === EDIT.load; }) : null;
+  var opsCliente = '<option value="">Todos los clientes</option>' + CLIENTES.map(function (c) { return '<option value="' + c.id + '" ' + (_ldFiltro === c.id ? 'selected' : '') + '>' + (esGuia(c) ? '🧭 ' : '') + esc(c.empresa) + '</option>'; }).join('');
+  var cid = ldClienteInicial(editando);
+  var v = function (k) { return editando ? esc(editando[k] || '') : ''; };
+  return `
+  <div class="pg-eyebrow">Viajes</div><h1>Cargar viaje</h1>
+  <div class="pg-sub">Importa el <b>Trips.csv</b> de Amazon Relay o carga el viaje a mano. Estados que mueves tú: <b>⏳ Pendiente → 🚚 En camino → ✅ Entregado</b>. De ahí en adelante lo maneja el cobro: 🧾 En cobro y 💰 Cobrado se ponen solos.</div>
+  <div class="two ld-two">
+    <div class="pg-card">
+      <h2>Libro de viajes (loads)</h2>
+      <div class="field" style="max-width:280px"><label>Filtrar por cliente</label><select id="ldFiltroCliente" onchange="ldFiltroChange(this.value)">${opsCliente}</select></div>
+      <div class="ld-wrap"><table class="pg-table"><thead><tr><th>Load / Cliente</th><th>Ruta</th><th>Fecha</th><th style="text-align:right">Gross</th><th style="text-align:right">Agencia</th><th>Estado</th><th></th></tr></thead><tbody id="ldTbody">
+      ${ldTbodyHTML()}
+      </tbody></table></div>
+    </div>
+    <div class="pg-card">
+      <h2>Cargar viaje</h2><div class="h2sub">El cliente sigue al filtro del libro de viajes. Solo Cliente y Load ID son obligatorios.</div>
+      ${editando ? editBar('load', editando.load_id_externo || editando.id.slice(0, 8)) : ''}
+      <div class="field"><label>Cliente *</label><select id="ldCliente" onchange="ldClienteChange()">${CLIENTES.map(function (c) { return '<option value="' + c.id + '" ' + (cid === c.id ? 'selected' : '') + '>' + (esGuia(c) ? '🧭 ' : '') + esc(c.empresa) + '</option>'; }).join('')}</select>
+      <div id="ldEsquemaChip" class="pg-chipset" style="margin-top:6px"></div></div>
+      ${editando ? '' : `<div class="imp-box">
+        <div class="imp-t">📥 Importar viajes desde CSV / Excel</div>
+        <div class="imp-s">El <b>Trips.csv</b> de Amazon Relay (o un .xlsx). Todos los viajes van al <b>cliente de arriba</b>. Antes de guardar ves qué entra y qué se omite.</div>
+        <label class="pg-btn sm secondary imp-pick"><input type="file" id="impFile" accept=".csv,.xlsx,.xls,text/csv" onchange="impLeer(this)">Elegir archivo…</label>
+        <span id="impNombre" class="imp-n"></span>
+        <div id="impPrev"></div>
+      </div>
+      <div class="imp-o">o carga un viaje a mano</div>`}
+      <div class="frow2">
+        <div class="field"><label>Load ID *</label><input id="ldLoadId" placeholder="Ej: 116S2F5R4" value="${v('load_id_externo')}"></div>
+        <div class="field"><label>Tipo de carga <span style="font-weight:400;text-transform:none">(opcional)</span></label><input id="ldTipo" placeholder="Ej: Dry Van" value="${v('tipo_carga')}"></div>
+      </div>
+      <div class="frow2">
+        <div class="field"><label>Origen</label><input id="ldOrigen" placeholder="Ciudad, estado" value="${v('origen')}"></div>
+        <div class="field"><label>Destino</label><input id="ldDestino" placeholder="Ciudad, estado" value="${v('destino')}"></div>
+      </div>
+      <div class="frow2">
+        <div class="field"><label>Fecha del viaje</label><input id="ldFecha" type="date" value="${editando ? esc((editando.fecha_hora || '').slice(0, 10)) : hoyISO()}"></div>
+        <div class="field"><label>Millas <span style="font-weight:400;text-transform:none">(opcional)</span></label><input id="ldMillas" type="number" value="${v('millas')}"></div>
+      </div>
+      <div class="frow2">
+        <div class="field"><label>GROSS DEL VIAJE $ <span style="font-weight:400;text-transform:none">(lo que paga Amazon — NO lo que recibe la agencia)</span></label><input id="ldTarifa" type="number" step="0.01" placeholder="Ej: 1924.00" value="${v('tarifa')}" oninput="ldRecalcAgencia()"></div>
+        <div class="field"><label>Camión / Placa <span style="font-weight:400;text-transform:none">(opcional)</span></label><input id="ldCamion" value="${v('camion_placa')}"></div>
+      </div>
+      <div id="ldAgencia" class="pg-desglose">Elige cliente y escribe el gross para ver el desprendible.</div>
+      <div class="field"><label>Conductor <span style="font-weight:400;text-transform:none">(opcional)</span></label><input id="ldConductor" value="${v('conductor')}"></div>
+      <div class="field"><label>Notas / soporte <span style="font-weight:400;text-transform:none">(opcional)</span></label><textarea id="ldNotas" rows="2">${v('notas')}</textarea></div>
+      <button class="pg-btn" onclick="crearLoad()">${editando ? 'Guardar cambios' : 'Confirmar y registrar'} <span class="a">→</span></button>
+    </div>
+  </div>`;
+}
+/* la caja del screenshot ya no existe: no hay nada que enganchar */
+function setupPasteZone() { if (window._imp && $('impPrev')) impPreview(); }
+
+/* ---------- 1 · importador ---------- */
+var IMP_COLS = {
+  trip: ['tripid', 'trip', 'tripnumber', 'tripno'],
+  load: ['loadid', 'loadids', 'load'],
+  fecha: ['starttime', 'startdate', 'tripstarttime', 'starttimelocal', 'pickupdate', 'pickuptime', 'date', 'fecha'],
+  price: ['price', 'totalprice', 'estimatedprice', 'payout', 'totalpay', 'estimatedcost', 'totalcost', 'rate', 'amount', 'gross'],
+  equip: ['equipment', 'equipmenttype', 'trailertype', 'equipmenttypes'],
+  status: ['status', 'tripstatus', 'loadstatus', 'loadexecutionstatus', 'tripstage'],
+  origen: ['origin', 'origen', 'from', 'startlocation', 'firststop', 'stop1', 'facility1', 'origincity'],
+  destino: ['destination', 'destino', 'to', 'endlocation', 'finalstop', 'laststop', 'destinationcity'],
+  millas: ['distance', 'miles', 'totaldistance', 'distancemi', 'millas'],
+  conductor: ['driver', 'drivername', 'driver1', 'drivers', 'conductor']
+};
+function impNorm(h) { return String(h || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]/g, ''); }
+function impMapear(headers) {
+  var n = headers.map(impNorm), map = {};
+  Object.keys(IMP_COLS).forEach(function (k) {
+    for (var i = 0; i < IMP_COLS[k].length; i++) { var j = n.indexOf(IMP_COLS[k][i]); if (j >= 0) { map[k] = j; return; } }
+  });
+  return map;
+}
+/* CSV con comillas, comas o punto y coma, saltos de línea dentro de comillas */
+function impParseCSV(txt) {
+  txt = String(txt || '').replace(/^﻿/, '');
+  var first = txt.split(/\r?\n/)[0] || '';
+  var sep = (first.split(';').length > first.split(',').length) ? ';' : (first.indexOf('\t') >= 0 && first.split('\t').length > first.split(',').length ? '\t' : ',');
+  var rows = [], row = [], cur = '', q = false;
+  for (var i = 0; i < txt.length; i++) {
+    var ch = txt[i];
+    if (q) { if (ch === '"') { if (txt[i + 1] === '"') { cur += '"'; i++; } else q = false; } else cur += ch; }
+    else if (ch === '"') q = true;
+    else if (ch === sep) { row.push(cur); cur = ''; }
+    else if (ch === '\n' || ch === '\r') { if (ch === '\r' && txt[i + 1] === '\n') i++; row.push(cur); rows.push(row); row = []; cur = ''; }
+    else cur += ch;
+  }
+  if (cur !== '' || row.length) { row.push(cur); rows.push(row); }
+  return rows.filter(function (r) { return r.some(function (c) { return String(c).trim() !== ''; }); });
+}
+function impFecha(v) {
+  if (v == null || v === '') return null;
+  if (v instanceof Date && !isNaN(v)) return v.toISOString().slice(0, 10);
+  var s = String(v).trim(), m;
+  if ((m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/))) return m[1] + '-' + ('0' + m[2]).slice(-2) + '-' + ('0' + m[3]).slice(-2);
+  if ((m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})/))) { var y = m[3].length === 2 ? '20' + m[3] : m[3]; return y + '-' + ('0' + m[1]).slice(-2) + '-' + ('0' + m[2]).slice(-2); }
+  if (/^\d{5}(\.\d+)?$/.test(s)) { var d = new Date(Math.round((Number(s) - 25569) * 86400000)); return d.toISOString().slice(0, 10); }
+  var t = Date.parse(s.replace(/\s+(PDT|PST|CDT|CST|EDT|EST|MDT|MST|UTC|GMT)$/i, ''));
+  return isNaN(t) ? null : new Date(t).toISOString().slice(0, 10);
+}
+function impNum(v) { if (v == null || v === '') return null; var n = Number(String(v).replace(/[^0-9.\-]/g, '')); return isNaN(n) ? null : Math.round(n * 100) / 100; }
+function impEstado(st) {
+  var s = String(st || '').toLowerCase();
+  if (!s) return 'entregado';
+  if (/cancel|reject|rechaz|anulad/.test(s)) return null;
+  if (/complet|deliver|finish|done|entreg|closed/.test(s)) return 'entregado';
+  if (/progress|transit|route|active|dispatch|curso|camino/.test(s)) return 'en_ruta';
+  if (/upcoming|schedul|book|pend|plann|assign|accepted|next/.test(s)) return 'cargado';
+  return 'entregado';
+}
+
+function impLeer(inp) {
+  var f = inp.files && inp.files[0]; if (!f) return;
+  $('impNombre').textContent = f.name;
+  $('impPrev').innerHTML = '<div class="imp-msg">Leyendo…</div>';
+  var esX = /\.xlsx?$/i.test(f.name);
+  var fin = function (rows) {
+    if (!rows || rows.length < 2) { window._imp = null; $('impPrev').innerHTML = '<div class="imp-msg err">El archivo no tiene filas para importar.</div>'; return; }
+    var headers = rows[0].map(function (h) { return String(h == null ? '' : h).trim(); });
+    window._imp = { archivo: f.name, headers: headers, map: impMapear(headers), rows: rows.slice(1) };
+    impPreview();
+  };
+  var err = function (e) { window._imp = null; $('impPrev').innerHTML = '<div class="imp-msg err">No se pudo leer el archivo: ' + esc(e && e.message ? e.message : e) + '</div>'; };
+  if (!esX) { f.text().then(function (t) { fin(impParseCSV(t)); }).catch(err); return; }
+  impCargarXLSX().then(function (X) {
+    return f.arrayBuffer().then(function (buf) {
+      var wb = X.read(buf, { type: 'array', cellDates: true });
+      var ws = wb.Sheets[wb.SheetNames[0]];
+      fin(X.utils.sheet_to_json(ws, { header: 1, raw: true, defval: '' }));
+    });
+  }).catch(err);
+}
+function impCargarXLSX() {
+  if (window.XLSX) return Promise.resolve(window.XLSX);
+  if (window._xlsxP) return window._xlsxP;
+  window._xlsxP = new Promise(function (ok, ko) {
+    var s = document.createElement('script'); s.src = 'lib/xlsx.core.min.js?v=' + AMZ_VERSION;
+    s.onload = function () { window.XLSX ? ok(window.XLSX) : ko(new Error('La librería de Excel no cargó')); };
+    s.onerror = function () { ko(new Error('No se pudo cargar lib/xlsx.core.min.js')); };
+    document.head.appendChild(s);
+  });
+  return window._xlsxP;
+}
+
+/* arma las filas que entran y las que se omiten, para el cliente elegido */
+function impCalcular() {
+  var I = window._imp, M = I.map, cid = $('ldCliente') ? $('ldCliente').value : '';
+  var c = cli(cid);
+  var ya = {}; LOADS.forEach(function (l) { if (l.cliente_id === cid && l.load_id_externo) ya[String(l.load_id_externo).trim().toUpperCase()] = 1; });
+  var vistos = {}, entran = [], om = { sinId: 0, existen: 0, repetidos: 0, cancelados: 0 };
+  var col = function (r, k) { return M[k] != null ? r[M[k]] : ''; };
+  I.rows.forEach(function (r) {
+    var id = String(col(r, 'trip') || (M.trip == null ? col(r, 'load') : '') || '').trim();
+    if (!id) { om.sinId++; return; }
+    var key = id.toUpperCase();
+    if (vistos[key]) { om.repetidos++; return; }
+    vistos[key] = 1;
+    if (ya[key]) { om.existen++; return; }
+    var stTxt = String(col(r, 'status') || '').trim();
+    var estado = impEstado(stTxt);
+    if (!estado) { om.cancelados++; return; }
+    var tarifa = impNum(col(r, 'price'));
+    var fecha = impFecha(col(r, 'fecha'));
+    var notas = [stTxt ? 'Amazon: ' + stTxt : '', 'Importado de ' + I.archivo].filter(Boolean).join(' · ');
+    entran.push({
+      cliente_id: cid, load_id_externo: id,
+      origen: String(col(r, 'origen') || '').trim() || null,
+      destino: String(col(r, 'destino') || '').trim() || null,
+      fecha_hora: fecha ? fecha + 'T12:00:00' : null,
+      millas: impNum(col(r, 'millas')),
+      tarifa: tarifa,
+      conductor: String(col(r, 'conductor') || '').trim() || null,
+      tipo_carga: String(col(r, 'equip') || '').trim() || null,
+      notas: notas, estado: estado,
+      agencia_monto: c ? agenciaDeViaje(c, tarifa).monto : null
+    });
+  });
+  return { c: c, entran: entran, om: om };
+}
+function impPreview() {
+  var box = $('impPrev'); if (!box || !window._imp) return;
+  var I = window._imp, M = I.map;
+  if (M.trip == null && M.load == null) {
+    box.innerHTML = '<div class="imp-msg err">No encontré la columna <b>Trip ID</b>. Columnas del archivo: ' + esc(I.headers.join(' · ')) + '</div>';
+    return;
+  }
+  var R = impCalcular();
+  var det = [['Trip ID', M.trip != null ? 'trip' : 'load'], ['Fecha', 'fecha'], ['Price', 'price'], ['Equipment', 'equip'], ['Status', 'status'], ['Origen', 'origen'], ['Destino', 'destino'], ['Millas', 'millas'], ['Conductor', 'conductor']]
+    .map(function (p) { return '<span class="imp-col ' + (M[p[1]] != null ? 'ok' : '') + '">' + p[0] + (M[p[1]] != null ? ' ← ' + esc(I.headers[M[p[1]]]) : ' · no viene') + '</span>'; }).join('');
+  var gross = R.entran.reduce(function (a, x) { return a + (Number(x.tarifa) || 0); }, 0);
+  var om = R.om, omTxt = [om.existen ? om.existen + ' ya existían' : '', om.repetidos ? om.repetidos + ' repetidos en el archivo' : '', om.sinId ? om.sinId + ' sin Trip ID' : '', om.cancelados ? om.cancelados + ' cancelados' : ''].filter(Boolean).join(' · ');
+  var EL = { entregado: '✅ Entregado', en_ruta: '🚚 En camino', cargado: '⏳ Pendiente' };
+  var filas = R.entran.slice(0, 40).map(function (x) {
+    return '<tr><td class="mono">' + esc(x.load_id_externo) + '</td><td>' + (x.fecha_hora ? fmtD(x.fecha_hora.slice(0, 10)) : '—') + '</td><td class="num" style="text-align:right">' + (x.tarifa != null ? fmt$(x.tarifa) : '—') + '</td><td>' + EL[x.estado] + '</td></tr>';
+  }).join('');
+  box.innerHTML =
+    '<div class="imp-cols">' + det + '</div>' +
+    '<div class="imp-res"><b>' + R.entran.length + '</b> viaje' + (R.entran.length === 1 ? '' : 's') + ' entra' + (R.entran.length === 1 ? '' : 'n') + ' para <b>' + esc(R.c ? R.c.empresa : '—') + '</b> · gross ' + fmt$(gross) + (omTxt ? '<div class="imp-om">Se omiten: ' + omTxt + '</div>' : '') + '</div>' +
+    (R.entran.length ? '<div class="imp-tbl"><table class="pg-table"><thead><tr><th>Trip ID</th><th>Fecha</th><th style="text-align:right">Gross</th><th>Entra como</th></tr></thead><tbody>' + filas + '</tbody></table>' + (R.entran.length > 40 ? '<div class="imp-om">… y ' + (R.entran.length - 40) + ' más</div>' : '') + '</div>' : '') +
+    (R.entran.length ? '<button type="button" class="pg-btn" id="impBtn" onclick="impImportar()">Importar ' + R.entran.length + ' viaje' + (R.entran.length === 1 ? '' : 's') + ' para ' + esc(R.c ? R.c.empresa : '') + ' <span class="a">→</span></button>' : '<div class="imp-msg">No hay viajes nuevos para importar.</div>') +
+    ' <span class="linkish imp-x" onclick="impCancelar()">cancelar</span>';
+}
+function impCancelar() { window._imp = null; var p = $('impPrev'); if (p) p.innerHTML = ''; var n = $('impNombre'); if (n) n.textContent = ''; var f = $('impFile'); if (f) f.value = ''; }
+async function impImportar() {
+  if (!window._imp) return;
+  var R = impCalcular();
+  if (!R.c) return toast('Elige el cliente');
+  if (!R.entran.length) return toast('No hay viajes nuevos para importar');
+  var btn = $('impBtn'); if (btn) { btn.disabled = true; btn.textContent = 'Importando…'; }
+  var filas = R.entran.map(function (x) { return Object.assign({ created_by: ME ? ME.email : null }, x); });
+  var hechos = 0, error = null;
+  for (var i = 0; i < filas.length; i += 200) {
+    var r = await sb.from('amazon_loads').insert(filas.slice(i, i + 200));
+    if (r.error) { error = r.error; break; }
+    hechos += Math.min(200, filas.length - i);
+  }
+  if (error) {
+    if (btn) { btn.disabled = false; btn.textContent = 'Reintentar'; }
+    toast('Error al importar' + (hechos ? ' (se alcanzaron a guardar ' + hechos + ')' : '') + ': ' + error.message);
+    if (hechos) { await loadAll(); render(); }
+    return;
+  }
+  await eventoAudit('nota', 'Importación de viajes: ' + hechos + ' desde ' + window._imp.archivo, { cliente_id: R.c.id });
+  var nombre = R.c.empresa;
+  window._imp = null;
+  _ldFiltro = R.c.id;
+  toast('Se han importado ' + hechos + ' viaje' + (hechos === 1 ? '' : 's') + ' correctamente para ' + nombre);
+  await loadAll(); render();
+}
+
+(function () {
+  var st = document.createElement('style');
+  st.textContent =
+    '.imp-box{border:1.5px dashed var(--pg-mint);border-radius:12px;background:#F2FBF8;padding:14px;margin:4px 0 10px}' +
+    '.imp-t{font-weight:800;color:var(--pg-ink);font-size:14px}' +
+    '.imp-s{font-size:12px;color:var(--pg-muted);margin:4px 0 10px;line-height:1.5}' +
+    '.imp-pick{position:relative;overflow:hidden;cursor:pointer}.imp-pick input{position:absolute;inset:0;opacity:0;cursor:pointer}' +
+    '.imp-n{font-size:12px;color:var(--pg-ink);margin-left:8px;font-family:"JetBrains Mono",monospace;word-break:break-all}' +
+    '.imp-cols{display:flex;flex-wrap:wrap;gap:5px;margin:12px 0 8px}' +
+    '.imp-col{font-size:10.5px;padding:3px 8px;border-radius:999px;background:#EEF1F5;color:var(--pg-muted)}.imp-col.ok{background:var(--pg-mint-soft);color:var(--pg-ink)}' +
+    '.imp-res{font-size:13px;margin:8px 0}.imp-om{font-size:11.5px;color:#8A6A14;margin-top:3px}' +
+    '.imp-tbl{max-height:260px;overflow:auto;margin:6px 0 10px;border:1px solid var(--pg-line);border-radius:10px;background:#fff}' +
+    '.imp-tbl .pg-table{margin:0}.imp-msg{font-size:12.5px;color:var(--pg-muted);margin:8px 0}.imp-msg.err{color:var(--pg-neg,#B3261E)}' +
+    '.imp-x{font-size:12px;margin-left:8px}' +
+    '@media(max-width:760px){.ld-two>*{min-width:0}.ld-wrap{overflow-x:auto;max-width:100%;-webkit-overflow-scrolling:touch}}' +
+    '.imp-o{text-align:center;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--pg-muted);margin:6px 0 12px}';
   document.head.appendChild(st);
 })();
 
