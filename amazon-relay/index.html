@@ -738,7 +738,7 @@ const SB_URL='https://hivpqsepwsfmafamxkzy.supabase.co';
 const SB_KEY='sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt';
 const sb=window.supabase.createClient(SB_URL,SB_KEY,{db:{schema:'portal'}});
 /* ===== v6 ===== */
-const PGV_VERSION=11; // v11 - Ronda 10: importador Trips.csv/Excel + cliente del formulario sigue al filtro
+const PGV_VERSION=12; // v12 - Ronda 11: concepto en inglés + Itemized Loads Breakdown
 let CARGADO_EN=Date.now();
 let RENT=[], RENOV=[], RENOV_RES=null, CONFIG={}, TRM=4000, ERRORES={}, ES_DIR=false;
 let MES_SEL=new Date().getMonth();
@@ -5382,7 +5382,7 @@ function vPiloto() {
    tabla, paso automatico a Cobros, y plantilla de invoice corporativa.
    Estas funciones REEMPLAZAN a las de arriba.
    ================================================================== */
-var AMZ_VERSION = 10;
+var AMZ_VERSION = 11;
 
 /* Etiquetas del costo de operación.
    Dirección (sales@ / socio) ve el reparto con nombre propio; la operación ve
@@ -6321,6 +6321,210 @@ async function impImportar() {
     '.imp-x{font-size:12px;margin-left:8px}' +
     '@media(max-width:760px){.ld-two>*{min-width:0}.ld-wrap{overflow-x:auto;max-width:100%;-webkit-overflow-scrolling:touch}}' +
     '.imp-o{text-align:center;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--pg-muted);margin:6px 0 12px}';
+  document.head.appendChild(st);
+})();
+
+
+
+/* =====================================================================
+   AMAZON RELAY · v11 · RONDA 11 (24-sep-2026)
+   1) Concepto del cobro en inglés desde el origen (fechas US) + etiquetas
+      exactas del invoice.
+   2) Itemized Loads Breakdown en el invoice y en la ficha del cobro.
+   ===================================================================== */
+function fmtUS(d) {
+  if (!d) return '—';
+  var dt = new Date(String(d).length === 10 ? d + 'T12:00:00' : d);
+  return isNaN(dt) ? '—' : dt.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+}
+function conceptoDispatchEN(desde, hasta, n) {
+  return 'Dispatching Service: ' + fmtUS(desde) + ' – ' + fmtUS(hasta || desde) + ' (' + n + ' load' + (n === 1 ? '' : 's') + ')';
+}
+function conceptoServproEN(s) {
+  if (!s) return 'Professional Service';
+  return 'Professional Service: ' + ivServEN(s.tipo_servicio || '') + (s.id_caso ? ' · case ' + s.id_caso : '');
+}
+
+/* etiquetas exactas pedidas (EN) y su espejo en ES */
+IV_TXT.en.desc = 'Service Description'; IV_TXT.en.totalDue = 'Total Amount';
+IV_TXT.en.dispatch = 'Dispatching Service'; IV_TXT.en.prof = 'Professional Service';
+IV_TXT.es.desc = 'Descripción del servicio'; IV_TXT.es.totalDue = 'Monto total';
+IV_TXT.es.dispatch = 'Servicio de Dispatching'; IV_TXT.es.prof = 'Servicio profesional';
+IV_TXT.en.bd = { tit: 'ITEMIZED LOADS BREAKDOWN', id: 'Load ID', f: 'Date', g: 'Gross Base', c: 'Commission Fee', tot: 'TOTALS', fija: 'Flat weekly fee — commission is not itemized per load.', ajuste: 'The invoiced amount reflects the agreed weekly terms (minimum or adjustment).', loads: 'load', loadsP: 'loads' };
+IV_TXT.es.bd = { tit: 'DESGLOSE DE VIAJES', id: 'Load ID', f: 'Fecha', g: 'Gross base', c: 'Comisión', tot: 'TOTALES', fija: 'Tarifa fija semanal — la comisión no se discrimina por viaje.', ajuste: 'El monto facturado refleja las condiciones semanales acordadas (mínimo o ajuste).', loads: 'viaje', loadsP: 'viajes' };
+
+/* 1 · concepto en inglés: envuelve las funciones del formulario de cobros */
+(function () {
+  var recalc0 = window.cbRecalcular;
+  window.cbRecalcular = function () {
+    var r = recalc0.apply(this, arguments);
+    if (!_cbConceptoManual && !EDIT.cobro && $('cbConcepto') && _cbOrigen === 'viaje') {
+      var n = 0; document.querySelectorAll('#cbLoads input.cbLd').forEach(function (c) { if (c.checked) n++; });
+      $('cbConcepto').value = conceptoDispatchEN($('cbDesde') && $('cbDesde').value, $('cbHasta') && $('cbHasta').value, n);
+    }
+    return r;
+  };
+  var sp0 = window.cbServproChange;
+  window.cbServproChange = function () {
+    var r = sp0.apply(this, arguments);
+    var s = (typeof SERVPRO !== 'undefined' && $('cbServpro')) ? SERVPRO.find(function (x) { return x.id === $('cbServpro').value; }) : null;
+    if (s && $('cbConcepto')) $('cbConcepto').value = conceptoServproEN(s);
+    return r;
+  };
+})();
+
+/* el invoice que nace de un cobro guarda la descripción en inglés, sin repetir prefijos */
+function ivDescDeCobro(c) {
+  var lds = loadsDeCobro(c.id), sps = servprosDeCobro(c.id);
+  if (sps.length) return conceptoServproEN(sps[0]);
+  if (c.tipo === 'semanal' || lds.length) return conceptoDispatchEN(c.periodo_desde, c.periodo_hasta, lds.length);
+  return c.concepto || 'Service';
+}
+async function crearInvoiceDelCobro() {
+  var sel = $('ivCobro');
+  var c = sel ? COBROS.find(function (x) { return x.id === sel.value; }) : null;
+  if (!c) return toast('Elige el cobro que vas a facturar');
+  var ya = INVOICES.find(function (i) { return i.cobro_id === c.id && i.estado !== 'anulado'; });
+  if (ya) return toast('Ese cobro ya tiene invoice (' + ya.numero + ')');
+  await crearInvoice({
+    cliente_id: c.cliente_id, desc: ivDescDeCobro(c), qty: 1, rate: Number(c.monto) || 0,
+    fee: !!($('ivFee') && $('ivFee').checked), metodo: ($('ivMetodo') && $('ivMetodo').value.trim()) || null, cobro_id: c.id
+  });
+}
+function invoiceDesdeCobro(cobroId) {
+  var c = COBROS.find(function (x) { return x.id === cobroId; }); if (!c) return;
+  var ya = INVOICES.find(function (i) { return i.cobro_id === cobroId && i.estado !== 'anulado'; });
+  if (ya) return toast('Ese cobro ya tiene invoice (' + ya.numero + ') — ábrelo en Invoices para imprimirlo');
+  crearInvoice({ cliente_id: c.cliente_id, desc: ivDescDeCobro(c), qty: 1, rate: Number(c.monto), fee: false, cobro_id: cobroId, metodo: null });
+}
+
+/* concepto del invoice por idioma, ahora con número de viajes */
+function ivConcepto(it, inv, lang) {
+  var T = IV_TXT[lang] || IV_TXT.en;
+  var raw = String((it && it.descripcion) || '');
+  var cob = inv && inv.cobro_id ? COBROS.find(function (x) { return x.id === inv.cobro_id; }) : null;
+  if (cob) {
+    var sp = servprosDeCobro(cob.id)[0];
+    if (sp) {
+      var tipo = lang === 'en' ? ivServEN(sp.tipo_servicio) : String(sp.tipo_servicio || '').trim();
+      return T.prof + (tipo ? ': ' + tipo : '') + (sp.id_caso ? (lang === 'en' ? ' · case ' : ' · caso ') + sp.id_caso : '');
+    }
+    var n = loadsDeCobro(cob.id).length;
+    if (cob.tipo === 'semanal' || n || /dispatching/i.test(raw)) {
+      var p = (cob.periodo_desde || cob.periodo_hasta) ? ivFecha(cob.periodo_desde, lang) + ' – ' + ivFecha(cob.periodo_hasta || cob.periodo_desde, lang) : '';
+      return T.dispatch + (p ? ': ' + p : '') + (n ? ' (' + n + ' ' + (n === 1 ? T.bd.loads : T.bd.loadsP) + ')' : '');
+    }
+  }
+  if (/^dispatching/i.test(raw)) {
+    var limpio = raw.replace(/^Dispatching Service\s*(—\s*Amazon Relay)?:\s*/i, '').replace(/\s*\([^)]*de[^)]*\)\s*$/, '');
+    return T.dispatch + (limpio ? ': ' + limpio : '');
+  }
+  if (/^(service\s*\/\s*management|professional service)/i.test(raw) || /servicio profesional/i.test(raw)) {
+    var resto = raw.replace(/^(service\s*\/\s*management|professional service):?\s*/i, '').replace(/servicio profesional/i, '').replace(/\s*\([^)]*\)\s*$/, '').replace(/^[\s:·—-]+/, '').trim();
+    var r2 = lang === 'en' ? ivServEN(resto) : resto;
+    return T.prof + (r2 ? ': ' + r2 : '');
+  }
+  return raw;
+}
+
+/* 2 · desglose de viajes de un cobro (compartido invoice / ficha) */
+function bdFilas(cobroId) {
+  var c = COBROS.find(function (x) { return x.id === cobroId; });
+  var cl = c ? cli(c.cliente_id) : null;
+  var lds = loadsDeCobro(cobroId).slice().sort(function (a, b) { return String(a.fecha_hora || '').localeCompare(String(b.fecha_hora || '')); });
+  var fija = cl && !agenciaDeViaje(cl, 0).aplica;
+  var filas = lds.map(function (l) {
+    var com = l.agencia_monto != null ? Number(l.agencia_monto) : (fija ? null : agenciaDeViaje(cl, l.tarifa).monto);
+    return { id: l.load_id_externo || '—', fecha: (l.fecha_hora || '').slice(0, 10), gross: Number(l.tarifa) || 0, com: fija ? null : com };
+  });
+  var g = filas.reduce(function (a, f) { return a + f.gross; }, 0);
+  var cm = fija ? null : filas.reduce(function (a, f) { return a + (Number(f.com) || 0); }, 0);
+  return { filas: filas, gross: Math.round(g * 100) / 100, com: cm == null ? null : Math.round(cm * 100) / 100, fija: fija, cobro: c };
+}
+function bdTablaHTML(cobroId, lang, montoFacturado) {
+  var B = bdFilas(cobroId); if (!B.filas.length) return '';
+  var T = (IV_TXT[lang] || IV_TXT.en).bd;
+  var fechaTxt = function (d) { return lang === 'es' ? ivFecha(d, 'es') : fmtUS(d); };
+  var nota = '';
+  if (B.fija) nota = T.fija;
+  else if (montoFacturado != null && Math.abs((B.com || 0) - Number(montoFacturado)) > 0.006 * B.filas.length + 0.005) nota = T.ajuste; /* redondeo por viaje no cuenta como ajuste */
+  return '<div class="bd">' +
+    '<div class="bd-t">' + T.tit + '</div>' +
+    '<table class="inv bd-tbl"><tr><th>' + T.id + '</th><th>' + T.f + '</th><th>' + T.g + '</th><th>' + T.c + '</th></tr>' +
+    B.filas.map(function (f) {
+      return '<tr><td class="mono">' + esc(f.id) + '</td><td class="c">' + (f.fecha ? fechaTxt(f.fecha) : '—') + '</td><td class="c">' + fmt$(f.gross) + '</td><td class="c">' + (f.com == null ? '—' : fmt$(f.com)) + '</td></tr>';
+    }).join('') +
+    '<tr class="bd-tot"><td>' + T.tot + ' (' + B.filas.length + ')</td><td></td><td class="c">' + fmt$(B.gross) + '</td><td class="c">' + (B.com == null ? '—' : fmt$(B.com)) + '</td></tr>' +
+    '</table>' + (nota ? '<div class="bd-n">' + nota + '</div>' : '') + '</div>';
+}
+
+/* invoice: mismo de v9 + desglose de viajes debajo del concepto */
+function imprimirInvoice(id, lang) {
+  var i = INVOICES.find(function (x) { return x.id === id; });
+  if (!i) return;
+  lang = (lang === 'es' || lang === 'en') ? lang : (window.INV_LANG || 'en');
+  var T = IV_TXT[lang];
+  var c = cli(i.cliente_id) || {};
+  var items = i.items || [];
+  var esFee = function (it) { return /administrative processing fee/i.test(it.descripcion || ''); };
+  var lineas = items.filter(function (it) { return !esFee(it); });
+  var subtotal = Number(i.subtotal != null ? i.subtotal : lineas.reduce(function (a, it) { return a + Number(it.total || 0); }, 0));
+  var feePct = Number(i.fee_pct || 0);
+  var fee = Number(i.fee != null ? i.fee : (feePct ? Math.round(subtotal * feePct) / 100 : 0));
+  var total = Number(i.total != null ? i.total : subtotal + fee);
+  var metodo = i.metodo_pago || '—';
+  var filas = lineas.map(function (it) {
+    return '<tr><td>' + esc(ivConcepto(it, i, lang)) + '</td><td class="c">' + (it.qty != null ? esc(it.qty) : 1) + '</td><td class="c">' + fmt$(it.rate) + ' USD</td><td class="c">' + fmt$(it.total) + ' USD</td></tr>';
+  }).join('') || '<tr><td colspan="4" style="color:#777">—</td></tr>';
+  var bd = i.cobro_id ? bdTablaHTML(i.cobro_id, lang, subtotal) : '';
+  $('printArea').innerHTML =
+  '<div class="pgprint pgprint-page" lang="' + lang + '">' +
+    '<div class="ivhdr ivhdr-pg"><div class="ivlogo"><img src="' + window.PG_LOGO_PROTECTGO + '" alt="ProtectGo Services"></div><div class="ivhdr-t">' + T.titulo + '</div></div>' +
+    '<div class="meta"><div>' +
+      '<b>' + T.num + ':</b> ' + esc(i.numero || '—') + '<br><b>' + T.fecha + ':</b> ' + ivFecha(i.fecha, lang) + '<br><b>' + T.metodo + ':</b> ' + esc(metodo) +
+    '</div><div class="r"><div class="ivlbl">' + T.cliente + '</div>' +
+      '<b>' + T.empresa + ':</b> ' + esc(c.empresa || '—') + (c.dba ? '<br><b>DBA:</b> ' + esc(c.dba) : '') + '<br>' +
+      '<b>' + T.rep + ':</b> ' + esc(c.representante || '—') + '<br>' +
+      '<b>USDOT #:</b> ' + esc(c.dot || '—') + ' &nbsp;|&nbsp; <b>MC #:</b> ' + esc(c.mc || '—') +
+    '</div></div>' +
+    '<table class="inv"><tr><th>' + T.desc + '</th><th>' + T.qty + '</th><th>' + T.rate + '</th><th>' + T.total + '</th></tr>' + filas + '</table>' +
+    bd +
+    '<div class="ivtot">' +
+      '<div class="row"><span>' + T.subtotal + '</span><b>' + fmt$(subtotal) + ' USD</b></div>' +
+      (fee > 0 ? '<div class="row"><span>' + T.fee + ' (' + (feePct || 3.9) + '%)</span><b>' + fmt$(fee) + ' USD</b></div>' : '') +
+      '<div class="row tot"><span>' + T.totalDue + '</span><b>' + fmt$(total) + ' USD</b></div>' +
+    '</div>' +
+    '<div class="terms"><h3>' + T.termsT + '</h3><p>' + T.terms + '</p></div>' +
+    '<div class="footline">' + T.foot + '</div>' +
+  '</div>';
+  window.print();
+}
+
+/* ficha del cobro: mismo de v6 + bloque "Itemized loads breakdown" */
+(function () {
+  var ficha0 = window.cobFichaHTML;
+  window.cobFichaHTML = function (c) {
+    var html = ficha0.apply(this, arguments);
+    var t = bdTablaHTML(c.id, 'en', Number(c.monto));
+    if (!t) return html;
+    var bloque = '<div class="fi-bloque"><div class="fi-tit">Itemized loads breakdown</div><div class="bd-app">' + t + '</div></div>';
+    return html.replace(/<\/div>\s*$/, bloque + '</div>');
+  };
+})();
+
+(function () {
+  var st = document.createElement('style');
+  st.textContent =
+    '.pgprint .bd{margin:14px 0 4px}.pgprint .bd-t,.bd-app .bd-t{font-size:11px;font-weight:700;letter-spacing:.12em;color:#5a6b76;margin-bottom:6px}' +
+    '.pgprint table.bd-tbl td,.pgprint table.bd-tbl th{padding:6px 8px;font-size:11.5px}' +
+    '.pgprint .bd-tot td{background:#f2f2f2;font-weight:700}' +
+    '.pgprint .bd-n,.bd-app .bd-n{font-size:10.5px;color:#6b7d89;margin-top:5px;font-style:italic}' +
+    '.bd-app .bd-t{display:none}.bd-app{overflow-x:auto}' +
+    '.bd-app table.bd-tbl{width:100%;border-collapse:collapse;font-size:12px}' +
+    '.bd-app table.bd-tbl th{text-align:left;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--pg-muted);border-bottom:1px solid var(--pg-line);padding:6px 8px}' +
+    '.bd-app table.bd-tbl td{padding:6px 8px;border-bottom:1px solid var(--pg-line);font-family:"JetBrains Mono",monospace}' +
+    '.bd-app table.bd-tbl td.c{text-align:right}.bd-app .bd-tot td{font-weight:700;border-top:2px solid var(--pg-ink)}' +
+    '@media print{body>*:not(#printArea){display:none!important}#printArea{position:static!important}#printArea .pgprint-page:last-child{page-break-after:auto;break-after:auto}}';
   document.head.appendChild(st);
 })();
 
