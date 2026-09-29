@@ -131,7 +131,7 @@
   </header>
 
   <div class="wrap">
-    <div class="famtabs" id="famTabs" style="display:none"><button type="button" data-famtab="docs" class="on">Documentos de pago</button><button type="button" data-famtab="amz">Amazon · Validar fondos <span class="famn" id="famAmzN" style="display:none"></span></button></div>
+    <div class="famtabs" id="famTabs" style="display:none"><button type="button" data-famtab="docs" class="on">Documentos de pago</button><button type="button" data-famtab="amz">Amazon · Conciliación <span class="famn" id="famAmzN" style="display:none"></span></button></div>
     <div id="famDocs">
     <div class="kicker">Área Financiera · Documentos de pago</div>
     <h1>Diligenciar documentos</h1>
@@ -581,7 +581,7 @@ else setTimeout(init,60);
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="fam.html";
-var PGV_VERSION=6; // v6 - Bandeja FAM de Amazon Relay (validar fondos + statement semanal). Antes: v5 - Protect Index: las direcciones internas del sitio pasan a relativas (el sitio ya no depende de como se llame el repo). Las que viajan por correo (recuperar contrasena, fotos de firma, sello de RRHH) quedan absolutas apuntando a protect-index.
+var PGV_VERSION=7; // v6 - Bandeja FAM de Amazon Relay (validar fondos + statement semanal). Antes: v5 - Protect Index: las direcciones internas del sitio pasan a relativas (el sitio ya no depende de como se llame el repo). Las que viajan por correo (recuperar contrasena, fotos de firma, sello de RRHH) quedan absolutas apuntando a protect-index.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;
@@ -616,7 +616,7 @@ setInterval(pgvCheck,600000);
 </script>
 <script>
 /* =====================================================================
-   FAM · AMAZON RELAY — Bandeja de validación de fondos (v6, 29-sep-2026)
+   FAM · AMAZON RELAY — Centro de conciliación (v7, 29-sep-2026) — nada bloquea: contador + actividad
    Solo fam@. FAM valida en el banco → la base cierra cobro, viajes,
    invoice y reparto (portal.amazon_validar_fondos). Statement semanal
    (portal.amazon_generar_statement; también corre solo los lunes).
@@ -627,7 +627,9 @@ setInterval(pgvCheck,600000);
   var KEY_ = "sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
   var FAM = 'fam@protectgoservices.com';
   var sbA = null, ME = '', CARGANDO = false;
-  var D = { cobros: [], cli: {}, loads: [], inv: [], st: [], rep: {}, regla: null };
+  var D = { cobros: [], cli: {}, loads: [], inv: [], st: [], rep: {}, regla: null, act: [] };
+  var PV = { q: '', desde: '', hasta: '', metodo: '' }; /* filtros de Pagos validados */
+  var ACT_ABIERTA = false;
   var ABIERTO = {}; /* id → 'viajes' | 'validar' | 'devolver' */
   var $f = function (id) { return document.getElementById(id); };
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (m) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]; }); };
@@ -658,6 +660,13 @@ setInterval(pgvCheck,600000);
     sbA.auth.getSession().then(function (r) { sesion(r.data && r.data.session); });
     sbA.auth.onAuthStateChange(function (e, s) { sesion(s); });
     document.addEventListener('click', clic);
+    document.addEventListener('input', function (e) {
+      var t = e.target; if (!t || !$f('famAmz') || !$f('famAmz').contains(t)) return;
+      if (t.id === 'pvQ') { PV.q = t.value; pvRepintar(); }
+      else if (t.id === 'pvDesde') { PV.desde = t.value; pvRepintar(); }
+      else if (t.id === 'pvHasta') { PV.hasta = t.value; pvRepintar(); }
+      else if (t.id === 'pvMet') { PV.metodo = t.value; pvRepintar(); }
+    });
   }
   function sesion(s) {
     ME = ((s && s.user && s.user.email) || '').toLowerCase();
@@ -676,7 +685,9 @@ setInterval(pgvCheck,600000);
       sbA.from('amazon_loads').select('id,cobro_id,load_id_externo,fecha_hora,tarifa,agencia_monto').not('cobro_id', 'is', null),
       sbA.from('amazon_invoices').select('id,numero,cobro_id,estado,total'),
       sbA.from('amazon_statements').select('*').order('created_at', { ascending: false }).limit(26),
-      sbA.from('amazon_reglas_reparto').select('*')
+      sbA.from('amazon_reglas_reparto').select('*'),
+      sbA.from('amazon_repartos').select('cobro_id,operario,utilidad'),
+      sbA.rpc('amazon_actividad', { p_area: 'fam', p_limite: 60 })
     ]).then(function (R) {
       CARGANDO = false;
       var err = R.find(function (x) { return x.error; });
@@ -685,12 +696,26 @@ setInterval(pgvCheck,600000);
       D.cli = {}; (R[1].data || []).forEach(function (c) { D.cli[c.id] = c; });
       D.loads = R[2].data || []; D.inv = R[3].data || []; D.st = R[4].data || [];
       D.regla = (R[5].data || []).find(function (r) { return r.tipo === 'semanal'; }) || null;
+      D.rep = {}; (R[6].data || []).forEach(function (r) { D.rep[r.cobro_id] = r; });
+      D.act = R[7].data || [];
       contador(); pintar();
     }).catch(function (e) { CARGANDO = false; pintarError(e && e.message ? e.message : e); });
   }
   function contador() {
-    var n = D.cobros.filter(function (c) { return c.estado === 'enviado_fam'; });
-    var el = $f('famAmzN'); if (el) { el.textContent = n.length ? String(n.length) : ''; el.style.display = n.length ? '' : 'none'; }
+    var n = D.cobros.filter(function (c) { return c.estado === 'enviado_fam'; }).length;
+    var nuevos = D.act.filter(function (a) { return a.nuevo; }).length;
+    var el = $f('famAmzN'); if (el) { el.textContent = n ? String(n) : ''; el.style.display = n ? '' : 'none'; }
+    /* punto discreto en la barra: solo cuenta, nunca abre pantalla */
+    var p = $f('famBarPill');
+    if (!p) {
+      var a = document.querySelector('.pg-bar a.pg-b'); if (!a) return;
+      p = document.createElement('button'); p.type = 'button'; p.id = 'famBarPill'; p.className = 'fam-barpill'; p.setAttribute('data-famtab', 'amz');
+      a.parentNode.insertBefore(p, a);
+    }
+    p.innerHTML = 'Amazon' + (n ? ' <b>' + n + '</b>' : '') + (nuevos ? ' <i title="' + nuevos + ' novedad' + (nuevos === 1 ? '' : 'es') + ' en Actividad"></i>' : '');
+    p.classList.toggle('on', n > 0 || nuevos > 0);
+    p.title = n ? n + ' cobro' + (n === 1 ? '' : 's') + ' por validar en el banco' : 'Sin cobros por validar';
+    p.style.display = ME === FAM ? '' : 'none';
   }
   function pintarError(m) { var a = $f('famAmz'); if (a) a.innerHTML = '<div class="fa-err">No se pudo cargar la bandeja de Amazon: ' + esc(m) + '</div>'; }
 
@@ -702,22 +727,91 @@ setInterval(pgvCheck,600000);
     var sum = function (l) { return l.reduce(function (s, c) { return s + (Number(c.monto) || 0); }, 0); };
     var ult = D.st[0];
     var pct = D.regla ? Number(D.regla.operario_pct) || 0 : null;
+    var nuevos = D.act.filter(function (x) { return x.nuevo; }).length;
     a.innerHTML =
       '<div class="kicker">Área Financiera · Amazon Relay</div>' +
-      '<h1>Validar fondos</h1>' +
-      '<p class="sub">Cada cobro que operación envía llega aquí. Búscalo en el banco con el <b>memo</b> y el <b>monto</b>. Al validarlo se cierran solos el cobro, sus viajes y su invoice. Cada lunes se arma el statement de la semana para el registro de Amazon.</p>' +
+      '<h1>Conciliación Amazon Relay</h1>' +
+      '<p class="sub">Aquí se concilian los pagos de Amazon Relay: lo que hay que <b>buscar en el banco</b>, lo ya <b>validado</b> y el <b>statement semanal</b> para el registro de comisiones. Nada te interrumpe: entra cuando el contador lo pida.</p>' +
       '<div class="fa-kpis">' +
         kpi('Por validar', por.length ? String(por.length) : '—', por.length ? money(sum(por)) + ' a buscar en el banco' : 'Nada pendiente') +
         kpi('Validados sin statement', val.length ? String(val.length) : '—', val.length ? money(sum(val)) + ' entran al próximo statement' : 'Todo cerrado') +
         kpi('Último statement', ult ? esc(ult.numero) : '—', ult ? money(ult.cobrado) + ' · ' + (ult.estado === 'montado' ? 'montado en el registro' : 'por montar') : 'Aún no hay') +
       '</div>' +
-      '<div class="fa-sec"><div class="fa-sec-t">Por validar <button class="fa-lnk" data-fa="recargar">↻ Actualizar</button></div>' +
+      '<div class="fa-sec"><div class="fa-sec-t">1 · Por validar <button class="fa-lnk" data-fa="recargar">↻ Actualizar</button></div>' +
         (por.length ? por.map(tarjeta).join('') : '<div class="fa-vacio">No hay cobros esperando validación.</div>') + '</div>' +
-      '<div class="fa-sec"><div class="fa-sec-t">Validados — entran al próximo statement' + (val.length ? ' <button class="btn sec fa-mini" data-fa="generar">Generar statement ahora</button>' : '') + '</div>' +
-        (val.length ? tablaValidados(val) : '<div class="fa-vacio">Sin cobros validados pendientes de statement.</div>') + '</div>' +
-      '<div class="fa-sec"><div class="fa-sec-t">Statements semanales</div>' +
+      '<div class="fa-sec"><div class="fa-sec-t">2 · Pagos validados <span class="fa-sub">verificar y consolidar contra el banco</span></div>' + pagosValidados() + '</div>' +
+      '<div class="fa-sec"><div class="fa-sec-t">3 · Statements semanales <span class="fa-sub">para el registro de Amazon y las comisiones</span>' + (val.length ? ' <button class="btn sec fa-mini" data-fa="generar">Generar statement ahora</button>' : '') + '</div>' +
         (D.st.length ? D.st.map(filaStatement).join('') : '<div class="fa-vacio">Todavía no hay statements. El primero se genera solo el lunes siguiente a la primera validación, o con el botón de arriba.</div>') + '</div>' +
+      '<div class="fa-sec"><div class="fa-sec-t fa-act-t" data-fa="act-toggle">4 · Actividad ' + (nuevos ? '<span class="famn">' + nuevos + ' nueva' + (nuevos === 1 ? '' : 's') + '</span>' : '') + ' <span class="fa-sub">' + (ACT_ABIERTA ? 'ocultar ▴' : 'ver ▾') + '</span></div>' +
+        (ACT_ABIERTA ? actividad() : '') + '</div>' +
       (pct != null ? '<div class="fa-pie">Reparto vigente: operario ' + pct + ' % · agencia ' + (100 - pct) + ' % (regla de Amazon Relay).</div>' : '');
+  }
+  /* ---------- 2 · pagos validados: historial buscable ---------- */
+  function pvFiltrados() {
+    var q = PV.q.trim().toLowerCase();
+    return D.cobros.filter(function (c) {
+      if (c.estado !== 'fondos_validados' && c.estado !== 'pagado') return false;
+      if (PV.desde && (c.fecha_pago || '') < PV.desde) return false;
+      if (PV.hasta && (c.fecha_pago || '9999') > PV.hasta) return false;
+      if (PV.metodo && (c.metodo_pago || '') !== PV.metodo) return false;
+      if (!q) return true;
+      var cl = D.cli[c.cliente_id] || {}, inv = invDe(c);
+      return [memo(c), c.transaccion, cl.empresa, cl.dot, inv && inv.numero, c.concepto].some(function (v) { return String(v || '').toLowerCase().indexOf(q) >= 0; });
+    }).sort(function (a, b) { return String(b.validado_at || '').localeCompare(String(a.validado_at || '')); });
+  }
+  function stDe(c) { return c.statement_id ? D.st.find(function (s) { return s.id === c.statement_id; }) : null; }
+  function pagosValidados() {
+    var L = pvFiltrados();
+    var tot = L.reduce(function (t, c) { var r = D.rep[c.id] || {}; t.c += Number(c.monto) || 0; t.o += Number(r.operario) || 0; t.a += Number(r.utilidad) || 0; return t; }, { c: 0, o: 0, a: 0 });
+    var hayAlgo = D.cobros.some(function (c) { return c.estado === 'fondos_validados' || c.estado === 'pagado'; });
+    var filtros = '<div class="fa-filtros">' +
+      '<input id="pvQ" placeholder="Buscar memo, # transacción, cliente, invoice…" value="' + esc(PV.q) + '">' +
+      '<label>Desde <input type="date" id="pvDesde" value="' + esc(PV.desde) + '"></label>' +
+      '<label>Hasta <input type="date" id="pvHasta" value="' + esc(PV.hasta) + '"></label>' +
+      '<select id="pvMet"><option value="">Todos los métodos</option>' + ['ACH', 'Zelle', 'Tarjeta', 'Wire', 'Cheque', 'Otro'].map(function (m) { return '<option' + (PV.metodo === m ? ' selected' : '') + '>' + m + '</option>'; }).join('') + '</select>' +
+      (L.length ? '<button class="fa-lnk" data-fa="pv-xlsx">Excel</button><button class="fa-lnk" data-fa="pv-csv">CSV</button>' : '') +
+      '</div>';
+    if (!hayAlgo) return '<div class="fa-vacio">Todavía no hay pagos validados. Aparecen aquí apenas valides el primero.</div>';
+    if (!L.length) return filtros + '<div class="fa-vacio">Nada coincide con el filtro.</div>';
+    return filtros + '<div class="fa-tbl"><table><tr><th>Pago</th><th>Cliente</th><th>Memo</th><th>Invoice</th><th># Transacción</th><th>Método</th><th class="r">Cobrado</th><th>Statement</th></tr>' +
+      L.map(function (c) { var cl = D.cli[c.cliente_id] || {}, inv = invDe(c), st = stDe(c);
+        return '<tr><td>' + fecha(c.fecha_pago) + '</td><td>' + esc(cl.empresa || '—') + '<div class="fa-meta">DOT ' + esc(cl.dot || '—') + '</div></td><td class="mono">' + esc(memo(c)) + '</td><td class="mono">' + esc(inv ? inv.numero : '—') + '</td><td class="mono">' + esc(c.transaccion || '—') + '</td><td>' + esc(c.metodo_pago || '—') + '</td><td class="r">' + money(c.monto) + '</td><td>' + (st ? '<span class="mono">' + esc(st.numero) + '</span>' + (st.estado === 'montado' ? ' <span class="fa-pill ok">montado</span>' : ' <span class="fa-pill pend">por montar</span>') : '<span class="fa-pill pend">próximo lunes</span>') + '</td></tr>'; }).join('') +
+      '<tr class="tot"><td colspan="6">Total del filtro (' + L.length + ') · operario ' + money(tot.o) + ' · agencia ' + money(tot.a) + '</td><td class="r">' + money(tot.c) + '</td><td></td></tr></table></div>';
+  }
+  function pvExport(tipo) {
+    var L = pvFiltrados();
+    var F = L.map(function (c) { var cl = D.cli[c.cliente_id] || {}, inv = invDe(c), st = stDe(c), r = D.rep[c.id] || {};
+      return [st ? st.numero : '', cl.empresa || '', cl.dot || '', c.concepto || '', inv ? inv.numero : '', c.periodo_desde || '', c.periodo_hasta || '', viajesDe(c).length,
+        Number(c.gross_total) || 0, Number(c.monto) || 0, c.fecha_pago || '', c.metodo_pago || '', c.transaccion || '', memo(c), Number(r.operario) || 0, Number(r.utilidad) || 0, c.id]; });
+    var nombre = 'pagos-validados-' + hoy();
+    if (tipo === 'csv') {
+      var q = function (v) { v = String(v == null ? '' : v); return /[",\n;]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+      return descargar(nombre + '.csv', new Blob(['\ufeff' + [COLS].concat(F).map(function (r) { return r.map(q).join(','); }).join('\r\n')], { type: 'text/csv;charset=utf-8' }));
+    }
+    cargarXLSX().then(function (X) {
+      var wb = X.utils.book_new(); var ws = X.utils.aoa_to_sheet([COLS].concat(F));
+      ws['!cols'] = COLS.map(function (c) { return { wch: c === 'id' ? 38 : Math.max(10, c.length + 4) }; });
+      X.utils.book_append_sheet(wb, ws, 'AMAZON'); X.writeFile(wb, nombre + '.xlsx');
+    }).catch(function (e) { aviso(e.message + ' — usa CSV'); });
+  }
+  /* ---------- 4 · actividad: los traspasos, leídos cuando FAM quiera ---------- */
+  var CLASE = { enviado: { e: '🏦', t: 'Cobro enviado a tu bandeja' }, statement: { e: '📄', t: 'Statement generado' }, validado: { e: '✓', t: 'Fondos validados' }, devuelto: { e: '↩', t: 'Cobro devuelto' } };
+  function actividad() {
+    if (!D.act.length) return '<div class="fa-vacio">Sin actividad todavía.</div>';
+    return '<div class="fa-act">' + D.act.map(function (x) { var k = CLASE[x.clase] || { e: '·', t: x.clase };
+      return '<div class="fa-act-i' + (x.nuevo ? ' nuevo' : '') + '"><span class="fa-act-e">' + k.e + '</span><div><b>' + k.t + (x.cliente ? ' · ' + esc(x.cliente) : '') + (x.monto != null ? ' · ' + money(x.monto) : '') + '</b>' +
+        '<div class="fa-meta">' + esc(x.detalle) + (x.memo ? ' · <span class="mono">' + esc(x.memo) + '</span>' : '') + (x.invoice ? ' · ' + esc(x.invoice) : '') + '</div></div>' +
+        '<span class="fa-act-f">' + fecha(x.created_at) + '<br>' + esc((x.quien || '').split('@')[0] || '—') + '</span></div>'; }).join('') + '</div>';
+  }
+  function actMarcarVista() {
+    if (!D.act.some(function (x) { return x.nuevo; })) return;
+    sbA.rpc('amazon_actividad_vista').then(function () { D.act.forEach(function (x) { x.nuevo = false; }); contador(); });
+  }
+  function pvRepintar() {
+    var secs = document.querySelectorAll('#famAmz .fa-sec'); var sec = secs[1]; if (!sec) return pintar();
+    var foco = document.activeElement && document.activeElement.id, pos = foco === 'pvQ' ? document.activeElement.selectionStart : null;
+    sec.innerHTML = '<div class="fa-sec-t">2 · Pagos validados <span class="fa-sub">verificar y consolidar contra el banco</span></div>' + pagosValidados();
+    if (foco) { var el = $f(foco); if (el) { el.focus(); if (pos != null && el.setSelectionRange) el.setSelectionRange(pos, pos); } }
   }
   function kpi(l, v, s) { return '<div class="fa-kpi"><div class="l">' + l + '</div><div class="v">' + v + '</div><div class="s">' + s + '</div></div>'; }
 
@@ -781,6 +875,9 @@ setInterval(pgvCheck,600000);
     var b = e.target.closest('[data-fa]'); if (!b || !$f('famAmz') || !$f('famAmz').contains(b)) return;
     var act = b.dataset.fa, id = b.dataset.id;
     if (act === 'recargar') return cargar();
+    if (act === 'act-toggle') { ACT_ABIERTA = !ACT_ABIERTA; pintar(); if (ACT_ABIERTA) setTimeout(actMarcarVista, 1500); return; }
+    if (act === 'pv-xlsx') return pvExport('xlsx');
+    if (act === 'pv-csv') return pvExport('csv');
     if (act === 'copiar') { if (navigator.clipboard) navigator.clipboard.writeText(b.dataset.v).then(function () { aviso('Memo copiado'); }); return; }
     if (act === 'abrir-validar' || act === 'abrir-devolver' || act === 'abrir-viajes') {
       var m = act.replace('abrir-', ''); ABIERTO[id] = ABIERTO[id] === m ? '' : m; pintar();
@@ -938,6 +1035,16 @@ setInterval(pgvCheck,600000);
     '.fa-st{background:#fff;border:1px solid var(--line);border-radius:var(--r-md);padding:12px 16px;margin-bottom:8px;display:grid;grid-template-columns:1fr auto auto;gap:14px;align-items:center}' +
     '@media(max-width:760px){.fa-st{grid-template-columns:1fr}}.fa-st-n{text-align:right}.fa-st-n b{font-family:var(--font-mono);font-size:16px;color:var(--navy);display:block}.fa-st-n span{font-size:11.5px;color:var(--muted)}' +
     '.fa-st-a{display:flex;gap:4px;align-items:center;flex-wrap:wrap}.fa-pill{font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px}.fa-pill.ok{background:var(--mint-soft);color:var(--teal-2)}.fa-pill.pend{background:#FBF1D8;color:#8A6A14}' +
+    '.fam-barpill{font:inherit;font-size:12px;font-weight:700;border:1px solid rgba(255,255,255,.25);background:transparent;color:#cfe3de;padding:7px 12px;border-radius:999px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}' +
+    '.fam-barpill.on{border-color:#D9A520;color:#fff}.fam-barpill b{background:#D9A520;color:#1B2D3A;border-radius:999px;padding:1px 8px;font-family:var(--font-mono);font-size:11px}' +
+    '.fam-barpill i{width:8px;height:8px;border-radius:50%;background:#D9A520;display:inline-block}' +
+    '.fa-sub{font-family:var(--font-body);font-weight:400;font-size:12px;color:var(--faint)}.fa-act-t{cursor:pointer;user-select:none}' +
+    '.fa-filtros{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}.fa-filtros input,.fa-filtros select{font:inherit;font-size:13px;padding:7px 10px;border:1px solid var(--line);border-radius:var(--r-sm);background:#fff}' +
+    '.fa-filtros input#pvQ{flex:1;min-width:200px}.fa-filtros label{font-size:11px;color:var(--faint);display:inline-flex;align-items:center;gap:6px}' +
+    '.fa-tbl td .fa-meta{font-size:11px}' +
+    '.fa-act{background:#fff;border:1px solid var(--line);border-radius:var(--r-md)}.fa-act-i{display:grid;grid-template-columns:28px 1fr auto;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);align-items:center}' +
+    '.fa-act-i:last-child{border-bottom:0}.fa-act-i.nuevo{background:rgba(217,165,32,.08);border-left:3px solid #D9A520}.fa-act-e{font-size:16px;text-align:center}.fa-act-i b{font-size:13px;color:var(--navy)}' +
+    '.fa-act-f{font-size:11px;color:var(--faint);text-align:right;font-family:var(--font-mono)}@media(max-width:520px){.fa-act-i{grid-template-columns:24px 1fr}.fa-act-f{grid-column:2;text-align:left}}' +
     '.fa-pie{font-size:11.5px;color:var(--faint);margin-top:8px}.fa-err{background:#FCEEEC;color:#9b2c1f;border-radius:var(--r-md);padding:14px}';
   document.head.appendChild(css);
 
