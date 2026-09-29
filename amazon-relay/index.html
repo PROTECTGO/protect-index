@@ -738,7 +738,7 @@ const SB_URL='https://hivpqsepwsfmafamxkzy.supabase.co';
 const SB_KEY='sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt';
 const sb=window.supabase.createClient(SB_URL,SB_KEY,{db:{schema:'portal'}});
 /* ===== v6 ===== */
-const PGV_VERSION=13; // v13 - Bandeja FAM: enviar/validar por rpc + avisos por el widget + statement semanal
+const PGV_VERSION=14; // v14 - FAM v2: avisos de FAM en franja + contador, nada bloquea
 let CARGADO_EN=Date.now();
 let RENT=[], RENOV=[], RENOV_RES=null, CONFIG={}, TRM=4000, ERRORES={}, ES_DIR=false;
 let MES_SEL=new Date().getMonth();
@@ -5382,7 +5382,7 @@ function vPiloto() {
    tabla, paso automatico a Cobros, y plantilla de invoice corporativa.
    Estas funciones REEMPLAZAN a las de arriba.
    ================================================================== */
-var AMZ_VERSION = 12;
+var AMZ_VERSION = 13;
 
 /* Etiquetas del costo de operación.
    Dirección (sales@ / socio) ve el reparto con nombre propio; la operación ve
@@ -6710,31 +6710,133 @@ function famValidarDireccion(c) {
   document.head.appendChild(st);
 })();
 
-/* avisos de FAM por el widget de novedades: revisa cada 60 s y al volver a la pestaña;
-   cuando se cierra el aviso, refresca los datos para que el cobro se vea en su estado nuevo */
+
+/* =====================================================================
+   v14 — FAM ↔ Amazon Relay v2: nada bloquea (29-sep-2026)
+   · Los traspasos de FAM (devoluciones, cierres, statements) se leen de la
+     trazabilidad (rpc amazon_actividad) en una franja dentro de Cobros,
+     con contador en el menú. Ningún aviso de FAM abre pantalla.
+   · El mini-widget de novedades solo muestra las bloqueantes (cambios de
+     herramienta); las no bloqueantes quedan en el muro.
+   ===================================================================== */
+var FAM_ACT = [], FAM_ACT_ABIERTA = false;
+function famActNuevos() { return FAM_ACT.filter(function (x) { return x.nuevo; }).length; }
+function famActCargar() {
+  if (typeof sb === 'undefined' || !sb || !ME) return Promise.resolve();
+  return sb.rpc('amazon_actividad', { p_area: 'amazon', p_limite: 40 }).then(function (r) {
+    if (r.error) return;
+    FAM_ACT = r.data || [];
+    famActPintar();
+  });
+}
+function famActPintar() {
+  var n = famActNuevos();
+  /* contador en el menú */
+  var a = document.querySelector('.pg-side a[data-v="cobros"]');
+  if (a) {
+    var b = a.querySelector('.famb');
+    if (n) { if (!b) { b = document.createElement('span'); b.className = 'famb'; a.appendChild(b); } b.textContent = n; b.title = n + ' aviso' + (n === 1 ? '' : 's') + ' de FAM sin ver'; }
+    else if (b) b.remove();
+  }
+  var f = document.getElementById('famAvisos'); if (f) f.innerHTML = famAvisosHTML();
+}
+var FAM_CLASE = { validado: { e: '✓', t: 'FAM validó los fondos', c: 'ok' }, devuelto: { e: '↩', t: 'FAM devolvió el cobro', c: 'tarde' }, statement: { e: '📄', t: 'Statement semanal generado', c: '' } };
+function famAvisosHTML() {
+  if (!FAM_ACT.length) return '';
+  var n = famActNuevos();
+  var lista = FAM_ACT_ABIERTA || n ? FAM_ACT.filter(function (x) { return FAM_ACT_ABIERTA || x.nuevo; }).slice(0, FAM_ACT_ABIERTA ? 12 : 5) : [];
+  return '<div class="famav">' +
+    '<div class="famav-t"><span>🏦 Avisos de FAM' + (n ? ' <b class="famb">' + n + '</b>' : '') + '</span>' +
+      '<span class="famav-a">' + (n ? '<button type="button" class="mini" data-famav="visto">Marcar como visto</button>' : '') +
+      '<button type="button" class="mini" data-famav="toggle">' + (FAM_ACT_ABIERTA ? 'ocultar' : (n ? 'ver todos' : 'ver')) + '</button></span></div>' +
+    (lista.length ? lista.map(function (x) {
+      var k = FAM_CLASE[x.clase] || { e: '·', t: x.clase, c: '' };
+      var motivo = x.clase === 'devuelto' ? (x.detalle || '').replace(/^FAM devolvió el cobro a operación\s*·\s*/i, '') : null;
+      return '<div class="famav-i ' + k.c + (x.nuevo ? ' nuevo' : '') + '"><span class="e">' + k.e + '</span><div><b>' + k.t + (x.cliente ? ' · ' + esc(x.cliente) : '') + (x.monto != null ? ' · ' + fmt$(x.monto) : '') + '</b>' +
+        '<div class="d">' + (motivo ? 'Motivo: ' + esc(motivo) : esc(x.detalle || '')) + (x.memo ? ' · <span class="mono">' + esc(x.memo) + '</span>' : '') + (x.invoice ? ' · ' + esc(x.invoice) : '') +
+        (x.cobro_id && x.clase === 'devuelto' ? ' · <span class="linkish" data-famav="ir" data-id="' + esc(x.cobro_id) + '">ir al cobro →</span>' : '') + '</div></div>' +
+        '<span class="f">' + esc(famFechaHora(x.created_at)) + '</span></div>';
+    }).join('') : '<div class="famav-v">Sin avisos nuevos de FAM.</div>') +
+    '</div>';
+}
+function famActVisto() {
+  if (!famActNuevos()) return;
+  sb.rpc('amazon_actividad_vista').then(function (r) {
+    if (r.error) return toast('Error: ' + r.error.message);
+    FAM_ACT.forEach(function (x) { x.nuevo = false; });
+    famActPintar();
+  });
+}
+document.addEventListener('click', function (e) {
+  var el = e.target.closest('[data-famav]'); if (!el) return;
+  e.stopImmediatePropagation();
+  var act = el.dataset.famav;
+  if (act === 'toggle') { FAM_ACT_ABIERTA = !FAM_ACT_ABIERTA; famActPintar(); }
+  else if (act === 'visto') famActVisto();
+  else if (act === 'ir') { COB_ABIERTO = el.dataset.id; COB_F = 'todos'; render(); var c = document.querySelector('#cobLista .card[data-card="' + el.dataset.id + '"]'); if (c) c.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+}, true);
+
+/* la franja va en Cobros, entre el subtítulo y los chips */
 (function () {
-  var hubo = false;
-  function libre() {
-    var a = document.activeElement;
-    return !(a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) && !document.getElementById('pgmOv');
-  }
-  function revisar() {
-    if (typeof sb === 'undefined' || !sb || !ME || document.hidden) return;
-    if (document.getElementById('pgnovOv') || typeof window.pgRevisarNovedades !== 'function') return;
-    sb.rpc('novedades_pendientes', { p_area: 'amazon' }).then(function (r) {
-      if (r.error || !r.data || !r.data.length) return;
-      hubo = true;
-      window.pgRevisarNovedades(sb, 'amazon');
+  var v0 = vCobros;
+  vCobros = function () {
+    var html = v0.apply(this, arguments);
+    return html.replace('<div id="cobChips">', '<div id="famAvisos">' + famAvisosHTML() + '</div><div id="cobChips">');
+  };
+})();
+
+/* cada carga de datos trae la actividad; además cada 60 s y al volver a la pestaña */
+(function () {
+  var la = loadAll;
+  loadAll = async function () { var r = await la.apply(this, arguments); famActCargar(); return r; };
+  setInterval(function () { if (!document.hidden) famActCargar(); }, 60000);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) famActCargar(); });
+})();
+
+/* mini-widget de novedades: definido ANTES del login, así el inline no lo redefine.
+   Igual al de siempre, pero SOLO muestra novedades bloqueantes. */
+(function () {
+  if (window.pgRevisarNovedades) return;
+  var st = document.createElement('style'); st.id = 'pgnovStyle';
+  st.textContent = '.pgnov-ov{position:fixed;inset:0;z-index:999;background:rgba(0,30,38,.72);display:flex;align-items:center;justify-content:center;padding:18px;}.pgnov-card{background:#fff;border-radius:14px;max-width:440px;width:100%;padding:26px 28px;box-shadow:0 20px 60px rgba(0,0,0,.25);font-family:Arial,Helvetica,sans-serif;}.pgnov-tag{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#229A82;margin-bottom:6px;}.pgnov-card h3{margin:0 0 12px;font-size:18px;color:#002F3D;}.pgnov-card p{margin:0 0 20px;font-size:13.5px;line-height:1.6;color:#333;white-space:pre-wrap;}.pgnov-card button{width:100%;padding:11px;border:none;border-radius:9px;background:#229A82;color:#fff;font-weight:700;font-size:13.5px;cursor:pointer;}.pgnov-card button:hover{background:#1a7a68;}.pgnov-count{font-size:11px;color:#8da0ad;text-align:center;margin-top:10px;}';
+  document.head.appendChild(st);
+  window.pgRevisarNovedades = function (sbClient, area) {
+    if (!sbClient || !area) return;
+    sbClient.rpc('novedades_pendientes', { p_area: area }).then(function (r) {
+      if (r.error || !r.data) return;
+      var cola = r.data.filter(function (n) { return n.bloqueante !== false; });
+      if (!cola.length) return;
+      function mostrar() {
+        if (!cola.length) { var ov0 = document.getElementById('pgnovOv'); if (ov0) ov0.remove(); return; }
+        var n = cola[0]; var ov = document.getElementById('pgnovOv');
+        if (!ov) {
+          ov = document.createElement('div'); ov.id = 'pgnovOv'; ov.className = 'pgnov-ov';
+          ov.innerHTML = '<div class="pgnov-card"><div class="pgnov-tag">📢 Novedad ProtectGo</div><h3 id="pgnovT"></h3><p id="pgnovB"></p><button id="pgnovBtn" type="button">Ya lo leí, entendido</button><div class="pgnov-count" id="pgnovC"></div></div>';
+          document.body.appendChild(ov);
+          document.getElementById('pgnovBtn').addEventListener('click', function () { var actual = cola[0]; if (!actual) return; sbClient.rpc('marcar_novedad_leida', { p_novedad_id: actual.id }).then(function () { cola.shift(); mostrar(); }); });
+        }
+        document.getElementById('pgnovT').textContent = n.titulo || '';
+        document.getElementById('pgnovB').textContent = n.cuerpo || '';
+        document.getElementById('pgnovC').textContent = cola.length > 1 ? ('1 de ' + cola.length + ' novedades pendientes') : '';
+      }
+      mostrar();
     });
-  }
-  new MutationObserver(function () {
-    if (hubo && !document.getElementById('pgnovOv')) {
-      hubo = false;
-      if (libre()) Promise.resolve(loadAll()).then(function () { if (DETALLE) abrirCliente(DETALLE); else render(); });
-    }
-  }).observe(document.documentElement, { childList: true, subtree: true });
-  setInterval(revisar, 60000);
-  document.addEventListener('visibilitychange', function () { if (!document.hidden) revisar(); });
+  };
+})();
+
+(function () {
+  var st = document.createElement('style');
+  st.textContent =
+    '.famb{display:inline-block;min-width:18px;padding:1px 6px;border-radius:999px;background:#D9A520;color:#1B2D3A;font-family:var(--f-num,monospace);font-size:10.5px;font-weight:700;text-align:center;margin-left:auto}' +
+    '.pg-side a .famb{margin-left:auto}' +
+    '.famav{background:var(--pg-card,#fff);border:1px solid var(--pg-line,#e7edf2);border-left:4px solid #D9A520;border-radius:12px;padding:10px 14px;margin:0 0 14px}' +
+    '.famav-t{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;font-weight:700;font-size:13px}.famav-a{display:flex;gap:6px}' +
+    '.famav-i{display:grid;grid-template-columns:24px 1fr auto;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--pg-line,#e7edf2);font-size:12.5px}' +
+    '.famav-i .e{text-align:center;font-size:15px}.famav-i b{font-size:12.5px}.famav-i .d{font-size:11.5px;color:var(--pg-muted,#6b7d89);margin-top:2px}.famav-i .f{font-size:11px;color:var(--pg-muted,#6b7d89);font-family:var(--f-num,monospace);text-align:right}' +
+    '.famav-i.nuevo{background:rgba(217,165,32,.08);margin:0 -14px;padding:8px 14px}.famav-i.tarde .e{color:#8a6a10}.famav-i.ok .e{color:#1f7a5a}' +
+    '.famav-v{font-size:12px;color:var(--pg-muted,#6b7d89);padding:8px 0 2px}' +
+    '@media(max-width:520px){.famav-i{grid-template-columns:22px 1fr}.famav-i .f{grid-column:2;text-align:left}}';
+  document.head.appendChild(st);
 })();
 
 </script>
