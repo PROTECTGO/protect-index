@@ -738,7 +738,7 @@ const SB_URL='https://hivpqsepwsfmafamxkzy.supabase.co';
 const SB_KEY='sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt';
 const sb=window.supabase.createClient(SB_URL,SB_KEY,{db:{schema:'portal'}});
 /* ===== v6 ===== */
-const PGV_VERSION=12; // v12 - Ronda 11: concepto en inglés + Itemized Loads Breakdown
+const PGV_VERSION=13; // v13 - Bandeja FAM: enviar/validar por rpc + avisos por el widget + statement semanal
 let CARGADO_EN=Date.now();
 let RENT=[], RENOV=[], RENOV_RES=null, CONFIG={}, TRM=4000, ERRORES={}, ES_DIR=false;
 let MES_SEL=new Date().getMonth();
@@ -5382,7 +5382,7 @@ function vPiloto() {
    tabla, paso automatico a Cobros, y plantilla de invoice corporativa.
    Estas funciones REEMPLAZAN a las de arriba.
    ================================================================== */
-var AMZ_VERSION = 11;
+var AMZ_VERSION = 12;
 
 /* Etiquetas del costo de operación.
    Dirección (sales@ / socio) ve el reparto con nombre propio; la operación ve
@@ -6526,6 +6526,215 @@ function imprimirInvoice(id, lang) {
     '.bd-app table.bd-tbl td.c{text-align:right}.bd-app .bd-tot td{font-weight:700;border-top:2px solid var(--pg-ink)}' +
     '@media print{body>*:not(#printArea){display:none!important}#printArea{position:static!important}#printArea .pgprint-page:last-child{page-break-after:auto;break-after:auto}}';
   document.head.appendChild(st);
+})();
+
+
+/* =====================================================================
+   v13 — Bandeja FAM (29-sep-2026)
+   · "Enviar a FAM" deja el cobro en la bandeja de fam.html (rpc amazon_enviar_fam)
+   · Fondos validados lo hace FAM desde su bandeja (rpc amazon_validar_fondos):
+     cierra viajes, servicio, invoice y calcula el reparto en la base.
+   · Pagado lo pone solo el statement semanal (amazon_generar_statement).
+   · sales@ conserva una salida de dirección para validar sin pasar por la bandeja.
+   ===================================================================== */
+function famEsSales() { return ((ME && ME.email) || '').toLowerCase() === 'sales@protectgoservices.com'; }
+function famHoy() {
+  var d = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Chicago' }));
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function famFechaHora(ts) {
+  if (!ts) return null;
+  var d = new Date(ts);
+  return d.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', timeZone: 'America/Chicago' }) + ' ' +
+    d.toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Chicago' });
+}
+function famDias(ts) { return ts ? Math.floor((Date.now() - new Date(ts).getTime()) / 86400000) : 0; }
+function famMemo(c) {
+  var cl = cli(c.cliente_id); var dot = cl && cl.dot ? cl.dot : null;
+  var semana = c.periodo_desde ? ui.semanaISO(c.periodo_desde) : null;
+  return ui.memo(dot, semana || c.id);
+}
+
+/* acciones de la tarjeta según el flujo con FAM */
+cobAcciones = function (c) {
+  var acc = [];
+  if (c.estado === 'registrado') acc.push({ lbl: 'Avanzar → Autorizado', act: 'avanzar' });
+  else if (c.estado === 'autorizado') acc.push({ lbl: c.devuelto_at ? '🏦 Reenviar a FAM' : '🏦 Enviar a FAM', act: 'avanzar' });
+  else if (c.estado === 'enviado_fam') {
+    if (famEsSales()) acc.push({ lbl: 'Validar fondos (dirección)', act: 'avanzar' });
+    else acc.push({ lbl: '⏳ En bandeja de FAM', act: 'famwait', disabled: true, title: 'FAM valida los fondos desde su bandeja' });
+  } else if (c.estado === 'fondos_validados') {
+    acc.push({ lbl: '📄 Va al statement semanal', act: 'famwait', disabled: true, title: 'El statement del lunes lo pasa a Pagado' });
+  }
+  if (c.estado !== 'anulado') acc.push({ lbl: 'Invoice 🧾', act: 'invoice' });
+  return acc;
+};
+
+/* avanzar: los pasos de FAM van por rpc; el resto sigue igual que v12 */
+(function () {
+  var avanzar0 = avanzarCobro;
+  window.avanzarCobro = async function (id, estado) {
+    var c = COBROS.find(function (x) { return x.id === id; });
+    if (!c) return toast('No encuentro ese cobro');
+    if (estado === 'enviado_fam') return famConfirmarEnvio(c);
+    if (estado === 'fondos_validados') {
+      if (!famEsSales()) return toast('Los fondos los valida FAM desde su bandeja');
+      return famValidarDireccion(c);
+    }
+    if (estado === 'pagado') return toast('Pagado lo pone el statement semanal de FAM');
+    return avanzar0.apply(this, arguments);
+  };
+})();
+
+function famConfirmarEnvio(c) {
+  var inv = INVOICES.find(function (v) { return v.cobro_id === c.id && v.estado !== 'anulado'; });
+  var memo = famMemo(c);
+  var cuerpo = 'Sale a la bandeja de FAM el cobro de <b>' + esc(cliName(c.cliente_id)) + '</b> por <b>' + fmt$(c.monto) + '</b>.<br><br>' +
+    '· Memo: <span class="mono">' + esc(memo) + '</span><br>' +
+    '· Invoice: ' + (inv ? '<b>' + esc(inv.numero) + '</b>' : '<span style="color:#D9A520">sin invoice</span>') + '<br>' +
+    '· FAM lo ve de inmediato en <b>fam.html → Amazon · Validar fondos</b>.' +
+    (c.devuelto_at ? '<br><br>FAM lo había devuelto: <i>' + esc(c.devuelto_motivo || '') + '</i>' : '');
+  pgConfirm({
+    titulo: c.devuelto_at ? '¿Reenviar a FAM?' : '¿Enviar a FAM?',
+    cuerpo: cuerpo,
+    aviso: inv ? null : 'Este cobro no tiene invoice. FAM puede validar igual, pero lo normal es mandarlo con invoice.',
+    textoBoton: c.devuelto_at ? 'Sí, reenviar' : 'Sí, enviar a FAM',
+    peligro: false,
+    onOk: async function () {
+      var r = await sb.rpc('amazon_enviar_fam', { p_cobro: c.id });
+      if (r.error) return toast('Error: ' + r.error.message);
+      toast('Enviado a la bandeja de FAM');
+      await loadAll();
+      if (DETALLE) abrirCliente(DETALLE); else render();
+    }
+  });
+}
+
+function famValidarDireccion(c) {
+  var extra = '<div style="display:grid;gap:8px">' +
+    '<label style="display:grid;gap:4px;font-size:12px"># Transacción (obligatorio)<input id="famTx" value="' + esc(c.transaccion || '') + '" placeholder="# transacción del banco"></label>' +
+    '<label style="display:grid;gap:4px;font-size:12px">Fecha del pago<input id="famFp" type="date" value="' + famHoy() + '"></label>' +
+    '<label style="display:grid;gap:4px;font-size:12px">Método<select id="famMet"><option>ACH</option><option>Zelle</option><option>Wire</option><option>Cheque</option><option>Otro</option></select></label>' +
+    '</div>';
+  pgConfirm({
+    titulo: 'Validar fondos (dirección)',
+    cuerpo: 'Vas a validar <b>' + fmt$(c.monto) + '</b> de <b>' + esc(cliName(c.cliente_id)) + '</b> sin pasar por la bandeja de FAM.<br>Cierra los viajes, el servicio y el invoice, y calcula el reparto.',
+    extra: extra,
+    textoBoton: 'Validar fondos',
+    peligro: false,
+    onOk: async function () {
+      var tx = (($('famTx') || {}).value || '').trim();
+      if (!tx) return toast('Falta el # de transacción');
+      var r = await sb.rpc('amazon_validar_fondos', {
+        p_cobro: c.id, p_transaccion: tx,
+        p_fecha: ($('famFp') || {}).value || famHoy(),
+        p_metodo: ($('famMet') || {}).value || 'ACH'
+      });
+      if (r.error) return toast('Error: ' + r.error.message);
+      var d = r.data || {};
+      toast('Fondos validados' + (d.viajes ? ' · ' + d.viajes + ' viaje(s) cobrado(s)' : ''));
+      await loadAll();
+      if (DETALLE) abrirCliente(DETALLE); else render();
+    }
+  });
+}
+
+/* tarjeta: dónde está el cobro con FAM */
+(function () {
+  var card0 = cobCard;
+  cobCard = function (c) {
+    var html = card0.apply(this, arguments);
+    var nota = null;
+    if (c.estado === 'enviado_fam' && c.enviado_fam_at) {
+      var d = famDias(c.enviado_fam_at);
+      nota = '<div class="famnota' + (d >= 3 ? ' tarde' : '') + '">🏦 En bandeja de FAM desde ' + esc(famFechaHora(c.enviado_fam_at)) +
+        (d ? ' · ' + d + ' día' + (d === 1 ? '' : 's') : '') + '</div>';
+    } else if (c.estado === 'autorizado' && c.devuelto_at) {
+      nota = '<div class="famnota tarde">↩ Devuelto por FAM: ' + esc(c.devuelto_motivo || 'sin motivo') + '</div>';
+    } else if (c.estado === 'fondos_validados' && c.validado_at) {
+      nota = '<div class="famnota ok">✓ Validado por FAM ' + esc(famFechaHora(c.validado_at)) + ' · entra al statement del lunes</div>';
+    }
+    if (!nota) return html;
+    /* se inserta antes del bloque de acciones de la tarjeta; si no lo encuentra, al final */
+    var i = html.indexOf('data-act=');
+    if (i > 0) {
+      var j = html.lastIndexOf('<div', i);
+      if (j > 0) return html.slice(0, j) + nota + html.slice(j);
+    }
+    return html.replace(/<\/div>\s*$/, nota + '</div>');
+  };
+})();
+
+/* detalle de cliente: la fila compacta no ofrece saltos que ahora hace FAM */
+(function () {
+  var row0 = rowCobro;
+  rowCobro = function (c) {
+    var html = row0.apply(this, arguments);
+    var bloqueado = (c.estado === 'enviado_fam' && !famEsSales()) || c.estado === 'fondos_validados';
+    if (bloqueado) {
+      var lbl = c.estado === 'enviado_fam' ? '⏳ En FAM' : '📄 Statement';
+      html = html.replace(/<button class="pg-btn sm mint"[^>]*>[^<]*<\/button>/, '<span class="pg-chip" style="font-size:11px">' + lbl + '</span>');
+    } else if (c.estado === 'autorizado') {
+      html = html.replace(/(<button class="pg-btn sm mint"[^>]*>)[^<]*(<\/button>)/, '$1🏦 Enviar a FAM$2');
+    }
+    return html;
+  };
+})();
+
+/* ficha: bloque "Paso por FAM" */
+(function () {
+  var ficha0 = window.cobFichaHTML;
+  window.cobFichaHTML = function (c) {
+    var html = ficha0.apply(this, arguments);
+    if (!c.enviado_fam_at && !c.validado_at && !c.devuelto_at && !c.statement_id) return html;
+    var datos = ui.datos([
+      { l: 'Enviado a FAM', v: c.enviado_fam_at ? esc(famFechaHora(c.enviado_fam_at)) + (c.enviado_fam_por ? ' · ' + esc(c.enviado_fam_por) : '') : null, txt: true },
+      { l: 'Devuelto', v: c.devuelto_at ? '<span style="color:#D9A520">' + esc(famFechaHora(c.devuelto_at)) + ' · ' + esc(c.devuelto_motivo || '') + '</span>' : null, txt: true },
+      { l: 'Validado', v: c.validado_at ? esc(famFechaHora(c.validado_at)) + (c.validado_por ? ' · ' + esc(c.validado_por) : '') : null, txt: true },
+      { l: 'Fecha de pago', v: c.fecha_pago ? ui.fecha(c.fecha_pago) : null },
+      { l: 'Método', v: c.metodo_pago ? esc(c.metodo_pago) : null, txt: true },
+      { l: 'Statement', v: c.statement_id ? 'Incluido en el statement semanal' : (c.estado === 'fondos_validados' ? 'Entra al próximo (lunes)' : null), txt: true }
+    ].filter(function (d) { return d.v != null; }));
+    var bloque = '<div class="fi-bloque"><div class="fi-tit">Paso por FAM</div>' + datos + '</div>';
+    return html.replace(/<\/div>\s*$/, bloque + '</div>');
+  };
+})();
+
+(function () {
+  var st = document.createElement('style');
+  st.textContent =
+    '.famnota{font-size:12px;margin:6px 0 2px;padding:5px 9px;border-radius:8px;background:var(--pg-soft,#f3f5f6);color:var(--pg-muted,#5a6b76)}' +
+    '.famnota.tarde{background:rgba(217,165,32,.13);color:#8a6a10;border-left:3px solid #D9A520}' +
+    '.famnota.ok{background:rgba(46,160,120,.10);color:#1f7a5a}' +
+    '@media (prefers-color-scheme:dark){.famnota.tarde{color:#e9c565}.famnota.ok{color:#6fd3aa}}';
+  document.head.appendChild(st);
+})();
+
+/* avisos de FAM por el widget de novedades: revisa cada 60 s y al volver a la pestaña;
+   cuando se cierra el aviso, refresca los datos para que el cobro se vea en su estado nuevo */
+(function () {
+  var hubo = false;
+  function libre() {
+    var a = document.activeElement;
+    return !(a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) && !document.getElementById('pgmOv');
+  }
+  function revisar() {
+    if (typeof sb === 'undefined' || !sb || !ME || document.hidden) return;
+    if (document.getElementById('pgnovOv') || typeof window.pgRevisarNovedades !== 'function') return;
+    sb.rpc('novedades_pendientes', { p_area: 'amazon' }).then(function (r) {
+      if (r.error || !r.data || !r.data.length) return;
+      hubo = true;
+      window.pgRevisarNovedades(sb, 'amazon');
+    });
+  }
+  new MutationObserver(function () {
+    if (hubo && !document.getElementById('pgnovOv')) {
+      hubo = false;
+      if (libre()) Promise.resolve(loadAll()).then(function () { if (DETALLE) abrirCliente(DETALLE); else render(); });
+    }
+  }).observe(document.documentElement, { childList: true, subtree: true });
+  setInterval(revisar, 60000);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) revisar(); });
 })();
 
 </script>
