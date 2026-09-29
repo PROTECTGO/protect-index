@@ -131,6 +131,8 @@
   </header>
 
   <div class="wrap">
+    <div class="famtabs" id="famTabs" style="display:none"><button type="button" data-famtab="docs" class="on">Documentos de pago</button><button type="button" data-famtab="amz">Amazon · Validar fondos <span class="famn" id="famAmzN" style="display:none"></span></button></div>
+    <div id="famDocs">
     <div class="kicker">Área Financiera · Documentos de pago</div>
     <h1>Diligenciar documentos</h1>
     <p class="sub">Busca la cotización del asegurado, elige el documento, completa los datos financieros y genera el documento listo para imprimir o firmar.</p>
@@ -176,6 +178,8 @@
         </div>
       </div>
     </div>
+    </div><!-- /famDocs -->
+    <div id="famAmz" style="display:none"></div>
   </div>
 </div>
 
@@ -577,7 +581,7 @@ else setTimeout(init,60);
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="fam.html";
-var PGV_VERSION=5; // v5 - Protect Index: las direcciones internas del sitio pasan a relativas (el sitio ya no depende de como se llame el repo). Las que viajan por correo (recuperar contrasena, fotos de firma, sello de RRHH) quedan absolutas apuntando a protect-index.
+var PGV_VERSION=6; // v6 - Bandeja FAM de Amazon Relay (validar fondos + statement semanal). Antes: v5 - Protect Index: las direcciones internas del sitio pasan a relativas (el sitio ya no depende de como se llame el repo). Las que viajan por correo (recuperar contrasena, fotos de firma, sello de RRHH) quedan absolutas apuntando a protect-index.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;
@@ -610,5 +614,345 @@ else setTimeout(pgvCheck,400);
 setInterval(pgvCheck,600000);
 })();
 </script>
+<script>
+/* =====================================================================
+   FAM · AMAZON RELAY — Bandeja de validación de fondos (v6, 29-sep-2026)
+   Solo fam@. FAM valida en el banco → la base cierra cobro, viajes,
+   invoice y reparto (portal.amazon_validar_fondos). Statement semanal
+   (portal.amazon_generar_statement; también corre solo los lunes).
+   ===================================================================== */
+(function () {
+  "use strict";
+  var URL_ = "https://hivpqsepwsfmafamxkzy.supabase.co";
+  var KEY_ = "sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
+  var FAM = 'fam@protectgoservices.com';
+  var sbA = null, ME = '', CARGANDO = false;
+  var D = { cobros: [], cli: {}, loads: [], inv: [], st: [], rep: {}, regla: null };
+  var ABIERTO = {}; /* id → 'viajes' | 'validar' | 'devolver' */
+  var $f = function (id) { return document.getElementById(id); };
+  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (m) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]; }); };
+  var money = function (n) { return (n == null || n === '' || isNaN(n)) ? '—' : '$' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); };
+  var fecha = function (d) { if (!d) return '—'; var x = new Date(String(d).length === 10 ? d + 'T12:00:00' : d); return isNaN(x) ? '—' : x.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/\./g, ''); };
+  var fechaUS = function (d) { if (!d) return ''; var x = new Date(String(d).length === 10 ? d + 'T12:00:00' : d); return isNaN(x) ? '' : x.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }); };
+  var hoy = function () { var d = new Date(); return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); };
+  var dias = function (d) { return d ? Math.floor((Date.now() - new Date(d).getTime()) / 864e5) : 0; };
+  function aviso(t) { if (typeof toast === 'function') return toast(t); var el = $f('toast'); if (!el) return; el.textContent = t; el.classList.add('show'); setTimeout(function () { el.classList.remove('show'); }, 2800); }
+  function semanaISO(d) { var x = new Date(String(d).length === 10 ? d + 'T12:00:00' : d); var t = new Date(Date.UTC(x.getFullYear(), x.getMonth(), x.getDate())); var dn = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - dn); var y0 = new Date(Date.UTC(t.getUTCFullYear(), 0, 1)); return t.getUTCFullYear() + 'W' + ('0' + Math.ceil(((t - y0) / 864e5 + 1) / 7)).slice(-2); }
+  function memo(c) { var cl = D.cli[c.cliente_id] || {}; return 'AMZ-' + (cl.dot || 'SINDOT') + '-' + (c.periodo_desde ? semanaISO(c.periodo_desde) : String(c.id).replace(/-/g, '')); }
+  function invDe(c) { return D.inv.find(function (i) { return i.cobro_id === c.id && i.estado !== 'anulado'; }) || null; }
+  function viajesDe(c) { return D.loads.filter(function (l) { return l.cobro_id === c.id; }).sort(function (a, b) { return String(a.fecha_hora || '').localeCompare(String(b.fecha_hora || '')); }); }
+
+  /* ---------- montaje de pestañas ---------- */
+  function mostrar(tab) {
+    var docs = $f('famDocs'), amz = $f('famAmz');
+    if (!docs || !amz) return;
+    docs.style.display = tab === 'amz' ? 'none' : '';
+    amz.style.display = tab === 'amz' ? '' : 'none';
+    document.querySelectorAll('#famTabs [data-famtab]').forEach(function (b) { b.classList.toggle('on', b.dataset.famtab === tab); });
+    if (tab === 'amz') cargar();
+  }
+
+  function init() {
+    if (!(window.supabase && window.supabase.createClient)) return setTimeout(init, 300);
+    sbA = window.supabase.createClient(URL_, KEY_, { db: { schema: 'portal' } });
+    sbA.auth.getSession().then(function (r) { sesion(r.data && r.data.session); });
+    sbA.auth.onAuthStateChange(function (e, s) { sesion(s); });
+    document.addEventListener('click', clic);
+  }
+  function sesion(s) {
+    ME = ((s && s.user && s.user.email) || '').toLowerCase();
+    var ok = ME === FAM;
+    var tabs = $f('famTabs'); if (tabs) tabs.style.display = ok ? 'flex' : 'none';
+    if (!ok) { mostrar('docs'); return; }
+    cargar(true);
+  }
+
+  /* ---------- datos ---------- */
+  function cargar(silencioso) {
+    if (!sbA || CARGANDO) return; CARGANDO = true;
+    Promise.all([
+      sbA.from('amazon_cobros').select('*').in('estado', ['enviado_fam', 'fondos_validados', 'pagado']).order('created_at', { ascending: true }),
+      sbA.from('amazon_clientes').select('id,empresa,dot,mc'),
+      sbA.from('amazon_loads').select('id,cobro_id,load_id_externo,fecha_hora,tarifa,agencia_monto').not('cobro_id', 'is', null),
+      sbA.from('amazon_invoices').select('id,numero,cobro_id,estado,total'),
+      sbA.from('amazon_statements').select('*').order('created_at', { ascending: false }).limit(26),
+      sbA.from('amazon_reglas_reparto').select('*')
+    ]).then(function (R) {
+      CARGANDO = false;
+      var err = R.find(function (x) { return x.error; });
+      if (err) { pintarError(err.error.message); return; }
+      D.cobros = R[0].data || [];
+      D.cli = {}; (R[1].data || []).forEach(function (c) { D.cli[c.id] = c; });
+      D.loads = R[2].data || []; D.inv = R[3].data || []; D.st = R[4].data || [];
+      D.regla = (R[5].data || []).find(function (r) { return r.tipo === 'semanal'; }) || null;
+      contador(); pintar();
+    }).catch(function (e) { CARGANDO = false; pintarError(e && e.message ? e.message : e); });
+  }
+  function contador() {
+    var n = D.cobros.filter(function (c) { return c.estado === 'enviado_fam'; });
+    var el = $f('famAmzN'); if (el) { el.textContent = n.length ? String(n.length) : ''; el.style.display = n.length ? '' : 'none'; }
+  }
+  function pintarError(m) { var a = $f('famAmz'); if (a) a.innerHTML = '<div class="fa-err">No se pudo cargar la bandeja de Amazon: ' + esc(m) + '</div>'; }
+
+  /* ---------- pintura ---------- */
+  function pintar() {
+    var a = $f('famAmz'); if (!a) return;
+    var por = D.cobros.filter(function (c) { return c.estado === 'enviado_fam'; });
+    var val = D.cobros.filter(function (c) { return c.estado === 'fondos_validados' && !c.statement_id; });
+    var sum = function (l) { return l.reduce(function (s, c) { return s + (Number(c.monto) || 0); }, 0); };
+    var ult = D.st[0];
+    var pct = D.regla ? Number(D.regla.operario_pct) || 0 : null;
+    a.innerHTML =
+      '<div class="kicker">Área Financiera · Amazon Relay</div>' +
+      '<h1>Validar fondos</h1>' +
+      '<p class="sub">Cada cobro que operación envía llega aquí. Búscalo en el banco con el <b>memo</b> y el <b>monto</b>. Al validarlo se cierran solos el cobro, sus viajes y su invoice. Cada lunes se arma el statement de la semana para el registro de Amazon.</p>' +
+      '<div class="fa-kpis">' +
+        kpi('Por validar', por.length ? String(por.length) : '—', por.length ? money(sum(por)) + ' a buscar en el banco' : 'Nada pendiente') +
+        kpi('Validados sin statement', val.length ? String(val.length) : '—', val.length ? money(sum(val)) + ' entran al próximo statement' : 'Todo cerrado') +
+        kpi('Último statement', ult ? esc(ult.numero) : '—', ult ? money(ult.cobrado) + ' · ' + (ult.estado === 'montado' ? 'montado en el registro' : 'por montar') : 'Aún no hay') +
+      '</div>' +
+      '<div class="fa-sec"><div class="fa-sec-t">Por validar <button class="fa-lnk" data-fa="recargar">↻ Actualizar</button></div>' +
+        (por.length ? por.map(tarjeta).join('') : '<div class="fa-vacio">No hay cobros esperando validación.</div>') + '</div>' +
+      '<div class="fa-sec"><div class="fa-sec-t">Validados — entran al próximo statement' + (val.length ? ' <button class="btn sec fa-mini" data-fa="generar">Generar statement ahora</button>' : '') + '</div>' +
+        (val.length ? tablaValidados(val) : '<div class="fa-vacio">Sin cobros validados pendientes de statement.</div>') + '</div>' +
+      '<div class="fa-sec"><div class="fa-sec-t">Statements semanales</div>' +
+        (D.st.length ? D.st.map(filaStatement).join('') : '<div class="fa-vacio">Todavía no hay statements. El primero se genera solo el lunes siguiente a la primera validación, o con el botón de arriba.</div>') + '</div>' +
+      (pct != null ? '<div class="fa-pie">Reparto vigente: operario ' + pct + ' % · agencia ' + (100 - pct) + ' % (regla de Amazon Relay).</div>' : '');
+  }
+  function kpi(l, v, s) { return '<div class="fa-kpi"><div class="l">' + l + '</div><div class="v">' + v + '</div><div class="s">' + s + '</div></div>'; }
+
+  function tarjeta(c) {
+    var cl = D.cli[c.cliente_id] || {}, inv = invDe(c), vs = viajesDe(c), m = memo(c), d = dias(c.enviado_fam_at || c.created_at), modo = ABIERTO[c.id] || '';
+    var viejo = d > 3;
+    var h = '<div class="fa-card' + (viejo ? ' vieja' : '') + '" id="fa_' + c.id + '">' +
+      '<div class="fa-top"><div><div class="fa-nom">' + esc(cl.empresa || '—') + '</div>' +
+        '<div class="fa-meta"><span class="mono">DOT ' + esc(cl.dot || '—') + '</span> · ' + esc(c.concepto || '') + '</div></div>' +
+        '<div class="fa-monto"><div class="v">' + money(c.monto) + '</div><div class="s">a recibir</div></div></div>' +
+      '<div class="fa-grid">' +
+        '<div><span>Memo esperado</span><b class="mono">' + esc(m) + '</b> <button class="fa-lnk" data-fa="copiar" data-v="' + esc(m) + '">copiar</button></div>' +
+        '<div><span>Invoice</span><b class="mono">' + esc(inv ? inv.numero : '—') + '</b></div>' +
+        '<div><span>Periodo</span><b>' + fecha(c.periodo_desde) + ' → ' + fecha(c.periodo_hasta) + '</b></div>' +
+        '<div><span>En bandeja</span><b' + (viejo ? ' class="fa-warn"' : '') + '>' + fecha(c.enviado_fam_at || c.created_at) + (d ? ' · hace ' + d + ' día' + (d === 1 ? '' : 's') : ' · hoy') + '</b></div>' +
+      '</div>' +
+      '<div class="fa-acts">' +
+        '<button class="btn" data-fa="abrir-validar" data-id="' + c.id + '">Fondos validados</button>' +
+        '<button class="btn sec" data-fa="abrir-devolver" data-id="' + c.id + '">Devolver a operación</button>' +
+        (vs.length ? '<button class="fa-lnk" data-fa="abrir-viajes" data-id="' + c.id + '">' + (modo === 'viajes' ? 'ocultar' : 'ver') + ' viajes (' + vs.length + ')</button>' : '') +
+      '</div>';
+    if (modo === 'viajes') h += tablaViajes(vs);
+    if (modo === 'validar') h +=
+      '<div class="fa-form"><div class="frm">' +
+        '<div class="fld"><label># Transacción del banco *</label><input id="faT_' + c.id + '" placeholder="Ej: Chase ref / Zelle ID"></div>' +
+        '<div class="fld"><label>Fecha de pago</label><input type="date" id="faF_' + c.id + '" value="' + hoy() + '"></div>' +
+        '<div class="fld"><label>Método</label><select id="faM_' + c.id + '"><option>ACH</option><option>Zelle</option><option>Tarjeta</option><option>Wire</option><option>Cheque</option><option>Otro</option></select></div>' +
+      '</div><div class="acts"><button class="btn" data-fa="validar" data-id="' + c.id + '">Confirmar validación</button><button class="btn sec" data-fa="cerrar" data-id="' + c.id + '">Cancelar</button></div>' +
+      '<div class="hint">Al confirmar: el cobro queda validado, sus ' + vs.length + ' viaje' + (vs.length === 1 ? '' : 's') + ' pasan a Cobrado, el invoice a Pagado y se calcula el reparto. Operación lo ve al instante.</div></div>';
+    if (modo === 'devolver') h +=
+      '<div class="fa-form"><div class="fld full"><label>Motivo *</label><input id="faD_' + c.id + '" placeholder="Ej: no aparece el depósito · llegó otro monto · llegó sin memo"></div>' +
+      '<div class="acts"><button class="btn" data-fa="devolver" data-id="' + c.id + '">Devolver</button><button class="btn sec" data-fa="cerrar" data-id="' + c.id + '">Cancelar</button></div>' +
+      '<div class="hint">El cobro vuelve a operación con este motivo; cuando lo corrijan, te llega de nuevo.</div></div>';
+    return h + '</div>';
+  }
+  function tablaViajes(vs) {
+    var g = 0, cm = 0;
+    return '<div class="fa-tbl"><table><tr><th>Load ID</th><th>Fecha</th><th>Gross</th><th>Comisión</th></tr>' +
+      vs.map(function (l) { g += Number(l.tarifa) || 0; cm += Number(l.agencia_monto) || 0; return '<tr><td class="mono">' + esc(l.load_id_externo || '—') + '</td><td>' + fecha((l.fecha_hora || '').slice(0, 10)) + '</td><td class="r">' + money(l.tarifa) + '</td><td class="r">' + (l.agencia_monto == null ? '—' : money(l.agencia_monto)) + '</td></tr>'; }).join('') +
+      '<tr class="tot"><td>Totales (' + vs.length + ')</td><td></td><td class="r">' + money(g) + '</td><td class="r">' + money(cm) + '</td></tr></table></div>';
+  }
+  function tablaValidados(val) {
+    return '<div class="fa-tbl"><table><tr><th>Cliente</th><th>Invoice</th><th>Cobrado</th><th>Pago</th><th># Transacción</th><th>Validado</th></tr>' +
+      val.map(function (c) { var cl = D.cli[c.cliente_id] || {}, inv = invDe(c); return '<tr><td>' + esc(cl.empresa || '—') + '</td><td class="mono">' + esc(inv ? inv.numero : '—') + '</td><td class="r">' + money(c.monto) + '</td><td>' + fecha(c.fecha_pago) + ' · ' + esc(c.metodo_pago || '—') + '</td><td class="mono">' + esc(c.transaccion || '—') + '</td><td>' + fecha(c.validado_at) + '</td></tr>'; }).join('') +
+      '</table></div>';
+  }
+  function filaStatement(s) {
+    return '<div class="fa-st"><div><div class="fa-nom mono">' + esc(s.numero) + '</div><div class="fa-meta">' + fecha(s.desde) + ' → ' + fecha(s.hasta) + ' · ' + s.cobros + ' cobro' + (s.cobros === 1 ? '' : 's') + ' · generado por ' + esc(s.generado_por || '—') + '</div></div>' +
+      '<div class="fa-st-n"><b>' + money(s.cobrado) + '</b><span>operario ' + money(s.operario) + ' · agencia ' + money(s.agencia) + '</span></div>' +
+      '<div class="fa-st-a"><span class="fa-pill ' + (s.estado === 'montado' ? 'ok' : 'pend') + '">' + (s.estado === 'montado' ? 'Montado en el registro' : 'Por montar') + '</span>' +
+      '<button class="fa-lnk" data-fa="st-print" data-id="' + s.id + '">Imprimir</button>' +
+      '<button class="fa-lnk" data-fa="st-xlsx" data-id="' + s.id + '">Excel</button>' +
+      '<button class="fa-lnk" data-fa="st-csv" data-id="' + s.id + '">CSV</button>' +
+      (s.estado !== 'montado' ? '<button class="btn sec fa-mini" data-fa="st-montado" data-id="' + s.id + '">Marcar montado</button>' : '') +
+      '</div></div>';
+  }
+
+  /* ---------- acciones ---------- */
+  function clic(e) {
+    var t = e.target.closest('[data-famtab]'); if (t) { mostrar(t.dataset.famtab); return; }
+    var b = e.target.closest('[data-fa]'); if (!b || !$f('famAmz') || !$f('famAmz').contains(b)) return;
+    var act = b.dataset.fa, id = b.dataset.id;
+    if (act === 'recargar') return cargar();
+    if (act === 'copiar') { if (navigator.clipboard) navigator.clipboard.writeText(b.dataset.v).then(function () { aviso('Memo copiado'); }); return; }
+    if (act === 'abrir-validar' || act === 'abrir-devolver' || act === 'abrir-viajes') {
+      var m = act.replace('abrir-', ''); ABIERTO[id] = ABIERTO[id] === m ? '' : m; pintar();
+      var f = $f((m === 'validar' ? 'faT_' : 'faD_') + id); if (f) f.focus();
+      return;
+    }
+    if (act === 'cerrar') { ABIERTO[id] = ''; pintar(); return; }
+    if (act === 'validar') return validar(id, b);
+    if (act === 'devolver') return devolver(id, b);
+    if (act === 'generar') return generar(b);
+    var st = D.st.find(function (s) { return s.id === id; });
+    if (act === 'st-print' && st) return imprimir(st);
+    if (act === 'st-xlsx' && st) return exportar(st, 'xlsx');
+    if (act === 'st-csv' && st) return exportar(st, 'csv');
+    if (act === 'st-montado' && st) return montado(st, b);
+  }
+  function ocupado(b, t) { b.disabled = true; b.dataset.t = b.textContent; b.textContent = t; }
+  function libre(b) { b.disabled = false; if (b.dataset.t) b.textContent = b.dataset.t; }
+  function validar(id, b) {
+    var tr = ($f('faT_' + id).value || '').trim(), fe = $f('faF_' + id).value || null, me = $f('faM_' + id).value;
+    if (!tr) { aviso('Escribe el # de transacción del banco'); $f('faT_' + id).focus(); return; }
+    ocupado(b, 'Validando…');
+    sbA.rpc('amazon_validar_fondos', { p_cobro: id, p_transaccion: tr, p_fecha: fe, p_metodo: me }).then(function (r) {
+      if (r.error) { libre(b); aviso('No se pudo validar: ' + r.error.message); return; }
+      var x = r.data || {}; ABIERTO[id] = '';
+      aviso('Fondos validados' + (x.viajes ? ' · ' + x.viajes + ' viaje' + (x.viajes === 1 ? '' : 's') + ' cobrado' + (x.viajes === 1 ? '' : 's') : '') + (x.invoices ? ' · invoice pagado' : ''));
+      cargar();
+    });
+  }
+  function devolver(id, b) {
+    var mo = ($f('faD_' + id).value || '').trim();
+    if (!mo) { aviso('Escribe el motivo'); $f('faD_' + id).focus(); return; }
+    ocupado(b, 'Devolviendo…');
+    sbA.rpc('amazon_devolver_cobro', { p_cobro: id, p_motivo: mo }).then(function (r) {
+      if (r.error) { libre(b); aviso('No se pudo devolver: ' + r.error.message); return; }
+      ABIERTO[id] = ''; aviso('Cobro devuelto a operación'); cargar();
+    });
+  }
+  function fechaChicago(ts) { try { return new Date(ts).toLocaleDateString('en-CA', { timeZone: 'America/Chicago' }); } catch (e) { return String(ts).slice(0, 10); } }
+  function generar(b) {
+    var val = D.cobros.filter(function (c) { return c.estado === 'fondos_validados' && !c.statement_id; });
+    if (!val.length) return;
+    var desde = val.map(function (c) { return fechaChicago(c.validado_at); }).sort()[0];
+    ocupado(b, 'Generando…');
+    sbA.rpc('amazon_generar_statement', { p_desde: desde, p_hasta: hoy() }).then(function (r) {
+      libre(b);
+      if (r.error) { aviso('No se pudo generar: ' + r.error.message); return; }
+      aviso(r.data && r.data.creado ? 'Statement ' + r.data.numero + ' generado' : 'No había cobros para el statement');
+      cargar();
+    });
+  }
+  function montado(st, b) {
+    ocupado(b, '…');
+    sbA.rpc('amazon_statement_montado', { p_statement: st.id }).then(function (r) {
+      if (r.error) { libre(b); aviso('Error: ' + r.error.message); return; }
+      aviso(st.numero + ' marcado como montado en el registro'); cargar();
+    });
+  }
+
+  /* ---------- statement: impresión (iframe aislado) ---------- */
+  function lineasDe(st) { return Array.isArray(st.lineas) ? st.lineas : []; }
+  function imprimir(st) {
+    var L = lineasDe(st);
+    var filas = L.map(function (x) {
+      return '<tr><td>' + esc(x.cliente) + '<div class="s">DOT ' + esc(x.dot || '—') + '</div></td><td class="m">' + esc(x.invoice || '—') + '</td><td>' + fechaUS(x.periodo_desde) + ' – ' + fechaUS(x.periodo_hasta) + '</td><td class="c">' + (x.viajes ? x.viajes.length : 0) + '</td><td class="r">' + money(x.gross) + '</td><td class="r"><b>' + money(x.cobrado) + '</b></td><td>' + fechaUS(x.fecha_pago) + '<div class="s">' + esc(x.metodo || '') + '</div></td><td class="m">' + esc(x.transaccion || '—') + '<div class="s">' + esc(x.memo || '') + '</div></td><td class="r">' + money(x.operario) + '</td><td class="r">' + money(x.agencia) + '</td></tr>';
+    }).join('');
+    var det = L.filter(function (x) { return x.viajes && x.viajes.length; }).map(function (x) {
+      return '<div class="det"><div class="dt">' + esc(x.cliente) + ' · ' + esc(x.invoice || '') + '</div><table><tr><th>Load ID</th><th>Date</th><th>Gross Base</th><th>Commission Fee</th></tr>' +
+        x.viajes.map(function (v) { return '<tr><td class="m">' + esc(v.load_id || '—') + '</td><td>' + fechaUS(v.fecha) + '</td><td class="r">' + money(v.gross) + '</td><td class="r">' + (v.comision == null ? '—' : money(v.comision)) + '</td></tr>'; }).join('') + '</table></div>';
+    }).join('');
+    var html = '<!doctype html><html><head><meta charset="utf-8"><title>' + esc(st.numero) + '</title><style>' +
+      '@page{size:letter landscape;margin:1.2cm}body{font-family:Arial,Helvetica,sans-serif;color:#1B2D3A;font-size:11px;margin:0}' +
+      '.h{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #1B2D3A;padding-bottom:10px;margin-bottom:12px}' +
+      '.b{font-weight:800;font-size:18px}.b i{color:#2DBFA3;font-style:normal}.t{text-align:right}.t .n{font-size:20px;font-weight:700;letter-spacing:2px}.t .p{color:#5a6b76}' +
+      'table{width:100%;border-collapse:collapse}th{background:#f2f2f2;border:1px solid #ddd;padding:6px;font-size:10px;text-align:left}td{border:1px solid #ddd;padding:6px;vertical-align:top}' +
+      '.r{text-align:right}.c{text-align:center}.m{font-family:"Courier New",monospace}.s{color:#6b7d89;font-size:9.5px}.tot td{background:#f2f2f2;font-weight:700}' +
+      '.det{margin-top:12px;page-break-inside:avoid}.dt{font-weight:700;margin:0 0 4px;font-size:10.5px;letter-spacing:.06em}.pie{margin-top:14px;color:#6b7d89;font-size:9.5px}' +
+      '</style></head><body>' +
+      '<div class="h"><div class="b">Protect<i>GO</i> Services<div class="s" style="font-weight:400">Amazon Relay · Weekly statement</div></div>' +
+      '<div class="t"><div class="n">' + esc(st.numero) + '</div><div class="p">' + fechaUS(st.desde) + ' – ' + fechaUS(st.hasta) + ' · ' + st.cobros + ' payment' + (st.cobros === 1 ? '' : 's') + '</div></div></div>' +
+      '<table><tr><th>Carrier</th><th>Invoice</th><th>Service period</th><th>Loads</th><th>Gross</th><th>Collected</th><th>Paid on</th><th>Transaction / Memo</th><th>Operator</th><th>Agency</th></tr>' + filas +
+      '<tr class="tot"><td colspan="4">TOTALS</td><td class="r">' + money(st.gross) + '</td><td class="r">' + money(st.cobrado) + '</td><td colspan="2"></td><td class="r">' + money(st.operario) + '</td><td class="r">' + money(st.agencia) + '</td></tr></table>' +
+      '<div style="margin-top:16px;font-weight:700;font-size:11px;letter-spacing:.12em;color:#5a6b76">ITEMIZED LOADS BREAKDOWN</div>' + det +
+      '<div class="pie">Generated by ' + esc(st.generado_por || '—') + ' · ' + fechaUS(st.created_at) + (st.estado === 'montado' ? ' · posted to the Amazon register by ' + esc(st.montado_por || '') : '') + '</div>' +
+      '</body></html>';
+    var fr = document.createElement('iframe'); fr.style.cssText = 'position:fixed;right:0;bottom:0;width:0;height:0;border:0';
+    document.body.appendChild(fr);
+    var dd = fr.contentWindow.document; dd.open(); dd.write(html); dd.close();
+    setTimeout(function () { fr.contentWindow.focus(); fr.contentWindow.print(); setTimeout(function () { fr.remove(); }, 1500); }, 250);
+  }
+
+  /* ---------- statement: Excel / CSV con columnas del registro de Amazon ---------- */
+  var COLS = ['Semana', 'Cliente', 'DOT', 'Concepto', 'Invoice #', 'Periodo desde', 'Periodo hasta', 'Viajes', 'Gross', 'Cobrado', 'Fecha de pago', 'Método', '# Transacción', 'Memo', 'Operario', 'Agencia', 'id'];
+  function filasExport(st) {
+    return lineasDe(st).map(function (x) {
+      return [st.numero, x.cliente || '', x.dot || '', x.concepto || '', x.invoice || '', x.periodo_desde || '', x.periodo_hasta || '', x.viajes ? x.viajes.length : 0,
+        Number(x.gross) || 0, Number(x.cobrado) || 0, x.fecha_pago || '', x.metodo || '', x.transaccion || '', x.memo || '', Number(x.operario) || 0, Number(x.agencia) || 0, x.cobro_id];
+    });
+  }
+  function filasViajes(st) {
+    var out = [];
+    lineasDe(st).forEach(function (x) { (x.viajes || []).forEach(function (v) { out.push([st.numero, x.cliente || '', x.invoice || '', v.load_id || '', v.fecha || '', Number(v.gross) || 0, v.comision == null ? '' : Number(v.comision)]); }); });
+    return out;
+  }
+  function descargar(nombre, blob) { var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = nombre; document.body.appendChild(a); a.click(); setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500); }
+  function cargarXLSX() {
+    if (window.XLSX) return Promise.resolve(window.XLSX);
+    return new Promise(function (ok, ko) { var s = document.createElement('script'); s.src = 'amazon-relay/lib/xlsx.core.min.js'; s.onload = function () { window.XLSX ? ok(window.XLSX) : ko(new Error('Excel no cargó')); }; s.onerror = function () { ko(new Error('No se pudo cargar la librería de Excel')); }; document.head.appendChild(s); });
+  }
+  function exportar(st, tipo) {
+    var F = filasExport(st), V = filasViajes(st);
+    if (tipo === 'csv') {
+      var q = function (v) { v = String(v == null ? '' : v); return /[",\n;]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+      var txt = '﻿' + [COLS].concat(F).map(function (r) { return r.map(q).join(','); }).join('\r\n');
+      return descargar(st.numero + '.csv', new Blob([txt], { type: 'text/csv;charset=utf-8' }));
+    }
+    cargarXLSX().then(function (X) {
+      var wb = X.utils.book_new();
+      var ws = X.utils.aoa_to_sheet([COLS].concat(F).concat([['TOTAL', '', '', '', '', '', '', '', Number(st.gross) || 0, Number(st.cobrado) || 0, '', '', '', '', Number(st.operario) || 0, Number(st.agencia) || 0, '']]));
+      ws['!cols'] = COLS.map(function (c) { return { wch: c === 'id' ? 38 : Math.max(10, c.length + 4) }; });
+      X.utils.book_append_sheet(wb, ws, 'AMAZON');
+      var wv = X.utils.aoa_to_sheet([['Statement', 'Cliente', 'Invoice #', 'Load ID', 'Fecha', 'Gross', 'Comisión']].concat(V));
+      X.utils.book_append_sheet(wb, wv, 'Viajes');
+      X.writeFile(wb, st.numero + '.xlsx');
+    }).catch(function (e) { aviso(e.message + ' — usa CSV'); });
+  }
+
+  /* ---------- estilos (tokens de fam.html) ---------- */
+  var css = document.createElement('style');
+  css.textContent =
+    '.famtabs{display:flex;gap:6px;margin:0 0 18px;flex-wrap:wrap}' +
+    '.famtabs button{font:inherit;font-size:13px;font-weight:700;border:1px solid var(--hairline);background:#fff;color:var(--navy);padding:9px 16px;border-radius:999px;cursor:pointer;display:inline-flex;align-items:center;gap:8px}' +
+    '.famtabs button.on{background:var(--navy);color:#fff;border-color:var(--navy)}' +
+    '.famn{background:#D9A520;color:#1B2D3A;border-radius:999px;font-size:11px;padding:1px 8px;font-family:var(--font-mono)}' +
+    '.fa-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:22px}@media(max-width:760px){.fa-kpis{grid-template-columns:1fr}}' +
+    '.fa-kpi{background:#fff;border:1px solid var(--line);border-radius:var(--r-md);padding:14px 16px;box-shadow:var(--shadow-2)}' +
+    '.fa-kpi .l{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--teal-2);font-weight:600}' +
+    '.fa-kpi .v{font-family:var(--font-mono);font-size:24px;font-weight:600;color:var(--navy);margin:4px 0 2px}.fa-kpi .s{font-size:12px;color:var(--muted)}' +
+    '.fa-sec{margin-bottom:24px}.fa-sec-t{font-family:var(--font-title);font-weight:700;font-size:15px;color:var(--navy);margin:0 0 10px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}' +
+    '.fa-vacio{background:#fff;border:1px dashed var(--hairline);border-radius:var(--r-md);padding:18px;color:var(--faint);font-size:13px;text-align:center}' +
+    '.fa-card{background:#fff;border:1px solid var(--line);border-left:4px solid var(--teal);border-radius:var(--r-md);padding:14px 16px;margin-bottom:10px;box-shadow:var(--shadow-2)}' +
+    '.fa-card.vieja{border-left-color:#D9A520}.fa-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}' +
+    '.fa-nom{font-weight:800;color:var(--navy);font-size:14.5px}.fa-meta{font-size:12px;color:var(--muted);margin-top:3px}' +
+    '.fa-monto{text-align:right}.fa-monto .v{font-family:var(--font-mono);font-size:20px;font-weight:600;color:var(--navy)}.fa-monto .s{font-size:11px;color:var(--faint)}' +
+    '.fa-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px 14px;margin:12px 0}@media(max-width:760px){.fa-grid{grid-template-columns:1fr 1fr}}@media(max-width:420px){.fa-grid{grid-template-columns:1fr}}' +
+    '.fa-grid span{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--faint);font-weight:600}.fa-grid b{font-size:12.5px;color:var(--ink);word-break:break-all}' +
+    '.fa-warn{color:#8A6A14!important}.mono{font-family:var(--font-mono)}' +
+    '.fa-acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.fa-acts .btn{padding:9px 14px;font-size:13px}' +
+    '.fa-lnk{background:none;border:none;color:var(--teal-2);font:inherit;font-size:12.5px;font-weight:700;cursor:pointer;padding:4px 6px}' +
+    '.fa-mini{padding:6px 12px!important;font-size:12px!important}' +
+    '.fa-form{margin-top:12px;border-top:1px dashed var(--hairline);padding-top:12px}.fa-form .frm{grid-template-columns:repeat(3,1fr)}@media(max-width:640px){.fa-form .frm{grid-template-columns:1fr}}' +
+    '.fa-tbl{overflow-x:auto;margin-top:10px;background:#fff;border:1px solid var(--line);border-radius:var(--r-sm)}' +
+    '.fa-tbl table{width:100%;border-collapse:collapse;font-size:12.5px}.fa-tbl th{text-align:left;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);padding:8px 10px;border-bottom:1px solid var(--line)}' +
+    '.fa-tbl td{padding:8px 10px;border-bottom:1px solid var(--line)}.fa-tbl td.r{text-align:right;font-family:var(--font-mono)}.fa-tbl tr.tot td{font-weight:700;border-top:2px solid var(--navy)}' +
+    '.fa-st{background:#fff;border:1px solid var(--line);border-radius:var(--r-md);padding:12px 16px;margin-bottom:8px;display:grid;grid-template-columns:1fr auto auto;gap:14px;align-items:center}' +
+    '@media(max-width:760px){.fa-st{grid-template-columns:1fr}}.fa-st-n{text-align:right}.fa-st-n b{font-family:var(--font-mono);font-size:16px;color:var(--navy);display:block}.fa-st-n span{font-size:11.5px;color:var(--muted)}' +
+    '.fa-st-a{display:flex;gap:4px;align-items:center;flex-wrap:wrap}.fa-pill{font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:999px}.fa-pill.ok{background:var(--mint-soft);color:var(--teal-2)}.fa-pill.pend{background:#FBF1D8;color:#8A6A14}' +
+    '.fa-pie{font-size:11.5px;color:var(--faint);margin-top:8px}.fa-err{background:#FCEEEC;color:#9b2c1f;border-radius:var(--r-md);padding:14px}';
+  document.head.appendChild(css);
+
+  /* la bandeja se refresca sola cada 60 s y al volver a la pestaña (el aviso llega por el widget de novedades) */
+  function auto() {
+    if (document.hidden || ME !== FAM) return;
+    var abierto = Object.keys(ABIERTO).some(function (k) { return ABIERTO[k] === 'validar' || ABIERTO[k] === 'devolver'; });
+    if (!abierto) cargar(true);
+  }
+  setInterval(auto, 60000);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) auto(); });
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(init, 120); }); else setTimeout(init, 120);
+})();
+</script>
+
 </body>
 </html>
