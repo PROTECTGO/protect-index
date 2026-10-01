@@ -4,8 +4,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Protect Index · ProtectGo</title>
+<!-- v24 · arranque rápido: las conexiones a la base, al CDN y a las fuentes se abren
+     desde el primer byte, y supabase-js se descarga en paralelo con el HTML en vez de
+     esperar a que el navegador llegue al final del documento. Las fuentes dejaron de
+     entrar por @import (que las descargaba en serie, después del CSS). -->
+<link rel="preconnect" href="https://hivpqsepwsfmafamxkzy.supabase.co" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preload" as="script" href="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=JetBrains+Mono:wght@400;600;700&display=swap">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&family=Inter:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=JetBrains+Mono:wght@400;600;700&display=swap');
 
 :root{
 --navy:#002F3D; --navy-2:#0a5b54; --teal:#229A82; --teal-2:#1a7a68;
@@ -394,18 +403,40 @@ body{font-family:var(--font-text);color:var(--ink);background:var(--papel);min-h
 .grid.pgv19 > .card:not(.pgc-1):not(.pgc-g) p{font-size:12.5px;
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
 
-/* Los grupos: pastilla con icono, tres por fila. */
-.grid.pgv19 > .card.pgc-g{padding:11px 15px;min-height:0;gap:10px;flex-direction:row;align-items:center;
-  border-radius:var(--r-pill);box-shadow:none;background:var(--surface);}
-.grid.pgv19 > .card.pgc-g::before{width:3px;}
-.grid.pgv19 > .card.pgc-g .top,.grid.pgv19 > .card.pgc-g p,.grid.pgv19 > .card.pgc-g .foot{display:none;}
-.grid.pgv19 > .card.pgc-g h3{font-size:13.5px;margin:0;font-weight:600;}
-.grid.pgv19 > .card.pgc-g .pgc-ico{width:26px;height:26px;flex:none;border-radius:8px;
-  background:var(--mint-soft,#E4F4EF);color:#186F5D;display:flex;align-items:center;justify-content:center;}
-.grid.pgv19 > .card.pgc-g .pgc-ico svg{width:15px;height:15px;}
-.grid.pgv19 > .card.pgc-g::after{content:"→";margin-left:auto;color:var(--teal-2);font-weight:700;font-size:13px;}
+/* Los grupos (v24): casillas con volumen, tres por fila, SOLO el nombre.
+   Antes eran pastillas apretadas de 13 px; ahora cada herramienta tiene su
+   casilla con aire, su icono propio arriba y el nombre grande. Sin descripción,
+   sin chip de estado, sin etiqueta: el nombre es lo que se busca. */
+.grid.pgv19 > .card.pgc-g{padding:20px 20px 18px;min-height:118px;gap:12px;flex-direction:column;
+  justify-content:space-between;align-items:flex-start;border-radius:var(--r-lg);
+  box-shadow:var(--shadow-2);background:var(--surface);}
+.grid.pgv19 > .card.pgc-g::before{width:4px;}
+.grid.pgv19 > .card.pgc-g .top .tag,.grid.pgv19 > .card.pgc-g p,.grid.pgv19 > .card.pgc-g .foot,
+.grid.pgv19 > .card.pgc-g .pgc-ico{display:none;}
+.grid.pgv19 > .card.pgc-g .top{display:flex;width:100%;align-items:center;justify-content:space-between;}
+.grid.pgv19 > .card.pgc-g .top .ico{width:38px;height:38px;border-radius:11px;}
+.grid.pgv19 > .card.pgc-g .top .ico svg{width:20px;height:20px;}
+.grid.pgv19 > .card.pgc-g .top::after{content:"→";color:var(--teal-2);font-weight:700;font-size:15px;
+  opacity:0;transform:translateX(-4px);transition:opacity .18s,transform .18s;}
+.grid.pgv19 > .card.pgc-g:hover .top::after{opacity:1;transform:none;}
+.grid.pgv19 > .card.pgc-g h3{font-size:16.5px;line-height:1.25;margin:0;font-weight:700;color:var(--navy);
+  letter-spacing:-.01em;}
 .grid.pgv19 > .card.pgc-g.off{opacity:.5;}
-.grid.pgv19 > .card.pgc-g.off::after{content:"";}
+.grid.pgv19 > .card.pgc-g.off .top::after{content:"";}
+@media (max-width:720px){
+  .grid.pgv19 > .card.pgc-g{grid-column:span 6;min-height:104px;padding:16px 16px 14px;}
+  .grid.pgv19 > .card.pgc-g h3{font-size:14.5px;}
+  .grid.pgv19 > .card.pgc-g .top .ico{width:32px;height:32px;border-radius:9px;}
+  .grid.pgv19 > .card.pgc-g .top .ico svg{width:17px;height:17px;}
+}
+
+/* v24 · mientras la base contesta quién ve qué, la cuadrícula no parpadea en
+   el orden viejo: aparece de una sola vez ya acomodada. Si algo falla, el
+   script la destapa igual (fail-open) a los 2,5 s. */
+.grid.pg-cargando > .card,.grid.pg-cargando > .pgs-t{visibility:hidden;}
+.grid.pg-lista > .card,.grid.pg-lista > .pgs-t{animation:pg-aparece .22s ease-out both;}
+@keyframes pg-aparece{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.grid.pg-lista > .card,.grid.pg-lista > .pgs-t{animation:none;}}
 
 /* Novedades cuando no hay nada: una línea, no media pantalla. */
 .muro.mu-vacio .mu-sec-s,.muro.mu-vacio .mu-chips,.muro.mu-vacio #muroLista{display:none;}
@@ -492,7 +523,7 @@ body{font-family:var(--font-text);color:var(--ink);background:var(--papel);min-h
 <div class="brk-err" id="brkErr"></div>
 </section>
 
-<main class="grid">
+<main class="grid pg-cargando">
 
 <!-- Quick Quote -->
 <a class="card on" data-widget="quick_quote" href="quick-quote.html?v=812">
@@ -712,13 +743,59 @@ body{font-family:var(--font-text);color:var(--ink);background:var(--papel);min-h
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+/* ============================================================
+   v24 · UN SOLO CLIENTE Y UN SOLO AVISO DE SESIÓN PARA TODO EL PORTAL.
+
+   Hasta la v23 cada bloque de esta página (login, puertas, Mi jornada, muro,
+   saludo, versión, Pendientes KAM) creaba SU PROPIO cliente de Supabase —
+   seis en total — y cada uno escuchaba la sesión por dos caminos a la vez
+   (getSession + onAuthStateChange), así que cada consulta de arranque se
+   hacía DOS veces y los seis clientes se peleaban el candado de la sesión.
+   Encima, cada bloque esperaba un setTimeout fijo (60, 90, 150, 220, 400 y
+   1200 ms) antes de arrancar. Eso era el "pausado".
+
+   Ahora: pgSB() devuelve siempre el mismo cliente (esquema portal por
+   defecto; lo de public va con .schema('public')), y pgOnSesion(fn) avisa a
+   cada bloque UNA sola vez por sesión (entrar, salir, cambiar de persona),
+   sin importar por cuántos caminos llegue la noticia. Nada espera relojes.
+   ============================================================ */
 (function(){
 "use strict";
-// Mismo proyecto Supabase que el Quick Quote: la sesion se comparte por dominio.
-var SUPABASE_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
-var SUPABASE_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
-var sb=null;
+var URL_SB="https://hivpqsepwsfmafamxkzy.supabase.co";
+var KEY_SB="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
+var cli=null, subs=[], ultimaLlave, ultimaSesion=null, escuchando=false;
 
+window.pgSB=function(){
+  if(cli) return cli;
+  if(!(window.supabase&&window.supabase.createClient)) return null;
+  try{ cli=window.supabase.createClient(URL_SB,KEY_SB,{db:{schema:'portal'}}); }catch(e){ cli=null; }
+  return cli;
+};
+function emitir(s){
+  var llave=(s&&s.user&&s.user.id)?String(s.user.id):"";
+  if(llave===ultimaLlave) return;           // misma sesión por otro camino: no se repite nada
+  ultimaLlave=llave; ultimaSesion=s||null;
+  subs.forEach(function(f){ try{ f(ultimaSesion); }catch(e){ try{ console.warn("[sesion]",e); }catch(e2){} } });
+}
+function escuchar(){
+  if(escuchando) return; escuchando=true;
+  var c=window.pgSB(); if(!c) return;
+  c.auth.onAuthStateChange(function(evt,s){ if(evt==="TOKEN_REFRESHED"||evt==="USER_UPDATED") return; emitir(s); });
+  c.auth.getSession().then(function(r){ emitir(r&&r.data?r.data.session:null); },function(){ emitir(null); });
+}
+/* fn(session|null) — se llama una vez por cambio real de sesión; si ya hay
+   sesión conocida al suscribirse, se llama de inmediato con ella. */
+window.pgOnSesion=function(fn){
+  subs.push(fn);
+  if(ultimaLlave!==undefined){ try{ fn(ultimaSesion); }catch(e){} }
+  escuchar();
+};
+window.pgSesionActual=function(){ return ultimaSesion; };
+})();
+</script>
+<script>
+(function(){
+"use strict";
 var ov=document.getElementById("ov");
 var app=document.getElementById("app");
 
@@ -734,18 +811,20 @@ ov.style.display="none"; app.style.display="block";
 function onSignedOut(){ app.style.display="none"; ov.style.display="flex"; }
 
 function doLogin(){
+var sb=window.pgSB(); if(!sb){ msg("No se pudo cargar Supabase (revisa tu conexión).","err"); return; }
 var em=document.getElementById("email").value.trim(), pw=document.getElementById("pass").value;
 if(!em||!pw){ msg("Escribe email y contraseña.","err"); return; }
 msg("Entrando…");
 sb.auth.signInWithPassword({email:em,password:pw}).then(function(r){ if(r.error) msg(r.error.message,"err"); else msg(""); });
 }
 function doSignup(){
+var sb=window.pgSB(); if(!sb){ msg("No se pudo cargar Supabase (revisa tu conexión).","err"); return; }
 var em=document.getElementById("email").value.trim(), pw=document.getElementById("pass").value;
 if(!em||!pw){ msg("Escribe email y contraseña (mín. 6 caracteres).","err"); return; }
 msg("Creando cuenta…");
 sb.auth.signUp({email:em,password:pw}).then(function(r){ if(r.error) msg(r.error.message,"err"); else if(r.data&&r.data.session) msg(""); else msg("Cuenta creada. Si te pide confirmar por correo, revísalo; si no, ya puedes Entrar.","ok"); });
 }
-function doLogout(){ sb.auth.signOut(); }
+function doLogout(){ var sb=window.pgSB(); if(sb) sb.auth.signOut(); }
 
 document.addEventListener("click",function(e){
 var b=e.target.closest("[data-act]"); if(!b) return;
@@ -754,14 +833,8 @@ if(a==="login") doLogin(); else if(a==="signup") doSignup(); else if(a==="logout
 });
 document.addEventListener("keydown",function(e){ if(e.key==="Enter" && ov.style.display!=="none") doLogin(); });
 
-function init(){
-if(!(window.supabase&&window.supabase.createClient)){ msg("No se pudo cargar Supabase (revisa tu conexión).","err"); ov.style.display="flex"; return; }
-sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{db:{schema:'portal'}});
-sb.auth.getSession().then(function(r){ if(r.data&&r.data.session) onAuthed(r.data.session); else onSignedOut(); });
-sb.auth.onAuthStateChange(function(evt,session){ if(session) onAuthed(session); else onSignedOut(); });
-}
-if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",function(){ setTimeout(init,60); });
-else setTimeout(init,60);
+if(!window.pgSB()){ msg("No se pudo cargar Supabase (revisa tu conexión).","err"); ov.style.display="flex"; return; }
+window.pgOnSesion(function(s){ if(s) onAuthed(s); else onSignedOut(); });
 })();
 </script>
 <script>
@@ -812,14 +885,17 @@ c.style.display=(h.indexOf("quick-quote.html")>=0)?"flex":"none";
 // Visibilidad de tarjetas por cargo: una sola fuente de verdad (mis_pantallas, RPC
 // con gate por JWT). Fail-open: si la consulta falla, el hub se queda como está.
 // Las agencias externas (EXTERNOS) no pasan por aquí — su candado de arriba manda solo.
+// v24: devuelve una promesa que SIEMPRE resuelve (con las puertas ya aplicadas o
+// con el fail-open hecho), para que el acomodo de tarjetas arranque justo después
+// y no tenga que adivinar con un reloj.
 function aplicarPuertas(cli,email){
-  if(EXTERNOS.indexOf(email)>=0) return;
+  if(EXTERNOS.indexOf(email)>=0) return Promise.resolve();
   function mostrarTodo(msg){
     console.warn('mis_pantallas no respondió; se muestran todas las tarjetas:', msg);
     document.querySelectorAll('[data-widget]').forEach(function(el){ el.style.display=''; });
   }
   try{
-    cli.rpc('mis_pantallas').then(function(res){
+    return cli.rpc('mis_pantallas').then(function(res){
       if(res.error){ mostrarTodo(res.error.message); return; }
       var permitido=new Map((res.data||[]).map(function(r){ return [r.clave, r.puede]; }));
       document.querySelectorAll('[data-widget]').forEach(function(el){
@@ -828,8 +904,10 @@ function aplicarPuertas(cli,email){
         el.style.display = permitido.get(clave) ? '' : 'none';
       });
     }, function(e){ mostrarTodo(e&&e.message); });
-  }catch(e){ mostrarTodo(e&&e.message); }
+  }catch(e){ mostrarTodo(e&&e.message); return Promise.resolve(); }
 }
+// v24: una sola lectura de widgets_registro sirve a las puertas de mantenimiento Y al
+// acomodo por área (antes eran dos consultas iguales). Resuelve con las filas (o []).
 function gateWidgets(cli){
   try{
     if(!document.getElementById('wgates-css')){
@@ -837,8 +915,8 @@ function gateWidgets(cli){
       st.textContent='.grid .card.card-mant{filter:grayscale(1);opacity:.6;pointer-events:none}.grid .card.card-mant .chip{background:#EEF2F5;color:#6B7D89}.grid .card .mant-msg{font-size:11.5px;color:#D9A520;margin-top:10px;padding-top:8px;border-top:1px solid #E7EDF2}';
       document.head.appendChild(st);
     }
-    cli.from('widgets_registro').select('clave,habilitado,modo_apagado,mensaje_mantenimiento').then(function(res){
-      if(res.error||!res.data) return;              // FAIL-OPEN: si la consulta falla, se muestra todo
+    return cli.from('widgets_registro').select('clave,area,habilitado,modo_apagado,mensaje_mantenimiento').then(function(res){
+      if(res.error||!res.data) return [];            // FAIL-OPEN: si la consulta falla, se muestra todo
       var by={}; res.data.forEach(function(w){ by[w.clave]=w; });
       document.querySelectorAll('.grid .card[data-widget]').forEach(function(c){
         var w=by[c.getAttribute('data-widget')];
@@ -853,17 +931,19 @@ function gateWidgets(cli){
           c.style.display='none';
         }
       });
-    }, function(){ /* FAIL-OPEN */ });
-  }catch(e){ /* FAIL-OPEN */ }
+      return res.data;
+    }, function(){ return []; /* FAIL-OPEN */ });
+  }catch(e){ return Promise.resolve([]); /* FAIL-OPEN */ }
 }
-function arrancar(){
-if(!(window.supabase&&window.supabase.createClient)) return;
-var c=window.supabase.createClient("https://hivpqsepwsfmafamxkzy.supabase.co","sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt",{db:{schema:'portal'}});
-c.auth.getSession().then(function(r){var email=r.data&&r.data.session&&r.data.session.user?String(r.data.session.user.email).toLowerCase():"";aplicar(email);gateWidgets(c);aplicarPuertas(c,email);});
-c.auth.onAuthStateChange(function(evt,s){var email=s&&s.user?String(s.user.email).toLowerCase():"";aplicar(email);gateWidgets(c);aplicarPuertas(c,email);});
-}
-if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",function(){setTimeout(arrancar,150);});
-else setTimeout(arrancar,150);
+window.pgOnSesion(function(s){
+  var c=window.pgSB(); if(!c) return;
+  var email=s&&s.user?String(s.user.email).toLowerCase():"";
+  aplicar(email);
+  if(!s){ window.__pgPuertas=null; return; }
+  // El bloque del saludo (más abajo) espera estas dos promesas para acomodar la cuadrícula.
+  window.__pgPuertas={ puertas: aplicarPuertas(c,email), widgets: gateWidgets(c), email: email };
+  document.dispatchEvent(new CustomEvent("pg:puertas"));
+});
 })();
 </script>
 <script>
@@ -1087,14 +1167,10 @@ setPanelVisible(true); iniciarCarga();
 }
 function onSignedOut(){ setPanelVisible(false); if(TICK){ clearInterval(TICK); TICK=null; } }
 
-function init(){
-if(!(window.supabase&&window.supabase.createClient)) return;
-sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{db:{schema:'portal'}});
-sb.auth.getSession().then(function(r){ var s=r.data&&r.data.session; if(s) onAuthed(s.user&&s.user.email); else onSignedOut(); });
-sb.auth.onAuthStateChange(function(evt,session){ if(session) onAuthed(session.user&&session.user.email); else onSignedOut(); });
-}
-if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",function(){ setTimeout(init,60); });
-else setTimeout(init,60);
+// v24: cliente compartido y un solo aviso de sesión (antes hora_servidor y
+// mis_marcas_hoy se pedían dos veces por cada apertura del portal).
+sb=window.pgSB(); if(!sb) return;
+window.pgOnSesion(function(s){ if(s) onAuthed(s.user&&s.user.email); else onSignedOut(); });
 })();
 </script>
 <!-- ===== MURO DE NOVEDADES (v15) · script propio ===== -->
@@ -1791,8 +1867,12 @@ function conSesion(email){
     arrancarPolling();
     /* El portal tambien bloquea (decision de Andres §1.12): el widget v4 resuelve
        las areas de la persona solo, por eso va sin argumento. Solo con sesion:
-       nunca se llama desde el overlay de login. */
-    try{ if(window.pgNovedadesAuto) window.pgNovedadesAuto(); }catch(e){}
+       nunca se llama desde el overlay de login.
+       v24: pg-novedades.js entra con defer y puede no estar listo cuando la
+       sesion ya se conoce; se espera a DOMContentLoaded (los defer corren
+       antes de ese evento), en vez de confiar en un reloj. */
+    var auto=function(){ try{ if(window.pgNovedadesAuto) window.pgNovedadesAuto(); }catch(e){} };
+    if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",auto); else auto();
   }
 }
 function salir(){
@@ -1803,22 +1883,15 @@ function salir(){
 
 function init(){
   try{
-    if(!(window.supabase && window.supabase.createClient)) return;
-    sb=window.supabase.createClient(MU_URL,MU_KEY,{db:{schema:"portal"}});
-    sb.auth.getSession().then(function(r){
-      var s=r && r.data && r.data.session;
-      if(s && s.user) conSesion(s.user.email); else salir();
-    }, function(){ salir(); });
-    sb.auth.onAuthStateChange(function(evt,session){
-      if(session && session.user) conSesion(session.user.email); else salir();
-    });
+    sb=window.pgSB(); if(!sb) return;
+    /* v24: cliente compartido y un solo aviso de sesión. */
+    window.pgOnSesion(function(s){ if(s && s.user) conSesion(s.user.email); else salir(); });
   }catch(e){
     /* Nunca romper el portal por el muro. */
     try{ console.warn("[muro] no arranco:",e && e.message); }catch(e2){}
   }
 }
-if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",function(){ setTimeout(init,90); });
-else setTimeout(init,90);
+init();
 })();
 </script>
 
@@ -1853,6 +1926,7 @@ else setTimeout(init,90);
 var URL_SB="https://hivpqsepwsfmafamxkzy.supabase.co";
 var KEY_SB="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var LISTO=false;
+var ULTIMO_HERO=0;   // v24: cuándo se pintó el saludo por última vez (para no repedirlo a cada rato)
 var VC=null;   // correo de la persona que se está mirando, si aplica
 
 try{ VC=new URLSearchParams(location.search).get("ver_como"); }catch(e){}
@@ -1978,7 +2052,8 @@ function vivo(h){
 }
 function pintarHero(h){
   var box=document.getElementById("pgHero"); if(!box||!h) return;
-  box.classList.add("pgh-v19");
+  box.classList.add("pgh-v19"); box.classList.remove("pgh-prov");
+  ULTIMO_HERO=Date.now();
   var izq='<div class="pgh-who">'+avatar(h)+'<div style="min-width:0">'
     + '<h1>Hola, '+esc(h.primerNombre||"")+'.</h1>'
     + '<div class="pgh-sub">'+hoyLargo()+'</div>';
@@ -2175,57 +2250,114 @@ function muroDeOtra(cli){
   },function(){});
 }
 
-/* ---------- Arranque -------------------------------------------------- */
-function arrancar(){
-  if(LISTO) return;
-  if(!(window.supabase&&window.supabase.createClient)) return;
-  var cli;
-  try{ cli=window.supabase.createClient(URL_SB,KEY_SB); }catch(e){ return; }
-  cli.auth.getSession().then(function(r){
-    if(!(r&&r.data&&r.data.session)) return;
-    LISTO=true;
-
-    var pHero  = VC ? cli.rpc("mi_hero_como",{p_correo:VC})            : cli.rpc("mi_hero");
-    var pOrden = VC ? cli.rpc("mis_pantallas_hero_como",{p_correo:VC}) : cli.rpc("mis_pantallas_hero");
-    var pAreas = cli.schema("portal").from("widgets_registro").select("clave,area");
-    var HERO=null;
-
-    pHero.then(function(res){
-      HERO=(res&&!res.error&&res.data)?res.data:null;
-      // En "ver como" sin permiso el motor devuelve null: el portal sigue
-      // siendo el de quien mira, exactamente como antes. Nunca se filtra nada.
-      if(VC && !HERO){ VC=null; }
-      if(VC){ franja(HERO); muroDeOtra(cli); try{ cli.rpc("ver_como_registrar",{p_correo:VC,p_pantalla:"index"})
-           .then(function(){},function(){}); }catch(e){}  /* el .then es lo que dispara la peticion en supabase-js: sin el, la huella no se escribe */ }
-      try{ if(HERO) pintarHero(HERO); }catch(e){ console.warn("[hero]",e); }
-      if(!VC) muroCompacto();
-    },function(){ if(!VC) muroCompacto(); });
-
-    // En "ver como" hay que repintar las tarjetas con SUS permisos, no los de quien mira.
-    if(VC){
-      cli.rpc("mis_pantallas_como",{p_correo:VC}).then(function(res){
-        if(!res||res.error||!res.data) return;
-        var permitido=new Map(res.data.map(function(x){ return [x.clave,x.puede]; }));
-        document.querySelectorAll("[data-widget]").forEach(function(el){
-          var k=el.getAttribute("data-widget");
-          if(!permitido.has(k)) return;
-          el.style.display = permitido.get(k) ? "" : "none";
-        });
-      },function(){});
-    }
-
-    Promise.all([pOrden,pAreas]).then(function(rr){
-      var filas=(rr[0]&&!rr[0].error&&rr[0].data)?rr[0].data:[];
-      var areas=(rr[1]&&!rr[1].error&&rr[1].data)?rr[1].data:[];
-      if(!filas.length) return;
-      // Se espera a que las puertas (mis_pantallas) hayan escondido lo que no va.
-      setTimeout(function(){ try{ ordenar(filas,areas,HERO); }catch(e){ console.warn("[orden]",e); } }, VC?1100:800);
-    },function(){});
-  },function(){});
+/* ---------- El saludo provisional (v24) --------------------------------
+   Antes el saludo oscuro aparecía solo cuando mi_hero contestaba (3–5 s en
+   producción). Ahora se pinta de una con lo que ya se sabe —el nombre que
+   viene en el correo de la sesión y la fecha— y mi_hero lo completa después
+   con las cifras. Nada de lo provisional es una cifra: cero números inventados. */
+function nombreDeCorreo(email){
+  // Solo cuentas de persona (nombre.apellido@). Las de área (sales@, fam@, kam@…)
+  // no tienen nombre en el correo: el saludo provisional va sin nombre y mi_hero lo pone.
+  var local=String(email||"").split("@")[0];
+  if(!/[._-]/.test(local)) return "";
+  var p=local.split(/[._-]+/)[0]||"";
+  return p ? p.charAt(0).toUpperCase()+p.slice(1).toLowerCase() : "";
 }
-if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",function(){ setTimeout(arrancar,1200); });
-else setTimeout(arrancar,1200);
-document.addEventListener("visibilitychange",function(){ if(!document.hidden) setTimeout(arrancar,300); });
+function pintarHeroProvisional(email){
+  var box=document.getElementById("pgHero"); if(!box || box.classList.contains("pgh-v19")) return;
+  var nom=nombreDeCorreo(email);
+  box.classList.add("pgh-v19","pgh-prov");
+  box.innerHTML='<div class="pgh-p"><div class="pgh-who"><div class="pgh-ini">'+esc(ini(nom)||"PG")+'</div>'
+    + '<div style="min-width:0"><h1>Hola'+(nom?', '+esc(nom):'')+'.</h1><div class="pgh-sub">'+hoyLargo()+'</div></div></div></div>';
+  box.style.display="";
+  var vieja=document.querySelector(".hero"); if(vieja) vieja.style.display="none";
+}
+
+/* ---------- Destapar la cuadrícula (v24) -------------------------------
+   La cuadrícula arranca con .pg-cargando (tarjetas invisibles) y se destapa
+   UNA sola vez, ya acomodada. Fail-open: a los 2,5 s se destapa pase lo que pase. */
+var DESTAPADA=false, RELOJ_DESTAPE=null;
+function destapar(){
+  if(DESTAPADA) return; DESTAPADA=true;
+  if(RELOJ_DESTAPE){ clearTimeout(RELOJ_DESTAPE); RELOJ_DESTAPE=null; }
+  var g=document.querySelector(".grid"); if(!g) return;
+  g.classList.remove("pg-cargando"); g.classList.add("pg-lista");
+}
+RELOJ_DESTAPE=setTimeout(destapar,2500);
+
+/* ---------- Arranque -------------------------------------------------- */
+var SESION_LLAVE="";
+function arrancar(s){
+  var cli=window.pgSB(); if(!cli) return;
+  if(!s){ destapar(); return; }                                   // sin sesión: el overlay de login manda
+  var llave=s.user?String(s.user.id):"";
+  if(LISTO && llave===SESION_LLAVE) return;                       // misma persona: no se repite nada
+  LISTO=true; SESION_LLAVE=llave;
+  var pub=cli.schema("public");
+
+  pintarHeroProvisional(s.user&&s.user.email);
+
+  // Todo sale a la vez: ninguna consulta espera a otra ni a un reloj.
+  var pHero  = VC ? pub.rpc("mi_hero_como",{p_correo:VC})            : pub.rpc("mi_hero");
+  var pOrden = VC ? pub.rpc("mis_pantallas_hero_como",{p_correo:VC}) : pub.rpc("mis_pantallas_hero");
+  var HERO=null;
+
+  // Las puertas (mis_pantallas + widgets_registro) las abre el bloque de arriba y
+  // deja sus promesas en window.__pgPuertas; aquí solo se esperan.
+  var puertas=(window.__pgPuertas&&window.__pgPuertas.email===String(s.user.email).toLowerCase())
+    ? window.__pgPuertas : {puertas:Promise.resolve(), widgets:Promise.resolve([])};
+
+  // En "ver como" las tarjetas se repintan con SUS permisos, no los de quien mira;
+  // eso también tiene que pasar ANTES del acomodo, por eso entra en la misma espera.
+  var pComo = VC ? pub.rpc("mis_pantallas_como",{p_correo:VC}).then(function(res){
+      if(!res||res.error||!res.data) return;
+      var permitido=new Map(res.data.map(function(x){ return [x.clave,x.puede]; }));
+      document.querySelectorAll("[data-widget]").forEach(function(el){
+        var k=el.getAttribute("data-widget");
+        if(!permitido.has(k)) return;
+        el.style.display = permitido.get(k) ? "" : "none";
+      });
+    },function(){}) : Promise.resolve();
+
+  var pHeroListo = pHero.then(function(res){
+    HERO=(res&&!res.error&&res.data)?res.data:null;
+    // En "ver como" sin permiso el motor devuelve null: el portal sigue
+    // siendo el de quien mira, exactamente como antes. Nunca se filtra nada.
+    if(VC && !HERO){ VC=null; }
+    if(VC){ franja(HERO); muroDeOtra(cli); try{ pub.rpc("ver_como_registrar",{p_correo:VC,p_pantalla:"index"})
+         .then(function(){},function(){}); }catch(e){}  /* el .then es lo que dispara la peticion en supabase-js: sin el, la huella no se escribe */ }
+    try{ if(HERO) pintarHero(HERO); }catch(e){ console.warn("[hero]",e); }
+    if(!VC) muroCompacto();
+  },function(){ if(!VC) muroCompacto(); });
+
+  // El acomodo arranca en cuanto las puertas y el orden contestan — no espera al
+  // hero (el dato vivo de la tarjeta principal se completa cuando llegue).
+  Promise.all([puertas.puertas, puertas.widgets, pComo, pOrden]).then(function(rr){
+    var areas=Array.isArray(rr[1])?rr[1]:[];
+    var filas=(rr[3]&&!rr[3].error&&rr[3].data)?rr[3].data:[];
+    if(filas.length){ try{ ordenar(filas,areas,HERO); }catch(e){ console.warn("[orden]",e); } }
+    destapar();
+    if(!HERO){ pHeroListo.then(function(){ try{ if(HERO) completarDato(HERO); }catch(e){} }); }
+  },function(){ destapar(); });
+}
+// El dato vivo de la tarjeta principal, cuando el hero llega después del acomodo.
+function completarDato(h){
+  var c=document.querySelector(".grid .card.pgc-1"); if(!c || c.querySelector(".pgc-dato")) return;
+  var d=datoVivo(c.getAttribute("data-widget"),h); if(d) c.insertAdjacentHTML("beforeend",d);
+}
+window.pgOnSesion(function(s){ if(!s){ LISTO=false; SESION_LLAVE=""; } arrancar(s); });
+document.addEventListener("visibilitychange",function(){
+  // Al volver a la pestaña después de un rato (10 min o más), el saludo se refresca.
+  if(document.hidden) return;
+  if(Date.now()-ULTIMO_HERO < 600000) return;
+  var s=window.pgSesionActual&&window.pgSesionActual(); if(!s) return;
+  var cli=window.pgSB(); if(!cli) return;
+  var pub=cli.schema("public");
+  (VC ? pub.rpc("mi_hero_como",{p_correo:VC}) : pub.rpc("mi_hero")).then(function(res){
+    var h=(res&&!res.error&&res.data)?res.data:null;
+    if(h){ try{ pintarHero(h); }catch(e){} }
+  },function(){});
+});
 })();
 </script>
 
@@ -2235,7 +2367,7 @@ document.addEventListener("visibilitychange",function(){ if(!document.hidden) se
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="index.html";
-var PGV_VERSION=24; // v24 - 1-oct-2026: tarjeta nueva Firmas · Renewals (generador-firmas-renewal.html), visible por pantalla_acceso firmas_renewal (Karen Suaza, renewal@ y dirección). // v23 - tarjeta nueva: Kit de Referidos (kit-referidos.html), visible por pantalla_acceso kit_referidos. // v22 - Protect Index: las direcciones internas del sitio pasan a relativas (el sitio ya no depende de como se llame el repo). Las que viajan por correo (recuperar contrasena, fotos de firma, sello de RRHH) quedan absolutas apuntando a protect-index. // v21 - Amazon Relay entra al portal: la tarjeta apunta a amazon-relay/ (ruta relativa, mismo sitio) en vez del repo aparte de GitHub. El archivo llego con su historia via git subtree, identico al original (sha256 971d0582...b33a). Falta que widgets_registro deje de mandar la URL absoluta de ese widget. // v20 - el hero muestra la combinada (premium + fee x10) con su desglose; antes sumaba premium + fee y mostraba menos de lo que la persona lleva. La onda del mes quedo en la misma combinada y leyendo de bos_v, asi termina exactamente en el numero grande. El desglose lo ve tambien la direccion (hero de equipo) y dice lo que el fee APORTA (fee x10 ya multiplicado), no el fee suelto: las dos cifras de la linea chica suman exacto el numero grande. // v19 - El portal con relieve y el portal de otra persona: saludo por rol (mi_hero: quien tiene meta ve la suya, direccion y el lider ven la del equipo, el resto su nombre y su herramienta), onda del mes, una tarjeta principal que manda, novedades compactas y las herramientas agrupadas por area. Con ?ver_como=<correo> un director abre el portal tal como lo ve esa persona, en solo lectura. REGLA: este numero y portal.app_versiones.version deben ir juntos; si la tabla va adelante del archivo, el verificador recarga el portal en bucle para todo el mundo (paso el 4-sep-2026).
+var PGV_VERSION=25; // v25 - ARRANQUE RAPIDO Y CASILLAS CON VOLUMEN. (1) Un solo cliente de Supabase y un solo aviso de sesion para toda la pagina (pgSB / pgOnSesion): antes habia seis clientes y cada consulta de arranque se hacia dos veces (mis_pantallas, widgets_registro, hora_servidor, mis_marcas_hoy, tareas_kam, novedades_muro). (2) Cero relojes: se quitaron los setTimeout de 60/90/150/220/400/1200 ms y el de 800 ms antes de acomodar las tarjetas; el acomodo arranca en cuanto contestan puertas + orden (Promise.all), no cuando lo dice un reloj. (3) La cuadricula arranca tapada (.pg-cargando) y se destapa UNA vez ya acomodada, fail-open a los 2,5 s: se acabo el parpadeo del orden viejo al nuevo. (4) El saludo oscuro se pinta de inmediato con el nombre del correo y la fecha (sin cifras) y mi_hero lo completa cuando llega. (5) widgets_registro se lee una vez y sirve a mantenimiento y a areas. (6) Fuentes por <link> con preconnect (no @import), preconnect a Supabase y al CDN, preload de supabase-js. (7) Las herramientas de los grupos por area dejan de ser pastillas: casillas con volumen (min 118 px), icono propio y SOLO el nombre, tres por fila y dos en el telefono. La principal y las de apoyo quedan igual. Del lado de la base, en la misma entrega: indice de expresion en bos_registros para es_venta_nueva (mi_hero 5,2 s -> 0,6 s). Se monto encima de la v24 (Firmas Renewals), que queda intacta. // v24 - 1-oct-2026: tarjeta nueva Firmas · Renewals (generador-firmas-renewal.html), visible por pantalla_acceso firmas_renewal (Karen Suaza, renewal@ y dirección). // v23 - tarjeta nueva: Kit de Referidos (kit-referidos.html), visible por pantalla_acceso kit_referidos. // v22 - Protect Index: las direcciones internas del sitio pasan a relativas (el sitio ya no depende de como se llame el repo). Las que viajan por correo (recuperar contrasena, fotos de firma, sello de RRHH) quedan absolutas apuntando a protect-index. // v21 - Amazon Relay entra al portal: la tarjeta apunta a amazon-relay/ (ruta relativa, mismo sitio) en vez del repo aparte de GitHub. El archivo llego con su historia via git subtree, identico al original (sha256 971d0582...b33a). Falta que widgets_registro deje de mandar la URL absoluta de ese widget. // v20 - el hero muestra la combinada (premium + fee x10) con su desglose; antes sumaba premium + fee y mostraba menos de lo que la persona lleva. La onda del mes quedo en la misma combinada y leyendo de bos_v, asi termina exactamente en el numero grande. El desglose lo ve tambien la direccion (hero de equipo) y dice lo que el fee APORTA (fee x10 ya multiplicado), no el fee suelto: las dos cifras de la linea chica suman exacto el numero grande. // v19 - El portal con relieve y el portal de otra persona: saludo por rol (mi_hero: quien tiene meta ve la suya, direccion y el lider ven la del equipo, el resto su nombre y su herramienta), onda del mes, una tarjeta principal que manda, novedades compactas y las herramientas agrupadas por area. Con ?ver_como=<correo> un director abre el portal tal como lo ve esa persona, en solo lectura. REGLA: este numero y portal.app_versiones.version deben ir juntos; si la tabla va adelante del archivo, el verificador recarga el portal en bucle para todo el mundo (paso el 4-sep-2026).
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;
@@ -2249,7 +2381,7 @@ if(!window.__pgIdle){window.__pgIdle=setInterval(function(){if(window.__pgLastIn
 }
 function pgvRun(){
   try{
-    var c=window.supabase.createClient(PGV_URL,PGV_KEY,{db:{schema:'portal'}});
+    var c=(window.pgSB&&window.pgSB())||window.supabase.createClient(PGV_URL,PGV_KEY,{db:{schema:'portal'}});
     c.from('app_versiones').select('version').eq('archivo',PGV_ARCHIVO).maybeSingle().then(function(r){
       if(!r||r.error||!r.data)return;
       if(Number(r.data.version)>PGV_VERSION)pgvBanner();
@@ -2263,8 +2395,9 @@ function pgvCheck(){
   s.onload=pgvRun;
   document.head.appendChild(s);
 }
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(pgvCheck,400);});
-else setTimeout(pgvCheck,400);
+/* v24: la primera revisión de versión sale con la sesión (cliente compartido), sin reloj. */
+if(window.pgOnSesion){ var PGV_UNA=false; window.pgOnSesion(function(s){ if(s&&!PGV_UNA){ PGV_UNA=true; pgvCheck(); } }); }
+else { if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(pgvCheck,400);}); else setTimeout(pgvCheck,400); }
 setInterval(pgvCheck,600000);
 })();
 </script>
@@ -2306,20 +2439,12 @@ function pkLoad(cli){
 
 function pkInit(){
   try{
-    if(!(window.supabase&&window.supabase.createClient)) return;
-    var cli=window.supabase.createClient(PK_URL,PK_KEY,{db:{schema:'portal'}});
-    cli.auth.getSession().then(function(r){
-      var s=r.data&&r.data.session;
-      if(s&&s.user) pkLoad(cli); else pkSetChip("Listo","ready");
-    }, function(){ pkSetChip("Listo","ready"); });
-    cli.auth.onAuthStateChange(function(evt,session){
-      if(session&&session.user) pkLoad(cli); else pkSetChip("Listo","ready");
-    });
+    var cli=window.pgSB(); if(!cli) return;
+    /* v24: cliente compartido y un solo aviso de sesión (antes tareas_kam se leía dos veces). */
+    window.pgOnSesion(function(s){ if(s&&s.user) pkLoad(cli); else pkSetChip("Listo","ready"); });
   }catch(e){ pkSetChip("Listo","ready"); }
 }
-
-if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",function(){ setTimeout(pkInit,220); });
-else setTimeout(pkInit,220);
+pkInit();
 })();
 </script>
 </body>
