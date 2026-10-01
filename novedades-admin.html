@@ -445,6 +445,7 @@
                     <option value="coi">coi</option>
                     <option value="rrhh">rrhh</option>
                     <option value="amazon">amazon</option>
+                    <option value="renovaciones">renovaciones</option>
                   </select>
                   <div class="nota">Obligatorio. "general" le sale a todo el personal; las demás solo a esa área.</div>
                 </div>
@@ -757,7 +758,7 @@ var SUPABASE_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var sb=null;
 
 var PERMITIDOS=['sales@protectgoservices.com','andres.lopez@protectgoservices.com'];
-var AREAS=['general','kam','fam','coi','rrhh','amazon'];
+var AREAS=['general','kam','fam','coi','rrhh','amazon','renovaciones'];
 var EMOJIS=['👏','🎉','❤️','🔥','💪'];
 var RONDA_MAX=12;
 var RONDA_INICIAL=3;
@@ -2800,7 +2801,7 @@ function cargarHistorialAccesos(){
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="novedades-admin.html";
-var PGV_VERSION=12; // v12 - Protect Index: las direcciones internas del sitio pasan a relativas (el sitio ya no depende de como se llame el repo). Las que viajan por correo (recuperar contrasena, fotos de firma, sello de RRHH) quedan absolutas apuntando a protect-index. // v11 · Novedades v2: área obligatoria, bloqueante, destinatarios, ronda, personas, ajustes
+var PGV_VERSION=13; // v13 - 1-oct-2026: el selector de area incluye renovaciones (las paginas de Renovaciones, Fuga de cartera y Firmas Renewal ya leian esa area). // v12 - Protect Index: las direcciones internas del sitio pasan a relativas (el sitio ya no depende de como se llame el repo). Las que viajan por correo (recuperar contrasena, fotos de firma, sello de RRHH) quedan absolutas apuntando a protect-index. // v11 · Novedades v2: área obligatoria, bloqueante, destinatarios, ronda, personas, ajustes
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){
   if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
