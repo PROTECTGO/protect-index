@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ProtectGo · Kit de Referidos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- ===================================================================
+     Kit de Referidos · v1 (1-oct-2026)
+     El asesor escribe su WhatsApp y los datos del referidor; la página
+     arma con SU firma: propuesta ES/EN, portafolio ES/EN, tarjeta de
+     WhatsApp ES/EN, ZIP y los textos para enviar.
+     - Firma: portal.v_personas (nombre y foto de RRHH). Sin perfil, no genera.
+     - Registro y código REF: portal.kit_referidos_registrar() (servidor).
+     - Plantillas fijas en kit-referidos/ ; aquí solo se estampan los datos.
+     - ?demo=1 corre sin sesión ni base, con datos de ejemplo.
+     =================================================================== -->
+<style>
+:root{--ink:#1B2D3A;--mint:#2DBFA3;--mint-deep:#229A82;--bg:#F4F7FA;--card:#fff;--line:#E7EDF2;--txt:#28323B;--muted:#6B7D89;--ambar:#D9A520;--rojo:#C0392B}
+*{box-sizing:border-box}
+html,body{max-width:100%;overflow-x:hidden}
+[hidden]{display:none!important}
+body{margin:0;font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--txt);-webkit-font-smoothing:antialiased}
+.wrap{max-width:980px;margin:0 auto;padding:24px 20px 60px}
+.eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--mint-deep);font-weight:700}
+h1{font-family:'Montserrat',sans-serif;font-weight:800;font-size:24px;color:var(--ink);margin:4px 0 4px}
+.sub{color:var(--muted);font-size:14px;margin:0 0 20px;line-height:1.5}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px}
+.card h2{font-family:'Montserrat',sans-serif;font-weight:700;font-size:14px;color:var(--ink);margin:0 0 14px;display:flex;align-items:center;gap:8px}
+.num{background:var(--mint);color:#063b32;width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex:none}
+.firma{display:flex;gap:14px;align-items:center;margin-bottom:14px}
+.av{width:58px;height:58px;border-radius:50%;flex:none;background:linear-gradient(135deg,#0B3142,#1F9E8F);color:#fff;font-family:'Montserrat';font-weight:800;font-size:20px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.av img{width:100%;height:100%;object-fit:cover}
+.firma b{display:block;font-family:'Montserrat';font-size:15px;color:var(--ink)}
+.firma span{font-size:12.5px;color:var(--muted);word-break:break-all}
+label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin:0 0 5px}
+label i{font-style:normal;color:var(--rojo)}
+.field{margin-bottom:12px}
+input,select{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:9px;font-family:inherit;font-size:14px;color:var(--txt);background:#fff}
+input:focus,select:focus{outline:none;border-color:var(--mint)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.terminos{background:#F1FAF8;border:1px solid #CFEDE6;border-radius:10px;padding:10px 12px;font-size:12.5px;color:#23584D;line-height:1.5;margin-top:4px}
+.btn{background:var(--mint-deep);color:#fff;border:none;padding:12px 18px;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;font-family:'Montserrat',sans-serif;width:100%}
+.btn:hover{background:var(--mint)}
+.btn:disabled{opacity:.55;cursor:wait}
+.btn2{background:#fff;color:var(--ink);border:1px solid var(--line);padding:8px 12px;border-radius:9px;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.btn2:hover{border-color:var(--mint)}
+.aviso{border-radius:12px;padding:16px 18px;font-size:14px;line-height:1.55;background:#FFF8E8;border:1px solid #F0E2BC;color:#6b5718}
+.err{color:var(--rojo);font-size:13px;margin-top:8px;min-height:18px}
+#resultado{margin-top:18px}
+.res-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.codigo{font-family:'Montserrat';font-weight:800;color:var(--ink);font-size:18px}
+.files{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+.prev{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.prev img{width:180px;max-width:46%;border-radius:10px;border:1px solid var(--line)}
+.texto{margin-bottom:14px}
+.texto .lbl{display:flex;justify-content:space-between;align-items:center;gap:8px;font-weight:700;font-size:13px;color:var(--ink);margin-bottom:6px;flex-wrap:wrap}
+.texto pre{white-space:pre-wrap;word-break:break-word;background:#F7F9FB;border:1px solid var(--line);border-radius:10px;padding:12px;font-family:inherit;font-size:13px;line-height:1.5;margin:0;max-height:260px;overflow:auto}
+.pasos{margin:0;padding-left:18px;font-size:13.5px;line-height:1.6}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:9}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+/* La tarjeta se dibuja fuera de pantalla a 1080x1350 y se captura */
+#lienzo{position:fixed;left:-20000px;top:0}
+.tj{width:1080px;height:1350px;position:relative;overflow:hidden;background:#fff;font-family:'Inter',sans-serif;color:#0B3142}
+.tj .bgs{position:absolute;right:-140px;top:300px;width:620px;opacity:.05}
+.tj .top{display:flex;justify-content:center;padding-top:40px}
+.tj .top img{width:300px}
+.tj .hero{display:flex;align-items:center;gap:52px;padding:36px 80px 0}
+.tj .ph{width:310px;height:380px;border-radius:36px;overflow:hidden;flex:none;box-shadow:0 0 0 10px #E8F5F3,0 0 0 14px #1F9E8F;background:#fff}
+.tj .ph .ini{width:100%;height:100%;background:linear-gradient(135deg,#0B3142,#1F9E8F);display:flex;align-items:center;justify-content:center;color:#fff;font-family:'Montserrat';font-weight:800;font-size:130px;letter-spacing:4px}
+.tj .ph img{width:100%;height:100%;object-fit:cover;object-position:center 20%}
+.tj .k{font-size:23px;font-weight:700;color:#1F9E8F;letter-spacing:3px;text-transform:uppercase}
+.tj .nm{font-family:'Montserrat';font-size:62px;font-weight:800;line-height:1.04;margin:10px 0 14px}
+.tj .rl{font-size:26px;color:#5A6670;line-height:1.35}
+.tj .pill{display:inline-block;margin-top:22px;background:#0B3142;color:#fff;font-size:22px;font-weight:600;padding:10px 24px;border-radius:40px}
+.tj .hd{padding:40px 80px 0;font-family:'Montserrat';font-size:44px;font-weight:800;line-height:1.15}
+.tj .hd span{color:#1F9E8F}
+.tj .cs{display:flex;gap:28px;padding:26px 80px 0}
+.tj .c{flex:1;background:#E8F5F3;border-radius:28px;padding:22px 28px;border-left:10px solid #1F9E8F}
+.tj .c svg{width:46px;height:46px}
+.tj .c h3{font-family:'Montserrat';font-size:30px;font-weight:800;margin:4px 0}
+.tj .c p{font-size:21px;line-height:1.35;color:#33505C;margin:0}
+.tj .c .cov{margin-top:12px;font-size:20px;font-weight:700;color:#1F9E8F}
+.tj .ft{position:absolute;left:0;right:0;bottom:0;height:290px;background:linear-gradient(120deg,#0B3142 0%,#0E5E7E 70%,#1F9E8F 100%);display:flex;align-items:center;padding:0 80px;gap:40px;color:#fff}
+.tj .ct{flex:1;min-width:0}
+.tj .cta{font-family:'Montserrat';font-size:30px;font-weight:800;margin-bottom:14px}
+.tj .r{display:flex;align-items:center;gap:14px;font-size:25px;margin-top:8px;white-space:nowrap}
+.tj .r svg{width:30px;height:30px;flex:none}
+.tj .qr{background:#fff;border-radius:22px;padding:14px;text-align:center;flex:none}
+.tj .qr canvas,.tj .qr img{width:160px!important;height:160px!important;display:block}
+.tj .qr div{font-size:15px;color:#0B3142;font-weight:700;margin-top:4px}
+.tabs{display:flex;gap:6px;margin:0 0 16px;border-bottom:1px solid var(--line)}
+.tabs button{background:none;border:none;border-bottom:3px solid transparent;padding:10px 14px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:14px;color:var(--muted);cursor:pointer}
+.tabs button.on{color:var(--ink);border-bottom-color:var(--mint)}
+.tabs button:focus-visible,.btn2:focus-visible,.btn:focus-visible{outline:2px solid var(--mint);outline-offset:2px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.stat b{display:block;font-family:'Montserrat';font-size:22px;color:var(--ink);font-variant-numeric:tabular-nums}
+.stat span{font-size:12px;color:var(--muted)}
+.ref{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:10px}
+.ref-h{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:flex-start}
+.ref-h b{font-family:'Montserrat';color:var(--ink);font-size:15px}
+.ref-h small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 0}
+.chip{font-size:12px;border-radius:20px;padding:4px 10px;background:#F1F4F7;color:var(--txt);font-variant-numeric:tabular-nums}
+.chip.ok{background:#E3F6F1;color:#1d6f5f}
+.chip.warn{background:#FBF1D6;color:#7a5a06}
+.chip.off{background:#EEF1F4;color:var(--muted)}
+.leads{margin-top:10px;border-top:1px dashed var(--line);padding-top:8px}
+.lead{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:6px 0;font-size:13px}
+.lead select,.lead input{padding:6px 8px;font-size:13px;width:auto}
+.lead input{width:70px}
+.addlead{display:grid;grid-template-columns:1fr 90px auto;gap:8px;margin-top:8px}
+.vacio{color:var(--muted);font-size:13.5px;padding:18px;text-align:center;background:var(--card);border:1px dashed var(--line);border-radius:12px}
+.consejo{font-size:12.5px;color:var(--muted);margin:4px 0 14px;line-height:1.5}
+@media(max-width:760px){.grid{grid-template-columns:1fr}}
+@media(max-width:560px){.stats{grid-template-columns:repeat(2,1fr)}.lead{grid-template-columns:1fr 1fr}.lead .ln{grid-column:1/-1}.addlead{grid-template-columns:1fr 1fr}.addlead .btn2{grid-column:1/-1;justify-content:center}}
+@media(max-width:400px){.wrap{padding:16px 12px 48px}.row2{grid-template-columns:1fr}h1{font-size:21px}.card{padding:16px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">Programa de aliados referidores</div>
+  <h1>Kit de Referidos</h1>
+  <p class="sub">Escribe tu WhatsApp y los datos del referidor. Se genera el paquete con tu firma: propuesta, portafolio, tu tarjeta de WhatsApp y el correo listo para enviar.</p>
+
+  <div id="bloqueo" class="aviso" style="display:none"></div>
+
+  <div id="app" style="display:none">
+    <div class="tabs" role="tablist"><button type="button" id="tbNuevo" class="on" role="tab">Nuevo kit</button><button type="button" id="tbSeg" role="tab">Seguimiento <span id="segCount"></span></button></div>
+    <div id="tabNuevo">
+    <div class="grid">
+      <div class="card">
+        <h2><span class="num">1</span>Tu firma</h2>
+        <div class="firma"><div class="av" id="av"></div><div><b id="fNombreFull">—</b><span id="fCorreo">—</span></div></div>
+        <div class="field"><label for="aNombre">Nombre en la tarjeta</label><input id="aNombre" type="text" maxlength="40"></div>
+        <div class="row2">
+          <div class="field"><label for="aWa">Tu WhatsApp <i>*</i></label><input id="aWa" type="tel" placeholder="(407) 274-6890" inputmode="tel"></div>
+          <div class="field"><label for="aTel">Llamadas y texto</label><input id="aTel" type="tel" placeholder="opcional" inputmode="tel"></div>
+        </div>
+      </div>
+      <div class="card">
+        <h2><span class="num">2</span>Referidor</h2>
+        <div class="field"><label for="rNombre">Nombre del contacto <i>*</i></label><input id="rNombre" type="text" maxlength="60" placeholder="Oscar Zurita Prado"></div>
+        <div class="field"><label for="rEmpresa">Empresa</label><input id="rEmpresa" type="text" maxlength="70" placeholder="Universal Transport Team LLC"></div>
+        <div class="row2">
+          <div class="field"><label for="rUsdot">USDOT / MC</label><input id="rUsdot" type="text" maxlength="20" placeholder="4103105"></div>
+          <div class="field"><label for="rWa">WhatsApp del referidor <i>*</i></label><input id="rWa" type="tel" inputmode="tel"></div>
+        </div>
+        <div class="field"><label for="idioma">Idioma del paquete</label>
+          <select id="idioma"><option value="ambos">Español e inglés</option><option value="es">Solo español</option><option value="en">Solo inglés</option></select></div>
+        <div class="terminos">$150 por unidad activada · hasta $250 según prima · flotas con porcentaje negociado · pago mes vencido · piloto de 90 días. Los términos vienen en la propuesta; no se cambian aquí.</div>
+      </div>
+    </div>
+    <div style="margin-top:16px"><button class="btn" id="btnGenerar" type="button">Generar kit</button><div class="err" id="err"></div></div>
+
+    <div id="resultado" class="card" style="display:none">
+      <div class="res-head"><div><div class="eyebrow">Kit listo</div><div class="codigo" id="resCodigo">—</div></div>
+        <a class="btn2" id="dlZip" href="#">Descargar ZIP</a></div>
+      <div class="prev" id="resPrev"></div>
+      <div class="files" id="resFiles"></div>
+      <h2 style="font-family:Montserrat;font-size:14px;color:var(--ink);margin:6px 0 10px">Cómo enviarlo</h2>
+      <ol class="pasos">
+        <li>Llama o escríbele al referidor y explícale el programa en 5 minutos.</li>
+        <li>Envíale el correo de abajo con los PDF adjuntos (o el ZIP).</li>
+        <li>Pásale tus tarjetas por WhatsApp y el mensaje para sus grupos.</li>
+        <li>Cada referido que llegue: confírmalo en máximo 1 día hábil, regístralo en la pestaña <b>Seguimiento</b> y en HubSpot con la fuente <b id="resFuente">—</b>.</li>
+      </ol>
+      <div style="height:14px"></div>
+      <div class="texto"><div class="lbl">Correo para el referidor <span><a class="btn2" id="mailto" href="#">Abrir correo</a> <button class="btn2" data-copy="txtCorreo" type="button">Copiar</button></span></div><pre id="txtCorreo"></pre></div>
+      <div class="texto"><div class="lbl">WhatsApp para el referidor <span><a class="btn2" id="waRef" href="#" target="_blank" rel="noopener">Abrir WhatsApp</a> <button class="btn2" data-copy="txtWa" type="button">Copiar</button></span></div><pre id="txtWa"></pre></div>
+      <div class="texto"><div class="lbl">Mensaje para sus grupos <button class="btn2" data-copy="txtGrupo" type="button">Copiar</button></div><pre id="txtGrupo"></pre></div>
+    </div>
+    </div>
+    <div id="tabSeg" hidden>
+      <div class="stats" id="stats"></div>
+      <p class="consejo">Cada referidor queda aquí desde que le generas el kit. Registra cada referido que te mande y muévelo de estado hasta "Emitido". El honorario es estimado con la base de $150 por unidad; el valor final depende de la prima.</p>
+      <div id="refs"></div>
+    </div>
+  </div>
+</div>
+<div id="lienzo"></div>
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="pg-novedades.js"></script>
+<script>
+(function(){
+"use strict";
+var SB_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
+var SB_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
+var CLAVE="kit_referidos";
+var DEMO=/[?&]demo=1\b/.test(location.search)||window.KR_DEMO===true;
+var ASSETS=window.KR_ASSETS||{
+  logo:"kit-referidos/logo-protectgo.png",
+  propuesta_es:"kit-referidos/propuesta_es.pdf", propuesta_en:"kit-referidos/propuesta_en.pdf",
+  portafolio_es:"kit-referidos/portafolio_es.pdf", portafolio_en:"kit-referidos/portafolio_en.pdf"
+};
+/* Coordenadas de estampado (puntos PDF, top desde arriba). Salen de las plantillas: no mover sin regenerarlas. */
+var POS={
+  propuesta:{SUB:{p:0,x:113.5,top:197.43,size:11.5,maxW:412},G1:{p:2,x:124.75,top:334.17,size:10.5,maxW:390,gap:13.9},
+             CNOMBRE:{p:3,x:124.75,top:410.74,size:13},CTEL:{p:3,x:124.75,top:428.62,size:10.5},CMAIL:{p:3,x:124.75,top:443.52,size:10.5}},
+  portafolio:{CNOMBRE:{p:3,x:124.75,top:304.89,size:13},CTEL:{p:3,x:124.75,top:322.77,size:10.5},CMAIL:{p:3,x:124.75,top:337.67,size:10.5}}
+};
+var NAVY=[11,49,66], TEAL=[31,158,143], TXT=[51,63,72];
+
+function $(id){return document.getElementById(id);}
+function toast(m){var t=$("toast");t.textContent=m;t.classList.add("show");clearTimeout(t._h);t._h=setTimeout(function(){t.classList.remove("show");},2200);}
+function bloquear(html){$("bloqueo").innerHTML=html;$("bloqueo").style.display="block";$("app").style.display="none";}
+function sinTildes(s){return (s||"").normalize("NFD").replace(/[̀-ͯ]/g,"");}
+function slug(s){return sinTildes(s).toUpperCase().replace(/[^A-Z0-9]+/g,"_").slice(0,40).replace(/^_+|_+$/g,"")||"REFERIDOR";}
+function digitos(s){return (s||"").replace(/\D/g,"");}
+function fmtTel(s){var d=digitos(s); if(d.length===11&&d[0]==="1")d=d.slice(1); if(d.length===10)return "("+d.slice(0,3)+") "+d.slice(3,6)+"-"+d.slice(6); return d?("+"+d):"";}
+function waNum(s){var d=digitos(s); if(d.length===10)d="1"+d; return d;}
+function telValido(s){var d=digitos(s); return d.length>=10&&d.length<=13;}
+var PARTICULAS={de:1,del:1,la:1,las:1,los:1,y:1};
+function nombreCorto(full){
+  var p=(full||"").trim().split(/\s+/).filter(function(w){return !PARTICULAS[w.toLowerCase()];});
+  if(p.length<=2) return p.join(" ");
+  if(p.length===3) return p[0]+" "+p[1];          /* Nombre Apellido Apellido */
+  return p[0]+" "+p[p.length-2];                  /* Nombre Nombre Apellido Apellido */
+}
+function iniciales(n){var p=(n||"").trim().split(/\s+/);return ((p[0]||"")[0]||"")+((p[1]||"")[0]||"");}
+
+/* ---------------- estado ---------------- */
+var sb=null, persona=null;
+
+async function arrancar(){
+  if(DEMO){
+    persona=window.KR_DEMO_PERSONA||{email:"juliana.restrepo@protectgoservices.com",nombre:"Juliana Restrepo Bonilla",foto_url:window.KR_DEMO_FOTO||""};
+    pintarFirma(window.KR_DEMO_PERSONA?null:{asesor_whatsapp:"4072746890",asesor_telefono:"7262084813"});
+    $("rNombre").value="Oscar Zurita Prado";$("rEmpresa").value="Universal Transport Team LLC";$("rUsdot").value="4103105";$("rWa").value="2105550134";
+    cargarSeg(); return;
+  }
+  if(!(window.supabase&&window.supabase.createClient)){bloquear("No se pudo cargar la conexión. Revisa tu internet y recarga.");return;}
+  sb=window.supabase.createClient(SB_URL,SB_KEY,{db:{schema:"portal"}});
+  var ses=await sb.auth.getSession(); var user=ses&&ses.data&&ses.data.session&&ses.data.session.user;
+  if(!user){bloquear('Entra primero a <a href="./">Protect Index</a> y abre el Kit de Referidos desde ahí.');return;}
+  var email=(user.email||"").toLowerCase();
+  var pv=await sb.rpc("mis_pantallas");
+  var ok=pv&&pv.data&&pv.data.some(function(r){return r.clave===CLAVE&&r.puede;});
+  if(!ok){bloquear("Tu cuenta no tiene acceso al Kit de Referidos. Es para cuentas personales del equipo.");return;}
+  var r=await sb.from("v_personas").select("email,nombre,foto_url").eq("email",email).maybeSingle();
+  if(!r||!r.data){bloquear("Tu correo <b>"+email+"</b> no tiene perfil en RRHH, y el kit sale con la firma de tu perfil. Pídele a RRHH que registre tu correo corporativo y vuelve a entrar.");return;}
+  persona=r.data;
+  var u=await sb.from("kit_referidos").select("asesor_whatsapp,asesor_telefono,asesor_nombre").eq("asesor_email",email).order("created_at",{ascending:false}).limit(1).maybeSingle();
+  pintarFirma(u&&u.data);
+  cargarSeg();
+}
+function pintarFirma(ultimo){
+  $("app").style.display="block";
+  $("fNombreFull").textContent=persona.nombre; $("fCorreo").textContent=persona.email;
+  var av=$("av"); av.innerHTML="";
+  if(persona.foto_url){var im=new Image();im.alt="";im.src=persona.foto_url;im.onerror=function(){av.textContent=iniciales(nombreCorto(persona.nombre)).toUpperCase();};av.appendChild(im);}
+  else av.textContent=iniciales(nombreCorto(persona.nombre)).toUpperCase();
+  $("aNombre").value=(ultimo&&ultimo.asesor_nombre)||nombreCorto(persona.nombre);
+  if(ultimo){ $("aWa").value=fmtTel(ultimo.asesor_whatsapp||""); $("aTel").value=fmtTel(ultimo.asesor_telefono||""); }
+}
+
+/* ---------------- textos ---------------- */
+function datos(){
+  return {
+    aNombre:$("aNombre").value.trim()||nombreCorto(persona.nombre), aFull:persona.nombre, aEmail:persona.email,
+    aWa:$("aWa").value, aTel:$("aTel").value,
+    rNombre:$("rNombre").value.trim(), rEmpresa:$("rEmpresa").value.trim(), rUsdot:$("rUsdot").value.trim(), rWa:$("rWa").value,
+    idioma:$("idioma").value
+  };
+}
+function deParte(d){return d.rNombre+(d.rEmpresa?" ("+d.rEmpresa+")":"");}
+function textos(d,codigo){
+  var en=d.idioma==="en", T={};
+  var tel=d.aTel&&telValido(d.aTel)?fmtTel(d.aTel):"";
+  var firma=d.aFull+"\nProtectGo Services\nWhatsApp "+fmtTel(d.aWa)+(tel?(en?" · Call or text ":" · Llamadas y texto ")+tel:"")+"\n"+d.aEmail;
+  if(!en){
+    T.asunto="Programa de referidos ProtectGo – "+(d.rEmpresa||d.rNombre)+" – "+codigo;
+    T.correo="Hola "+d.rNombre+",\n\nUn gusto saludarte. Soy "+d.aNombre+", tu contacto en ProtectGo Services.\n\nTe adjunto el programa de aliados referidores del que hablamos:\n· Propuesta del programa: cómo funciona, cuánto ganas y las reglas\n· Portafolio de servicios: trucking y pólizas para negocios\n· Mi tarjeta digital para que la compartas en tus grupos de WhatsApp\n\nPara enviarme un referido, escríbeme con el asunto \"REFERIDO – "+codigo+" – [nombre del cliente]\" y estos datos: nombre del negocio, contacto, teléfono, número de unidades, USDOT/MC y vencimiento de su póliza actual.\n\nSi necesitas tarjetas físicas o cualquier material, dime y te lo hago llegar."+(d.idioma==="ambos"?"\n\n(English version of the program and portfolio attached.)":"")+"\n\n"+firma;
+    T.wa="Hola "+d.rNombre+", soy "+d.aNombre+" de ProtectGo. Te acabo de enviar al correo el programa de referidos y mi tarjeta digital. Cualquier cliente con camión o negocio que me mandes, yo lo atiendo y tú ganas por cada unidad asegurada. ¿Hablamos 5 minutos para explicarte cómo funciona?";
+    T.grupo="¿Tienes camión o negocio y necesitas seguro? Te recomiendo a ProtectGo Services. Cotizan seguros para transportistas (owner-operators y flotas) y para negocios: restaurantes, contratistas, talleres y más. Atención en español. Escríbele a "+d.aNombre+" por WhatsApp al "+fmtTel(d.aWa)+". Dile que vas de parte de "+deParte(d)+".";
+  } else {
+    T.asunto="ProtectGo referral program – "+(d.rEmpresa||d.rNombre)+" – "+codigo;
+    T.correo="Hi "+d.rNombre+",\n\nGreat to connect. I'm "+d.aNombre+", your contact at ProtectGo Services.\n\nAttached is the referral partner program we talked about:\n· Program proposal: how it works, what you earn and the rules\n· Services portfolio: trucking and business policies\n· My digital card to share in your WhatsApp groups\n\nTo send me a referral, write to me with the subject \"REFERRAL – "+codigo+" – [client name]\" and include: business name, contact, phone, number of units, USDOT/MC and current policy expiration date.\n\nIf you need printed cards or any material, just let me know.\n\n"+firma;
+    T.wa="Hi "+d.rNombre+", this is "+d.aNombre+" from ProtectGo. I just emailed you the referral program and my digital card. Any client with a truck or a business you send me, I take care of them and you earn for every insured unit. Can we talk for 5 minutes so I can walk you through it?";
+    T.grupo="Own a truck or a business and need insurance? I recommend ProtectGo Services. They quote insurance for truckers (owner-operators and fleets) and for businesses: restaurants, contractors, auto shops and more. They speak English and Spanish. Message "+d.aNombre+" on WhatsApp at "+fmtTel(d.aWa)+". Tell them "+deParte(d)+" sent you.";
+  }
+  return T;
+}
+
+/* ---------------- PDF ---------------- */
+var _cache={};
+async function bytes(url){ if(!_cache[url]){var r=await fetch(url);if(!r.ok)throw new Error("No se pudo cargar "+url);_cache[url]=await r.arrayBuffer();} return _cache[url].slice(0); }
+function winAnsi(s){return (s||"").replace(/[“”]/g,'"').replace(/[‘’]/g,"'").replace(/[^\x20-\x7E -ÿ–—•€]/g,"");}
+function rgb(c){return PDFLib.rgb(c[0]/255,c[1]/255,c[2]/255);}
+function yDe(page,top,size){return page.getHeight()-top-size*0.79;}
+/* runs: [[texto,bold]] -> líneas con ancho máximo */
+function partir(runs,fonts,size,maxW){
+  var lines=[[]],w=0;
+  runs.forEach(function(r){
+    r[0].split(/(\s+)/).forEach(function(tok){
+      if(!tok)return; var f=r[1]?fonts.b:fonts.n, tw=f.widthOfTextAtSize(tok,size);
+      if(/^\s+$/.test(tok)){ if(lines[lines.length-1].length){lines[lines.length-1].push([" ",r[1]]);w+=fonts.n.widthOfTextAtSize(" ",size);} return; }
+      if(w+tw>maxW&&lines[lines.length-1].length){ var L=lines[lines.length-1]; if(L.length&&L[L.length-1][0]===" ")L.pop(); lines.push([]); w=0; }
+      lines[lines.length-1].push([tok,r[1]]); w+=tw;
+    });
+  });
+  return lines;
+}
+function dibujar(page,line,x,y,size,fonts,color){ line.forEach(function(seg){var f=seg[1]?fonts.b:fonts.n; page.drawText(seg[0],{x:x,y:y,size:size,font:f,color:rgb(color)}); x+=f.widthOfTextAtSize(seg[0],size);}); }
+function ajustar(texto,font,size,maxW,min){ while(size>min&&font.widthOfTextAtSize(texto,size)>maxW) size-=0.25; return size; }
+async function pdfEstampado(tipo,lang,d){
+  var doc=await PDFLib.PDFDocument.load(await bytes(ASSETS[tipo+"_"+lang]));
+  var fonts={n:await doc.embedFont(PDFLib.StandardFonts.Helvetica), b:await doc.embedFont(PDFLib.StandardFonts.HelveticaBold)};
+  var P=POS[tipo], pages=doc.getPages(), en=lang==="en";
+  if(P.SUB){
+    var dot=d.rUsdot?(" (USDOT "+d.rUsdot+")"):"";
+    var sub=winAnsi((en?"Proposal for ":"Propuesta para ")+d.rNombre+(d.rEmpresa?" · "+d.rEmpresa+dot:dot)+(en?" · 90-day pilot":" · Piloto de 90 días"));
+    var s=P.SUB, pg=pages[s.p], sz=ajustar(sub,fonts.n,s.size,s.maxW,8.5);
+    pg.drawText(sub,{x:s.x,y:yDe(pg,s.top,s.size),size:sz,font:fonts.n,color:rgb(TEAL)});
+  }
+  if(P.G1){
+    var g=P.G1, pg2=pages[g.p];
+    var runs=en?[["Message ",0],[winAnsi(d.aNombre)+" on WhatsApp at "+fmtTel(d.aWa),1],[". Tell them "+winAnsi(deParte(d))+" sent you.",0]]
+               :[["Escríbele a ",0],[winAnsi(d.aNombre)+" por WhatsApp al "+fmtTel(d.aWa),1],[". Dile que vas de parte de "+winAnsi(deParte(d))+".",0]];
+    var lines=partir(runs,fonts,g.size,g.maxW), size=g.size;
+    if(lines.length>2){ size=9.5; lines=partir(runs,fonts,size,g.maxW); }
+    lines.slice(0,2).forEach(function(L,i){ dibujar(pg2,L,g.x,yDe(pg2,g.top+i*g.gap,g.size),size,fonts,TXT); });
+  }
+  var n=P.CNOMBRE, pn=pages[n.p];
+  pn.drawText(winAnsi(d.aFull),{x:n.x,y:yDe(pn,n.top,n.size),size:n.size,font:fonts.b,color:rgb(NAVY)});
+  var t=P.CTEL, tel=d.aTel&&telValido(d.aTel)?fmtTel(d.aTel):"";
+  var trun=[["WhatsApp: ",1],[fmtTel(d.aWa),0]]; if(tel){trun.push(["     "+(en?"Call or text: ":"Llamadas y texto: "),1]);trun.push([tel,0]);}
+  dibujar(pages[t.p],trun,t.x,yDe(pages[t.p],t.top,t.size),t.size,fonts,TXT);
+  var m=P.CMAIL; pages[m.p].drawText(d.aEmail,{x:m.x,y:yDe(pages[m.p],m.top,m.size),size:m.size,font:fonts.n,color:rgb(TXT)});
+  doc.setTitle(en?(tipo==="propuesta"?"Referral Partner Program – ProtectGo":"Services Portfolio – ProtectGo"):(tipo==="propuesta"?"Programa de Aliados Referidores – ProtectGo":"Portafolio de Servicios – ProtectGo"));
+  return await doc.save();
+}
+
+/* ---------------- tarjeta PNG ---------------- */
+var SVG={
+  truck:'<svg viewBox="0 0 64 64" fill="none" stroke="#0B3142" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"><rect x="4" y="16" width="34" height="26" rx="3"/><path d="M38 24h12l8 10v8H38z"/><circle cx="16" cy="46" r="5" fill="#E8F5F3"/><circle cx="48" cy="46" r="5" fill="#E8F5F3"/></svg>',
+  shop:'<svg viewBox="0 0 64 64" fill="none" stroke="#0B3142" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"><path d="M8 26l4-14h40l4 14"/><path d="M8 26c0 4 3 7 8 7s8-3 8-7c0 4 3 7 8 7s8-3 8-7c0 4 3 7 8 7s8-3 8-7"/><path d="M12 33v21h40V33"/><rect x="26" y="40" width="12" height="14"/></svg>',
+  wa:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round"><path d="M4 20l1.3-4A8 8 0 1 1 8 18.7z"/><path d="M9 9.5c0 3 2.5 5.5 5.5 5.5l1-1.5-2-1-1 .8a4 4 0 0 1-1.8-1.8l.8-1-1-2z" fill="#fff" stroke="none"/></svg>',
+  ph:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><path d="M5 4h4l2 5-3 2a12 12 0 0 0 5 5l2-3 5 2v4a2 2 0 0 1-2 2A17 17 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg>',
+  em:'<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>',
+  shield:'<svg class="bgs" viewBox="0 0 100 120"><path d="M50 0C38 8 22 12 6 12V58C6 88 26 108 50 120C74 108 94 88 94 58V12C78 12 62 8 50 0Z" fill="#0B3142"/></svg>'
+};
+function esc(s){return (s||"").replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+function cargarImg(src){return new Promise(function(ok){ if(!src)return ok(null); var im=new Image(); im.crossOrigin="anonymous"; im.onload=function(){ok(src);}; im.onerror=function(){ok(null);}; im.src=src; });}
+async function tarjeta(lang,d){
+  var en=lang==="en", partes=d.aNombre.split(/\s+/), l1=partes.shift()||"", l2=partes.join(" ");
+  var foto=await cargarImg(persona.foto_url);
+  var tel=d.aTel&&telValido(d.aTel)?fmtTel(d.aTel):"";
+  var tx=en?{k1:"Your contact at",rl:"Insurance for truckers<br>and businesses in Texas",pill:"We speak English and Spanish",hd:"Own a truck or a business?<br><span>Let us insure it.</span>",
+             t1:"Truckers",p1:"Owner-operators and fleets, new and experienced.",t2:"Businesses",p2:"Restaurants, contractors, auto shops, retail and more.",cta:"Message me for a quote today",call:"Call or text",scan:"Scan to message me",qr:"Hi "+d.aNombre+", I would like an insurance quote"}
+           :{k1:"Tu contacto en",rl:"Seguros para transportistas<br>y negocios en Texas",pill:"Atención en español e inglés",hd:"¿Tienes camión o negocio?<br><span>Asegúralo con nosotros.</span>",
+             t1:"Transportistas",p1:"Owner-operators y flotas, nuevos y con experiencia.",t2:"Negocios",p2:"Restaurantes, contratistas, talleres, tiendas y más.",cta:"Escríbeme y te cotizo hoy",call:"Llamadas y texto",scan:"Escanea y escríbeme",qr:"Hola "+d.aNombre+", quiero cotizar mi seguro"};
+  var nmSize=Math.max(l1.length,l2.length)>11?52:62;
+  var html='<div class="tj">'+SVG.shield+
+   '<div class="top"><img src="'+ASSETS.logo+'"></div>'+
+   '<div class="hero"><div class="ph">'+(foto?'<img crossorigin="anonymous" src="'+esc(foto)+'">':'<div class="ini">'+esc(iniciales(d.aNombre).toUpperCase())+'</div>')+'</div><div>'+
+     '<div class="k">'+tx.k1+'</div><div class="k" style="color:#0B3142;margin-top:2px">ProtectGo Services</div>'+
+     '<div class="nm" style="font-size:'+nmSize+'px">'+esc(l1)+(l2?'<br>'+esc(l2):'')+'</div><div class="rl">'+tx.rl+'</div><div class="pill">'+tx.pill+'</div></div></div>'+
+   '<div class="hd">'+tx.hd+'</div>'+
+   '<div class="cs"><div class="c">'+SVG.truck+'<h3>'+tx.t1+'</h3><p>'+tx.p1+'</p><div class="cov">Liability · Physical Damage · Cargo</div></div>'+
+     '<div class="c">'+SVG.shop+'<h3>'+tx.t2+'</h3><p>'+tx.p2+'</p><div class="cov">GL · Workers\' Comp · Umbrella</div></div></div>'+
+   '<div class="ft"><div class="ct"><div class="cta">'+tx.cta+'</div>'+
+     '<div class="r">'+SVG.wa+'<b>WhatsApp</b>&nbsp;'+esc(fmtTel(d.aWa))+'</div>'+
+     (tel?'<div class="r">'+SVG.ph+'<b>'+tx.call+'</b>&nbsp;'+esc(tel)+'</div>':'')+
+     '<div class="r" style="font-size:'+(d.aEmail.length>34?21:25)+'px">'+SVG.em+esc(d.aEmail)+'</div></div>'+
+     '<div class="qr"><div class="qrc"></div><div>'+tx.scan+'</div></div></div></div>';
+  var L=$("lienzo"); L.innerHTML=html;
+  new QRCode(L.querySelector(".qrc"),{text:"https://wa.me/"+waNum(d.aWa)+"?text="+encodeURIComponent(tx.qr),width:320,height:320,colorDark:"#0B3142",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.M});
+  await new Promise(function(ok){setTimeout(ok,120);});
+  if(document.fonts&&document.fonts.ready) await document.fonts.ready;
+  var imgs=[].slice.call(L.querySelectorAll("img")); await Promise.all(imgs.map(function(im){return im.complete?1:new Promise(function(ok){im.onload=im.onerror=ok;});}));
+  var cv=await html2canvas(L.firstElementChild,{width:1080,height:1350,scale:1,useCORS:true,backgroundColor:"#ffffff",logging:false});
+  L.innerHTML="";
+  return await new Promise(function(ok){cv.toBlob(function(b){ok(b);},"image/png");});
+}
+
+/* ---------------- generar ---------------- */
+var urls=[];
+function enlace(nombre,blob){var u=URL.createObjectURL(blob);urls.push(u);var a=document.createElement("a");a.className="btn2";a.href=u;a.download=nombre;a.textContent=nombre.replace(/_/g," ").replace(/\.(pdf|png)$/," ($1)");return a;}
+async function generar(){
+  var err=$("err"); err.textContent="";
+  var d=datos();
+  if(!telValido(d.aWa)){err.textContent="Escribe tu WhatsApp (10 dígitos).";$("aWa").focus();return;}
+  if(d.aTel&&!telValido(d.aTel)){err.textContent="El teléfono de llamadas no es válido; corrígelo o déjalo vacío.";$("aTel").focus();return;}
+  if(!d.rNombre){err.textContent="Escribe el nombre del referidor.";$("rNombre").focus();return;}
+  if(!telValido(d.rWa)){err.textContent="Escribe el WhatsApp del referidor (10 dígitos).";$("rWa").focus();return;}
+  var b=$("btnGenerar"); b.disabled=true; b.textContent="Generando…";
+  try{
+    var prev=KITS.find(function(k){return digitos(k.referidor_whatsapp)===digitos(d.rWa)&&k.asesor_email===persona.email;});
+    var codigo=prev?prev.codigo:"REF-2026-"+String(900+KITS.length+1);
+    if(!DEMO){
+      var r=await sb.rpc("kit_referidos_registrar",{p_asesor_whatsapp:digitos(d.aWa),p_asesor_telefono:digitos(d.aTel),p_asesor_nombre:d.aNombre,
+        p_referidor_nombre:d.rNombre,p_referidor_empresa:d.rEmpresa,p_referidor_usdot:d.rUsdot,p_referidor_whatsapp:digitos(d.rWa),p_idioma:d.idioma});
+      if(r.error) throw new Error(r.error.message);
+      codigo=r.data;
+    }
+    var base=slug(d.rEmpresa||d.rNombre), quien=slug(d.aNombre), langs=d.idioma==="ambos"?["es","en"]:[d.idioma];
+    var files=[], L, U, i;
+    for(i=0;i<langs.length;i++){ L=langs[i]; U=L.toUpperCase();
+      files.push({dir:"1 Propuesta",name:(L==="es"?"Programa_Referidos_":"Referral_Program_")+base+"_"+U+".pdf",blob:new Blob([await pdfEstampado("propuesta",L,d)],{type:"application/pdf"})}); }
+    for(i=0;i<langs.length;i++){ L=langs[i]; U=L.toUpperCase();
+      files.push({dir:"2 Portafolio",name:(L==="es"?"Portafolio_ProtectGo_":"Portfolio_ProtectGo_")+U+".pdf",blob:new Blob([await pdfEstampado("portafolio",L,d)],{type:"application/pdf"})}); }
+    for(i=0;i<langs.length;i++){ L=langs[i]; U=L.toUpperCase();
+      files.push({dir:"3 Tarjeta WhatsApp",name:"Tarjeta_"+quien+"_"+U+".png",blob:await tarjeta(L,d)}); }
+    var T=textos(d,codigo);
+    var zip=new JSZip(), raiz=zip.folder("Kit_Referidos_"+base+"_"+codigo);
+    files.forEach(function(f){raiz.folder(f.dir).file(f.name,f.blob);});
+    raiz.file("Correo_para_el_referidor.txt","Asunto: "+T.asunto+"\n\n"+T.correo);
+    raiz.file("Mensaje_para_grupos.txt",T.grupo);
+    var zb=await zip.generateAsync({type:"blob"});
+    urls.forEach(URL.revokeObjectURL); urls=[];
+    var zu=URL.createObjectURL(zb); urls.push(zu);
+    $("dlZip").href=zu; $("dlZip").download="Kit_Referidos_"+base+"_"+codigo+".zip";
+    $("resCodigo").textContent=codigo+" · "+(d.rEmpresa||d.rNombre);
+    $("resFuente").textContent="Referido – "+codigo+" – "+(d.rEmpresa||d.rNombre);
+    var fl=$("resFiles"); fl.innerHTML=""; files.forEach(function(f){fl.appendChild(enlace(f.name,f.blob));});
+    var pv=$("resPrev"); pv.innerHTML=""; files.filter(function(f){return /\.png$/.test(f.name);}).forEach(function(f){var im=new Image();var u=URL.createObjectURL(f.blob);urls.push(u);im.src=u;im.alt=f.name;pv.appendChild(im);});
+    $("txtCorreo").textContent="Asunto: "+T.asunto+"\n\n"+T.correo; $("txtWa").textContent=T.wa; $("txtGrupo").textContent=T.grupo;
+    $("mailto").href="mailto:?subject="+encodeURIComponent(T.asunto)+"&body="+encodeURIComponent(T.correo);
+    $("waRef").href="https://wa.me/"+waNum(d.rWa)+"?text="+encodeURIComponent(T.wa);
+    $("resultado").style.display="block"; $("resultado").scrollIntoView({behavior:"smooth",block:"start"});
+    toast("Kit "+codigo+" listo");
+    var ex=KITS.find(function(k){return k.codigo===codigo;}); if(ex){ex.referidor_nombre=d.rNombre;ex.referidor_empresa=d.rEmpresa;}
+    if(!ex) KITS.unshift({codigo:codigo,asesor_email:persona.email,asesor_nombre:d.aNombre,referidor_nombre:d.rNombre,referidor_empresa:d.rEmpresa,referidor_whatsapp:digitos(d.rWa),created_at:new Date().toISOString()});
+    pintarSeg();
+  }catch(e){ console.error(e); err.textContent="No se pudo generar: "+(e&&e.message?e.message:e); }
+  finally{ b.disabled=false; b.textContent="Generar kit"; }
+}
+document.addEventListener("click",function(ev){
+  var k=ev.target&&ev.target.getAttribute&&ev.target.getAttribute("data-copy"); if(!k)return;
+  var t=$(k).textContent; (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(function(){toast("Copiado");},function(){
+    var ta=document.createElement("textarea");ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand("copy");toast("Copiado");}catch(e){}ta.remove();});
+});
+$("btnGenerar").addEventListener("click",generar);
+["aWa","aTel","rWa"].forEach(function(id){$(id).addEventListener("blur",function(){var v=$(id).value; if(telValido(v))$(id).value=fmtTel(v);});});
+
+/* ---------------- seguimiento ---------------- */
+var KITS=[], LEADS=[], BASE_USD=150;
+var ESTADOS=[["recibido","Recibido"],["cotizado","Cotizado"],["emitido","Emitido"],["perdido","Perdido"]];
+function dias(f){return Math.max(0,Math.floor((Date.now()-new Date(f).getTime())/864e5));}
+function fFecha(f){var d=new Date(f);return d.toLocaleDateString("es-CO",{day:"numeric",month:"short",year:"numeric"});}
+function usd(n){return "$"+Number(n||0).toLocaleString("en-US");}
+function guion(n){return n?String(n):"—";}
+async function cargarSeg(){
+  if(DEMO){ var dd=window.KR_DEMO_DATA||{kits:[],leads:[]}; KITS=dd.kits.slice(); LEADS=dd.leads.slice(); pintarSeg(); return; }
+  try{
+    var k=await sb.from("kit_referidos").select("codigo,asesor_email,asesor_nombre,referidor_nombre,referidor_empresa,referidor_whatsapp,created_at").order("created_at",{ascending:false});
+    var l=await sb.from("kit_referidos_leads").select("id,kit_codigo,cliente,unidades,estado,unidades_activadas,created_at,updated_at").order("created_at",{ascending:false});
+    KITS=(k&&k.data)||[]; LEADS=(l&&l.data)||[];
+  }catch(e){ console.error(e); }
+  pintarSeg();
+}
+function pintarSeg(){
+  var emit=LEADS.filter(function(x){return x.estado==="emitido";});
+  var uni=emit.reduce(function(a,x){return a+(Number(x.unidades_activadas)||0);},0);
+  var conv=LEADS.length?Math.round(emit.length*100/LEADS.length)+"%":"—";
+  var st=[[guion(KITS.length),"Referidores con kit"],[guion(LEADS.length),"Referidos recibidos"],[guion(emit.length),"Pólizas emitidas"],[conv,"Conversión"],[guion(uni),"Unidades activadas"],[uni?usd(uni*BASE_USD):"—","Honorario estimado"]];
+  $("stats").innerHTML=st.map(function(x){return '<div class="stat"><b>'+x[0]+'</b><span>'+x[1]+'</span></div>';}).join("");
+  $("segCount").textContent=KITS.length?"("+KITS.length+")":"";
+  var varios=KITS.some(function(k){return k.asesor_email!==persona.email;});
+  if(!KITS.length){ $("refs").innerHTML='<div class="vacio">Todavía no tienes referidores. Genera tu primer kit en la pestaña <b>Nuevo kit</b> y aparecerá aquí.</div>'; return; }
+  $("refs").innerHTML=KITS.map(function(k){
+    var ls=LEADS.filter(function(x){return x.kit_codigo===k.codigo;});
+    var em=ls.filter(function(x){return x.estado==="emitido";}), u=em.reduce(function(a,x){return a+(Number(x.unidades_activadas)||0);},0);
+    var d=dias(k.created_at), ult=ls.length?Math.min.apply(null,ls.map(function(x){return dias(x.created_at);})):null;
+    var alerta="";
+    if(d>90) alerta='<span class="chip off">Piloto terminado: decide si se extiende</span>';
+    else if(!ls.length&&d>=14) alerta='<span class="chip warn">Sin referidos en '+d+' días: llámalo</span>';
+    else if(ult!==null&&ult>=30) alerta='<span class="chip warn">Último referido hace '+ult+' días</span>';
+    var chips='<span class="chip">'+ls.length+' referido'+(ls.length===1?'':'s')+'</span><span class="chip'+(em.length?' ok':'')+'">'+em.length+' emitido'+(em.length===1?'':'s')+'</span><span class="chip">'+(u?u+' unidades':'— unidades')+'</span><span class="chip">'+(u?usd(u*BASE_USD)+' est.':'$ —')+'</span>'+alerta;
+    var filas=ls.map(function(x){
+      return '<div class="lead" data-id="'+esc(String(x.id))+'"><div class="ln"><b>'+esc(x.cliente)+'</b> · '+(x.unidades||"—")+' u · '+fFecha(x.created_at)+'</div>'+
+        '<select aria-label="Estado" data-act="estado">'+ESTADOS.map(function(e){return '<option value="'+e[0]+'"'+(e[0]===x.estado?' selected':'')+'>'+e[1]+'</option>';}).join("")+'</select>'+
+        '<input type="number" min="0" max="999" aria-label="Unidades activadas" placeholder="u. act." data-act="uact" value="'+(x.unidades_activadas==null?'':x.unidades_activadas)+'"'+(x.estado==="emitido"?'':' hidden')+'></div>';
+    }).join("");
+    return '<div class="ref" data-kit="'+esc(k.codigo)+'"><div class="ref-h"><div><b>'+esc(k.referidor_nombre)+'</b>'+(k.referidor_empresa?' · '+esc(k.referidor_empresa):'')+
+      '<small>'+esc(k.codigo)+' · ingresó el '+fFecha(k.created_at)+' ('+d+' días)'+(varios?' · '+esc(k.asesor_nombre):'')+'</small></div>'+
+      '<span style="display:flex;gap:6px;flex-wrap:wrap"><a class="btn2" target="_blank" rel="noopener" href="https://wa.me/'+waNum(k.referidor_whatsapp)+'?text='+encodeURIComponent("Hola "+k.referidor_nombre+", ¿cómo vas? Recuerda que por cada unidad que se active ganas desde $150. ¿Tienes algún cliente con camión o negocio que necesite seguro esta semana?")+'">Escribirle</a>'+
+      '<button class="btn2" type="button" data-act="nuevo">+ Referido</button></span></div>'+
+      '<div class="chips">'+chips+'</div>'+
+      '<div class="addlead" hidden><input type="text" maxlength="80" placeholder="Cliente referido" data-f="cliente" aria-label="Cliente referido"><input type="number" min="1" max="999" placeholder="Unidades" data-f="unidades" aria-label="Unidades"><button class="btn2" type="button" data-act="guardar">Guardar</button></div>'+
+      (filas?'<div class="leads">'+filas+'</div>':'')+'</div>';
+  }).join("");
+}
+async function nuevoLead(box){
+  var cliente=box.querySelector('[data-f=cliente]').value.trim(), unidades=parseInt(box.querySelector('[data-f=unidades]').value,10)||null;
+  var codigo=box.closest(".ref").getAttribute("data-kit");
+  if(!cliente){toast("Escribe el nombre del cliente");return;}
+  if(DEMO){ LEADS.unshift({id:"d"+Date.now(),kit_codigo:codigo,cliente:cliente,unidades:unidades,estado:"recibido",unidades_activadas:null,created_at:new Date().toISOString()}); pintarSeg(); toast("Referido registrado"); return; }
+  var r=await sb.rpc("kit_lead_registrar",{p_codigo:codigo,p_cliente:cliente,p_unidades:unidades});
+  if(r.error){toast("No se pudo guardar: "+r.error.message);return;}
+  toast("Referido registrado"); cargarSeg();
+}
+async function cambiarLead(row,estado,uact){
+  var id=row.getAttribute("data-id"), x=LEADS.find(function(l){return String(l.id)===id;}); if(!x)return;
+  if(estado==="emitido"&&(uact===null||uact===undefined||isNaN(uact))) uact=x.unidades_activadas!=null?x.unidades_activadas:(x.unidades||null);
+  if(estado!=="emitido") uact=null;
+  if(!DEMO){ var r=await sb.rpc("kit_lead_estado",{p_id:Number(id),p_estado:estado,p_unidades_activadas:uact}); if(r.error){toast("No se pudo actualizar: "+r.error.message);pintarSeg();return;} }
+  x.estado=estado; x.unidades_activadas=uact; pintarSeg(); toast("Actualizado");
+}
+document.addEventListener("click",function(ev){
+  var a=ev.target&&ev.target.getAttribute&&ev.target.getAttribute("data-act"); if(!a)return;
+  var ref=ev.target.closest(".ref"); if(!ref)return;
+  if(a==="nuevo"){var b=ref.querySelector(".addlead"); b.hidden=!b.hidden; if(!b.hidden)b.querySelector("input").focus();}
+  if(a==="guardar") nuevoLead(ref.querySelector(".addlead"));
+});
+document.addEventListener("change",function(ev){
+  var a=ev.target&&ev.target.getAttribute&&ev.target.getAttribute("data-act"); if(a!=="estado"&&a!=="uact")return;
+  var row=ev.target.closest(".lead"), est=row.querySelector("[data-act=estado]").value, u=parseInt(row.querySelector("[data-act=uact]").value,10);
+  cambiarLead(row,est,a==="estado"&&est==="emitido"&&isNaN(u)?undefined:u);
+});
+function verTab(t){ var seg=t==="seg"; $("tabNuevo").hidden=seg; $("tabSeg").hidden=!seg; $("tbNuevo").classList.toggle("on",!seg); $("tbSeg").classList.toggle("on",seg); if(seg)pintarSeg(); }
+$("tbNuevo").addEventListener("click",function(){verTab("nuevo");});
+$("tbSeg").addEventListener("click",function(){verTab("seg");});
+window.__KR={generar:generar,datos:datos,verTab:verTab};
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",arrancar); else arrancar();
+})();
+</script>
+
+<script>
+(function(){
+"use strict";
+var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
+var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
+var PGV_ARCHIVO="kit-referidos.html";
+var PGV_VERSION=1; // v1 - Kit de Referidos: firma desde v_personas, tarjeta PNG, PDFs estampados, ZIP, textos para copiar y pestaña Seguimiento (referidores, referidos, conversión, unidades)
+if(/[?&]demo=1\b/.test(location.search)||window.KR_DEMO===true)return;
+try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
+function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
+  if(document.getElementById('pgvBar'))return;
+  var b=document.createElement('div');
+  b.id='pgvBar';
+  b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:#FFB400;color:#0D3040;font:600 13px Arial,Helvetica,sans-serif;padding:10px 16px;display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.18);';
+  b.innerHTML='Hay una versión nueva de esta página. <button id="pgvBtn" type="button" style="font:700 13px Arial,Helvetica,sans-serif;background:#0D3040;color:#fff;border:none;border-radius:6px;padding:7px 14px;cursor:pointer;">Actualizar ahora</button>';
+  document.body.appendChild(b);
+  document.getElementById('pgvBtn').addEventListener('click',function(){location.reload(true);});
+}
+function pgvRun(){
+  try{
+    var c=window.supabase.createClient(PGV_URL,PGV_KEY,{db:{schema:'portal'}});
+    c.from('app_versiones').select('version').eq('archivo',PGV_ARCHIVO).maybeSingle().then(function(r){
+      if(!r||r.error||!r.data)return;
+      if(Number(r.data.version)>PGV_VERSION)pgvBanner();
+    });
+  }catch(e){}
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(pgvRun,400);});
+else setTimeout(pgvRun,400);
+setInterval(pgvRun,600000);
+})();
+</script>
+</body>
+</html>
