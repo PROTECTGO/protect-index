@@ -38,6 +38,10 @@
   .entrada-label{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);font-size:9px;font-weight:700;font-family:Montserrat,sans-serif}
   .puesto{width:80px;height:92px;border:2px solid var(--teal);border-radius:10px;background:var(--menta2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;position:relative;transition:.15s}
   .puesto.vent{border-color:var(--teal2);background:var(--menta)}
+  .puesto.fijo{border-color:#D9A520;background:#FBF1D8}
+  .puesto.fijo .num{color:#8A6A14}
+  .lado{font-size:10px;font-weight:700;font-family:Montserrat,sans-serif;color:#8A6A14;letter-spacing:1px;text-align:center;margin:-2px 0 6px}
+  .fila-dir{display:flex;justify-content:flex-start;padding-left:60px;margin:14px 0 30px}
   .puesto .num{position:absolute;top:3px;left:6px;font-size:9px;font-weight:700;font-family:Montserrat,sans-serif;color:var(--teal2)}
   .quitar-btn{position:absolute;top:2px;right:4px;width:17px;height:17px;border-radius:50%;border:none;background:#c0392b;color:#fff;font-size:10px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;z-index:2}
   .quitar-btn:hover{background:#a93226}
@@ -82,14 +86,14 @@
     <a class="volver" href="index.html">&#8592; Volver al Portal</a><br>
     <span class="badge">MAPA DE PUESTOS · ProtectGo</span>
     <h1>Oficina · Distribución mensual</h1>
-    <div class="sub">Brahiam mueve las fotos cada mes al rotar puestos. El resto del equipo puede consultar quién está dónde.</div>
+    <div class="sub">Brahian mueve las fotos cada mes al rotar puestos. El resto del equipo puede consultar quién está dónde.</div>
   </div>
   <div class="who">
     <span id="whoLabel">Solo consulta</span>
     <input id="emailInput" type="email" placeholder="correo" style="width:150px">
     <input id="passInput" type="password" placeholder="contraseña" style="width:110px">
     <button onclick="loginBrahiam()">Entrar</button>
-    <button id="logoutBtn" onclick="logout()" style="display:none;background:#8aa3ac">Salir</button>
+    <button id="logoutBtn" onclick="logout()" style="display:none;background:#8aa3ac">Salir de edición</button>
     <span id="rolePill" class="pill view" style="display:none"></span>
   </div>
 </div>
@@ -97,6 +101,7 @@
   <div class="planos">
     <div class="oficina of1">
       <div class="of-title">OFICINA 1</div>
+      <div class="lado">LADO BRAHIAN</div>
       <div class="ventanal"></div>
       <div class="zona-label">VENTANAL 1</div>
       <div class="fila-v">
@@ -117,10 +122,15 @@
         </div>
         <div class="pasillo">PASILLO</div>
       </div>
+      <div class="zona-label" style="text-align:left;padding-left:40px">PUESTO FIJO · DIRECCIÓN COMERCIAL</div>
+      <div class="fila-dir">
+        <div class="puesto fijo" data-id="DIR1"><span class="num">BRAHIAN</span></div>
+      </div>
       <div class="entrada"></div><div class="entrada-label">ENTRADA 1</div>
     </div>
     <div class="oficina of2">
       <div class="of-title">OFICINA 2</div>
+      <div class="lado">LADO SALCEDO</div>
       <div class="ventanal"></div>
       <div class="zona-label">VENTANAL 2</div>
       <div class="fila-v">
@@ -132,13 +142,12 @@
       <div class="cuerpo">
         <div class="pasillo">PASILLO</div>
         <div>
-          <div class="zona-label">BAHÍA 2 · 5+5</div>
+          <div class="zona-label">BAHÍA 2 · 3+3</div>
           <div class="bahia">
             <div class="col2"><div class="puesto" data-id="F5"><span class="num">F5</span></div><div class="puesto" data-id="P5"><span class="num">P5</span></div></div>
             <div class="col2"><div class="puesto" data-id="F6"><span class="num">F6</span></div><div class="puesto" data-id="P6"><span class="num">P6</span></div></div>
-            <div class="col2"><div class="puesto" data-id="F7"><span class="num">F7</span></div><div class="puesto" data-id="P7"><span class="num">P7</span></div></div>
-            <div class="col2"><div class="puesto" data-id="F8"><span class="num">F8</span></div><div class="puesto" data-id="P8"><span class="num">P8</span></div></div>
-            <div class="col2"><div class="puesto" data-id="F9"><span class="num">F9</span></div><div class="puesto" data-id="P9"><span class="num">P9</span></div></div>
+            <div class="col2"><div class="puesto fijo" data-id="F7"><span class="num">SALCEDO</span></div><div class="puesto" data-id="P7"><span class="num">P7</span></div></div>
+            <!-- F8, P8, F9, P9 deshabilitados (oct-2026): ya no existen en la oficina -->
           </div>
         </div>
       </div>
@@ -221,7 +230,7 @@ function render(){
     ? (seleccionado
         ? 'Foto seleccionada: toca el puesto (o "banca") donde quieres ponerla.'
         : 'Toca una foto para seleccionarla y luego toca el puesto donde quieres ponerla. Para quitar a alguien de un puesto, toca la ✕ roja de su foto. Los cambios se guardan al instante y quedan en el historial.')
-    : 'Modo solo consulta. Si necesitas mover a alguien, pídeselo a Brahiam.';
+    : 'Modo solo consulta. Si necesitas mover a alguien, pídeselo a Brahian.';
 }
 
 function personEl(cid){
@@ -288,43 +297,65 @@ document.getElementById('banca').addEventListener('click', async ev=>{
   await moverA(cid, null);
 });
 
+// v6: el perfil maestro siempre puede mover, además de los correos de mapa_admins.
+const MAESTRO = 'sales@protectgoservices.com';
+let sesionCorreo = '';   // correo de la sesión del portal (si la hay)
+let salioDeEdicion = false; // si la persona tocó "Salir de edición", no la volvemos a meter sola
+function puedeMover(email){ email = (email||'').toLowerCase(); return email === MAESTRO || admins.includes(email); }
+
+function pintarBarra(){
+  const conSesion = !!sesionCorreo;
+  // Si ya hay sesión del portal, el login de la barra sobra.
+  document.getElementById('emailInput').style.display = conSesion ? 'none' : 'inline-block';
+  document.getElementById('passInput').style.display = conSesion ? 'none' : 'inline-block';
+  document.querySelector('.who button[onclick="loginBrahiam()"]').style.display =
+    (conSesion && !puedeMover(sesionCorreo)) || puedoEditar ? 'none' : 'inline-block';
+  document.querySelector('.who button[onclick="loginBrahiam()"]').textContent =
+    conSesion ? 'Editar' : 'Entrar';
+  document.getElementById('logoutBtn').style.display = puedoEditar ? 'inline-block' : 'none';
+  const pill = document.getElementById('rolePill');
+  pill.style.display = 'inline-block';
+  if(puedoEditar){ pill.textContent = 'Editando como ' + miCorreo; pill.className = 'pill edit'; }
+  else { pill.textContent = conSesion ? 'Solo consulta · ' + sesionCorreo : 'Solo consulta'; pill.className = 'pill view'; }
+  document.getElementById('whoLabel').textContent = '';
+}
+function activarEdicion(email){
+  miCorreo = email.toLowerCase(); puedoEditar = true;
+  pintarBarra(); render();
+}
+// Entra solo con la sesión del portal: sin pedir contraseña otra vez.
+function usarSesion(session){
+  sesionCorreo = (session && session.user && session.user.email ? session.user.email : '').toLowerCase();
+  if(sesionCorreo && puedeMover(sesionCorreo) && !salioDeEdicion){ activarEdicion(sesionCorreo); return; }
+  if(!sesionCorreo){ miCorreo = ''; puedoEditar = false; seleccionado = null; }
+  pintarBarra(); render();
+}
+
 async function loginBrahiam(){
+  // Con sesión del portal, el botón dice "Editar" y vuelve a entrar sin contraseña.
+  if(sesionCorreo){
+    salioDeEdicion = false;
+    if(puedeMover(sesionCorreo)) activarEdicion(sesionCorreo);
+    else toast('Tu usuario no tiene permiso para mover puestos');
+    return;
+  }
   const email = document.getElementById('emailInput').value.trim().toLowerCase();
   const pass = document.getElementById('passInput').value;
   if(!email || !pass){ toast('Escribe correo y contraseña'); return; }
-  if(!admins.includes(email)){
+  if(!puedeMover(email)){
     toast('Este correo no tiene permiso de edición aquí');
     return;
   }
-  const {data, error} = await sb.auth.signInWithPassword({email, password: pass});
+  const {error} = await sb.auth.signInWithPassword({email, password: pass});
   if(error){ toast('Contraseña incorrecta'); return; }
-  miCorreo = email;
-  puedoEditar = true;
-  document.getElementById('emailInput').style.display = 'none';
-  document.getElementById('passInput').style.display = 'none';
-  document.querySelector('.who button[onclick="loginBrahiam()"]').style.display = 'none';
-  document.getElementById('logoutBtn').style.display = 'inline-block';
-  const pill = document.getElementById('rolePill');
-  pill.style.display = 'inline-block';
-  pill.textContent = 'Editando como ' + email;
-  pill.className = 'pill edit';
-  document.getElementById('whoLabel').textContent = '';
-  render();
+  document.getElementById('passInput').value = '';
+  // onAuthStateChange llama a usarSesion() y activa la edición.
 }
-async function logout(){
-  await sb.auth.signOut();
-  miCorreo = ''; puedoEditar = false; seleccionado = null;
-  document.getElementById('emailInput').style.display = 'inline-block';
-  document.getElementById('passInput').style.display = 'inline-block';
-  document.querySelector('.who button[onclick="loginBrahiam()"]').style.display = 'inline-block';
-  document.getElementById('logoutBtn').style.display = 'none';
-  document.getElementById('emailInput').value=''; document.getElementById('passInput').value='';
-  document.getElementById('whoLabel').textContent = 'Solo consulta';
-  const pill = document.getElementById('rolePill');
-  pill.style.display = 'inline-block';
-  pill.textContent = 'Solo consulta';
-  pill.className = 'pill view';
-  render();
+// "Salir de edición" ya NO cierra la sesión del portal (antes lo hacía).
+function logout(){
+  salioDeEdicion = true;
+  puedoEditar = false; seleccionado = null; miCorreo = '';
+  pintarBarra(); render();
 }
 
 async function loadHistorial(){
@@ -346,6 +377,9 @@ async function loadHistorial(){
 
 (async function init(){
   await cargarTodo();
+  const r = await sb.auth.getSession();
+  usarSesion(r && r.data ? r.data.session : null);
+  sb.auth.onAuthStateChange(function(evt, session){ usarSesion(session); });
 })();
 </script>
 <script>
@@ -354,7 +388,7 @@ async function loadHistorial(){
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="mapa-puestos.html";
-var PGV_VERSION=5; // v5 - Protect Index: las direcciones internas del sitio pasan a relativas (el sitio ya no depende de como se llame el repo). Las que viajan por correo (recuperar contrasena, fotos de firma, sello de RRHH) quedan absolutas apuntando a protect-index. // Vista Maestra Ronda 1: banner "ver como" (ver-como-helper.js)
+var PGV_VERSION=6; // v6 - Puestos reales (oct-2026): lado Brahian / lado Salcedo, puesto fijo de Brahian (DIR1) en Oficina 1, F7 = puesto fijo de Salcedo, F8-P8-F9-P9 deshabilitados (Bahia 2 queda 3+3). Entra solo con la sesion del portal (ya no pide contrasena si ya entraste); sales@ es perfil maestro y siempre puede mover; "Salir de edicion" ya no cierra la sesion de todo el portal. // v5 - Protect Index: las direcciones internas del sitio pasan a relativas (el sitio ya no depende de como se llame el repo). Las que viajan por correo (recuperar contrasena, fotos de firma, sello de RRHH) quedan absolutas apuntando a protect-index. // Vista Maestra Ronda 1: banner "ver como" (ver-como-helper.js)
 function pgvBanner(){
   if(document.getElementById('pgvBar'))return;
   var b=document.createElement('div');
