@@ -1,5 +1,6 @@
 /* ============================================================================
- * pg-novedades.js  ·  Widget lector de Novedades ProtectGo  ·  v4.7
+ * pg-novedades.js  ·  Widget lector de Novedades ProtectGo  ·  v4.8
+ * v4.8 (2-oct-2026): carga también pg-destellos.js v1 (lo personal no leído, destacado al abrir)
  * v4.7 (2-oct-2026): carga también pg-volver.js v1 ("← Volver al Index" igual en todas)
  * v4.6 (1-oct-2026): carga pg-sombra.js v2 (el muelle: bolita de la meta + top del mes)
  *   en todas las herramientas que cargan este archivo, y expone window.pgNovedadesCliente.
@@ -2210,7 +2211,7 @@
     esperar();
   };
 
-  console.log('[pg-novedades] v4.7 activo — tema configurable + lotes + reacciones + muelle de la meta y el top + volver al Index');
+  console.log('[pg-novedades] v4.8 activo — tema configurable + lotes + reacciones + muelle + volver al Index + destellos personales');
 })();
 
 /* ============================================================================
@@ -2268,6 +2269,7 @@
     var cargar = function () {
       uno('pg-sombra.js', '__pgSombraLista', 'pgSombraLoader');          // v4.6: el muelle
       uno('pg-volver.js', '__pgVolverListo', 'pgVolverLoader');          // v4.7: volver al Index
+      uno('pg-destellos.js', '__pgDestellosListo', 'pgDestellosLoader'); // v4.8: lo personal, a la vista
     };
     if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', cargar); }
     else { cargar(); }
