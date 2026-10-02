@@ -17,6 +17,12 @@
    Nada más. Si la RPC falla o la persona no es asesor, no se pinta nada
    y la herramienta sigue igual (fail-silent, nunca fail-loud).
 
+   v2 (1-oct-2026): al lado de la métrica, las caritas de los mejores del mes
+   que cerró (portal.top_mes_vigente: el último top que publicó el robot del
+   primer día hábil). Chiquitas, sin texto; el nombre y el puesto salen al pasar
+   el mouse. Además pg-novedades.js v4.6 la carga sola en las herramientas que
+   no la tenían (no en el Index: allá está el anillo grande del saludo).
+
    NO escribe nada de negocio. Lo único que registra es la apertura de
    Mi proceso desde aquí (portal.aperturas), para saber si la sombra
    sirve de verdad.
@@ -83,12 +89,51 @@
       '#pgSombra b{font:700 13px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:-.01em;}' +
       '#pgSombra .pgs-de{color:#9FB2BF;font-weight:600;}' +
       '#pgSombra .pgs-alerta{color:#F0C55A;font-weight:700;}' +
+      '#pgSombra .pgs-top{display:flex;align-items:center;padding-left:10px;margin-left:2px;border-left:1px solid #35566A;}' +
+      '#pgSombra .pgs-top svg{width:14px;height:14px;color:#2DBFA3;flex:0 0 14px;margin-right:6px;}' +
+      '#pgSombra .pgs-cara{width:22px;height:22px;flex:0 0 22px;border-radius:50%;background:#35566A center/cover no-repeat;' +
+        'box-shadow:0 0 0 2px #1B2D3A;margin-left:-6px;display:flex;align-items:center;justify-content:center;' +
+        'font:800 8px/1 Inter,system-ui,sans-serif;color:#fff;}' +
+      '#pgSombra .pgs-cara:first-of-type{margin-left:0;}' +
+      '#pgSombra .pgs-cara.f{box-shadow:0 0 0 2px #1B2D3A,0 0 0 3px #D9A520;}' +
+      '#pgSombra .pgs-cara.p{box-shadow:0 0 0 2px #1B2D3A,0 0 0 3px #2DBFA3;}' +
       '@keyframes pgsLate{0%{transform:scale(1)}35%{transform:scale(1.09)}100%{transform:scale(1)}}' +
       '#pgSombra.pgs-late{animation:pgsLate .9s ease 1;}' +
       '@media (max-width:640px){#pgSombra{right:12px;bottom:12px;padding:6px 12px 6px 6px;}' +
         '#pgSombra .pgs-texto{display:none;}}' +
       '@media print{#pgSombra{display:none!important;}}';
     document.head.appendChild(st);
+  }
+
+  /* v2 · Las caritas del top del mes (top_mes_vigente). Solo nombre/foto/puesto. */
+  function caritasTop(t) {
+    var gente = (t && Array.isArray(t.personas)) ? t.personas.slice(0, 6) : [];
+    if (!gente.length) return '';
+    var titulo = 'Los mejores de ' + esc(t.mesTxt || 'el mes') + ': ' + gente.map(function (p) {
+      var pp = Number(p.pos_premium), pf = Number(p.pos_fee);
+      var et = (pp <= 3 && pf <= 3) ? 'doble podio' : (pp <= 3 ? '#' + pp + ' premium' : '#' + pf + ' fee');
+      return esc(p.nombre || '') + ' (' + et + ')';
+    }).join(', ');
+    var caras = gente.map(function (p) {
+      var pp = Number(p.pos_premium), pf = Number(p.pos_fee);
+      var cls = (pp <= 3) ? 'p' : 'f';
+      var foto = String(p.foto || '');
+      var ini = String(p.nombre_completo || p.nombre || '').trim().split(/\s+/).slice(0, 2)
+                  .map(function (x) { return x.charAt(0); }).join('').toUpperCase();
+      return /^https:\/\/[^"'()\s]+$/.test(foto)
+        ? '<span class="pgs-cara ' + cls + '" style="background-image:url(&quot;' + esc(foto) + '&quot;)"></span>'
+        : '<span class="pgs-cara ' + cls + '">' + esc(ini) + '</span>';
+    }).join('');
+    return '<span class="pgs-top" title="' + titulo + '" aria-label="' + titulo + '">'
+      + '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'
+      + '<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/></svg>'
+      + caras + '</span>';
+  }
+  function ponerTop(t) {
+    var b = document.getElementById('pgSombra');
+    if (!b || b.querySelector('.pgs-top')) return;
+    var html = caritasTop(t);
+    if (html) b.insertAdjacentHTML('beforeend', html);
   }
 
   function pintar(d, cli) {
@@ -124,6 +169,7 @@
     });
 
     document.body.appendChild(b);
+    if (global.__pgSombraTop) ponerTop(global.__pgSombraTop);
     // Entrada: rAF no siempre corre si la pestana arranca oculta, asi que va con
     // reloj de respaldo y, si aun asi no entra, se pinta visible a mano. La sombra
     // NUNCA puede quedarse invisible por culpa de la animacion.
@@ -160,11 +206,22 @@
     var cli = cliente();
     if (!cli) return;
 
+    function pedirTop() {
+      try {
+        cli.schema('portal').rpc('top_mes_vigente').then(function (res) {
+          if (!res || res.error || !res.data) return;
+          global.__pgSombraTop = res.data;
+          ponerTop(res.data);
+        }, function () {});
+      } catch (e) { /* sin top: la sombra sigue igual */ }
+    }
+
     var cache = guardado();
-    if (cache && cache.d) { pintar(cache.d, cli); return; }
+    if (cache && cache.d) { pintar(cache.d, cli); pedirTop(); return; }
 
     cli.auth.getSession().then(function (r) {
       if (!(r && r.data && r.data.session)) return;
+      pedirTop();
       cli.rpc('mi_sombra').then(function (res) {
         if (!res || res.error || !res.data) return;   // no es asesor, o no resolvió: sin sombra
         guardar(res.data);
@@ -182,8 +239,8 @@
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () { setTimeout(esperar, 900); });
+    document.addEventListener('DOMContentLoaded', function () { setTimeout(esperar, 250); });
   } else {
-    setTimeout(esperar, 900);
+    setTimeout(esperar, 250);
   }
 })(window);

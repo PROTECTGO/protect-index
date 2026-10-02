@@ -1,5 +1,9 @@
 /* ============================================================================
- * pg-novedades.js  ·  Widget lector de Novedades ProtectGo  ·  v4.5
+ * pg-novedades.js  ·  Widget lector de Novedades ProtectGo  ·  v4.6
+ * v4.6 (1-oct-2026): carga pg-top.js (franja "Los mejores del mes" arriba de cada
+ *   herramienta), carga pg-sombra.js (la bolita de la meta) donde falte, y expone
+ *   window.pgNovedadesCliente. Nada más cambia. Reversa: volver
+ *   a subir la v4.5 (sha256 en ENTREGA_FRANJA_TOP_Y_ANILLO_1OCT.md).
  * ----------------------------------------------------------------------------
  * Archivo COMPARTIDO Y DE ALTO ALCANCE. Se carga en el <head> de 13 páginas
  * SIN defer/async:
@@ -2112,6 +2116,9 @@
     }
     return window.__pgnovAutoCliente;
   }
+  /* v4.6: la franja de los mejores del mes (pg-top.js) usa ESTE mismo cliente de solo
+     lectura, para no abrir un segundo cliente de Supabase en la página. */
+  window.pgNovedadesCliente = pgaCliente;
 
   function pgaDetenerReintento() {
     if (window.__pgnovAutoTimer) {
@@ -2203,7 +2210,7 @@
     esperar();
   };
 
-  console.log('[pg-novedades] v4.5 activo — tema configurable + lotes + reacciones');
+  console.log('[pg-novedades] v4.6 activo — tema configurable + lotes + reacciones + franja del top');
 })();
 
 /* ============================================================================
@@ -2235,3 +2242,47 @@
  *       página tiene un campo raro que dispare falsos positivos, se excluye por
  *       id agregándolo a IDS_LOGIN o ampliando campoExcluido().
  * ==========================================================================*/
+
+/* ============================================================================
+ * v4.6 · Cargador de pg-top.js (franja "Los mejores del mes").
+ * Va al final y FUERA del IIFE: document.currentScript solo existe mientras este
+ * archivo se ejecuta. pg-top.js se busca en la misma carpeta que este archivo.
+ * Si falla, no pasa nada: la franja simplemente no aparece.
+ * ==========================================================================*/
+(function () {
+  try {
+    if (window.__pgTopCargado || document.getElementById('pgTopLoader')) { return; }
+    var src = (document.currentScript && document.currentScript.src) || '';
+    var base = src ? src.replace(/pg-novedades\.js(\?.*)?$/, '') : '';
+    var s = document.createElement('script');
+    s.id = 'pgTopLoader';
+    s.src = base + 'pg-top.js';
+    s.defer = true;
+    (document.head || document.documentElement).appendChild(s);
+  } catch (e) { /* nunca romper la página */ }
+})();
+
+/* v4.6 · La bolita de la meta (pg-sombra.js) en TODAS las herramientas que cargan este
+ * archivo, no solo en las 23 que la tenían. Se decide al terminar de leer la página,
+ * porque el <script src="pg-sombra.js"> de las que ya la traen viene después de este.
+ * No va en el Index (allá está el anillo grande del saludo) ni en Mi proceso (es su destino).
+ * pg-sombra trae su propio candado (__pgSombraLista): dos cargas = una sola bolita. */
+(function () {
+  try {
+    var src = (document.currentScript && document.currentScript.src) || '';
+    var base = src ? src.replace(/pg-novedades\.js(\?.*)?$/, '') : '';
+    var cargar = function () {
+      try {
+        var ruta = location.pathname || '';
+        if (/\/$|index\.html$|gabi-asesor\.html$/i.test(ruta)) { return; }
+        if (window.__pgSombraLista || document.querySelector('script[src*="pg-sombra.js"]')) { return; }
+        var s = document.createElement('script');
+        s.id = 'pgSombraLoader';
+        s.src = base + 'pg-sombra.js';
+        (document.head || document.documentElement).appendChild(s);
+      } catch (e) { /* nada */ }
+    };
+    if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', cargar); }
+    else { cargar(); }
+  } catch (e) { /* nunca romper la página */ }
+})();

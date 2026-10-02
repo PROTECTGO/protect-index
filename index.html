@@ -358,6 +358,29 @@ body{font-family:var(--font-text);color:var(--ink);background:var(--papel);min-h
 .pgh-onda .ejeY{font-family:var(--font-mono);font-size:9px;fill:#7E95A4;}
 .pgh-p .pgh-ring .pct{color:#2DBFA3;} .pgh-p .pgh-ring .l{color:#7E95A4;}
 @media (max-width:1000px){.pgh-onda{display:none;}}
+/* --- v26 · El anillo grande con la cara (la meta que más se nota) --- */
+.pgm{display:flex;flex-direction:column;align-items:center;gap:10px;flex:none;width:200px}
+.pgm-ring{position:relative;width:184px;height:184px}
+.pgm-ring svg{position:absolute;inset:0;width:100%;height:100%}
+.pgm-arco{animation:pgm-llena 1.1s ease-out both}
+@keyframes pgm-llena{from{stroke-dasharray:0 600}}
+.pgm-foto{position:absolute;left:50%;top:50%;width:140px;height:140px;margin:-70px 0 0 -70px;border-radius:50%;
+  object-fit:cover;display:block;background:#1B3A4B;box-shadow:0 6px 18px -6px rgba(0,0,0,.55)}
+.pgm-ini{display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#2DBFA3,#186F5D);
+  color:#fff;font:800 40px var(--font-title)}
+.pgm-pct{position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);background:#0D3040;border:2px solid #24404F;
+  border-radius:999px;padding:5px 12px 4px;font:800 19px/1 var(--font-mono);white-space:nowrap;text-align:center;
+  box-shadow:0 4px 12px -4px rgba(0,0,0,.5)}
+.pgm-pct small{display:block;font:700 8.5px/1.2 var(--font-text);letter-spacing:.12em;text-transform:uppercase;color:#7E95A4;margin-top:2px}
+.pgm-com{font-size:12px;line-height:1.35;color:#CBD6DE;text-align:center;max-width:200px;font-weight:500}
+@media (prefers-reduced-motion:reduce){.pgm-arco{animation:none}}
+@media (max-width:720px){
+  .pgh-p .pgh-der{justify-content:center;width:100%}
+  .pgm{width:100%;max-width:260px;margin:0 auto}
+  .pgm-ring{width:156px;height:156px}
+  .pgm-foto{width:118px;height:118px;margin:-59px 0 0 -59px}
+  .pgm-pct{font-size:17px}
+}
 @media (max-width:720px){
   .pgh-p{grid-template-columns:1fr;padding:20px;gap:18px;}
   .pgh-p .pgh-foto,.pgh-p .pgh-ini{width:54px;height:54px;font-size:18px;}
@@ -2017,6 +2040,46 @@ function anillo(pct,real){
     + 'transform="rotate(-90 56 56)" stroke-dasharray="'+(2*Math.PI*47*pct/100).toFixed(1)+' 999"/>'
     + '</svg><div class="c"><div class="pct">'+(real>999?"999":real)+'%</div><div class="l">DE LA META</div></div></div>';
 }
+/* ---------- v26 · El anillo con la cara ---------------------------------
+   La meta se ve como un anillo grande que se va llenando alrededor de la foto
+   de la persona, con el % en una pastilla y un comentario corto debajo.
+   Mint si va al ritmo del mes (o ya pasó la meta); ámbar #D9A520 si va por
+   detrás del ritmo. El ritmo es el mismo de la onda: meta × días hábiles
+   corridos / días hábiles del mes. */
+function comentarioMeta(h,esEq){
+  var mc=num(h.mc)||0, meta=num(h.meta)||0;
+  if(!meta) return "";
+  var M=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+  var mesTxt=M[(Number(String(h.mes||"").slice(5,7))||1)-1];
+  if(mc>=meta) return esEq?"El equipo ya pasó la meta del mes.":"Meta cumplida: lo que entre ahora es extra.";
+  var hc=num(h.habilesCorridos)||0, hm=num(h.habilesMes)||0;
+  if(hc<=1||!hm) return esEq?("Arranca "+mesTxt+": a buscar "+usd(meta)+"."):("Arranca "+mesTxt+". La primera venta marca el ritmo.");
+  var ritmo=meta*hc/hm;
+  if(mc>=ritmo) return esEq?"El equipo va por delante del ritmo del mes.":"Vas por delante del ritmo del mes. Sostenlo.";
+  return (esEq?"Al equipo le faltan ":"Te faltan ")+usd(ritmo-mc)+" para ir al ritmo del mes.";
+}
+function anilloFoto(h,pct,esEq){
+  var p=Math.max(0,Math.min(100,Number(pct)||0));
+  var mc=num(h.mc)||0, meta=num(h.meta)||0, hc=num(h.habilesCorridos)||0, hm=num(h.habilesMes)||0;
+  var atras = meta>0 && mc<meta && hc>1 && hm>0 && mc < meta*hc/hm;
+  var color = atras ? "#D9A520" : "#2DBFA3";
+  var R=80, C=2*Math.PI*R;
+  var cara = h.foto
+    ? '<img class="pgm-foto" src="'+esc(h.foto)+'" alt="" onerror="this.outerHTML=\'<div class=&quot;pgm-foto pgm-ini&quot;>'+esc(ini(h.nombre))+'</div>\'">'
+    : '<div class="pgm-foto pgm-ini">'+esc(ini(h.nombre))+'</div>';
+  return '<div class="pgm" title="'+(esEq?'Combinada del equipo':'Tu combinada')+' contra la meta del mes">'
+    + '<div class="pgm-ring">'
+    +   '<svg viewBox="0 0 184 184" aria-hidden="true">'
+    +     '<circle cx="92" cy="92" r="'+R+'" fill="none" stroke="#24404F" stroke-width="11"/>'
+    +     '<circle class="pgm-arco" cx="92" cy="92" r="'+R+'" fill="none" stroke="'+color+'" stroke-width="11" stroke-linecap="round" '
+    +       'transform="rotate(-90 92 92)" stroke-dasharray="'+(C*p/100).toFixed(1)+' '+C.toFixed(1)+'"/>'
+    +   '</svg>'
+    +   cara
+    +   '<div class="pgm-pct" style="color:'+color+'">'+(Number(pct)>999?"999":(Number(pct)||0))+'%<small>de la meta</small></div>'
+    + '</div>'
+    + '<div class="pgm-com">'+esc(comentarioMeta(h,esEq))+'</div>'
+    + '</div>';
+}
 function avatar(h){
   return h.foto
     ? '<img class="pgh-foto" src="'+esc(h.foto)+'" alt="" onerror="this.outerHTML=\'<div class=&quot;pgh-ini&quot;>'+esc(ini(h.nombre))+'</div>\'">'
@@ -2054,7 +2117,9 @@ function pintarHero(h){
   var box=document.getElementById("pgHero"); if(!box||!h) return;
   box.classList.add("pgh-v19"); box.classList.remove("pgh-prov");
   ULTIMO_HERO=Date.now();
-  var izq='<div class="pgh-who">'+avatar(h)+'<div style="min-width:0">'
+  var conMeta = (h.tipo==="asesor" || h.tipo==="equipo");
+  // v26: quien tiene meta ve su cara DENTRO del anillo grande de la derecha; a la izquierda solo el saludo.
+  var izq='<div class="pgh-who">'+(conMeta?'':avatar(h))+'<div style="min-width:0">'
     + '<h1>Hola, '+esc(h.primerNombre||"")+'.</h1>'
     + '<div class="pgh-sub">'+hoyLargo()+'</div>';
   var der="";
@@ -2089,7 +2154,7 @@ function pintarHero(h){
       linea += ' <a href="gabi-asesor.html">Ver mi proceso →</a>';
     }
     izq+='<div class="pgh-linea">'+linea+'</div>'+vivo(h);
-    der='<div class="pgh-der">'+ondaSVG(h)+anillo(pct,pct)+'</div>';
+    der='<div class="pgh-der">'+ondaSVG(h)+anilloFoto(h,pct,esEq)+'</div>';
   }else{
     // Quien no vende no tiene por qué ver cifras de ventas. Su portal es su trabajo.
     var sl=num(h.sinLeer)||0;
@@ -2367,7 +2432,7 @@ document.addEventListener("visibilitychange",function(){
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="index.html";
-var PGV_VERSION=25; // v25 - ARRANQUE RAPIDO Y CASILLAS CON VOLUMEN. (1) Un solo cliente de Supabase y un solo aviso de sesion para toda la pagina (pgSB / pgOnSesion): antes habia seis clientes y cada consulta de arranque se hacia dos veces (mis_pantallas, widgets_registro, hora_servidor, mis_marcas_hoy, tareas_kam, novedades_muro). (2) Cero relojes: se quitaron los setTimeout de 60/90/150/220/400/1200 ms y el de 800 ms antes de acomodar las tarjetas; el acomodo arranca en cuanto contestan puertas + orden (Promise.all), no cuando lo dice un reloj. (3) La cuadricula arranca tapada (.pg-cargando) y se destapa UNA vez ya acomodada, fail-open a los 2,5 s: se acabo el parpadeo del orden viejo al nuevo. (4) El saludo oscuro se pinta de inmediato con el nombre del correo y la fecha (sin cifras) y mi_hero lo completa cuando llega. (5) widgets_registro se lee una vez y sirve a mantenimiento y a areas. (6) Fuentes por <link> con preconnect (no @import), preconnect a Supabase y al CDN, preload de supabase-js. (7) Las herramientas de los grupos por area dejan de ser pastillas: casillas con volumen (min 118 px), icono propio y SOLO el nombre, tres por fila y dos en el telefono. La principal y las de apoyo quedan igual. Del lado de la base, en la misma entrega: indice de expresion en bos_registros para es_venta_nueva (mi_hero 5,2 s -> 0,6 s). Se monto encima de la v24 (Firmas Renewals), que queda intacta. // v24 - 1-oct-2026: tarjeta nueva Firmas · Renewals (generador-firmas-renewal.html), visible por pantalla_acceso firmas_renewal (Karen Suaza, renewal@ y dirección). // v23 - tarjeta nueva: Kit de Referidos (kit-referidos.html), visible por pantalla_acceso kit_referidos. // v22 - Protect Index: las direcciones internas del sitio pasan a relativas (el sitio ya no depende de como se llame el repo). Las que viajan por correo (recuperar contrasena, fotos de firma, sello de RRHH) quedan absolutas apuntando a protect-index. // v21 - Amazon Relay entra al portal: la tarjeta apunta a amazon-relay/ (ruta relativa, mismo sitio) en vez del repo aparte de GitHub. El archivo llego con su historia via git subtree, identico al original (sha256 971d0582...b33a). Falta que widgets_registro deje de mandar la URL absoluta de ese widget. // v20 - el hero muestra la combinada (premium + fee x10) con su desglose; antes sumaba premium + fee y mostraba menos de lo que la persona lleva. La onda del mes quedo en la misma combinada y leyendo de bos_v, asi termina exactamente en el numero grande. El desglose lo ve tambien la direccion (hero de equipo) y dice lo que el fee APORTA (fee x10 ya multiplicado), no el fee suelto: las dos cifras de la linea chica suman exacto el numero grande. // v19 - El portal con relieve y el portal de otra persona: saludo por rol (mi_hero: quien tiene meta ve la suya, direccion y el lider ven la del equipo, el resto su nombre y su herramienta), onda del mes, una tarjeta principal que manda, novedades compactas y las herramientas agrupadas por area. Con ?ver_como=<correo> un director abre el portal tal como lo ve esa persona, en solo lectura. REGLA: este numero y portal.app_versiones.version deben ir juntos; si la tabla va adelante del archivo, el verificador recarga el portal en bucle para todo el mundo (paso el 4-sep-2026).
+var PGV_VERSION=26; // v26 - LA META CON CARA: en el saludo, quien tiene meta (asesor) o ve la del equipo (direccion) ve su foto DENTRO de un anillo grande (184 px) que se llena con su % de la meta, mint si va al ritmo del mes y ambar #D9A520 si va detras, con un comentario corto debajo (ritmo = meta x habiles corridos / habiles del mes, el mismo de la onda). La foto de la izquierda se quita para no repetirla. Ademas la franja 'Los mejores del mes' arriba (pg-top.js, la carga pg-novedades.js v4.6). | v25 - ARRANQUE RAPIDO Y CASILLAS CON VOLUMEN. (1) Un solo cliente de Supabase y un solo aviso de sesion para toda la pagina (pgSB / pgOnSesion): antes habia seis clientes y cada consulta de arranque se hacia dos veces (mis_pantallas, widgets_registro, hora_servidor, mis_marcas_hoy, tareas_kam, novedades_muro). (2) Cero relojes: se quitaron los setTimeout de 60/90/150/220/400/1200 ms y el de 800 ms antes de acomodar las tarjetas; el acomodo arranca en cuanto contestan puertas + orden (Promise.all), no cuando lo dice un reloj. (3) La cuadricula arranca tapada (.pg-cargando) y se destapa UNA vez ya acomodada, fail-open a los 2,5 s: se acabo el parpadeo del orden viejo al nuevo. (4) El saludo oscuro se pinta de inmediato con el nombre del correo y la fecha (sin cifras) y mi_hero lo completa cuando llega. (5) widgets_registro se lee una vez y sirve a mantenimiento y a areas. (6) Fuentes por <link> con preconnect (no @import), preconnect a Supabase y al CDN, preload de supabase-js. (7) Las herramientas de los grupos por area dejan de ser pastillas: casillas con volumen (min 118 px), icono propio y SOLO el nombre, tres por fila y dos en el telefono. La principal y las de apoyo quedan igual. Del lado de la base, en la misma entrega: indice de expresion en bos_registros para es_venta_nueva (mi_hero 5,2 s -> 0,6 s). Se monto encima de la v24 (Firmas Renewals), que queda intacta. // v24 - 1-oct-2026: tarjeta nueva Firmas · Renewals (generador-firmas-renewal.html), visible por pantalla_acceso firmas_renewal (Karen Suaza, renewal@ y dirección). // v23 - tarjeta nueva: Kit de Referidos (kit-referidos.html), visible por pantalla_acceso kit_referidos. // v22 - Protect Index: las direcciones internas del sitio pasan a relativas (el sitio ya no depende de como se llame el repo). Las que viajan por correo (recuperar contrasena, fotos de firma, sello de RRHH) quedan absolutas apuntando a protect-index. // v21 - Amazon Relay entra al portal: la tarjeta apunta a amazon-relay/ (ruta relativa, mismo sitio) en vez del repo aparte de GitHub. El archivo llego con su historia via git subtree, identico al original (sha256 971d0582...b33a). Falta que widgets_registro deje de mandar la URL absoluta de ese widget. // v20 - el hero muestra la combinada (premium + fee x10) con su desglose; antes sumaba premium + fee y mostraba menos de lo que la persona lleva. La onda del mes quedo en la misma combinada y leyendo de bos_v, asi termina exactamente en el numero grande. El desglose lo ve tambien la direccion (hero de equipo) y dice lo que el fee APORTA (fee x10 ya multiplicado), no el fee suelto: las dos cifras de la linea chica suman exacto el numero grande. // v19 - El portal con relieve y el portal de otra persona: saludo por rol (mi_hero: quien tiene meta ve la suya, direccion y el lider ven la del equipo, el resto su nombre y su herramienta), onda del mes, una tarjeta principal que manda, novedades compactas y las herramientas agrupadas por area. Con ?ver_como=<correo> un director abre el portal tal como lo ve esa persona, en solo lectura. REGLA: este numero y portal.app_versiones.version deben ir juntos; si la tabla va adelante del archivo, el verificador recarga el portal en bucle para todo el mundo (paso el 4-sep-2026).
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;
