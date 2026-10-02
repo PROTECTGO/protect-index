@@ -1,6 +1,12 @@
 /* ============================================================
-   GABI · pg-sombra.js v2 — el muelle de abajo a la derecha que sigue
-   a la persona por todas las herramientas del portal.  1-oct-2026.
+   GABI · pg-sombra.js v3 — el muelle de abajo a la derecha que sigue
+   a la persona por todas las herramientas del portal.  2-oct-2026.
+
+   v3 (2-oct): la barrita dice de qué mes son las caritas ("TOP SEPTIEMBRE"
+   mientras la bolita va por la meta de octubre); un toque en "Top premium"
+   o en "Top fee" despliega la lista completa del mes (premium + combinada,
+   o fee + pólizas) y otro toque la cierra. La base (top_mes_vigente) ya
+   trae el mes cerrado en vivo aunque el robot no lo haya publicado.
 
    Dos piezas, pegadas, siempre en el mismo sitio:
 
@@ -86,8 +92,44 @@
       '#pgMuelle .pgs-top:last-child{border-radius:16px;border-bottom:0;}' +
       '#pgMuelle .pgs-mes{font:700 9.5px/1 Inter,system-ui,sans-serif;letter-spacing:.06em;color:#7E95A4;white-space:nowrap;' +
         'padding-right:12px;border-right:1px solid #24404F;text-transform:uppercase;}' +
-      '#pgMuelle .pgs-grupo{display:flex;align-items:center;gap:8px;}' +
+      '#pgMuelle .pgs-grupo{display:flex;align-items:center;gap:8px;background:none;border:0;padding:3px 6px;margin:-3px -6px;border-radius:10px;' +
+        'color:inherit;font:inherit;cursor:pointer;transition:background .15s ease;}' +
+      '#pgMuelle .pgs-grupo:hover,#pgMuelle .pgs-grupo.abierto{background:rgba(255,255,255,.08);}' +
       '#pgMuelle .pgs-grupo+.pgs-grupo{margin-left:auto;}' +
+      '#pgMuelle .pgs-grupo .pgs-flecha{width:0;height:0;border-left:3.5px solid transparent;border-right:3.5px solid transparent;' +
+        'border-bottom:4px solid #7E95A4;margin-left:2px;transition:transform .2s ease;}' +
+      '#pgMuelle .pgs-grupo.abierto .pgs-flecha{transform:rotate(180deg);}' +
+      /* el desplegable: la lista completa del mes */
+      '#pgsPanel{background:#0D3040;border-radius:16px 16px 0 0;border-bottom:1px solid #24404F;min-width:330px;max-height:min(62vh,520px);' +
+        'display:flex;flex-direction:column;overflow:hidden;}' +
+      '#pgsPanel .pgsp-cab{display:flex;align-items:center;gap:8px;padding:10px 12px 8px 14px;border-bottom:1px solid #24404F;}' +
+      '#pgsPanel .pgsp-tabs{display:flex;gap:4px;background:#1B2D3A;border-radius:9px;padding:3px;}' +
+      '#pgsPanel .pgsp-tab{background:none;border:0;color:#9FB2BF;font:800 9.5px/1 Montserrat,Inter,system-ui,sans-serif;letter-spacing:.12em;' +
+        'text-transform:uppercase;padding:6px 10px;border-radius:7px;cursor:pointer;}' +
+      '#pgsPanel .pgsp-tab.prem.on{background:#0D3040;color:' + MINT + ';}' +
+      '#pgsPanel .pgsp-tab.fee.on{background:#0D3040;color:' + AMBAR + ';}' +
+      '#pgsPanel .pgsp-mes{margin-left:auto;font:700 9.5px/1 Inter,system-ui,sans-serif;letter-spacing:.06em;color:#7E95A4;text-transform:uppercase;white-space:nowrap;}' +
+      '#pgsPanel .pgsp-x{background:none;border:0;color:#9FB2BF;font:600 18px/1 Inter,system-ui,sans-serif;cursor:pointer;padding:0 2px 0 8px;}' +
+      '#pgsPanel .pgsp-x:hover{color:#fff;}' +
+      '#pgsPanel .pgsp-lista{overflow:auto;padding:6px 8px 8px;overscroll-behavior:contain;}' +
+      '#pgsPanel .pgsp-fila{display:grid;grid-template-columns:20px 30px 1fr auto;align-items:center;gap:8px;padding:6px 6px;border-radius:10px;}' +
+      '#pgsPanel .pgsp-fila:nth-child(odd){background:rgba(255,255,255,.035);}' +
+      '#pgsPanel .pgsp-pos{font:800 11px/1 ui-monospace,SFMono-Regular,Menlo,monospace;color:#7E95A4;text-align:right;}' +
+      '#pgsPanel .pgsp-fila.top3 .pgsp-pos{color:#fff;}' +
+      '#pgsPanel .pgsp-cara{width:30px;height:30px;border-radius:50%;background:' + PISTA + ' center/cover no-repeat;display:flex;align-items:center;' +
+        'justify-content:center;font:800 10px/1 Inter,system-ui,sans-serif;color:#fff;}' +
+      '#pgsPanel.prem .pgsp-fila.n1 .pgsp-cara{box-shadow:0 0 0 2px #0D3040,0 0 0 3.5px ' + MINT + ';}' +
+      '#pgsPanel.fee .pgsp-fila.n1 .pgsp-cara{box-shadow:0 0 0 2px #0D3040,0 0 0 3.5px ' + AMBAR + ';}' +
+      '#pgsPanel .pgsp-nom{display:flex;flex-direction:column;gap:2px;min-width:0;}' +
+      '#pgsPanel .pgsp-nom b{font:700 12.5px/1.15 Inter,system-ui,sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}' +
+      '#pgsPanel .pgsp-nom small{font:600 10.5px/1.15 Inter,system-ui,sans-serif;color:#9FB2BF;white-space:nowrap;}' +
+      '#pgsPanel .pgsp-val{display:flex;flex-direction:column;align-items:flex-end;gap:2px;}' +
+      '#pgsPanel .pgsp-val b{font:700 13px/1.15 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:-.01em;}' +
+      '#pgsPanel.prem .pgsp-fila.top3 .pgsp-val b{color:' + MINT + ';}' +
+      '#pgsPanel.fee .pgsp-fila.top3 .pgsp-val b{color:' + AMBAR + ';}' +
+      '#pgsPanel .pgsp-val small{font:600 10.5px/1.15 Inter,system-ui,sans-serif;color:#9FB2BF;white-space:nowrap;}' +
+      '#pgsPanel .pgsp-vacio{padding:18px 14px;color:#9FB2BF;font-weight:600;text-align:center;}' +
+      '#pgsPanel+.pgs-top{border-radius:0;}' +
       '#pgMuelle .pgs-k{font:800 9.5px/1 Montserrat,Inter,system-ui,sans-serif;letter-spacing:.14em;text-transform:uppercase;white-space:nowrap;}' +
       '#pgMuelle .pgs-grupo.fee .pgs-k{color:' + AMBAR + ';}' +
       '#pgMuelle .pgs-grupo.prem .pgs-k{color:' + MINT + ';}' +
@@ -124,7 +166,10 @@
         '#pgMuelle .pgs-cara{width:22px;height:22px;margin-left:-6px;font-size:8px;}' +
         '#pgSombra{padding:7px 12px 7px 7px;}' +
         '#pgSombra .pgs-texto b{font-size:12.5px;}}' +
-      '@media (max-width:640px){#pgMuelle .pgs-mes{display:none;}}' +
+      '@media (max-width:640px){#pgMuelle .pgs-mes{font-size:8.5px;padding-right:8px;}' +
+        '#pgsPanel{min-width:0;max-height:min(70vh,520px);}' +
+        '#pgsPanel .pgsp-fila{grid-template-columns:18px 26px 1fr auto;gap:6px;}' +
+        '#pgsPanel .pgsp-cara{width:26px;height:26px;}}' +
       '@media (max-width:400px){#pgMuelle .pgs-k{font-size:8.5px;letter-spacing:.08em;}}' +
       '@media (prefers-reduced-motion:reduce){#pgMuelle{transition:none;}}' +
       '@media print{#pgMuelle{display:none!important;}}';
@@ -145,8 +190,10 @@
   }
 
   /* ---------- 1) la barrita del top ---------- */
-  function grupo(cls, titulo, gente, posKey) {
-    var g = el('div', 'pgs-grupo ' + cls);
+  function grupo(cls, titulo, gente, posKey, t) {
+    var g = el('button', 'pgs-grupo ' + cls); g.type = 'button';
+    g.setAttribute('aria-expanded', 'false');
+    g.title = 'Ver ' + titulo.toLowerCase() + ' completo de ' + mesBonito(t.mesTxt);
     g.appendChild(el('span', 'pgs-k', titulo));
     var caras = el('div', 'pgs-caras');
     if (!gente.length) { caras.appendChild(el('span', 'pgs-sin', '—')); }
@@ -161,8 +208,11 @@
       caras.appendChild(c);
     });
     g.appendChild(caras);
+    g.appendChild(el('i', 'pgs-flecha'));
+    g.addEventListener('click', function () { alternarPanel(cls, t, g); });
     return g;
   }
+  function mesBonito(m) { m = String(m || ''); return m.charAt(0).toUpperCase() + m.slice(1); }
   function pintarTop(t) {
     var gente = (t && Array.isArray(t.personas)) ? t.personas : [];
     if (!gente.length || document.getElementById('pgsTop')) return;
@@ -175,14 +225,87 @@
     bar.setAttribute('role', 'note');
     bar.setAttribute('aria-label', 'Los mejores de ' + (t.mesTxt || 'el mes'));
     bar.title = 'Los mejores de ' + (t.mesTxt || 'el mes');
-    var mes = String(t.mesTxt || ''); mes = mes.charAt(0).toUpperCase() + mes.slice(1);
-    var modo = el('span', 'pgs-mes', t.modo === 'en_curso' ? (mes + ' · va ganando') : mes);
+    var mes = mesBonito(t.mesTxt);
+    /* el mes de las caritas, dicho claro: "TOP SEPTIEMBRE" (cerró) o "OCTUBRE · VA GANANDO" (en curso) */
+    var modo = el('span', 'pgs-mes', t.modo === 'en_curso' ? (mes + ' · va ganando') : ('Top ' + mes));
+    modo.title = t.modo === 'en_curso' ? ('Así va ' + mes + ' hasta hoy') : ('Los mejores de ' + mes + ', el mes que cerró');
     bar.appendChild(modo);
-    bar.appendChild(grupo('fee', 'Top fee', fee, 'pos_fee'));
-    bar.appendChild(grupo('prem', 'Top premium', prem, 'pos_premium'));
+    bar.appendChild(grupo('fee', 'Top fee', fee, 'pos_fee', t));
+    bar.appendChild(grupo('prem', 'Top premium', prem, 'pos_premium', t));
     var m = muelle();
     m.insertBefore(bar, m.firstChild);     // siempre arriba de la bolita
   }
+
+  /* ---------- 1b) el desplegable: la lista completa del mes ---------- */
+  var panelAbierto = null;   // 'prem' | 'fee' | null
+  function cerrarPanel() {
+    var p = document.getElementById('pgsPanel'); if (p) p.remove();
+    panelAbierto = null;
+    var m = document.getElementById('pgMuelle');
+    if (m) m.querySelectorAll('.pgs-grupo').forEach(function (g) { g.classList.remove('abierto'); g.setAttribute('aria-expanded', 'false'); });
+  }
+  function alternarPanel(cual, t, boton) {
+    if (panelAbierto === cual) { cerrarPanel(); return; }
+    cerrarPanel();
+    panelAbierto = cual;
+    var m = muelle();
+    var p = el('div', cual); p.id = 'pgsPanel'; p.setAttribute('role', 'dialog');
+    p.setAttribute('aria-label', (cual === 'fee' ? 'Top fee' : 'Top premium') + ' de ' + mesBonito(t.mesTxt));
+
+    var cab = el('div', 'pgsp-cab');
+    var tabs = el('div', 'pgsp-tabs');
+    ['prem', 'fee'].forEach(function (k) {
+      var b = el('button', 'pgsp-tab ' + k + (k === cual ? ' on' : ''), k === 'fee' ? 'Fee' : 'Premium'); b.type = 'button';
+      b.addEventListener('click', function () { if (k !== panelAbierto) { panelAbierto = null; alternarPanel(k, t, boton); } });
+      tabs.appendChild(b);
+    });
+    cab.appendChild(tabs);
+    cab.appendChild(el('span', 'pgsp-mes', t.modo === 'en_curso' ? (mesBonito(t.mesTxt) + ' · hasta hoy') : mesBonito(t.mesTxt)));
+    var x = el('button', 'pgsp-x', '×'); x.type = 'button'; x.title = 'Cerrar'; x.setAttribute('aria-label', 'Cerrar');
+    x.addEventListener('click', cerrarPanel);
+    cab.appendChild(x);
+    p.appendChild(cab);
+
+    var lista = el('div', 'pgsp-lista');
+    var rank = (t && Array.isArray(t.ranking)) ? t.ranking.slice() : [];
+    var posKey = cual === 'fee' ? 'pos_fee' : 'pos_premium';
+    rank.sort(function (a, b) { return Number(a[posKey]) - Number(b[posKey]); });
+    if (!rank.length) lista.appendChild(el('div', 'pgsp-vacio', 'Todavía no hay ventas este mes'));
+    rank.forEach(function (r, i) {
+      var pos = i + 1;
+      var fila = el('div', 'pgsp-fila' + (pos <= 3 ? ' top3' : '') + (pos === 1 ? ' n1' : ''));
+      fila.appendChild(el('span', 'pgsp-pos', pos));
+      var c = el('span', 'pgsp-cara');
+      if (fotoOk(r.foto)) c.style.backgroundImage = 'url("' + r.foto + '")'; else c.textContent = iniciales(r.nombre_completo || r.nombre);
+      fila.appendChild(c);
+      var nom = el('span', 'pgsp-nom');
+      nom.appendChild(el('b', null, r.nombre_completo || r.nombre || '—'));
+      var pol = Number(r.polizas) || 0;
+      var ncli = Number(r.clientes) || 0;
+      nom.appendChild(el('small', null, pol + (pol === 1 ? ' póliza' : ' pólizas') + ' · ' + ncli + (ncli === 1 ? ' cuenta' : ' cuentas')));
+      fila.appendChild(nom);
+      var val = el('span', 'pgsp-val');
+      if (cual === 'fee') {
+        val.appendChild(el('b', null, (Number(r.fee_n) || 0) > 0 ? (r.fee || usd(r.fee_n)) : '—'));
+        val.appendChild(el('small', null, 'fee'));
+      } else {
+        val.appendChild(el('b', null, r.premium || usd(r.premium_n)));
+        val.appendChild(el('small', null, 'combinada ' + (r.mc || usd(r.mc_n))));
+      }
+      fila.appendChild(val);
+      lista.appendChild(fila);
+    });
+    p.appendChild(lista);
+    m.insertBefore(p, m.firstChild);       // arriba de la barrita
+    if (boton) { boton.classList.add('abierto'); boton.setAttribute('aria-expanded', 'true'); }
+    var g2 = m.querySelector('.pgs-grupo.' + cual); if (g2) { g2.classList.add('abierto'); g2.setAttribute('aria-expanded', 'true'); }
+  }
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && panelAbierto) cerrarPanel(); });
+  document.addEventListener('click', function (e) {
+    if (!panelAbierto) return;
+    var m = document.getElementById('pgMuelle');
+    if (m && !m.contains(e.target)) cerrarPanel();
+  });
 
   /* ---------- 2) la bolita de la meta ---------- */
   function colorMeta(d) {
@@ -194,6 +317,8 @@
     var ritmo = habM ? meta * hab / habM : 0;
     return (ritmo > 0 && mc < ritmo) ? AMBAR : MINT;
   }
+  var MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  function mesActualTxt() { return MESES[new Date().getMonth()]; }
   function pintarSombra(d, cli) {
     if (document.getElementById('pgSombra')) return;
     var pct  = Math.max(0, Math.min(100, Number(d.pct) || 0));
@@ -219,7 +344,7 @@
     var txt = el('span', 'pgs-texto');
     var linea = el('span');
     linea.appendChild(el('b', null, usd(d.mc)));
-    linea.appendChild(el('span', 'pgs-de', ' de ' + usd(d.meta)));
+    linea.appendChild(el('span', 'pgs-de', ' de ' + usd(d.meta) + ' · meta ' + mesActualTxt()));
     txt.appendChild(linea);
     var dias = (d.diasSin === null || d.diasSin === undefined) ? null : Number(d.diasSin);
     if ((Number(d.mc) || 0) <= 0) txt.appendChild(el('span', 'pgs-sub rojo', 'Sin ventas este mes · la primera marca el ritmo'));
