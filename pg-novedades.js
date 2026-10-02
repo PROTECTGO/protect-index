@@ -1,5 +1,6 @@
 /* ============================================================================
- * pg-novedades.js  ·  Widget lector de Novedades ProtectGo  ·  v4.6
+ * pg-novedades.js  ·  Widget lector de Novedades ProtectGo  ·  v4.7
+ * v4.7 (2-oct-2026): carga también pg-volver.js v1 ("← Volver al Index" igual en todas)
  * v4.6 (1-oct-2026): carga pg-sombra.js v2 (el muelle: bolita de la meta + top del mes)
  *   en todas las herramientas que cargan este archivo, y expone window.pgNovedadesCliente.
  *   Nada más cambia. Reversa: volver a subir la v4.5 (sha256 dad03e5f…).
@@ -2209,7 +2210,7 @@
     esperar();
   };
 
-  console.log('[pg-novedades] v4.6 activo — tema configurable + lotes + reacciones + muelle de la meta y el top');
+  console.log('[pg-novedades] v4.7 activo — tema configurable + lotes + reacciones + muelle de la meta y el top + volver al Index');
 })();
 
 /* ============================================================================
@@ -2255,14 +2256,18 @@
   try {
     var src = (document.currentScript && document.currentScript.src) || '';
     var base = src ? src.replace(/pg-novedades\.js(\?.*)?$/, '') : '';
-    var cargar = function () {
+    var uno = function (archivo, candado, id) {
       try {
-        if (window.__pgSombraLista || document.querySelector('script[src*="pg-sombra.js"]')) { return; }
+        if (window[candado] || document.querySelector('script[src*="' + archivo + '"]')) { return; }
         var s = document.createElement('script');
-        s.id = 'pgSombraLoader';
-        s.src = base + 'pg-sombra.js';
+        s.id = id;
+        s.src = base + archivo;
         (document.head || document.documentElement).appendChild(s);
       } catch (e) { /* nada */ }
+    };
+    var cargar = function () {
+      uno('pg-sombra.js', '__pgSombraLista', 'pgSombraLoader');          // v4.6: el muelle
+      uno('pg-volver.js', '__pgVolverListo', 'pgVolverLoader');          // v4.7: volver al Index
     };
     if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', cargar); }
     else { cargar(); }
