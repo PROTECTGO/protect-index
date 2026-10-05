@@ -1452,6 +1452,35 @@
   </style>
 
 <!-- ProtectGo · scripts compartidos (recuperacion de clave + novedades en tiempo real) -->
+<script>
+/* v14 (5-oct-2026) - lector UNICO de la seccion 04. Antes, cuatro bucles tomaban "todo lo que no es deducible"
+   como Limit; el input oculto de las casillas (simbolos "8, 9" / reefer "Yes") va despues del Limit y lo pisaba. */
+(function(){
+  var QQ_SYM={"1":"Any auto","2":"Owned autos only","3":"Owned private passenger","4":"Owned other than private","5":"Owned subject to no-fault","6":"Owned subject to UM","7":"Scheduled autos","8":"Hired autos","9":"Non-owned autos","19":"Mobile equipment"};
+  function labelOf(c){ var l=c.querySelector("label"); if(!l) return ""; var n=l.childNodes[0]?l.childNodes[0].nodeValue:null; return (n||l.textContent||"").trim(); }
+  window.__qqLeerCobertura=function(cov){
+    var name=((cov.querySelector(".name")||{}).textContent||"").trim();
+    var tag=((cov.querySelector(".tag")||{}).textContent||"").trim();
+    var limit="",deds=[],syms="",reefer=false;
+    cov.querySelectorAll(".cov-det .campo").forEach(function(d){
+      var lab=labelOf(d).toLowerCase(); var i=d.querySelector("input"); var v=i?String(i.value||"").trim():""; if(!v) return;
+      if(/symbol/.test(lab)) syms=v;
+      else if(/reefer/.test(lab)) reefer=/^yes$/i.test(v);
+      else if(/ded|comprehensive|collision/.test(lab)) deds.push(v);
+      else limit=v;
+    });
+    return {name:name,tag:tag,on:cov.classList.contains("on"),limit:limit,ded:deds.join(" / "),syms:syms,reefer:reefer};
+  };
+  window.__qqCoberturas=function(soloOn){ var out=[]; document.querySelectorAll("#sec-cov .cov").forEach(function(c){ var r=window.__qqLeerCobertura(c); if(!soloOn||r.on) out.push(r); }); return out; };
+  window.__qqDetalleCobertura=function(r){
+    var p=[];
+    if(r&&r.syms){ var cods=String(r.syms).split(/\s*,\s*/).filter(Boolean);
+      if(cods.length) p.push(cods.map(function(c){ return QQ_SYM[c]||("Symbol "+c); }).join(" · ")+" (symbol"+(cods.length>1?"s ":" ")+cods.join(", ")+")"); }
+    if(r&&r.reefer) p.push("Includes reefer breakdown");
+    return p.join(" · ");
+  };
+})();
+</script>
 <script src="pg-novedades.js"></script>
 <script src="pg-sombra.js"></script>
 <script defer src="pg-auth.js"></script>
@@ -2718,6 +2747,7 @@
     #doc-output tbody tr:nth-child(even){background:#fafcfb;}
     #doc-output td.mono{font-family:var(--fm);font-size:11.5px;}
     #doc-output .cov-name{font-weight:600;color:var(--navy);}
+    #doc-output .cov-sub{display:block;font-size:9px;color:var(--muted);margin-top:2px;font-weight:400;}
     #doc-output .cov-pri{font-family:var(--fm);font-size:8.5px;color:var(--teal-2);text-transform:uppercase;letter-spacing:.05em;margin-left:8px;}
     #doc-output .pkg{display:grid;gap:8px;margin-top:4px;}
     #doc-output .an{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--line);border-left:2px solid var(--teal);border-radius:0 6px 6px 0;padding:9px 12px;}
@@ -2792,12 +2822,9 @@
         if(filings.length) op.push({l:"Filings that apply",v:filings.join(" · "),col:3});
 
         var covRows="";
-        document.querySelectorAll("#sec-cov .cov.on").forEach(function(cov){
-          var name=(cov.querySelector(".name")||{}).textContent||""; name=name.trim();
-          var tag=(cov.querySelector(".tag")||{}).textContent||""; tag=tag.trim();
-          var limit="",deds=[];
-          cov.querySelectorAll(".cov-det .campo").forEach(function(d){ var lab=labelOf(d).toLowerCase(); var v=fval(d.querySelector("input")); if(!v) return; if(/ded|comprehensive|collision/.test(lab)){ deds.push(v); } else { limit=v; } });
-          covRows+="<tr><td><span class='cov-name'>"+esc(name)+"</span><span class='cov-pri'>"+esc(tag)+"</span></td><td class='mono num'>"+esc(limit||"—")+"</td><td class='num'>"+esc(deds.join(" / ")||"—")+"</td></tr>";
+        window.__qqCoberturas(true).forEach(function(r){ /* v14: lector unico */
+          var det=window.__qqDetalleCobertura(r);
+          covRows+="<tr><td><span class='cov-name'>"+esc(r.name)+"</span><span class='cov-pri'>"+esc(r.tag)+"</span>"+(det?"<span class='cov-sub'>"+esc(det)+"</span>":"")+"</td><td class='mono num'>"+esc(r.limit||"—")+"</td><td class='num'>"+esc(r.ded||"—")+"</td></tr>";
         });
 
         var unitRows=tblRows("#sec-units",5)+tblRows("#sec-trailers",5);
@@ -3672,14 +3699,8 @@
     /* ---- Construcción: arrastra datos del App MGA ---- */
     function collectCoverages(){
       var out=[];
-      document.querySelectorAll("#sec-cov .cov.on").forEach(function(cov){
-        var name=((cov.querySelector(".name")||{}).textContent||"").trim();
-        var limit="",deds=[];
-        cov.querySelectorAll(".cov-det .campo").forEach(function(d){
-          var lab=labelOf(d).toLowerCase(); var v=fval(d.querySelector("input")); if(!v) return;
-          if(/ded|comprehensive|collision/.test(lab)){ deds.push(v); } else { limit=v; }
-        });
-        out.push({name:name,limit:limit||"—",ded:deds.join(" / ")||"—"});
+      window.__qqCoberturas(true).forEach(function(r){ /* v14: lector unico */
+        out.push({name:r.name,limit:r.limit||"—",ded:r.ded||"—",det:window.__qqDetalleCobertura(r)});
       });
       return out;
     }
@@ -3712,7 +3733,7 @@
         covs.forEach(function(c){
           var st=carrMap[c.name]||{n:"",a:"1"};
           var tr=document.createElement("tr");
-          tr.innerHTML='<td><b>'+esc(c.name)+'</b></td><td class="num">'+esc(c.limit)+'</td><td class="num">'+esc(c.ded)+'</td>'
+          tr.innerHTML='<td><b>'+esc(c.name)+'</b>'+(c.det?'<small class="pv-sub" style="display:block;font-size:10.5px;color:#6b7c80;font-weight:400;margin-top:2px">'+esc(c.det)+'</small>':'')+'</td><td class="num">'+esc(c.limit)+'</td><td class="num">'+esc(c.ded)+'</td>'
             +'<td><div class="pv-carr" data-cov="'+esc(c.name)+'" data-name="'+esc(st.n)+'" data-anon="'+esc(st.a||"1")+'"><span class="val"></span><button type="button" class="csw"></button></div></td>';
           cb.appendChild(tr);
           var cell=tr.querySelector(".pv-carr");
@@ -3968,12 +3989,9 @@
       var filings=[]; document.querySelectorAll("#sec-op .fila-check label").forEach(function(l){ var cb=l.querySelector("input[type=checkbox]"); if(cb&&cb.checked) filings.push(l.textContent.trim()); });
       if(filings.length) op.push(["Filings that apply",filings.join(", ")]);
       var cov=[];
-      document.querySelectorAll("#sec-cov .cov.on").forEach(function(c){
-        var name=((c.querySelector(".name")||{}).textContent||"").trim();
-        var tag=((c.querySelector(".tag")||{}).textContent||"").trim();
-        var limit="",deds=[];
-        c.querySelectorAll(".cov-det .campo").forEach(function(d){ var lab=labelOf(d).toLowerCase(); var v=fval(d.querySelector("input")); if(!v) return; if(/ded|comprehensive|collision/.test(lab)){deds.push(v);}else{limit=v;} });
-        cov.push([name+(tag?"  "+tag.toUpperCase():""), limit||"—", deds.join(" / ")||"—"]);
+      window.__qqCoberturas(true).forEach(function(r){ /* v14: lector unico */
+        var det=window.__qqDetalleCobertura(r);
+        cov.push([r.name+(r.tag?"  "+r.tag.toUpperCase():"")+(det?"\n"+det:""), r.limit||"—", r.ded||"—"]);
       });
       var commodities=tblRows("#sec-commodities",4);
       var safety=pairs("#sec-safety");
@@ -4784,7 +4802,7 @@ pgRevisarNovedades(sb,'general');
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="quick-quote.html";
-var PGV_VERSION=13; // v13 - Protect Index: las direcciones internas del sitio pasan a relativas (el sitio ya no depende de como se llame el repo). Las que viajan por correo (recuperar contrasena, fotos de firma, sello de RRHH) quedan absolutas apuntando a protect-index.
+var PGV_VERSION=14; // v14 - Quick Quote: el limite ya no se pierde al marcar reefer o simbolos (Hired / Non-owned); simbolos y reefer se imprimen debajo de la cobertura en los PDFs. // v13 - Protect Index: las direcciones internas del sitio pasan a relativas (el sitio ya no depende de como se llame el repo). Las que viajan por correo (recuperar contrasena, fotos de firma, sello de RRHH) quedan absolutas apuntando a protect-index.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;
@@ -4933,6 +4951,16 @@ function rows(id,take){ var b=$(id); if(!b) return [];
     return Array.prototype.slice.call(tr.children).map(function(td){ return td.textContent.replace(/\s+/g," ").trim(); }).slice(0,take||9);
   }).filter(function(r){ return r.join("")!==""; });
 }
+function rowsCov(){ /* v14: nombre + detalle (simbolos/reefer) separados del limite */
+  var b=$("pvCovBody"); if(!b) return [];
+  return Array.prototype.slice.call(b.querySelectorAll("tr")).filter(function(tr){ return tr.children.length>=3; }).map(function(tr){
+    var td0=tr.children[0]; var bn=td0.querySelector("b"); var nm=(bn||td0).textContent.replace(/\s+/g," ").trim();
+    var sub=td0.querySelector(".pv-sub"); var det=sub?sub.textContent.replace(/\s+/g," ").trim():"";
+    var cel=function(i){ return tr.children[i]?tr.children[i].textContent.replace(/\s+/g," ").trim():""; };
+    return [nm,cel(1),cel(2),cel(3),det];
+  }).filter(function(r){ return r[0]!==""; });
+}
+window.__qqRowsCov=rowsCov;
 function campoPorLabel(re){ var out="";
   document.querySelectorAll(".campo").forEach(function(c){
     var l=c.querySelector("label"); if(!l||out) return;
@@ -5017,7 +5045,7 @@ window.__pvCarrierMask = window.__pvCarrierMask || {};
 function syncMask(nombre,mask){
   var cov=$("pvCovBody"); if(!cov) return;
   cov.querySelectorAll("tr").forEach(function(tr){
-    var td=tr.children[0]; if(!td||td.textContent.trim()!==nombre) return;
+    var td=tr.children[0]; if(!td||(td.querySelector("b")||td).textContent.trim()!==nombre) return; /* v14: la celda puede traer pv-sub */
     var c=tr.children[3]; var t2=mask+" — confirmed at binding";
     if(c&&c.textContent!==t2) c.textContent=t2;
   });
@@ -5085,7 +5113,10 @@ try{ new MutationObserver(function(){ Object.keys(window.__pvCarrierMask||{}).fo
   function nombreSym(v){
     return v.split(/\s*,\s*/).filter(Boolean).map(function(c){ return NOMBRES[c]?(NOMBRES[c]+" ("+c+")"):c; }).join(" · ");
   }
-  function datosCov(){
+  function datosCov(){ /* v14: lector unico */
+    return window.__qqCoberturas(false).map(function(r){ return {name:r.name,limit:r.limit,syms:r.syms,reefer:r.reefer?"Yes":""}; });
+  }
+  function datosCov_v13_jubilado(){
     var lista=[];
     document.querySelectorAll("#sec-cov .cov").forEach(function(cov){
       var name=(cov.querySelector(".name")||{textContent:""}).textContent.trim(); if(!name) return;
@@ -5102,6 +5133,12 @@ try{ new MutationObserver(function(){ Object.keys(window.__pvCarrierMask||{}).fo
     });
     return lista;
   }
+  function esListaDeSimbolos(s,syms){ /* v14: solo borra si de verdad son los codigos capturados */
+    if(!syms) return false;
+    var a=String(s).split(/\s*,\s*/).filter(Boolean);
+    if(!a.length||!a.every(function(x){ return /^\d{1,2}$/.test(x); })) return false;
+    return a.join(",")===String(syms).split(/\s*,\s*/).filter(Boolean).join(",");
+  }
   function fixTabla(cont){
     if(!cont) return;
     var lista=datosCov();
@@ -5114,14 +5151,11 @@ try{ new MutationObserver(function(){ Object.keys(window.__pvCarrierMask||{}).fo
         var base=actual.split(/\s*·\s*(?:Symbols:|Includes Reefer)/)[0].trim();
         if(base==="—") base="";
         if(/^(Symbols:|Includes Reefer)/.test(base)) base="";
-        if(/^[\d\s,]+$/.test(base)&&base.length<12) base="";  /* eran solo codigos de simbolos */
+        if(esListaDeSimbolos(base,cv.syms)) base="";  /* v14: antes /^[\d\s,]+$/ borraba 1,000,000 */
         if(/^yes$/i.test(base)) base="";
         var limite=cv.limit||base;
-        var partes=[];
-        if(limite) partes.push(limite);
-        if(cv.syms) partes.push("Symbols: "+nombreSym(cv.syms));
-        if(cv.reefer) partes.push("Includes Reefer breakdown");
-        var nuevo=partes.length?partes.join(" · "):"—";
+        /* v14: la celda Limit lleva SOLO el limite; simbolos/reefer van debajo del nombre (pv-sub / cov-sub) */
+        var nuevo=limite||(actual.trim()||"—");
         if(actual!==nuevo) tr.children[1].textContent=nuevo;
       });
     });
@@ -5134,7 +5168,8 @@ try{ new MutationObserver(function(){ Object.keys(window.__pvCarrierMask||{}).fo
     window.__buildDoc.__covFixed=true;
   }
   hook(); setInterval(hook,2000);
-  setInterval(function(){ try{ fixTodo(); }catch(_){} },1500);
+  /* v14 (5-oct-2026): jubilado el setInterval de 1.5 s que reescribia la celda Limit y deshacia las correcciones a mano.
+  setInterval(function(){ try{ fixTodo(); }catch(_){} },1500); */
   window.addEventListener("beforeprint",function(){ try{ fixTodo(); }catch(_){} });
   var origPrint=window.print;
   window.print=function(){ try{ fixTodo(); }catch(_){} return origPrint.apply(this,arguments); };
@@ -5508,7 +5543,7 @@ window.__pvExportPDF = function(save){
     var v=inp?inp.value:(tr.children[1]?tr.children[1].textContent.trim():"");
     if(v&&v!=="—") prem[n]=v;
   });
-  var covBody=rows("pvCovBody",4).map(function(r){ return [r[0]||"",r[3]||"A-rated carrier — confirmed at binding",r[1]||"—",r[2]||"—",prem[r[0]]||"—"]; });
+  var covBody=rowsCov().map(function(r){ return [(r[0]||"")+(r[4]?"\n"+r[4]:""),r[3]||"A-rated carrier — confirmed at binding",r[1]||"—",r[2]||"—",prem[r[0]]||"—"]; });
   y = tabla(d,["Coverage","Carrier","Limit","Deductible","Premium"],covBody,y+2,{rightBold:4});
   y+=8;
   d.setDrawColor(NAVY[0],NAVY[1],NAVY[2]); d.setLineWidth(1.1); d.line(M,y,W-M,y);
@@ -5579,7 +5614,7 @@ window.__pvExportPDF = function(save){
   d.text("Exactly what you are paying for — line by line.",W/2,y+8,{align:"center"});
   y+=30;
   var det=[];
-  rows("pvCovBody",4).forEach(function(r){ det.push([r[0]||"", (r[1]&&r[1]!=="—")?("Limit "+r[1]):"Coverage premium", prem[r[0]]||"—"]); });
+  rowsCov().forEach(function(r){ det.push([r[0]||"", ((r[1]&&r[1]!=="—")?("Limit "+r[1]):"Coverage premium")+(r[4]?" · "+r[4]:""), prem[r[0]]||"—"]); });
   if(taxN>0) det.push(["Taxes & fees","Carrier, MGA and state charges applicable to this program",money(taxN)]);
   if(agN>0){
     var pctS=[0.20,0.25,0.20,0.15,0.20];
@@ -5913,7 +5948,7 @@ window.__pvExportBinder = function(save){
     if(v&&v!=="—") prem[n]=v;
   });
   var reales=window.__pvCarrierReal||{};
-  var covBody=rows("pvCovBody",4).map(function(r){ return [r[0], reales[r[0]]||"________________", r[1]||"—", r[2]||"—", prem[r[0]]||"—"]; });
+  var covBody=window.__qqRowsCov().map(function(r){ return [r[0]+(r[4]?"\n"+r[4]:""), reales[r[0]]||"________________", r[1]||"—", r[2]||"—", prem[r[0]]||"—"]; });
   y = tabla(d,["Coverage","Carrier / MGA","Limit","Ded.","Premium"],covBody,y+2,{carrCol:1,rightBold:4});
   y+=8;
   d.setDrawColor(NAVY[0],NAVY[1],NAVY[2]); d.setLineWidth(1.1); d.line(M,y,W-M,y); y+=12;
