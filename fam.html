@@ -581,7 +581,7 @@ else setTimeout(init,60);
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="fam.html";
-var PGV_VERSION=7; // v6 - Bandeja FAM de Amazon Relay (validar fondos + statement semanal). Antes: v5 - Protect Index: las direcciones internas del sitio pasan a relativas (el sitio ya no depende de como se llame el repo). Las que viajan por correo (recuperar contrasena, fotos de firma, sello de RRHH) quedan absolutas apuntando a protect-index.
+var PGV_VERSION=8; // v8 - Ronda 13: desglose Operyx/ProtectGo por cobro + liquidación mensual a Operyx (MS-YYYY-MM). Antes: v7 - Bandeja FAM de Amazon Relay (validar fondos + statement semanal). Antes: v5 - Protect Index: las direcciones internas del sitio pasan a relativas (el sitio ya no depende de como se llame el repo). Las que viajan por correo (recuperar contrasena, fotos de firma, sello de RRHH) quedan absolutas apuntando a protect-index.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;
@@ -616,7 +616,7 @@ setInterval(pgvCheck,600000);
 </script>
 <script>
 /* =====================================================================
-   FAM · AMAZON RELAY — Centro de conciliación (v7, 29-sep-2026) — nada bloquea: contador + actividad
+   FAM · AMAZON RELAY — Centro de conciliación (v8, 5-oct-2026: split Operyx/ProtectGo + liquidación mensual; v7, 29-sep-2026) — nada bloquea: contador + actividad
    Solo fam@. FAM valida en el banco → la base cierra cobro, viajes,
    invoice y reparto (portal.amazon_validar_fondos). Statement semanal
    (portal.amazon_generar_statement; también corre solo los lunes).
@@ -627,7 +627,8 @@ setInterval(pgvCheck,600000);
   var KEY_ = "sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
   var FAM = 'fam@protectgoservices.com';
   var sbA = null, ME = '', CARGANDO = false;
-  var D = { cobros: [], cli: {}, loads: [], inv: [], st: [], rep: {}, regla: null, act: [] };
+  var D = { cobros: [], cli: {}, loads: [], inv: [], st: [], rep: {}, regla: null, reglaSrv: null, act: [], pago: '' };
+  var ST_TAB = null; /* 'semanal' | 'mensual' */
   var PV = { q: '', desde: '', hasta: '', metodo: '' }; /* filtros de Pagos validados */
   var ACT_ABIERTA = false;
   var ABIERTO = {}; /* id → 'viajes' | 'validar' | 'devolver' */
@@ -681,10 +682,10 @@ setInterval(pgvCheck,600000);
     if (!sbA || CARGANDO) return; CARGANDO = true;
     Promise.all([
       sbA.from('amazon_cobros').select('*').in('estado', ['enviado_fam', 'fondos_validados', 'pagado']).order('created_at', { ascending: true }),
-      sbA.from('amazon_clientes').select('id,empresa,dot,mc'),
+      sbA.from('amazon_clientes').select('id,empresa,dot,mc,pct_operyx,esquema_tipo,esquema_pct'),
       sbA.from('amazon_loads').select('id,cobro_id,load_id_externo,fecha_hora,tarifa,agencia_monto').not('cobro_id', 'is', null),
       sbA.from('amazon_invoices').select('id,numero,cobro_id,estado,total'),
-      sbA.from('amazon_statements').select('*').order('created_at', { ascending: false }).limit(26),
+      sbA.from('amazon_statements').select('*').order('created_at', { ascending: false }).limit(40),
       sbA.from('amazon_reglas_reparto').select('*'),
       sbA.from('amazon_repartos').select('cobro_id,operario,utilidad'),
       sbA.rpc('amazon_actividad', { p_area: 'fam', p_limite: 60 })
@@ -696,9 +697,11 @@ setInterval(pgvCheck,600000);
       D.cli = {}; (R[1].data || []).forEach(function (c) { D.cli[c.id] = c; });
       D.loads = R[2].data || []; D.inv = R[3].data || []; D.st = R[4].data || [];
       D.regla = (R[5].data || []).find(function (r) { return r.tipo === 'semanal'; }) || null;
+      D.reglaSrv = (R[5].data || []).find(function (r) { return r.tipo === 'servicio'; }) || null;
       D.rep = {}; (R[6].data || []).forEach(function (r) { D.rep[r.cobro_id] = r; });
       D.act = R[7].data || [];
       contador(); pintar();
+      sbA.from('amazon_config').select('clave,texto').eq('clave', 'operyx_pago').then(function (r) { D.pago = (r && !r.error && r.data && r.data[0] && r.data[0].texto) || ''; }, function () { });
     }).catch(function (e) { CARGANDO = false; pintarError(e && e.message ? e.message : e); });
   }
   function contador() {
@@ -712,8 +715,9 @@ setInterval(pgvCheck,600000);
       p = document.createElement('button'); p.type = 'button'; p.id = 'famBarPill'; p.className = 'fam-barpill'; p.setAttribute('data-famtab', 'amz');
       a.parentNode.insertBefore(p, a);
     }
-    p.innerHTML = 'Amazon' + (n ? ' <b>' + n + '</b>' : '') + (nuevos ? ' <i title="' + nuevos + ' novedad' + (nuevos === 1 ? '' : 'es') + ' en Actividad"></i>' : '');
-    p.classList.toggle('on', n > 0 || nuevos > 0);
+    var liq = msPend().length;
+    p.innerHTML = 'Amazon' + (n ? ' <b>' + n + '</b>' : '') + ((nuevos || liq) ? ' <i title="' + (liq ? 'Liquidación Operyx por pagar' : nuevos + ' novedad' + (nuevos === 1 ? '' : 'es') + ' en Actividad') + '"></i>' : '');
+    p.classList.toggle('on', n > 0 || nuevos > 0 || liq > 0);
     p.title = n ? n + ' cobro' + (n === 1 ? '' : 's') + ' por validar en el banco' : 'Sin cobros por validar';
     p.style.display = ME === FAM ? '' : 'none';
   }
@@ -725,26 +729,31 @@ setInterval(pgvCheck,600000);
     var por = D.cobros.filter(function (c) { return c.estado === 'enviado_fam'; });
     var val = D.cobros.filter(function (c) { return c.estado === 'fondos_validados' && !c.statement_id; });
     var sum = function (l) { return l.reduce(function (s, c) { return s + (Number(c.monto) || 0); }, 0); };
-    var ult = D.st[0];
+    var sem = stSemanales(), ult = sem[0], msp = msPend();
     var pct = D.regla ? Number(D.regla.operario_pct) || 0 : null;
+    if (!ST_TAB) ST_TAB = msp.length ? 'mensual' : 'semanal';
     var nuevos = D.act.filter(function (x) { return x.nuevo; }).length;
     a.innerHTML =
       '<div class="kicker">Área Financiera · Amazon Relay</div>' +
       '<h1>Conciliación Amazon Relay</h1>' +
-      '<p class="sub">Aquí se concilian los pagos de Amazon Relay: lo que hay que <b>buscar en el banco</b>, lo ya <b>validado</b> y el <b>statement semanal</b> para el registro de comisiones. Nada te interrumpe: entra cuando el contador lo pida.</p>' +
+      '<p class="sub">Aquí se concilian los pagos de Amazon Relay: lo que hay que <b>buscar en el banco</b>, lo ya <b>validado</b> con su reparto <b>Operyx / ProtectGo</b>, el <b>statement semanal</b> para el registro y la <b>liquidación mensual a Operyx</b>. Nada te interrumpe: entra cuando el contador lo pida.</p>' +
+      msBanner() +
       '<div class="fa-kpis">' +
         kpi('Por validar', por.length ? String(por.length) : '—', por.length ? money(sum(por)) + ' a buscar en el banco' : 'Nada pendiente') +
         kpi('Validados sin statement', val.length ? String(val.length) : '—', val.length ? money(sum(val)) + ' entran al próximo statement' : 'Todo cerrado') +
         kpi('Último statement', ult ? esc(ult.numero) : '—', ult ? money(ult.cobrado) + ' · ' + (ult.estado === 'montado' ? 'montado en el registro' : 'por montar') : 'Aún no hay') +
+        kpi('Liquidación Operyx', msp.length ? money(msp.reduce(function (t, s) { return t + (Number(s.total_operyx) || 0); }, 0)) : '—', msp.length ? msp.map(function (s) { return esc(s.numero); }).join(' · ') + ' · por pagar' : 'Al día') +
       '</div>' +
       '<div class="fa-sec"><div class="fa-sec-t">1 · Por validar <button class="fa-lnk" data-fa="recargar">↻ Actualizar</button></div>' +
         (por.length ? por.map(tarjeta).join('') : '<div class="fa-vacio">No hay cobros esperando validación.</div>') + '</div>' +
       '<div class="fa-sec"><div class="fa-sec-t">2 · Pagos validados <span class="fa-sub">verificar y consolidar contra el banco</span></div>' + pagosValidados() + '</div>' +
-      '<div class="fa-sec"><div class="fa-sec-t">3 · Statements semanales <span class="fa-sub">para el registro de Amazon y las comisiones</span>' + (val.length ? ' <button class="btn sec fa-mini" data-fa="generar">Generar statement ahora</button>' : '') + '</div>' +
-        (D.st.length ? D.st.map(filaStatement).join('') : '<div class="fa-vacio">Todavía no hay statements. El primero se genera solo el lunes siguiente a la primera validación, o con el botón de arriba.</div>') + '</div>' +
+      '<div class="fa-sec"><div class="fa-sec-t">3 · Statements <span class="fa-subtabs"><button type="button" class="' + (ST_TAB === 'semanal' ? 'on' : '') + '" data-fa="st-tab" data-id="semanal">Semanal · registro</button><button type="button" class="' + (ST_TAB === 'mensual' ? 'on' : '') + '" data-fa="st-tab" data-id="mensual">Mensual · liquidación Operyx' + (msp.length ? ' <i></i>' : '') + '</button></span></div>' +
+        (ST_TAB === 'mensual' ? bloqueMensual() :
+          ((val.length ? '<div class="fa-gen"><button class="btn sec fa-mini" data-fa="generar">Generar statement semanal ahora</button></div>' : '') +
+          (sem.length ? sem.map(filaStatement).join('') : '<div class="fa-vacio">Todavía no hay statements. El primero se genera solo el lunes siguiente a la primera validación, o con el botón de arriba.</div>'))) + '</div>' +
       '<div class="fa-sec"><div class="fa-sec-t fa-act-t" data-fa="act-toggle">4 · Actividad ' + (nuevos ? '<span class="famn">' + nuevos + ' nueva' + (nuevos === 1 ? '' : 's') + '</span>' : '') + ' <span class="fa-sub">' + (ACT_ABIERTA ? 'ocultar ▴' : 'ver ▾') + '</span></div>' +
         (ACT_ABIERTA ? actividad() : '') + '</div>' +
-      (pct != null ? '<div class="fa-pie">Reparto vigente: operario ' + pct + ' % · agencia ' + (100 - pct) + ' % (regla de Amazon Relay).</div>' : '');
+      '<div class="fa-pie">Reparto: cada cobro trae el % de su cliente (foto del día en que nace). Si el cliente no tiene % propio aplica la regla general' + (pct != null ? ' ' + pct + '/' + (100 - pct) : '') + ' (Operyx / ProtectGo).</div>';
   }
   /* ---------- 2 · pagos validados: historial buscable ---------- */
   function pvFiltrados() {
@@ -762,7 +771,7 @@ setInterval(pgvCheck,600000);
   function stDe(c) { return c.statement_id ? D.st.find(function (s) { return s.id === c.statement_id; }) : null; }
   function pagosValidados() {
     var L = pvFiltrados();
-    var tot = L.reduce(function (t, c) { var r = D.rep[c.id] || {}; t.c += Number(c.monto) || 0; t.o += Number(r.operario) || 0; t.a += Number(r.utilidad) || 0; return t; }, { c: 0, o: 0, a: 0 });
+    var tot = L.reduce(function (t, c) { var sp = split(c); t.c += Number(c.monto) || 0; t.o += sp.mo; t.a += sp.mp; return t; }, { c: 0, o: 0, a: 0 });
     var hayAlgo = D.cobros.some(function (c) { return c.estado === 'fondos_validados' || c.estado === 'pagado'; });
     var filtros = '<div class="fa-filtros">' +
       '<input id="pvQ" placeholder="Buscar memo, # transacción, cliente, invoice…" value="' + esc(PV.q) + '">' +
@@ -773,16 +782,16 @@ setInterval(pgvCheck,600000);
       '</div>';
     if (!hayAlgo) return '<div class="fa-vacio">Todavía no hay pagos validados. Aparecen aquí apenas valides el primero.</div>';
     if (!L.length) return filtros + '<div class="fa-vacio">Nada coincide con el filtro.</div>';
-    return filtros + '<div class="fa-tbl"><table><tr><th>Pago</th><th>Cliente</th><th>Memo</th><th>Invoice</th><th># Transacción</th><th>Método</th><th class="r">Cobrado</th><th>Statement</th></tr>' +
+    return filtros + '<div class="fa-tbl"><table><tr><th>Pago</th><th>Cliente</th><th>Memo</th><th>Invoice</th><th># Transacción</th><th>Método</th><th class="r">Cobrado</th><th class="r">A Operyx</th><th>Statement</th></tr>' +
       L.map(function (c) { var cl = D.cli[c.cliente_id] || {}, inv = invDe(c), st = stDe(c);
-        return '<tr><td>' + fecha(c.fecha_pago) + '</td><td>' + esc(cl.empresa || '—') + '<div class="fa-meta">DOT ' + esc(cl.dot || '—') + '</div></td><td class="mono">' + esc(memo(c)) + '</td><td class="mono">' + esc(inv ? inv.numero : '—') + '</td><td class="mono">' + esc(c.transaccion || '—') + '</td><td>' + esc(c.metodo_pago || '—') + '</td><td class="r">' + money(c.monto) + '</td><td>' + (st ? '<span class="mono">' + esc(st.numero) + '</span>' + (st.estado === 'montado' ? ' <span class="fa-pill ok">montado</span>' : ' <span class="fa-pill pend">por montar</span>') : '<span class="fa-pill pend">próximo lunes</span>') + '</td></tr>'; }).join('') +
-      '<tr class="tot"><td colspan="6">Total del filtro (' + L.length + ') · operario ' + money(tot.o) + ' · agencia ' + money(tot.a) + '</td><td class="r">' + money(tot.c) + '</td><td></td></tr></table></div>';
+        return '<tr><td>' + fecha(c.fecha_pago) + '</td><td>' + esc(cl.empresa || '—') + '<div class="fa-meta">DOT ' + esc(cl.dot || '—') + '</div></td><td class="mono">' + esc(memo(c)) + '</td><td class="mono">' + esc(inv ? inv.numero : '—') + '</td><td class="mono">' + esc(c.transaccion || '—') + '</td><td>' + esc(c.metodo_pago || '—') + '</td><td class="r">' + money(c.monto) + '</td><td class="r">' + money(split(c).mo) + '<div class="fa-meta">' + r13n(split(c).pct) + ' %</div></td><td>' + (st ? '<span class="mono">' + esc(st.numero) + '</span>' + (st.estado === 'montado' ? ' <span class="fa-pill ok">montado</span>' : ' <span class="fa-pill pend">por montar</span>') : '<span class="fa-pill pend">próximo lunes</span>') + '</td></tr>'; }).join('') +
+      '<tr class="tot"><td colspan="6">Total del filtro (' + L.length + ') · a Operyx ' + money(tot.o) + ' · retención ProtectGo ' + money(tot.a) + '</td><td class="r">' + money(tot.c) + '</td><td class="r">' + money(tot.o) + '</td><td></td></tr></table></div>';
   }
   function pvExport(tipo) {
     var L = pvFiltrados();
-    var F = L.map(function (c) { var cl = D.cli[c.cliente_id] || {}, inv = invDe(c), st = stDe(c), r = D.rep[c.id] || {};
+    var F = L.map(function (c) { var cl = D.cli[c.cliente_id] || {}, inv = invDe(c), st = stDe(c), sp = split(c);
       return [st ? st.numero : '', cl.empresa || '', cl.dot || '', c.concepto || '', inv ? inv.numero : '', c.periodo_desde || '', c.periodo_hasta || '', viajesDe(c).length,
-        Number(c.gross_total) || 0, Number(c.monto) || 0, c.fecha_pago || '', c.metodo_pago || '', c.transaccion || '', memo(c), Number(r.operario) || 0, Number(r.utilidad) || 0, c.id]; });
+        Number(c.gross_total) || 0, Number(c.monto) || 0, c.fecha_pago || '', c.metodo_pago || '', c.transaccion || '', memo(c), sp.mo, sp.mp, c.id]; });
     var nombre = 'pagos-validados-' + hoy();
     if (tipo === 'csv') {
       var q = function (v) { v = String(v == null ? '' : v); return /[",\n;]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
@@ -795,7 +804,7 @@ setInterval(pgvCheck,600000);
     }).catch(function (e) { aviso(e.message + ' — usa CSV'); });
   }
   /* ---------- 4 · actividad: los traspasos, leídos cuando FAM quiera ---------- */
-  var CLASE = { enviado: { e: '🏦', t: 'Cobro enviado a tu bandeja' }, statement: { e: '📄', t: 'Statement generado' }, validado: { e: '✓', t: 'Fondos validados' }, devuelto: { e: '↩', t: 'Cobro devuelto' } };
+  var CLASE = { enviado: { e: '🏦', t: 'Cobro enviado a tu bandeja' }, statement: { e: '📄', t: 'Statement generado' }, liquidacion: { e: '🔔', t: 'Liquidación Operyx' }, validado: { e: '✓', t: 'Fondos validados' }, devuelto: { e: '↩', t: 'Cobro devuelto' } };
   function actividad() {
     if (!D.act.length) return '<div class="fa-vacio">Sin actividad todavía.</div>';
     return '<div class="fa-act">' + D.act.map(function (x) { var k = CLASE[x.clase] || { e: '·', t: x.clase };
@@ -828,8 +837,9 @@ setInterval(pgvCheck,600000);
         '<div><span>Periodo</span><b>' + fecha(c.periodo_desde) + ' → ' + fecha(c.periodo_hasta) + '</b></div>' +
         '<div><span>En bandeja</span><b' + (viejo ? ' class="fa-warn"' : '') + '>' + fecha(c.enviado_fam_at || c.created_at) + (d ? ' · hace ' + d + ' día' + (d === 1 ? '' : 's') : ' · hoy') + '</b></div>' +
       '</div>' +
+      splitHTML(c, cl, vs) +
       '<div class="fa-acts">' +
-        '<button class="btn" data-fa="abrir-validar" data-id="' + c.id + '">Fondos validados</button>' +
+        '<button class="btn" data-fa="abrir-validar" data-id="' + c.id + '">Fondos validados y archivar</button>' +
         '<button class="btn sec" data-fa="abrir-devolver" data-id="' + c.id + '">Devolver a operación</button>' +
         (vs.length ? '<button class="fa-lnk" data-fa="abrir-viajes" data-id="' + c.id + '">' + (modo === 'viajes' ? 'ocultar' : 'ver') + ' viajes (' + vs.length + ')</button>' : '') +
       '</div>';
@@ -840,7 +850,7 @@ setInterval(pgvCheck,600000);
         '<div class="fld"><label>Fecha de pago</label><input type="date" id="faF_' + c.id + '" value="' + hoy() + '"></div>' +
         '<div class="fld"><label>Método</label><select id="faM_' + c.id + '"><option>ACH</option><option>Zelle</option><option>Tarjeta</option><option>Wire</option><option>Cheque</option><option>Otro</option></select></div>' +
       '</div><div class="acts"><button class="btn" data-fa="validar" data-id="' + c.id + '">Confirmar validación</button><button class="btn sec" data-fa="cerrar" data-id="' + c.id + '">Cancelar</button></div>' +
-      '<div class="hint">Al confirmar: el cobro queda validado, sus ' + vs.length + ' viaje' + (vs.length === 1 ? '' : 's') + ' pasan a Cobrado, el invoice a Pagado y se calcula el reparto. Operación lo ve al instante.</div></div>';
+      '<div class="hint">Al confirmar: el cobro queda validado y archivado, sus ' + vs.length + ' viaje' + (vs.length === 1 ? '' : 's') + ' pasan a Cobrado, el invoice a Pagado y el reparto queda fijo: ' + money(split(c).mo) + ' a Operyx · ' + money(split(c).mp) + ' ProtectGo. Entra a la liquidación mensual. Operación lo ve al instante.</div></div>';
     if (modo === 'devolver') h +=
       '<div class="fa-form"><div class="fld full"><label>Motivo *</label><input id="faD_' + c.id + '" placeholder="Ej: no aparece el depósito · llegó otro monto · llegó sin memo"></div>' +
       '<div class="acts"><button class="btn" data-fa="devolver" data-id="' + c.id + '">Devolver</button><button class="btn sec" data-fa="cerrar" data-id="' + c.id + '">Cancelar</button></div>' +
@@ -860,7 +870,7 @@ setInterval(pgvCheck,600000);
   }
   function filaStatement(s) {
     return '<div class="fa-st"><div><div class="fa-nom mono">' + esc(s.numero) + '</div><div class="fa-meta">' + fecha(s.desde) + ' → ' + fecha(s.hasta) + ' · ' + s.cobros + ' cobro' + (s.cobros === 1 ? '' : 's') + ' · generado por ' + esc(s.generado_por || '—') + '</div></div>' +
-      '<div class="fa-st-n"><b>' + money(s.cobrado) + '</b><span>operario ' + money(s.operario) + ' · agencia ' + money(s.agencia) + '</span></div>' +
+      '<div class="fa-st-n"><b>' + money(s.cobrado) + '</b><span>Operyx ' + money(s.operario) + ' · ProtectGo ' + money(s.agencia) + '</span></div>' +
       '<div class="fa-st-a"><span class="fa-pill ' + (s.estado === 'montado' ? 'ok' : 'pend') + '">' + (s.estado === 'montado' ? 'Montado en el registro' : 'Por montar') + '</span>' +
       '<button class="fa-lnk" data-fa="st-print" data-id="' + s.id + '">Imprimir</button>' +
       '<button class="fa-lnk" data-fa="st-xlsx" data-id="' + s.id + '">Excel</button>' +
@@ -888,7 +898,15 @@ setInterval(pgvCheck,600000);
     if (act === 'validar') return validar(id, b);
     if (act === 'devolver') return devolver(id, b);
     if (act === 'generar') return generar(b);
+    if (act === 'st-tab') { ST_TAB = id; pintar(); return; }
+    if (act === 'ms-generar') return msGenerar(b);
     var st = D.st.find(function (s) { return s.id === id; });
+    if (act === 'ms-pdf' && st) return msPDF(st, b);
+    if (act === 'ms-xlsx' && st) return msExport(st, 'xlsx');
+    if (act === 'ms-csv' && st) return msExport(st, 'csv');
+    if (act === 'ms-correo' && st) return msCorreo(st);
+    if (act === 'ms-pagar' && st) return msPagar(st, b);
+    if (act === 'ms-ver') { ST_TAB = 'mensual'; pintar(); var sx = document.querySelector('#famAmz .fa-ms'); if (sx) sx.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
     if (act === 'st-print' && st) return imprimir(st);
     if (act === 'st-xlsx' && st) return exportar(st, 'xlsx');
     if (act === 'st-csv' && st) return exportar(st, 'csv');
@@ -937,6 +955,97 @@ setInterval(pgvCheck,600000);
     });
   }
 
+
+  /* ---------- Ronda 13 · split Operyx / ProtectGo y liquidación mensual ---------- */
+  function r13n(p) { return (Math.round(Number(p) * 100) / 100).toString(); }
+  function pctDe(c) {
+    if (c.pct_operyx != null) return Number(c.pct_operyx);
+    var cl = D.cli[c.cliente_id] || {}; if (cl.pct_operyx != null) return Number(cl.pct_operyx);
+    var rg = c.tipo === 'semanal' ? D.regla : D.reglaSrv; return rg && rg.operario_pct != null ? Number(rg.operario_pct) : 60;
+  }
+  function split(c) {
+    var m = Number(c.monto) || 0, p = pctDe(c);
+    var mo = c.monto_operyx != null ? Number(c.monto_operyx) : Math.round(m * p) / 100;
+    var mp = c.monto_protectgo != null ? Number(c.monto_protectgo) : Math.round((m - mo) * 100) / 100;
+    return { pct: p, mo: mo, mp: mp };
+  }
+  function conceptoFAM(c, vs) {
+    var base = c.tipo === 'semanal' || vs.length ? 'Dispatching Service (' + vs.length + ' carga' + (vs.length === 1 ? '' : 's') + ')' : (c.concepto || 'Servicio profesional').replace(/\s+—\s+(Upfront fee|Balance)$/, '');
+    if (c.parte === 'anticipo') base += ' — Anticipo (1 de 2)'; else if (c.parte === 'saldo') base += ' — Saldo (2 de 2)';
+    return base;
+  }
+  function splitHTML(c, cl, vs) {
+    var sp = split(c);
+    return '<div class="fa-split"><div class="fa-split-h">PAGO A VALIDAR: ' + esc(cl.empresa || '—') + ' — ' + money(c.monto) + '</div>' +
+      '<div class="fa-split-c">Concepto: ' + esc(conceptoFAM(c, vs)) + '</div>' +
+      '<div class="fa-split-r op"><span>A pagar a Juan Pablo (Operyx · ' + r13n(sp.pct) + ' %)</span><b>' + money(sp.mo) + '</b></div>' +
+      '<div class="fa-split-r pg"><span>Retención ProtectGo (' + r13n(100 - sp.pct) + ' %)</span><b>' + money(sp.mp) + '</b></div></div>';
+  }
+  function stSemanales() { return D.st.filter(function (s) { return (s.tipo || 'semanal') !== 'mensual'; }); }
+  function stMensuales() { return D.st.filter(function (s) { return s.tipo === 'mensual'; }).sort(function (a, b) { return String(b.desde).localeCompare(String(a.desde)); }); }
+  function msPend() { return stMensuales().filter(function (s) { return s.estado === 'generado'; }); }
+  var MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+  function mesDe(iso, conAnio) { var x = new Date(String(iso).slice(0, 10) + 'T12:00:00'); if (isNaN(x)) return ''; var m = MESES[x.getMonth()]; m = m.charAt(0).toUpperCase() + m.slice(1); return conAnio ? m + ' ' + x.getFullYear() : m; }
+  function mesAnteriorISO() { var d = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Chicago' })); d.setDate(1); d.setMonth(d.getMonth() - 1); return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-01'; }
+  function msBanner() {
+    return msPend().map(function (s) {
+      return '<div class="fa-ban" data-fa="ms-ver"><span>🔔</span><div><b>El Statement de ' + esc(mesDe(s.desde)) + ' está listo para enviar a Jeff</b> · Total a liquidar: ' + money(s.total_operyx) +
+        '<div class="fa-meta">' + esc(s.numero) + ' · pagar a Juan Pablo (Operyx) antes del ' + fecha(s.due_date) + '</div></div><span class="fa-ban-a">Ver →</span></div>';
+    }).join('');
+  }
+  function bloqueMensual() {
+    var L = stMensuales(), ant = mesAnteriorISO(), ya = L.some(function (s) { return String(s.desde).slice(0, 7) === ant.slice(0, 7); });
+    var gen = '<div class="fa-gen">' + (ya ? '<span class="fa-sub">El cierre de ' + esc(mesDe(ant, true)) + ' ya está generado. Lo validado después entra al próximo cierre.</span>'
+      : '<button class="btn sec fa-mini" data-fa="ms-generar">Generar cierre de ' + esc(mesDe(ant, true)) + '</button><span class="fa-sub">Se genera solo el día 1; usa esto si aún no corrió. Un mes que no ha terminado no se puede cerrar.</span>') + '</div>';
+    if (!L.length) return gen + '<div class="fa-vacio">Todavía no hay liquidaciones mensuales. La primera la arma el sistema el día 1 del mes con todo lo que validaste del mes anterior.</div>';
+    return gen + L.map(function (s) {
+      var pag = s.estado === 'pagado';
+      return '<div class="fa-ms' + (pag ? ' pag' : '') + '"><div class="fa-ms-h"><div><div class="fa-nom">' + esc(s.numero) + ' · ' + esc(mesDe(s.desde, true)) + '</div><div class="fa-meta">' + fecha(s.desde) + ' → ' + fecha(s.hasta) + ' · vence ' + fecha(s.due_date) + '</div></div>' +
+        '<span class="fa-pill ' + (pag ? 'ok' : 'pend') + '">' + (pag ? 'Pagado ' + fecha(s.pagado_at) : 'Por pagar') + '</span></div>' +
+        '<div class="fa-ms-g"><div><span>Operaciones</span><b>' + (s.cobros || 0) + '</b></div><div><span>Gross gestionado</span><b>' + money(s.gross) + '</b></div><div><span>Fees cobrados</span><b>' + money(s.fees != null ? s.fees : s.cobrado) + '</b></div>' +
+        '<div><span>Retenido ProtectGo</span><b>' + money(s.total_protectgo) + '</b></div><div class="tot"><span>Total a Operyx</span><b>' + money(s.total_operyx) + '</b></div></div>' +
+        '<div class="fa-acts"><button class="btn fa-mini" data-fa="ms-pdf" data-id="' + s.id + '">PDF statement</button><button class="fa-lnk" data-fa="ms-xlsx" data-id="' + s.id + '">Excel</button><button class="fa-lnk" data-fa="ms-csv" data-id="' + s.id + '">CSV</button>' +
+        '<button class="fa-lnk" data-fa="ms-correo" data-id="' + s.id + '">✉ Correo a Jeff</button>' + (pag ? '' : '<button class="btn sec fa-mini" data-fa="ms-pagar" data-id="' + s.id + '">Marcar mes pagado</button>') + '</div></div>';
+    }).join('');
+  }
+  function cargarMS() {
+    if (window.MSStatement) return Promise.resolve(window.MSStatement);
+    var pdf = window.PDFLib ? Promise.resolve() : new Promise(function (ok, ko) { var s = document.createElement('script'); s.src = 'amazon-relay/lib/pdf-lib.min.js'; s.onload = ok; s.onerror = function () { ko(new Error('No se pudo cargar pdf-lib')); }; document.head.appendChild(s); });
+    return pdf.then(function () { return new Promise(function (ok, ko) { var s = document.createElement('script'); s.src = 'amazon-relay/lib/ms-statement.js?v=8'; s.onload = function () { window.MSStatement ? ok(window.MSStatement) : ko(new Error('ms-statement no cargó')); }; s.onerror = function () { ko(new Error('No se pudo cargar el formato del statement')); }; document.head.appendChild(s); }); });
+  }
+  function msPDF(st, b) {
+    ocupado(b, 'Armando PDF…');
+    cargarMS().then(function (M) { return M.descargarPDF(st, D.pago); }).then(function () { libre(b); aviso('PDF ' + st.numero + ' descargado'); }, function (e) { libre(b); aviso('No se pudo armar el PDF: ' + e.message); });
+  }
+  function msExport(st, tipo) {
+    cargarMS().then(function (M) {
+      var F = M.filas(st), cols = Object.keys(F[0] || { Block: '' });
+      if (tipo === 'csv') { var q = function (v) { v = String(v == null ? '' : v); return /[",\n;]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }; return descargar(M.nombre(st) + '.csv', new Blob(['﻿' + [cols.join(',')].concat(F.map(function (f) { return cols.map(function (k) { return q(f[k]); }).join(','); })).join('\r\n')], { type: 'text/csv;charset=utf-8' })); }
+      return cargarXLSX().then(function (X) { var wb = X.utils.book_new(); X.utils.book_append_sheet(wb, X.utils.json_to_sheet(F), 'OPERYX'); X.writeFile(wb, M.nombre(st) + '.xlsx'); });
+    }).catch(function (e) { aviso(e.message + ' — usa CSV'); });
+  }
+  function msCorreo(st) {
+    cargarMS().then(function (M) { var m = M.correo(st); window.location.href = 'mailto:' + m.to + '?subject=' + encodeURIComponent(m.subject) + '&body=' + encodeURIComponent(m.body); aviso('Borrador abierto — adjunta el PDF antes de enviar'); }, function (e) { aviso(e.message); });
+  }
+  function msPagar(st, b) {
+    if (b.dataset.conf !== '1') { b.dataset.conf = '1'; b.dataset.t0 = b.textContent; b.textContent = '¿Ya se pagaron ' + money(st.total_operyx) + '? Clic para confirmar'; setTimeout(function () { if (b.isConnected && b.dataset.conf === '1') { b.dataset.conf = ''; b.textContent = b.dataset.t0; } }, 5000); return; }
+    b.dataset.conf = ''; b.textContent = b.dataset.t0 || b.textContent;
+    ocupado(b, '…');
+    sbA.rpc('amazon_statement_mensual_pagado', { p_statement: st.id }).then(function (r) {
+      if (r.error) { libre(b); aviso('Error: ' + r.error.message); return; }
+      aviso(st.numero + ' marcada como pagada'); cargar();
+    });
+  }
+  function msGenerar(b) {
+    ocupado(b, 'Generando…');
+    sbA.rpc('amazon_generar_statement_mensual', { p_mes: mesAnteriorISO() }).then(function (r) {
+      libre(b);
+      if (r.error) { aviso('No se pudo generar: ' + r.error.message); return; }
+      var d = r.data || {}; aviso(d.creado ? 'Liquidación ' + d.numero + ' generada · ' + money(d.total_operyx) + ' a Operyx' : (d.motivo || 'No había nada que liquidar'));
+      ST_TAB = 'mensual'; cargar();
+    });
+  }
+
   /* ---------- statement: impresión (iframe aislado) ---------- */
   function lineasDe(st) { return Array.isArray(st.lineas) ? st.lineas : []; }
   function imprimir(st) {
@@ -958,7 +1067,7 @@ setInterval(pgvCheck,600000);
       '</style></head><body>' +
       '<div class="h"><div class="b">Protect<i>GO</i> Services<div class="s" style="font-weight:400">Amazon Relay · Weekly statement</div></div>' +
       '<div class="t"><div class="n">' + esc(st.numero) + '</div><div class="p">' + fechaUS(st.desde) + ' – ' + fechaUS(st.hasta) + ' · ' + st.cobros + ' payment' + (st.cobros === 1 ? '' : 's') + '</div></div></div>' +
-      '<table><tr><th>Carrier</th><th>Invoice</th><th>Service period</th><th>Loads</th><th>Gross</th><th>Collected</th><th>Paid on</th><th>Transaction / Memo</th><th>Operator</th><th>Agency</th></tr>' + filas +
+      '<table><tr><th>Carrier</th><th>Invoice</th><th>Service period</th><th>Loads</th><th>Gross</th><th>Collected</th><th>Paid on</th><th>Transaction / Memo</th><th>Operyx</th><th>ProtectGo</th></tr>' + filas +
       '<tr class="tot"><td colspan="4">TOTALS</td><td class="r">' + money(st.gross) + '</td><td class="r">' + money(st.cobrado) + '</td><td colspan="2"></td><td class="r">' + money(st.operario) + '</td><td class="r">' + money(st.agencia) + '</td></tr></table>' +
       '<div style="margin-top:16px;font-weight:700;font-size:11px;letter-spacing:.12em;color:#5a6b76">ITEMIZED LOADS BREAKDOWN</div>' + det +
       '<div class="pie">Generated by ' + esc(st.generado_por || '—') + ' · ' + fechaUS(st.created_at) + (st.estado === 'montado' ? ' · posted to the Amazon register by ' + esc(st.montado_por || '') : '') + '</div>' +
@@ -970,7 +1079,7 @@ setInterval(pgvCheck,600000);
   }
 
   /* ---------- statement: Excel / CSV con columnas del registro de Amazon ---------- */
-  var COLS = ['Semana', 'Cliente', 'DOT', 'Concepto', 'Invoice #', 'Periodo desde', 'Periodo hasta', 'Viajes', 'Gross', 'Cobrado', 'Fecha de pago', 'Método', '# Transacción', 'Memo', 'Operario', 'Agencia', 'id'];
+  var COLS = ['Semana', 'Cliente', 'DOT', 'Concepto', 'Invoice #', 'Periodo desde', 'Periodo hasta', 'Viajes', 'Gross', 'Cobrado', 'Fecha de pago', 'Método', '# Transacción', 'Memo', 'Operyx', 'ProtectGo', 'id'];
   function filasExport(st) {
     return lineasDe(st).map(function (x) {
       return [st.numero, x.cliente || '', x.dot || '', x.concepto || '', x.invoice || '', x.periodo_desde || '', x.periodo_hasta || '', x.viajes ? x.viajes.length : 0,
@@ -1012,7 +1121,7 @@ setInterval(pgvCheck,600000);
     '.famtabs button{font:inherit;font-size:13px;font-weight:700;border:1px solid var(--hairline);background:#fff;color:var(--navy);padding:9px 16px;border-radius:999px;cursor:pointer;display:inline-flex;align-items:center;gap:8px}' +
     '.famtabs button.on{background:var(--navy);color:#fff;border-color:var(--navy)}' +
     '.famn{background:#D9A520;color:#1B2D3A;border-radius:999px;font-size:11px;padding:1px 8px;font-family:var(--font-mono)}' +
-    '.fa-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:22px}@media(max-width:760px){.fa-kpis{grid-template-columns:1fr}}' +
+    '.fa-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px}@media(max-width:960px){.fa-kpis{grid-template-columns:1fr 1fr}}@media(max-width:520px){.fa-kpis{grid-template-columns:1fr}}' +
     '.fa-kpi{background:#fff;border:1px solid var(--line);border-radius:var(--r-md);padding:14px 16px;box-shadow:var(--shadow-2)}' +
     '.fa-kpi .l{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--teal-2);font-weight:600}' +
     '.fa-kpi .v{font-family:var(--font-mono);font-size:24px;font-weight:600;color:var(--navy);margin:4px 0 2px}.fa-kpi .s{font-size:12px;color:var(--muted)}' +
@@ -1045,6 +1154,18 @@ setInterval(pgvCheck,600000);
     '.fa-act{background:#fff;border:1px solid var(--line);border-radius:var(--r-md)}.fa-act-i{display:grid;grid-template-columns:28px 1fr auto;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);align-items:center}' +
     '.fa-act-i:last-child{border-bottom:0}.fa-act-i.nuevo{background:rgba(217,165,32,.08);border-left:3px solid #D9A520}.fa-act-e{font-size:16px;text-align:center}.fa-act-i b{font-size:13px;color:var(--navy)}' +
     '.fa-act-f{font-size:11px;color:var(--faint);text-align:right;font-family:var(--font-mono)}@media(max-width:520px){.fa-act-i{grid-template-columns:24px 1fr}.fa-act-f{grid-column:2;text-align:left}}' +
+    '.fa-split{background:#F7FAF9;border:1px solid var(--line);border-radius:var(--r-sm);padding:10px 12px;margin:0 0 12px;display:grid;gap:6px}' +
+    '.fa-split-h{font-weight:800;color:var(--navy);font-size:13px;letter-spacing:.02em}.fa-split-c{font-size:12.5px;color:var(--muted)}' +
+    '.fa-split-r{display:flex;justify-content:space-between;gap:12px;font-size:13px;padding:6px 10px;border-radius:8px;background:#fff}.fa-split-r b{font-family:var(--font-mono)}' +
+    '.fa-split-r.op{border-left:3px solid var(--teal)}.fa-split-r.pg{border-left:3px solid #D9A520}' +
+    '.fa-subtabs{display:inline-flex;gap:4px;flex-wrap:wrap}.fa-subtabs button{font:inherit;font-size:12px;font-weight:700;border:1px solid var(--hairline);background:#fff;color:var(--navy);padding:6px 12px;border-radius:999px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}' +
+    '.fa-subtabs button.on{background:var(--navy);color:#fff;border-color:var(--navy)}.fa-subtabs i{width:8px;height:8px;border-radius:50%;background:#D9A520;display:inline-block}' +
+    '.fa-gen{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}' +
+    '.fa-ban{display:grid;grid-template-columns:22px 1fr auto;gap:10px;align-items:center;cursor:pointer;background:rgba(217,165,32,.12);border:1px solid rgba(217,165,32,.5);border-left:4px solid #D9A520;border-radius:var(--r-md);padding:10px 14px;margin:0 0 16px;font-size:13px;color:var(--navy)}' +
+    '.fa-ban-a{font-weight:700;color:#8A6A14;white-space:nowrap}@media(max-width:480px){.fa-ban{grid-template-columns:22px 1fr}.fa-ban-a{grid-column:2}}' +
+    '.fa-ms{background:#fff;border:1px solid var(--line);border-left:4px solid #D9A520;border-radius:var(--r-md);padding:12px 16px;margin-bottom:10px;box-shadow:var(--shadow-2)}.fa-ms.pag{border-left-color:var(--teal)}' +
+    '.fa-ms-h{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap}' +
+    '.fa-ms-g{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px 14px;margin:10px 0}.fa-ms-g span{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--faint);font-weight:600}.fa-ms-g b{font-family:var(--font-mono);font-size:14px;color:var(--navy)}.fa-ms-g .tot b{color:#8A6A14;font-size:16px}' +
     '.fa-pie{font-size:11.5px;color:var(--faint);margin-top:8px}.fa-err{background:#FCEEEC;color:#9b2c1f;border-radius:var(--r-md);padding:14px}';
   document.head.appendChild(css);
 
