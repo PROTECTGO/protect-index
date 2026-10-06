@@ -1,10 +1,14 @@
 /* ============================================================
-   GABI · pg-bonos.js v1 — la pastilla dorada "BONOS OCT · hasta $850.000" que acompaña a la
+   GABI · pg-bonos.js v2 — la pastilla dorada "BONOS OCT · hasta $850.000" que acompaña a la
    persona por todas las herramientas del portal.  6-oct-2026.
 
    Pieza hermana de pg-sombra.js: mismo estilo (IIFE, candado global,
    cliente compartido, CSS inyectado con id, todo texto de la base con
    textContent, nunca rompe la página).
+
+   v2 (6-oct, carga inmediata): sale de portal.rapido('bonos') (~10 ms) y se
+   repinta solo si portal.refrescar() trae algo más nuevo (más de 5 min);
+   arranca apenas la página tiene sesión, sin reloj de 200 ms.
 
    Qué hace:
    - Una pastilla fija arriba a la derecha (o, si hay un botón "Salir"
@@ -488,22 +492,39 @@
     try { document.dispatchEvent(new CustomEvent('pg-bonos', { detail: d })); } catch (e) {}
   }
 
-  function pedir() {
+  function pedir(forzar) {
     if (cargando || !cliGlobal) return;
     cargando = true;
-    try {
-      var args = verComoCorreo ? { p_nombre: verComoCorreo } : {};
-      cliGlobal.schema('portal').rpc('bonos_mes_vigente', args).then(function (res) {
+    var por = cliGlobal.schema('portal');
+    var a = { p_clave: 'bonos' }; if (verComoCorreo) a.p_nombre = verComoCorreo;
+    function bueno(d) { return d && typeof d === 'object'; }
+    function viejo() {        /* base sin caché: la función de siempre */
+      try {
+        por.rpc('bonos_mes_vigente', verComoCorreo ? { p_nombre: verComoCorreo } : {}).then(function (res) {
+          cargando = false; if (res && !res.error && bueno(res.data)) recibir(res.data);
+        }, function () { cargando = false; });
+      } catch (e) { cargando = false; }
+    }
+    function vivo(detras) {
+      por.rpc('refrescar', a).then(function (r) {
         cargando = false;
-        if (!res || res.error || !res.data || typeof res.data !== 'object') return;   // error o vacío: no se pinta
-        recibir(res.data);
-      }, function () { cargando = false; });
+        if (r && !r.error && bueno(r.data)) recibir(r.data); else if (!detras) viejo();
+      }, function () { cargando = false; if (!detras) viejo(); });
+    }
+    try {
+      if (forzar) { vivo(true); return; }
+      por.rpc('rapido', a).then(function (r) {
+        if (!r || r.error) { viejo(); return; }
+        var c = r.data;
+        if (c && bueno(c.datos)) { recibir(c.datos); if (Number(c.edad) > REFRESCO_MS / 2000) vivo(true); else cargando = false; }
+        else vivo(false);
+      }, function () { viejo(); });
     } catch (e) { cargando = false; }
   }
 
   document.addEventListener('visibilitychange', function () {
     try {
-      if (document.visibilityState === 'visible' && datos && (Date.now() - ultimaCarga) >= REFRESCO_MS) pedir();
+      if (document.visibilityState === 'visible' && datos && (Date.now() - ultimaCarga) >= REFRESCO_MS) pedir(true);
     } catch (e) {}
   });
 
@@ -513,23 +534,26 @@
     var cli = cliente();
     if (!cli) return;
     cliGlobal = cli;
-    cli.auth.getSession().then(function (r) {
-      var s = r && r.data && r.data.session;
-      if (!s || !s.user) return;
+    var hecho = false;
+    function una(s) {
+      if (hecho || !s || !s.user) return; hecho = true;
       if (EXTERNOS.indexOf(String(s.user.email || '').toLowerCase()) >= 0) return;
       pedir();
       /* el header del Index a veces se pinta tarde: se vuelve a ubicar */
       setTimeout(ubicar, 1500);
       setTimeout(ubicar, 4000);
-    }, function () {});
+    }
+    try { if (typeof global.pgSesionActual === 'function') { var s0 = global.pgSesionActual(); if (s0 && s0.user) { una(s0); return; } } } catch (e) {}
+    try { if (typeof global.pgOnSesion === 'function') global.pgOnSesion(una); } catch (e) {}
+    cli.auth.getSession().then(function (r) { una(r && r.data && r.data.session); }, function () {});
   }
 
   var intentos = 0;
   function esperar() {
     if (global.supabase && global.supabase.createClient) { try { arrancar(); } catch (e) {} return; }
-    if (++intentos > 40) return;            // ~10 s sin supabase-js: no se pinta
-    setTimeout(esperar, 250);
+    if (++intentos > 100) return;           // ~10 s sin supabase-js: no se pinta
+    setTimeout(esperar, 100);
   }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(esperar, 200); });
-  else setTimeout(esperar, 200);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', esperar);   // v2: sin reloj
+  else esperar();
 })(window);

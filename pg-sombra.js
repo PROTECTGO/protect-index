@@ -1,6 +1,12 @@
 /* ============================================================
-   GABI · pg-sombra.js v5 — la columna que sigue a la persona por todas
+   GABI · pg-sombra.js v6 — la columna que sigue a la persona por todas
    las herramientas del portal.  6-oct-2026.
+
+   v6 (6-oct, carga inmediata): el top y la bolita salen de portal.rapido()
+   (lo último calculado, ~10 ms) y se repintan solos si portal.refrescar()
+   trae algo más nuevo (dato de más de 5 min). Arranca apenas la página tiene
+   sesión (pgSesionActual / pgOnSesion del Index, o getSession), sin el reloj
+   de 200 ms. Si la base no tiene la caché, pide las funciones de siempre.
 
    v5 (6-oct, pedido de Andrés): (a) si ya estás en Mi proceso (gabi-asesor.html),
    tocar la bolita NO recarga la página ni registra apertura: sube al inicio
@@ -498,39 +504,68 @@
     try { return global.supabase.createClient(URL_SB, KEY_SB); } catch (e) { return null; }
   }
 
+  /* v6: lo guardado ya, y si tiene más de 5 min, lo nuevo detrás */
+  function rapido(cli, clave, viejo, alPintar) {
+    var por = cli.schema('portal'), a = { p_clave: clave };
+    function vivo(fresco) {
+      por.rpc('refrescar', a).then(function (r) {
+        if (r && !r.error) { try { alPintar(r.data, fresco); } catch (e) {} }
+        else if (!fresco) viejo();
+      }, function () { if (!fresco) viejo(); });
+    }
+    try {
+      por.rpc('rapido', a).then(function (r) {
+        if (!r || r.error) { viejo(); return; }          // base sin caché: como antes
+        var c = r.data;
+        if (c) { try { alPintar(c.datos, false); } catch (e) {} if (Number(c.edad) > 300) vivo(true); }
+        else vivo(false);
+      }, function () { viejo(); });
+    } catch (e) { viejo(); }
+  }
+  /* la sesión, apenas la página la tenga (una sola vez) */
+  function conSesion(cli, fn) {
+    var hecho = false;
+    function una(s) { if (hecho || !s || !s.user) return; hecho = true; fn(s); }
+    try { if (typeof global.pgSesionActual === 'function') { var s0 = global.pgSesionActual(); if (s0 && s0.user) { una(s0); return; } } } catch (e) {}
+    try { if (typeof global.pgOnSesion === 'function') global.pgOnSesion(una); } catch (e) {}
+    try { cli.auth.getSession().then(function (r) { una(r && r.data && r.data.session); }, function () {}); } catch (e) {}
+  }
+
   function arrancar() {
     var verComo = false;
     try { verComo = !!new URLSearchParams(global.location.search).get('ver_como'); } catch (e) {}
     var cli = cliente();
     if (!cli) return;
-    cli.auth.getSession().then(function (r) {
-      var s = r && r.data && r.data.session;
-      if (!s || !s.user) return;
+    conSesion(cli, function (s) {
       if (EXTERNOS.indexOf(String(s.user.email || '').toLowerCase()) >= 0) return;
       /* las dos piezas se piden a la vez */
-      try {
-        cli.schema('portal').rpc('top_mes_vigente').then(function (res) {
-          if (!res || res.error || !res.data) return;
-          try { pintarTop(res.data); } catch (e) {}
-        }, function () {});
-      } catch (e) {}
+      rapido(cli, 'top_mes_vigente', function () {
+        try { cli.schema('portal').rpc('top_mes_vigente').then(function (res) {
+          if (!res || res.error || !res.data) return; try { pintarTop(res.data); } catch (e) {} }, function () {}); } catch (e) {}
+      }, function (d, fresco) {
+        if (!d) return;
+        if (fresco) { cerrarPanel(); var v = document.getElementById('pgsTop'); if (v) v.remove(); }
+        pintarTop(d);
+      });
       if (!verComo) {
-        try {
-          cli.schema('public').rpc('mi_sombra').then(function (res) {
-            if (!res || res.error || !res.data) return;   // no es asesor: solo la barrita
-            try { pintarSombra(res.data, cli); } catch (e) {}
-          }, function () {});
-        } catch (e) {}
+        rapido(cli, 'mi_sombra', function () {
+          try { cli.schema('public').rpc('mi_sombra').then(function (res) {
+            if (!res || res.error || !res.data) return; try { pintarSombra(res.data, cli); } catch (e) {} }, function () {}); } catch (e) {}
+        }, function (d, fresco) {
+          if (!d) return;                                   // no es asesor: solo la barrita
+          if (fresco) { var v = document.getElementById('pgSombra'); if (v) v.remove(); }
+          pintarSombra(d, cli);
+        });
       }
-    }, function () {});
+    });
   }
 
   var intentos = 0;
   function esperar() {
     if (global.supabase && global.supabase.createClient) { arrancar(); return; }
-    if (++intentos > 40) return;            // ~10 s sin supabase-js: no se pinta
-    setTimeout(esperar, 250);
+    if (++intentos > 100) return;           // ~10 s sin supabase-js: no se pinta
+    setTimeout(esperar, 100);
   }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function () { setTimeout(esperar, 200); });
-  else setTimeout(esperar, 200);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', esperar);   // v6: sin reloj de 200 ms
+  else esperar();
 })(window);
