@@ -1,6 +1,17 @@
 /* ============================================================
-   GABI · pg-sombra.js v3 — el muelle de abajo a la derecha que sigue
-   a la persona por todas las herramientas del portal.  2-oct-2026.
+   GABI · pg-sombra.js v4 — la columna que sigue a la persona por todas
+   las herramientas del portal.  5-oct-2026.
+
+   v4 (5-oct, pedido de Andrés): en ESCRITORIO (641 px o más) el muelle
+   pasa a ser una COLUMNA VERTICAL abajo a la izquierda, de 78 px de
+   ancho, con todo junto de arriba a abajo: el botón de volver al Index,
+   el mes de las caritas ("TOP SEP" / "OCT VA"), Top fee (ámbar) y Top
+   premium (mint) con las tres caritas apiladas, y la bolita de la meta
+   con la foto en la esquina, "$28.4k" y "META OCTUBRE". El desplegable
+   del top abre HACIA LA DERECHA de la columna. En TELÉFONO sigue el
+   muelle horizontal de la v3, abajo y a lo ancho, sin cambios.
+   El volver de la columna reemplaza la pastilla de pg-volver.js en
+   escritorio (pg-volver v2 se esconde cuando ve la columna).
 
    v3 (2-oct): la barrita dice de qué mes son las caritas ("TOP SEPTIEMBRE"
    mientras la bolita va por la meta de octubre); un toque en "Top premium"
@@ -53,6 +64,14 @@
   var DESTINO  = 'gabi-asesor.html';   // relativa a la página: todas viven en la raíz
   var EXTERNOS = ['gerencia@leonis-go.com', 'quoteautocomercial@gmail.com'];
   var ROJO = '#E0523F', AMBAR = '#D9A520', MINT = '#2DBFA3', PISTA = '#35566A';
+  var SIN_VOLVER = /^(index\.html|recuperar\.html|firma-protectgo\.html)$/i;   // donde no va el volver
+  function pagina() { try { return global.location.pathname.split('/').pop() || 'index.html'; } catch (e) { return ''; } }
+  function compacto(n) {                // $28,400 -> $28.4k  ·  $111,787 -> $112k
+    n = Math.round(Number(n) || 0);
+    if (n < 1000) return '$' + n;
+    var k = n / 1000;
+    return '$' + (k >= 100 ? Math.round(k) : Math.round(k * 10) / 10) + 'k';
+  }
 
   function usd(n) {
     n = Math.round(Number(n) || 0);
@@ -171,6 +190,53 @@
         '#pgsPanel .pgsp-fila{grid-template-columns:18px 26px 1fr auto;gap:6px;}' +
         '#pgsPanel .pgsp-cara{width:26px;height:26px;}}' +
       '@media (max-width:400px){#pgMuelle .pgs-k{font-size:8.5px;letter-spacing:.08em;}}' +
+      /* piezas que solo existen en un modo */
+      '#pgMuelle .pgs-volver,#pgMuelle .pgs-sep,#pgMuelle .pgs-corto,#pgSombra .pgs-mini{display:none;}' +
+      '#pgMuelle .pgs-sep+#pgSombra{border-radius:16px;}' +   /* sin barrita: la bolita sola, redonda */
+      /* ===== v4: la COLUMNA, en escritorio ===== */
+      '@media (min-width:641px){' +
+        '#pgMuelle{left:16px;right:auto;bottom:16px;width:78px;align-items:center;background:#0D3040;border-radius:22px;' +
+          'padding:10px 0 8px;border:1px solid rgba(255,255,255,.06);}' +
+        '#pgMuelle .pgs-volver{display:flex;width:40px;height:40px;border-radius:50%;background:#163F54;align-items:center;justify-content:center;' +
+          'border:1px solid rgba(255,255,255,.14);color:#fff;text-decoration:none;transition:background .15s ease,transform .15s ease;}' +
+        '#pgMuelle .pgs-volver:hover{background:#1E5069;}' +
+        '#pgMuelle .pgs-volver:active{transform:translateY(1px);}' +
+        '#pgMuelle .pgs-volver:focus-visible{outline:2px solid ' + MINT + ';outline-offset:2px;}' +
+        '#pgMuelle .pgs-volver svg{width:16px;height:16px;display:block;}' +
+        '#pgMuelle .pgs-sep{display:block;width:34px;height:1px;background:#24404F;margin:10px 0 10px;}' +
+        '#pgMuelle .pgs-top{flex-direction:column;gap:6px;background:none;border:0;border-radius:0;padding:0;}' +
+        '#pgMuelle .pgs-top:last-child{border-radius:0;}' +
+        '#pgMuelle .pgs-mes{border:0;padding:0;margin-bottom:2px;text-align:center;font-size:8.5px;letter-spacing:.12em;line-height:1.35;}' +
+        '#pgMuelle .pgs-largo{display:none;}' +
+        '#pgMuelle .pgs-corto{display:inline;}' +
+        '#pgMuelle .pgs-grupo{flex-direction:column;gap:7px;margin:0;padding:7px 9px 6px;border-radius:14px;}' +
+        '#pgMuelle .pgs-grupo+.pgs-grupo{margin-left:0;}' +
+        '#pgMuelle .pgs-k{font-size:8.5px;letter-spacing:.12em;}' +
+        '#pgMuelle .pgs-caras{flex-direction:column;}' +
+        '#pgMuelle .pgs-cara{width:32px;height:32px;margin-left:0;margin-top:-7px;font-size:10px;box-shadow:0 0 0 2.5px #0D3040;}' +
+        '#pgMuelle .pgs-cara:first-child{margin-top:0;}' +
+        '#pgMuelle .pgs-cara:nth-child(2){position:relative;z-index:1;}' +
+        '#pgMuelle .pgs-grupo.fee .pgs-cara.n1{box-shadow:0 0 0 2.5px #0D3040,0 0 0 4.5px ' + AMBAR + ';z-index:2;}' +
+        '#pgMuelle .pgs-grupo.prem .pgs-cara.n1{box-shadow:0 0 0 2.5px #0D3040,0 0 0 4.5px ' + MINT + ';z-index:2;}' +
+        '#pgMuelle .pgs-grupo .pgs-flecha{margin:0;transform:rotate(90deg);}' +
+        '#pgMuelle .pgs-grupo.abierto .pgs-flecha{transform:rotate(-90deg);}' +
+        /* el desplegable abre a la derecha de la columna */
+        '#pgsPanel{position:absolute;left:calc(100% + 10px);bottom:0;width:340px;border-radius:18px;border:1px solid rgba(255,255,255,.06);' +
+          'max-height:min(70vh,520px);}' +
+        '#pgsPanel+.pgs-top{border-radius:0;}' +
+        /* la bolita, en vertical */
+        '#pgSombra{position:relative;flex-direction:column;gap:0;width:62px;margin-top:10px;padding:10px 4px 9px;border-radius:18px;text-align:center;}' +
+        '#pgSombra:first-child{border-radius:18px;}' +
+        '#pgMuelle .pgs-sep+#pgSombra{margin-top:0;border-radius:18px;}' +
+        '#pgSombra .pgs-texto{display:none;}' +
+        '#pgSombra .pgs-foto{position:absolute;right:-7px;top:-7px;width:26px;height:26px;flex:none;box-shadow:0 0 0 2.5px #0D3040;}' +
+        '#pgSombra .pgs-anillo{width:46px;height:46px;flex:none;}' +
+        '#pgSombra .pgs-mini{display:flex;flex-direction:column;align-items:center;gap:3px;margin-top:7px;}' +
+        '#pgSombra .pgs-mini b{font:800 11px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:-.01em;color:#fff;}' +
+        '#pgSombra .pgs-mini small{font:700 7.5px/1.25 Inter,system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#9FB2BF;}' +
+        '#pgSombra .pgs-mini small.rojo{color:#F08B7F;}' +
+        '#pgSombra .pgs-mini small.alerta{color:#F0C55A;}' +
+      '}' +
       '@media (prefers-reduced-motion:reduce){#pgMuelle{transition:none;}}' +
       '@media print{#pgMuelle{display:none!important;}}';
     (document.head || document.documentElement).appendChild(st);
@@ -182,6 +248,14 @@
     if (m) return m;
     estilos();
     m = el('div'); m.id = 'pgMuelle';
+    if (!SIN_VOLVER.test(pagina())) {        // v4: en la columna, el volver va arriba (en teléfono se esconde)
+      var v = document.createElement('a');
+      v.className = 'pgs-volver'; v.href = 'index.html';
+      v.title = 'Volver al Index'; v.setAttribute('aria-label', 'Volver al Index');
+      v.innerHTML = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.5 3.5 6 8l4.5 4.5"/></svg>';
+      m.appendChild(v);
+      m.appendChild(el('span', 'pgs-sep'));
+    }
     document.body.appendChild(m);
     function entrar() { m.classList.add('pgs-in'); m.style.opacity = '1'; m.style.transform = 'translateY(0)'; }
     try { requestAnimationFrame(entrar); } catch (e) { entrar(); }
@@ -194,7 +268,10 @@
     var g = el('button', 'pgs-grupo ' + cls); g.type = 'button';
     g.setAttribute('aria-expanded', 'false');
     g.title = 'Ver ' + titulo.toLowerCase() + ' completo de ' + mesBonito(t.mesTxt);
-    g.appendChild(el('span', 'pgs-k', titulo));
+    var k = el('span', 'pgs-k');
+    k.appendChild(el('span', 'pgs-largo', titulo));
+    k.appendChild(el('span', 'pgs-corto', titulo.replace(/^Top\s+/i, '')));
+    g.appendChild(k);
     var caras = el('div', 'pgs-caras');
     if (!gente.length) { caras.appendChild(el('span', 'pgs-sin', '—')); }
     gente.forEach(function (p) {
@@ -227,13 +304,22 @@
     bar.title = 'Los mejores de ' + (t.mesTxt || 'el mes');
     var mes = mesBonito(t.mesTxt);
     /* el mes de las caritas, dicho claro: "TOP SEPTIEMBRE" (cerró) o "OCTUBRE · VA GANANDO" (en curso) */
-    var modo = el('span', 'pgs-mes', t.modo === 'en_curso' ? (mes + ' · va ganando') : ('Top ' + mes));
+    var modo = el('span', 'pgs-mes');
+    var abrev = mes.slice(0, 3);
+    modo.appendChild(el('span', 'pgs-largo', t.modo === 'en_curso' ? (mes + ' · va ganando') : ('Top ' + mes)));
+    var corto = el('span', 'pgs-corto');
+    corto.appendChild(document.createTextNode(t.modo === 'en_curso' ? abrev : 'Top'));
+    corto.appendChild(document.createElement('br'));
+    corto.appendChild(document.createTextNode(t.modo === 'en_curso' ? 'va' : abrev));
+    modo.appendChild(corto);
     modo.title = t.modo === 'en_curso' ? ('Así va ' + mes + ' hasta hoy') : ('Los mejores de ' + mes + ', el mes que cerró');
     bar.appendChild(modo);
     bar.appendChild(grupo('fee', 'Top fee', fee, 'pos_fee', t));
     bar.appendChild(grupo('prem', 'Top premium', prem, 'pos_premium', t));
     var m = muelle();
-    m.insertBefore(bar, m.firstChild);     // siempre arriba de la bolita
+    var ref = document.getElementById('pgSombra');
+    if (ref && ref.parentNode === m) m.insertBefore(bar, ref);   // arriba de la bolita
+    else m.appendChild(bar);                                    // (el volver y la línea quedan arriba)
   }
 
   /* ---------- 1b) el desplegable: la lista completa del mes ---------- */
@@ -296,7 +382,9 @@
       lista.appendChild(fila);
     });
     p.appendChild(lista);
-    m.insertBefore(p, m.firstChild);       // arriba de la barrita
+    var bar = document.getElementById('pgsTop');
+    if (bar && bar.parentNode === m) m.insertBefore(p, bar);   // justo arriba de la barrita (en la columna va flotando a la derecha)
+    else m.insertBefore(p, m.firstChild);
     if (boton) { boton.classList.add('abierto'); boton.setAttribute('aria-expanded', 'true'); }
     var g2 = m.querySelector('.pgs-grupo.' + cual); if (g2) { g2.classList.add('abierto'); g2.setAttribute('aria-expanded', 'true'); }
   }
@@ -351,6 +439,15 @@
     else if (dias !== null && dias >= 3) txt.appendChild(el('span', 'pgs-sub alerta', dias + ' días sin cotizar'));
     else txt.appendChild(el('span', 'pgs-sub', Math.round(Number(d.pct) || 0) + '% de la meta'));
     b.appendChild(txt);
+
+    /* v4: en la columna, debajo del anillo: "$28.4k" y "META OCTUBRE" (o el aviso corto) */
+    var mini = el('span', 'pgs-mini');
+    mini.appendChild(el('b', null, compacto(d.mc)));
+    if ((Number(d.mc) || 0) <= 0) mini.appendChild(el('small', 'rojo', 'Sin ventas'));
+    else if (dias !== null && dias >= 3) mini.appendChild(el('small', 'alerta', dias + 'd sin cotizar'));
+    else mini.appendChild(el('small', null, 'meta ' + mesActualTxt()));
+    b.appendChild(mini);
+    b.title = 'Mi proceso · ' + usd(d.mc) + ' de ' + usd(d.meta) + ' · meta ' + mesActualTxt();
 
     b.addEventListener('click', function () {
       try {

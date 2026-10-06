@@ -1,6 +1,11 @@
 /* ============================================================
-   GABI · pg-volver.js v1 — "← Volver al Index", igual en todas las
-   herramientas del portal.  2-oct-2026.
+   GABI · pg-volver.js v2 — "← Volver al Index", igual en todas las
+   herramientas del portal.  2-oct-2026 · v2 5-oct-2026.
+
+   v2 (5-oct): en ESCRITORIO, cuando la columna de pg-sombra.js v4 está en
+   pantalla (trae su propio volver arriba), esta pastilla se esconde: una
+   sola forma de volver. En teléfono, o donde no hay columna (Mi Proceso,
+   cuentas sin top ni meta), la pastilla sigue igual que en la v1.
 
    Qué hace:
    - Pone una sola pastilla fija ABAJO A LA IZQUIERDA (#pgVolver) que
@@ -110,6 +115,11 @@
     var m = document.getElementById('pgMuelle');
     var angosto = false; try { angosto = global.matchMedia('(max-width:640px)').matches; } catch (e) {}
     var r = m ? m.getBoundingClientRect() : null;        // el muelle es fixed: offsetParent no sirve
+    /* v2: en escritorio, si la columna ya trae su volver, esta pastilla sobra */
+    var vCol = m ? m.querySelector('.pgs-volver') : null;
+    var colConVolver = !angosto && vCol && vCol.getBoundingClientRect().width > 0;
+    a.style.display = colConVolver ? 'none' : '';
+    if (colConVolver) return;
     if (angosto && r && r.height > 0 && r.width > 0) {
       a.style.bottom = Math.round(global.innerHeight - r.top + 10) + 'px';
     } else {
