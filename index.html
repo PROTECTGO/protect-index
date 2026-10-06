@@ -2096,6 +2096,136 @@ function avatar(h){
     ? '<img class="pgh-foto" src="'+esc(h.foto)+'" alt="" onerror="this.outerHTML=\'<div class=&quot;pgh-ini&quot;>'+esc(ini(h.nombre))+'</div>\'">'
     : '<div class="pgh-ini">'+esc(ini(h.nombre))+'</div>';
 }
+/* ---------- v28 · El saludo de Renovaciones ---------------------------
+   Karen (la directora de Renovaciones) ve el mismo saludo grande que dirección,
+   pero con SU métrica: la cartera del área KAREN que vence este mes, lo que ya
+   quedó renovado y el % retenido, con su foto dentro del anillo. Los datos son
+   exactamente los de renovaciones.html (v_renov_cartera_graficas_visible,
+   nivel área): el index no inventa una tercera verdad. Guion, nunca cero,
+   cuando a HubSpot le faltan montos. */
+var RENOV=null;   // {email, filas, metaPct} — se guarda para repintar sin volver a pedir
+var MES_L=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+var MES_C=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+function esRenov(h){ return !!(h && h.tipo==="persona" && h.primera && h.primera.clave==="renovaciones"); }
+function renovMes(filas,mesISO){
+  for(var i=0;i<filas.length;i++){ if(String(filas[i].mes).slice(0,7)===mesISO) return filas[i]; }
+  return null;
+}
+function renovCurva(filas,h){
+  // Las dos curvas de la cinta de Renovaciones, en chico: lo que vence (punteada)
+  // y lo que quedó (menta), enero a diciembre del año en curso.
+  var anio=String(h.mes||"").slice(0,4), mesAct=Number(String(h.mes||"").slice(5,7))||1;
+  var W=260,H=100,PL=8,PR=10,PT=14,PB=17;
+  var porMes={}; filas.forEach(function(x){ if(String(x.mes).slice(0,4)===anio) porMes[Number(String(x.mes).slice(5,7))]=x; });
+  var max=1; Object.keys(porMes).forEach(function(k){ var x=porMes[k];
+    max=Math.max(max, x.monto_completo?Number(x.premium_vence||0):0, Number(x.premium_renovado||0)); });
+  max*=1.12;
+  // El eje arranca en el primer mes con cartera (la cartera se monto en septiembre),
+  // no en enero: así la curva no queda arrinconada a la derecha.
+  var m0=12; Object.keys(porMes).forEach(function(k){ m0=Math.min(m0,Number(k)); });
+  m0=Math.min(m0,mesAct);
+  function X(m){ return PL+(W-PL-PR)*(m0>=12?1:((m-m0)/(12-m0))); }
+  function Y(v){ return PT+(H-PT-PB)*(1-Math.max(0,Math.min(1,(Number(v)||0)/max))); }
+  var pv=[],pq=[];
+  for(var m=1;m<=12;m++){ var x=porMes[m]; if(!x) continue;
+    if(x.monto_completo && Number(x.premium_vence||0)>0) pv.push([X(m),Y(x.premium_vence)]);
+    if(m<=mesAct) pq.push([X(m),Y(x.premium_renovado||0)]); }
+  if(pv.length<2 && pq.length<2) return "";
+  var out='<svg class="pgh-onda" viewBox="0 0 '+W+' '+H+'" aria-hidden="true">';
+  if(pv.length>=2){
+    out+='<path d="'+monotona(pv)+'" fill="none" stroke="#7E95A4" stroke-width="1.4" stroke-dasharray="3 4" opacity=".85"/>'
+       + '<text class="ejeY" x="'+pv[pv.length-1][0].toFixed(1)+'" y="'+(pv[pv.length-1][1]-6).toFixed(1)+'" text-anchor="end">vence</text>';
+  }
+  if(pq.length>=2){
+    out+='<path d="'+monotona(pq)+'" fill="none" stroke="#2DBFA3" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>';
+  }
+  if(pq.length){ var u=pq[pq.length-1];
+    out+='<circle cx="'+u[0].toFixed(1)+'" cy="'+u[1].toFixed(1)+'" r="3.6" fill="#2DBFA3"/>'; }
+  out+='<text class="ejeY" x="'+PL+'" y="'+(H-4)+'">'+MES_C[m0-1]+'</text>'
+     + (mesAct>m0&&mesAct<12?'<text class="ejeY" x="'+X(mesAct).toFixed(1)+'" y="'+(H-4)+'" text-anchor="middle">hoy</text>':'')
+     + '<text class="ejeY" x="'+(W-PR)+'" y="'+(H-4)+'" text-anchor="end">dic</text>';
+  return out+'</svg>';
+}
+function renovAnillo(h,x,metaPct){
+  var pct = (x && x.pct_premium!=null) ? Number(x.pct_premium) : null;
+  var enCuentas = (pct===null);                 // sin montos completos: el % sale en cuentas, en gris
+  var val = enCuentas ? (x?Number(x.pct_cuentas||0):0) : pct;
+  var p=Math.max(0,Math.min(100,val));
+  var color = enCuentas ? "#7E95A4" : (val>=metaPct ? "#2DBFA3" : "#D9A520");
+  var R=80, C=2*Math.PI*R;
+  var cara = h.foto
+    ? '<img class="pgm-foto" src="'+esc(h.foto)+'" alt="" onerror="this.outerHTML=\'<div class=&quot;pgm-foto pgm-ini&quot;>'+esc(ini(h.nombre))+'</div>\'">'
+    : '<div class="pgm-foto pgm-ini">'+esc(ini(h.nombre))+'</div>';
+  var com;
+  if(!x) com="Este mes todavía no tiene cartera montada en HubSpot.";
+  else if(enCuentas) com="Faltan montos en HubSpot: el % va en cuentas.";
+  else if(val>=metaPct) com="El área ya pasó el "+metaPct+"% de retención del mes.";
+  else {
+    var falta = Number(x.premium_vence||0)*metaPct/100 - Number(x.premium_renovado||0);
+    com = "Faltan "+usd(Math.max(0,falta))+" de premium para el "+metaPct+"% del mes.";
+  }
+  return '<div class="pgm" title="Premium renovado contra el premium que vence este mes">'
+    + '<div class="pgm-ring">'
+    +   '<svg viewBox="0 0 184 184" aria-hidden="true">'
+    +     '<circle cx="92" cy="92" r="'+R+'" fill="none" stroke="#24404F" stroke-width="11"/>'
+    +     '<circle class="pgm-arco" cx="92" cy="92" r="'+R+'" fill="none" stroke="'+color+'" stroke-width="11" stroke-linecap="round" '
+    +       'transform="rotate(-90 92 92)" stroke-dasharray="'+(C*p/100).toFixed(1)+' '+C.toFixed(1)+'"/>'
+    +   '</svg>'
+    +   cara
+    +   '<div class="pgm-pct" style="color:'+color+'">'+(x?Math.round(val)+'%':'—')+'<small>'+(enCuentas?'en cuentas':'retenido')+'</small></div>'
+    + '</div>'
+    + '<div class="pgm-com">'+esc(com)+'</div>'
+    + '</div>';
+}
+function renovHero(h,izq){
+  var filas=RENOV.filas||[], metaPct=RENOV.metaPct||70;
+  var mesISO=String(h.mes||""), mi=(Number(mesISO.slice(5,7))||1)-1;
+  var x=renovMes(filas,mesISO);
+  var sig=renovMes(filas, mi===11 ? (Number(mesISO.slice(0,4))+1)+"-01" : mesISO.slice(0,4)+"-"+String(mi+2).padStart(2,"0"));
+  var completo = x && x.monto_completo;
+  var quedo = x ? Number(x.premium_renovado||0) : 0;
+  izq+='<div class="pgh-nums">'
+    + '<div><div class="k">Renovado '+MES_L[mi]+'</div><div class="n m">'+(quedo>0?usd(quedo):"—")+'</div>'
+    +   '<div class="sub">'+(x?(Number(x.renovadas||0)+' de '+Number(x.cuentas||0)+' cuentas'):'sin cartera cargada')+'</div></div>'
+    + '<div><div class="k">Vence en '+MES_L[mi]+'</div><div class="n">'+(completo?usd(x.premium_vence):"—")+'</div></div>'
+    + '<div><div class="k">En juego</div><div class="n">'+(x?Number(x.en_juego_n||0):"—")+'</div>'
+    +   (x&&completo&&Number(x.en_juego_premium||0)>0?'<div class="sub">'+usd(x.en_juego_premium)+' de premium</div>':'')+'</div>'
+    + '<div><div class="k">Vencidas</div><div class="n'+(x&&Number(x.vencidas_n||0)>0?" a":"")+'">'+(x?Number(x.vencidas_n||0):"—")+'</div><div class="sub">sin renovar</div></div>'
+    + '</div>';
+  var linea;
+  if(!x) linea="Este mes todavía no tiene cartera montada en HubSpot.";
+  else if(!completo) linea="Faltan <b>"+Number(x.sin_monto_n||0)+"</b> montos en HubSpot: por eso lo que vence y el % salen en guion.";
+  else {
+    var falta=Math.max(0, Number(x.premium_vence||0)*metaPct/100 - quedo);
+    linea = falta===0 ? "El área ya pasó el "+metaPct+"% de retención del mes."
+      : "Para el "+metaPct+"% del mes faltan <b>"+usd(falta)+"</b> de premium renovado.";
+  }
+  linea+=' <a href="renovaciones.html">Ver renovaciones →</a>';
+  var chips=[];
+  if(x && Number(x.senal_equipo_n||0)>0) chips.push('<span class="al"><b>'+Number(x.senal_equipo_n)+'</b> el equipo las da por perdidas</span>');
+  if(x && Number(x.sin_registro_bos_n||0)>0) chips.push('<span class="al"><b>'+Number(x.sin_registro_bos_n)+'</b> renovada'+(Number(x.sin_registro_bos_n)===1?'':'s')+' sin BOS</span>');
+  if(sig) chips.push('<span>'+MES_L[(mi+1)%12].charAt(0).toUpperCase()+MES_L[(mi+1)%12].slice(1)+': <b>'+Number(sig.cuentas||0)+'</b> cuentas por vencer'
+    + (sig.monto_completo&&Number(sig.premium_vence||0)>0?' · '+usd(sig.premium_vence):'')+'</span>');
+  izq+='<div class="pgh-linea">'+linea+'</div>'+(chips.length?'<div class="pgh-vivo">'+chips.join("")+'</div>':'');
+  return {izq:izq, der:'<div class="pgh-der">'+renovCurva(filas,h)+renovAnillo(h,x,metaPct)+'</div>'};
+}
+function cargarRenov(pub,h){
+  // Solo para quien tiene Renovaciones como su herramienta principal. Fail-open:
+  // si algo falla, se queda el saludo de siempre.
+  if(!esRenov(h)) return;
+  var anio=String(h.mes||"").slice(0,4);
+  Promise.all([
+    pub.from("v_renov_cartera_graficas_visible")
+       .select("mes,cuentas,premium_vence,renovadas,premium_renovado,pct_cuentas,pct_premium,en_juego_n,en_juego_premium,vencidas_n,sin_registro_bos_n,sin_monto_n,senal_equipo_n,monto_completo")
+       .eq("nivel","area").eq("area","KAREN").gte("mes",anio+"-01-01").lte("mes",(Number(anio)+1)+"-01-01").order("mes",{ascending:true}),
+    pub.from("v_alerta_vende_no_renueva_visible").select("estandar_pct").limit(1)
+  ]).then(function(rr){
+    var r=rr[0]; if(!r||r.error||!r.data||!r.data.length) return;
+    var e=rr[1]&&!rr[1].error&&rr[1].data&&rr[1].data[0]?Number(rr[1].data[0].estandar_pct):NaN;
+    RENOV={email:h.email, filas:r.data, metaPct:(e>0&&e<=100)?e:70};
+    try{ pintarHero(h); }catch(err){ console.warn("[hero renov]",err); }
+  },function(){});
+}
 // Los positivos vienen de HubSpot y a veces el dato viene atrasado. Decir
 // "0 a cotizar hoy" cuando el dato es de anteayer es mentir con la verdad.
 function dia(f){ var M=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
@@ -2128,7 +2258,8 @@ function pintarHero(h){
   var box=document.getElementById("pgHero"); if(!box||!h) return;
   box.classList.add("pgh-v19"); box.classList.remove("pgh-prov");
   ULTIMO_HERO=Date.now();
-  var conMeta = (h.tipo==="asesor" || h.tipo==="equipo");
+  var conRenov = esRenov(h) && RENOV && RENOV.email===h.email;   // v28
+  var conMeta = (h.tipo==="asesor" || h.tipo==="equipo" || conRenov);
   // v26: quien tiene meta ve su cara DENTRO del anillo grande de la derecha; a la izquierda solo el saludo.
   var izq='<div class="pgh-who">'+(conMeta?'':avatar(h))+'<div style="min-width:0">'
     + '<h1>Hola, '+esc(h.primerNombre||"")+'.</h1>'
@@ -2166,6 +2297,9 @@ function pintarHero(h){
     }
     izq+='<div class="pgh-linea">'+linea+'</div>'+vivo(h);
     der='<div class="pgh-der">'+ondaSVG(h)+anilloFoto(h,pct,esEq)+'</div>';
+  }else if(conRenov){
+    // v28: Renovaciones ve su cartera del mes con su cara en el anillo.
+    var rh=renovHero(h,izq); izq=rh.izq; der=rh.der;
   }else{
     // Quien no vende no tiene por qué ver cifras de ventas. Su portal es su trabajo.
     var sl=num(h.sinLeer)||0;
@@ -2403,6 +2537,7 @@ function arrancar(s){
     if(VC){ franja(HERO); muroDeOtra(cli); try{ pub.rpc("ver_como_registrar",{p_correo:VC,p_pantalla:"index"})
          .then(function(){},function(){}); }catch(e){}  /* el .then es lo que dispara la peticion en supabase-js: sin el, la huella no se escribe */ }
     try{ if(HERO) pintarHero(HERO); }catch(e){ console.warn("[hero]",e); }
+    try{ if(HERO) cargarRenov(pub,HERO); }catch(e){}   // v28: saludo de Renovaciones
     if(!VC) muroCompacto();
   },function(){ if(!VC) muroCompacto(); });
 
@@ -2443,7 +2578,7 @@ document.addEventListener("visibilitychange",function(){
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="index.html";
-var PGV_VERSION=27; // v27 - 6-oct-2026: tarjeta nueva Guidelines MGA (guidelines.html), visible por pantalla_acceso guidelines_mga (todas las areas internas; sin externo ni cliente). De los externos, solo quoteautocomercial@gmail.com ve la tarjeta (candado EXTERNOS). | v26 - LA META CON CARA: en el saludo, quien tiene meta (asesor) o ve la del equipo (direccion) ve su foto DENTRO de un anillo grande (184 px) que se llena con su % de la meta, mint si va al ritmo del mes y ambar #D9A520 si va detras, con un comentario corto debajo (ritmo = meta x habiles corridos / habiles del mes, el mismo de la onda). La foto de la izquierda se quita para no repetirla. Y el muelle de abajo a la derecha (pg-sombra.js v2, lo carga pg-novedades.js v4.6): la bolita de la meta con el numero de la meta en miles adentro, roja sin ventas, ambar detras del ritmo, mint al ritmo; y pegada arriba la barrita con las caritas del Top fee y el Top premium, que los 3 primeros dias habiles del mes muestra el mes cerrado y despues el mes en curso. | v25 - ARRANQUE RAPIDO Y CASILLAS CON VOLUMEN. (1) Un solo cliente de Supabase y un solo aviso de sesion para toda la pagina (pgSB / pgOnSesion): antes habia seis clientes y cada consulta de arranque se hacia dos veces (mis_pantallas, widgets_registro, hora_servidor, mis_marcas_hoy, tareas_kam, novedades_muro). (2) Cero relojes: se quitaron los setTimeout de 60/90/150/220/400/1200 ms y el de 800 ms antes de acomodar las tarjetas; el acomodo arranca en cuanto contestan puertas + orden (Promise.all), no cuando lo dice un reloj. (3) La cuadricula arranca tapada (.pg-cargando) y se destapa UNA vez ya acomodada, fail-open a los 2,5 s: se acabo el parpadeo del orden viejo al nuevo. (4) El saludo oscuro se pinta de inmediato con el nombre del correo y la fecha (sin cifras) y mi_hero lo completa cuando llega. (5) widgets_registro se lee una vez y sirve a mantenimiento y a areas. (6) Fuentes por <link> con preconnect (no @import), preconnect a Supabase y al CDN, preload de supabase-js. (7) Las herramientas de los grupos por area dejan de ser pastillas: casillas con volumen (min 118 px), icono propio y SOLO el nombre, tres por fila y dos en el telefono. La principal y las de apoyo quedan igual. Del lado de la base, en la misma entrega: indice de expresion en bos_registros para es_venta_nueva (mi_hero 5,2 s -> 0,6 s). Se monto encima de la v24 (Firmas Renewals), que queda intacta. // v24 - 1-oct-2026: tarjeta nueva Firmas · Renewals (generador-firmas-renewal.html), visible por pantalla_acceso firmas_renewal (Karen Suaza, renewal@ y dirección). // v23 - tarjeta nueva: Kit de Referidos (kit-referidos.html), visible por pantalla_acceso kit_referidos. // v22 - Protect Index: las direcciones internas del sitio pasan a relativas (el sitio ya no depende de como se llame el repo). Las que viajan por correo (recuperar contrasena, fotos de firma, sello de RRHH) quedan absolutas apuntando a protect-index. // v21 - Amazon Relay entra al portal: la tarjeta apunta a amazon-relay/ (ruta relativa, mismo sitio) en vez del repo aparte de GitHub. El archivo llego con su historia via git subtree, identico al original (sha256 971d0582...b33a). Falta que widgets_registro deje de mandar la URL absoluta de ese widget. // v20 - el hero muestra la combinada (premium + fee x10) con su desglose; antes sumaba premium + fee y mostraba menos de lo que la persona lleva. La onda del mes quedo en la misma combinada y leyendo de bos_v, asi termina exactamente en el numero grande. El desglose lo ve tambien la direccion (hero de equipo) y dice lo que el fee APORTA (fee x10 ya multiplicado), no el fee suelto: las dos cifras de la linea chica suman exacto el numero grande. // v19 - El portal con relieve y el portal de otra persona: saludo por rol (mi_hero: quien tiene meta ve la suya, direccion y el lider ven la del equipo, el resto su nombre y su herramienta), onda del mes, una tarjeta principal que manda, novedades compactas y las herramientas agrupadas por area. Con ?ver_como=<correo> un director abre el portal tal como lo ve esa persona, en solo lectura. REGLA: este numero y portal.app_versiones.version deben ir juntos; si la tabla va adelante del archivo, el verificador recarga el portal en bucle para todo el mundo (paso el 4-sep-2026).
+var PGV_VERSION=28; // v28 - 6-oct-2026: EL SALUDO DE RENOVACIONES. Karen Suaza (y quien tenga Renovaciones como herramienta principal) ve el saludo grande con su foto dentro del anillo, como direccion, pero con su cartera: renovado del mes, lo que vence, en juego, vencidas sin renovar, el % retenido contra el estandar del area (70 %, sale de estandar_pct), las dos curvas del año (vence punteada, quedo menta) y la linea "faltan $X para el 70 %". Mismos datos de renovaciones.html (v_renov_cartera_graficas_visible, nivel area KAREN), guion cuando faltan montos. Cero cambios en la base. La foto de Andres (sales@) entra por portal.fotos_personas. | v27 - 6-oct-2026: tarjeta nueva Guidelines MGA (guidelines.html), visible por pantalla_acceso guidelines_mga (todas las areas internas; sin externo ni cliente). De los externos, solo quoteautocomercial@gmail.com ve la tarjeta (candado EXTERNOS). | v26 - LA META CON CARA: en el saludo, quien tiene meta (asesor) o ve la del equipo (direccion) ve su foto DENTRO de un anillo grande (184 px) que se llena con su % de la meta, mint si va al ritmo del mes y ambar #D9A520 si va detras, con un comentario corto debajo (ritmo = meta x habiles corridos / habiles del mes, el mismo de la onda). La foto de la izquierda se quita para no repetirla. Y el muelle de abajo a la derecha (pg-sombra.js v2, lo carga pg-novedades.js v4.6): la bolita de la meta con el numero de la meta en miles adentro, roja sin ventas, ambar detras del ritmo, mint al ritmo; y pegada arriba la barrita con las caritas del Top fee y el Top premium, que los 3 primeros dias habiles del mes muestra el mes cerrado y despues el mes en curso. | v25 - ARRANQUE RAPIDO Y CASILLAS CON VOLUMEN. (1) Un solo cliente de Supabase y un solo aviso de sesion para toda la pagina (pgSB / pgOnSesion): antes habia seis clientes y cada consulta de arranque se hacia dos veces (mis_pantallas, widgets_registro, hora_servidor, mis_marcas_hoy, tareas_kam, novedades_muro). (2) Cero relojes: se quitaron los setTimeout de 60/90/150/220/400/1200 ms y el de 800 ms antes de acomodar las tarjetas; el acomodo arranca en cuanto contestan puertas + orden (Promise.all), no cuando lo dice un reloj. (3) La cuadricula arranca tapada (.pg-cargando) y se destapa UNA vez ya acomodada, fail-open a los 2,5 s: se acabo el parpadeo del orden viejo al nuevo. (4) El saludo oscuro se pinta de inmediato con el nombre del correo y la fecha (sin cifras) y mi_hero lo completa cuando llega. (5) widgets_registro se lee una vez y sirve a mantenimiento y a areas. (6) Fuentes por <link> con preconnect (no @import), preconnect a Supabase y al CDN, preload de supabase-js. (7) Las herramientas de los grupos por area dejan de ser pastillas: casillas con volumen (min 118 px), icono propio y SOLO el nombre, tres por fila y dos en el telefono. La principal y las de apoyo quedan igual. Del lado de la base, en la misma entrega: indice de expresion en bos_registros para es_venta_nueva (mi_hero 5,2 s -> 0,6 s). Se monto encima de la v24 (Firmas Renewals), que queda intacta. // v24 - 1-oct-2026: tarjeta nueva Firmas · Renewals (generador-firmas-renewal.html), visible por pantalla_acceso firmas_renewal (Karen Suaza, renewal@ y dirección). // v23 - tarjeta nueva: Kit de Referidos (kit-referidos.html), visible por pantalla_acceso kit_referidos. // v22 - Protect Index: las direcciones internas del sitio pasan a relativas (el sitio ya no depende de como se llame el repo). Las que viajan por correo (recuperar contrasena, fotos de firma, sello de RRHH) quedan absolutas apuntando a protect-index. // v21 - Amazon Relay entra al portal: la tarjeta apunta a amazon-relay/ (ruta relativa, mismo sitio) en vez del repo aparte de GitHub. El archivo llego con su historia via git subtree, identico al original (sha256 971d0582...b33a). Falta que widgets_registro deje de mandar la URL absoluta de ese widget. // v20 - el hero muestra la combinada (premium + fee x10) con su desglose; antes sumaba premium + fee y mostraba menos de lo que la persona lleva. La onda del mes quedo en la misma combinada y leyendo de bos_v, asi termina exactamente en el numero grande. El desglose lo ve tambien la direccion (hero de equipo) y dice lo que el fee APORTA (fee x10 ya multiplicado), no el fee suelto: las dos cifras de la linea chica suman exacto el numero grande. // v19 - El portal con relieve y el portal de otra persona: saludo por rol (mi_hero: quien tiene meta ve la suya, direccion y el lider ven la del equipo, el resto su nombre y su herramienta), onda del mes, una tarjeta principal que manda, novedades compactas y las herramientas agrupadas por area. Con ?ver_como=<correo> un director abre el portal tal como lo ve esa persona, en solo lectura. REGLA: este numero y portal.app_versiones.version deben ir juntos; si la tabla va adelante del archivo, el verificador recarga el portal en bucle para todo el mundo (paso el 4-sep-2026).
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;
