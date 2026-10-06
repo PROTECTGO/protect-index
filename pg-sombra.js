@@ -1,6 +1,14 @@
 /* ============================================================
-   GABI · pg-sombra.js v4 — la columna que sigue a la persona por todas
-   las herramientas del portal.  5-oct-2026.
+   GABI · pg-sombra.js v5 — la columna que sigue a la persona por todas
+   las herramientas del portal.  6-oct-2026.
+
+   v5 (6-oct, pedido de Andrés): (a) si ya estás en Mi proceso (gabi-asesor.html),
+   tocar la bolita NO recarga la página ni registra apertura: sube al inicio
+   con scroll suave. (b) si la pantalla trae su barra lateral oscura
+   (.pg-side, pegada a la izquierda), la columna se corre a la derecha de
+   esa barra en escritorio en vez de montarse encima; en teléfono no cambia.
+   (c) raiz(): en amazon-relay/ el destino y el volver apuntan con ../ al
+   Index y a Mi proceso de la raíz del sitio (antes caían dentro de la subcarpeta).
 
    v4 (5-oct, pedido de Andrés): en ESCRITORIO (641 px o más) el muelle
    pasa a ser una COLUMNA VERTICAL abajo a la izquierda, de 78 px de
@@ -61,7 +69,8 @@
 
   var URL_SB   = 'https://hivpqsepwsfmafamxkzy.supabase.co';
   var KEY_SB   = 'sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt';
-  var DESTINO  = 'gabi-asesor.html';   // relativa a la página: todas viven en la raíz
+  function raiz() { try { return global.location.pathname.indexOf('/amazon-relay/') >= 0 ? '../' : ''; } catch (e) { return ''; } }   // v5: amazon-relay vive en una subcarpeta
+  var DESTINO  = raiz() + 'gabi-asesor.html';   // relativa a la página: las herramientas viven en la raíz (amazon-relay con ../)
   var EXTERNOS = ['gerencia@leonis-go.com', 'quoteautocomercial@gmail.com'];
   var ROJO = '#E0523F', AMBAR = '#D9A520', MINT = '#2DBFA3', PISTA = '#35566A';
   var SIN_VOLVER = /^(index\.html|recuperar\.html|firma-protectgo\.html)$/i;   // donde no va el volver
@@ -242,6 +251,24 @@
     (document.head || document.documentElement).appendChild(st);
   }
 
+  /* v5: si hay una barra lateral oscura pegada a la izquierda (.pg-side), la columna se corre a su derecha (solo escritorio) */
+  function correrSiHayBarra(m) {
+    try {
+      var side = document.querySelector('.pg-side'), r = null;
+      if (side && side.offsetWidth > 0 && global.innerWidth >= 641) {
+        r = side.getBoundingClientRect();
+        if (!(r.left <= 2 && r.width >= 120 && r.width <= 400)) r = null;
+      }
+      m.style.left = r ? (Math.round(r.right) + 14) + 'px' : '';
+    } catch (e) {}
+  }
+  var rafBarra = 0;
+  global.addEventListener('resize', function () {
+    if (rafBarra) return;
+    var f = function () { rafBarra = 0; var m = document.getElementById('pgMuelle'); if (m) correrSiHayBarra(m); };
+    try { rafBarra = requestAnimationFrame(f); } catch (e) { rafBarra = setTimeout(f, 80); }
+  });
+
   /* ---------- el muelle: un solo contenedor, en orden barrita → bolita ---------- */
   function muelle() {
     var m = document.getElementById('pgMuelle');
@@ -250,13 +277,14 @@
     m = el('div'); m.id = 'pgMuelle';
     if (!SIN_VOLVER.test(pagina())) {        // v4: en la columna, el volver va arriba (en teléfono se esconde)
       var v = document.createElement('a');
-      v.className = 'pgs-volver'; v.href = 'index.html';
+      v.className = 'pgs-volver'; v.href = raiz() + 'index.html';
       v.title = 'Volver al Index'; v.setAttribute('aria-label', 'Volver al Index');
       v.innerHTML = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.5 3.5 6 8l4.5 4.5"/></svg>';
       m.appendChild(v);
       m.appendChild(el('span', 'pgs-sep'));
     }
     document.body.appendChild(m);
+    correrSiHayBarra(m);
     function entrar() { m.classList.add('pgs-in'); m.style.opacity = '1'; m.style.transform = 'translateY(0)'; }
     try { requestAnimationFrame(entrar); } catch (e) { entrar(); }
     setTimeout(entrar, 120);
@@ -450,6 +478,10 @@
     b.title = 'Mi proceso · ' + usd(d.mc) + ' de ' + usd(d.meta) + ' · meta ' + mesActualTxt();
 
     b.addEventListener('click', function () {
+      if (pagina() === 'gabi-asesor.html') {        // v5: ya estás en Mi proceso → subir, sin navegar ni registrar
+        try { global.scrollTo({ top: 0, behavior: 'smooth' }); } catch (e) {}
+        return;
+      }
       try {
         cli.schema('portal').from('aperturas').insert({ clave: 'gabi_asesor', origen: 'sombra' }).then(function () {}, function () {});
       } catch (e) { /* la medición nunca estorba el clic */ }

@@ -1,5 +1,6 @@
 /* ============================================================================
- * pg-novedades.js  ·  Widget lector de Novedades ProtectGo  ·  v4.8
+ * pg-novedades.js  ·  Widget lector de Novedades ProtectGo  ·  v4.9
+ * v4.9 (6-oct-2026): carga pg-bonos.js v1 (la pastilla de bonos del mes, arriba a la derecha)
  * v4.8 (2-oct-2026): carga también pg-destellos.js v1 (lo personal no leído, destacado al abrir)
  * v4.7 (2-oct-2026): carga también pg-volver.js v1 ("← Volver al Index" igual en todas)
  * v4.6 (1-oct-2026): carga pg-sombra.js v2 (el muelle: bolita de la meta + top del mes)
@@ -2211,7 +2212,7 @@
     esperar();
   };
 
-  console.log('[pg-novedades] v4.8 activo — tema configurable + lotes + reacciones + muelle + volver al Index + destellos personales');
+  console.log('[pg-novedades] v4.9 activo — tema configurable + lotes + reacciones + muelle + volver al Index + destellos personales');
 })();
 
 /* ============================================================================
@@ -2270,6 +2271,7 @@
       uno('pg-sombra.js', '__pgSombraLista', 'pgSombraLoader');          // v4.6: el muelle
       uno('pg-volver.js', '__pgVolverListo', 'pgVolverLoader');          // v4.7: volver al Index
       uno('pg-destellos.js', '__pgDestellosListo', 'pgDestellosLoader'); // v4.8: lo personal, a la vista
+      uno('pg-bonos.js', '__pgBonosListo', 'pgBonosLoader');            // v4.9: bonos del mes, arriba a la derecha
     };
     if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', cargar); }
     else { cargar(); }

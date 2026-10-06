@@ -356,7 +356,9 @@ arrancar();
 <script>
 /* Sello de versión. La tabla portal.app_versiones se sube SOLO después de verificar
    el sha256 del archivo en la URL limpia. */
-var PGV_VERSION=1; // v1 (18-sep-2026) GABI 360 SIMPLE: tres visuales -- (1) si la agencia se paga sola este mes con ingreso base (ventas nuevas + endorsement + administrativas + retencion) contra fijos + retiro minimo, con onda de 6 meses; (2) la caja y el retiro, en guion cuando la caja esta vieja, nunca un numero falso; (3) una tarjeta por persona contra su meta (una sola, la de rampa) y contra los $58,000 por cabeza. Las renovaciones se muestran aparte como ganancia y SOLO con el paquete direccion_total (Jorge no las ve). Sin interruptor "ver como": cada quien entra y ve lo suyo. El GABI 360 completo de siempre queda a un boton: "Consultar". Cero barras, cero almacenamiento del navegador, guion nunca cero.
+var PGV_VERSION=2; // v2 (6-oct-2026): carga la columna del top (pg-sombra.js) y la pastilla de bonos (pg-bonos.js). Nada más cambia. | v1 (18-sep-2026) GABI 360 SIMPLE: tres visuales -- (1) si la agencia se paga sola este mes con ingreso base (ventas nuevas + endorsement + administrativas + retencion) contra fijos + retiro minimo, con onda de 6 meses; (2) la caja y el retiro, en guion cuando la caja esta vieja, nunca un numero falso; (3) una tarjeta por persona contra su meta (una sola, la de rampa) y contra los $58,000 por cabeza. Las renovaciones se muestran aparte como ganancia y SOLO con el paquete direccion_total (Jorge no las ve). Sin interruptor "ver como": cada quien entra y ve lo suyo. El GABI 360 completo de siempre queda a un boton: "Consultar". Cero barras, cero almacenamiento del navegador, guion nunca cero.
 </script>
+<script src="pg-sombra.js" defer></script>
+<script src="pg-bonos.js" defer></script>
 </body>
 </html>

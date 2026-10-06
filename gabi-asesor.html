@@ -8,6 +8,8 @@
 <script src="ver-como-helper.js"></script>
 <script src="pg-volver.js" defer></script>
 <script src="pg-destellos.js" defer></script>
+<script src="pg-sombra.js" defer></script>
+<script src="pg-bonos.js" defer></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://hivpqsepwsfmafamxkzy.supabase.co" crossorigin>
@@ -490,6 +492,70 @@ select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;b
   .pg-side .sd-top .p + .p{border-top:none}
 }
 @media(max-width:480px){ .pg-side .sd-top{grid-template-columns:1fr} }
+
+/* ===================== v20 · Mis números, bonos, llamadas y sueño real ===================== */
+[hidden]{display:none!important}
+.v20-bh{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;margin-bottom:12px}
+.v20-bh h2{margin:4px 0 2px}
+.v20-pago{font-family:var(--pg-font-num);font-size:11px;font-weight:700;padding:6px 11px;border-radius:999px;background:#FBF3E2;color:#8a6a1d;white-space:nowrap}
+.v20-bonos{border:1px solid #EAD09A;background:linear-gradient(180deg,#FFFCF4,#fff 60%)}
+.v20-tabs{display:flex;gap:10px;overflow-x:auto;padding:2px 2px 6px;scrollbar-width:thin}
+.v20-tab{flex:0 0 auto;min-width:190px;text-align:left;border:1px solid var(--pg-line);background:#fff;border-radius:14px;padding:12px 14px;cursor:pointer;font:inherit;color:var(--pg-ink);transition:border-color .15s,box-shadow .15s}
+.v20-tab:hover{border-color:#EAD09A}
+.v20-tab.on{border-color:var(--pg-warn);box-shadow:0 0 0 3px #FBF3E2}
+.v20-tab .n{font-family:var(--pg-font-title);font-weight:800;font-size:13.5px}
+.v20-tab .m{font-family:var(--pg-font-num);font-weight:700;font-size:16px;color:#A07813;margin-top:4px}
+.v20-tab .p{font-size:11.5px;color:var(--pg-muted);margin-top:4px}
+.v20-tab .p b{font-family:var(--pg-font-num);color:var(--pg-ink)}
+.v20-tab .p.ok b{color:var(--pg-pos)}
+.v20-panel{margin-top:12px;border-top:1px dashed var(--pg-line);padding-top:14px}
+.v20-panel .regla{font-size:14px;color:var(--pg-txt);line-height:1.55;margin:0 0 10px}
+.v20-chips{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 12px}
+.v20-chips span{font-size:11.5px;font-weight:600;padding:5px 10px;border-radius:999px;background:#EEF2F5;color:#4A5B67}
+.v20-chips span.am{background:#FBF3E2;color:#8a6a1d}
+.v20-avance{background:#fff;border:1px solid var(--pg-line);border-radius:12px;padding:12px 14px;margin-bottom:10px}
+.v20-avance .t{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--pg-muted)}
+.v20-avance .ok{color:var(--pg-pos);font-weight:700}
+.v20-van{display:flex;gap:16px;flex-wrap:wrap;align-items:center;font-size:12.5px;color:var(--pg-muted)}
+.v20-van .q{display:flex;align-items:center;gap:7px}
+.v20-van .av{width:28px;height:28px;font-size:10px;border-radius:50%;background:var(--pg-mint);color:var(--pg-ink);display:flex;align-items:center;justify-content:center;font-family:var(--pg-font-title);font-weight:800;flex-shrink:0;overflow:hidden;background-size:cover;background-position:center}
+.v20-van b{font-family:var(--pg-font-num);color:var(--pg-ink)}
+.v20-vacio{border:1px dashed var(--pg-line);border-radius:12px;padding:14px 16px;color:var(--pg-muted);font-size:13px;line-height:1.55;background:#FAFCFD}
+.v20-act{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:18px;align-items:start}
+.v20-tabla{width:100%;border-collapse:collapse;font-size:13px}
+.v20-tabla th{font-size:10.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--pg-muted);text-align:right;padding:0 8px 8px}
+.v20-tabla th:first-child{text-align:left;padding-left:0}
+.v20-tabla td{padding:9px 8px;border-top:1px solid var(--pg-line);text-align:right;font-family:var(--pg-font-num);font-weight:600;color:var(--pg-ink);font-variant-numeric:tabular-nums}
+.v20-tabla td:first-child{text-align:left;padding-left:0;font-family:var(--pg-font-body);font-weight:600;color:var(--pg-txt)}
+.v20-tabla td small{display:block;font-family:var(--pg-font-body);font-weight:400;font-size:11px;color:var(--pg-muted)}
+.v20-tabla tr.sep td{border-top:2px solid var(--pg-line)}
+.v20-tira{display:grid;grid-template-columns:repeat(auto-fill,minmax(54px,1fr));gap:6px}
+.v20-tira .d{border:1px solid var(--pg-line);border-radius:10px;padding:6px 4px;text-align:center;background:#fff}
+.v20-tira .d.con{border-color:#A8DBC9;background:#F1FAF7}
+.v20-tira .d.hoy{box-shadow:0 0 0 2px var(--pg-mint-soft)}
+.v20-tira .d .f{font-size:10px;font-weight:700;color:var(--pg-muted);letter-spacing:.04em}
+.v20-tira .d .l{font-family:var(--pg-font-num);font-size:14px;font-weight:700;color:var(--pg-ink);margin-top:2px}
+.v20-tira .d .c{font-size:10.5px;color:var(--pg-mint-deep);font-weight:700;margin-top:1px}
+.v20-nota{font-size:11.5px;color:var(--pg-muted);margin-top:10px;line-height:1.5}
+.top-yo{margin-top:12px;font-size:12.5px;color:var(--pg-txt);line-height:1.55;padding:10px 14px;border-radius:12px;background:#F4F7FA}
+.top-yo b{font-family:var(--pg-font-num);color:var(--pg-ink)}
+.sng-tipica{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 12px}
+.sng-tipica span{font-size:12px;font-weight:600;padding:6px 11px;border-radius:999px;background:#EEF2F5;color:#3E4F5B}
+.sng-tipica span b{font-family:var(--pg-font-num);color:var(--pg-ink)}
+.sng-nec{background:var(--pg-ink);color:#fff;border-radius:14px;padding:16px 18px;margin:6px 0 12px;display:grid;grid-template-columns:auto 1fr;gap:6px 18px;align-items:center}
+.sng-nec .big{font-family:var(--pg-font-num);font-size:34px;font-weight:700;color:var(--pg-mint);line-height:1;grid-row:span 2}
+.sng-nec .t{font-family:var(--pg-font-title);font-weight:800;font-size:15px}
+.sng-nec .s{font-size:12.5px;color:#B9C6D0}
+.sng-nec .s b{font-family:var(--pg-font-num);color:#fff}
+.sng-aviso{font-size:12px;color:var(--pg-muted);margin-top:8px}
+/* la columna del top (pg-sombra.js) va fija abajo a la izquierda, al lado de la barra: el contenido le deja su carril */
+@media(min-width:641px){.pg-main{padding-left:122px}}
+@media(max-width:640px){.pg-main{padding-bottom:150px}}
+@media(max-width:760px){
+  .v20-act{grid-template-columns:1fr}
+  .v20-tab{min-width:160px}
+  .sng-nec .big{font-size:28px}
+}
 </style>
 </head>
 <body>
@@ -500,7 +566,7 @@ select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;b
   <div class="pg-brand"><div class="pg-logo">G</div><div class="pg-wordmark">gabi</div></div>
   <div class="pg-tagline">MI PROCESO</div>
   <a data-go="hoy" class="on"><span class="ico">◆</span> Hoy</a>
-  <a data-go="historia"><span class="ico">◎</span> Mi historia</a>
+  <a data-go="historia"><span class="ico">◎</span> Mis números</a>
   <a data-go="meta" style="display:none"><span class="ico">$</span> Mi meta</a>
   <div class="sd-top" id="sd-top" style="display:none"></div>
   <div class="pg-foot"><span id="ft-nombre"></span><br><span id="ft-cargo"></span><br><span id="ft-fecha"></span><br><span class="pg-logout" style="cursor:pointer;text-decoration:underline">Cerrar sesión</span></div>
@@ -556,22 +622,41 @@ select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;b
         <label>Y después, ¿cuánto pago al mes? (pesos, 0 si es de contado)<input id="sn-cuota" type="number" min="0" step="10000" value="0"></label>
       </div>
       <div class="sng-acc"><button class="pg-btn mint" id="sn-ver" type="button">Ver mi plan</button><span class="bt-err" id="sn-err"></span></div>
-      <div id="sn-resultado"></div>
+      <div id="sn-resultado" style="margin-top:14px"></div>
     </div>
 
     <!-- v16: "Los mejores del mes" (#rk, en curso) se jubila; queda el mes anterior, cerrado, tres y tres -->
     <div class="pg-card" id="top-card" style="display:none"><h2 id="top-h">Los mejores del mes anterior</h2>
       <p class="pg-purpose" id="top-p">Mes cerrado. Se actualiza solo el primer día de cada mes.</p>
       <div class="top3" id="top3"></div>
+      <div class="top-yo" id="top-yo" style="display:none"></div>
       <div style="font-size:11.5px;color:var(--pg-muted);margin-top:12px;line-height:1.5">Combinada = premium + fee × 10, la misma vara de tu meta. Solo equipo de venta nueva.</div>
     </div>
   </section>
 
   <section class="pg-section" id="s-historia">
-    <div class="pg-top"><div class="pg-eyebrow">Mi historia</div><h1>¿De dónde vengo?</h1>
-      <div class="pg-sub">Todo desde que entraste, medido como se mide tu meta: <b>combinada = premium + fee × 10</b>. La comisión punteada es "con el plan de hoy": la misma fórmula sobre tus ventas reales, para que veas cómo se mueve tu plata cuando se mueven tus ventas.</div></div>
-    <div class="pg-card"><h2>Mi meta combinada y mi comisión, mes a mes</h2><p class="pg-purpose">Onda verde: tu combinada del mes (premium + fee × 10). <span id="lb-meta-graf"></span> Azul: tu comisión — cuando la verde sube, la azul sube detrás.</p><div class="pg-chart-wrap" style="height:340px"><canvas id="chHist"></canvas></div></div>
+    <div class="pg-top"><div class="pg-eyebrow">Mis números</div><h1>Mis gráficas y mi actividad</h1>
+      <div class="pg-sub">Los bonos del mes con sus condiciones, tu combinada mes a mes contra tu meta, y tus llamadas y positivos con los mismos números que ve tu líder.</div></div>
+
+    <!-- v20 · bonos del mes: una pestañita por bono, sale de portal.bonos_mes_vigente() -->
+    <div class="pg-card v20-bonos" id="bonos">
+      <div class="v20-bh"><div><div class="pg-eyebrow">Incentivos y bonos</div><h2 id="bn-titulo">Bonos del mes</h2><p class="pg-purpose" id="bn-sub" style="margin:0"></p></div><span class="v20-pago" id="bn-pago" style="display:none"></span></div>
+      <div class="v20-tabs" id="bn-tabs" role="tablist"></div>
+      <div class="v20-panel" id="bn-panel"><div class="v20-vacio">Cargando los bonos del mes…</div></div>
+    </div>
+
+    <div class="pg-card"><h2>Mi combinada y mi meta, mes a mes</h2><p class="pg-purpose">Onda verde: tu combinada del mes (premium + fee × 10), del BOS. <span id="lb-meta-graf"></span></p><div class="pg-chart-wrap" style="height:320px"><canvas id="chHist"></canvas></div></div>
     <div class="rec" id="rec"></div>
+
+    <!-- v20 · llamadas y positivos: portal.mi_actividad_hoy_mes(), lo mismo del tablero de Brahian -->
+    <div class="pg-card" id="act-card">
+      <div class="v20-bh"><div><div class="pg-eyebrow">Llamadas y positivos</div><h2>Mi actividad de <span id="an-mes">este mes</span></h2><p class="pg-purpose" id="an-sub" style="margin:0">Los mismos números que ve tu líder en el tablero del equipo.</p></div></div>
+      <div class="v20-act"><div><table class="v20-tabla" id="an-tabla"><tr><td>Cargando…</td></tr></table></div>
+        <div><div class="pg-eyebrow" style="margin-bottom:8px">Día a día</div><div class="v20-tira" id="an-tira"></div><div class="v20-nota" id="an-nota"></div></div></div>
+    </div>
+
+    <!-- v20 · lo de abajo se jubila (Andrés, 6-oct): queda en el archivo, oculto, para no romper nada -->
+    <div id="v20-jub" hidden>
     <div class="pg-card" style="background:transparent;border:none;box-shadow:none;padding:0"><h2>Lo que me está costando</h2><p class="pg-purpose">Tres patrones tuyos, con la plata que te cuestan. Cada uno trae una sola sugerencia y un botón para volverla tu plan del mes.</p><div id="pats"></div></div>
       <h2 style="font-family:var(--pg-font-title);font-size:17px;color:var(--pg-ink);margin:26px 0 4px">Mi día a día</h2>
     <p class="pg-purpose" style="margin-bottom:12px">El reloj de hoy, la escalera del equipo, dos futuros y el detalle completo de tus llamadas.</p>
@@ -591,7 +676,7 @@ select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;b
         <div class="inc-card"><h3>Turbo · 25 % del fee <span class="st" id="turbo-st"></span></h3><div class="why">Solo este mes. Las tres a la vez:</div><div id="turbo-chk"></div></div>
         <div class="inc-card"><h3>Mi escala de fee</h3><div class="why">El porcentaje del fee cobrado que es tuyo.</div><div class="esc" id="esc-fee"></div><div class="falta" id="esc-fee-s"></div>
           <h3 style="margin-top:14px">Mi escalón de premium</h3><div class="why">Este escalón se mide con <b>premium equivalente</b>: premium + fee × 10. Es otra vara, solo para la comisión — no es tu meta del mes.</div><div class="esc" id="esc-prem"></div><div class="falta" id="esc-prem-s"></div></div>
-        <div class="inc-card"><h3>Bonos del mes <span class="st">en pesos</span></h3><div class="why">Máximo dos por persona. Se pagan aparte de la comisión.</div><div id="bonos"></div></div>
+        <div class="inc-card"><h3>Bonos del mes <span class="st">en pesos</span></h3><div class="why">Máximo dos por persona. Se pagan aparte de la comisión.</div><div id="bonos-v16"></div></div>
         <div class="inc-card"><h3>Fee prometido, no cobrado <span class="st warn">ojo</span></h3><div class="why" id="riesgo"></div>
           <div style="display:none"><h3 style="margin-top:14px">Mi actividad</h3><div id="act-bloque"></div></div></div>  <!-- ARREGLO 10-sep-2026: aqui habia 2 </div> de mas desde el 5 de septiembre (v4, cuando se agrego "Mi actividad"). Cerraban <main> y <section> antes de tiempo, y el navegador sacaba "Mi historia" y "Mi meta" fuera del contenedor: se pintaban 1000px mas abajo y la pantalla se veia en blanco. -->
       </div>
@@ -635,6 +720,7 @@ select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;b
         <div class="bt-acc"><button class="pg-btn mint" id="p-guardar" type="button">Guardar mi plan</button><span class="bt-err" id="p-err"></span></div></div>
       <div id="planes" style="margin-top:14px"></div>
     </div>
+    </div><!-- /v20-jub -->
   </section>
 
   <section class="pg-section" id="s-meta">
@@ -823,15 +909,12 @@ function historia(){ if (HECHA_HIST) return; HECHA_HIST = true;
   const S = A.serie.concat([A.enCurso]);
   const labels = S.map(r => lbl(r[0]) + (r === A.enCurso ? ' (en curso)' : ''));
   const venta = S.map(r => combMes(r));
-  const com = S.map(r => { const c = comDeMes(r[0]); return c == null ? null : Math.round(c); });
-  const comReal = S.map(r => { const l = A.liq[r[0]]; return l && l[3] != null ? l[3] : null; });
+  /* v20: las dos líneas de comisión se retiran (la liquidada solo existe desde ago-2026 y la punteada era un estimado del HTML). */
   new Chart($('chHist'), { type:'line', data:{ labels, datasets:[
     { label:'Mi combinada (premium + fee × 10)', data:venta, borderColor:C.mint, backgroundColor:'rgba(45,191,163,.12)', fill:true, tension:.35, pointRadius:4, pointBackgroundColor:'#fff', pointBorderWidth:2, yAxisID:'y' },
     { label:'Mi meta: ' + usd(META), data:venta.map(()=>META), borderColor:C.warn, borderDash:[6,4], pointRadius:0, borderWidth:2, yAxisID:'y' },
-    { label:'Mi comisión (punteada = con el plan de hoy)', data:com, borderColor:C.azul, borderDash:[4,4], tension:.35, pointRadius:3, yAxisID:'y2' },
-    { label:'Mi comisión liquidada', data:comReal, borderColor:C.azul, backgroundColor:C.azul, tension:.35, pointRadius:5, borderWidth:2.5, yAxisID:'y2' }
   ]}, options:{ responsive:true, maintainAspectRatio:false, interaction:{mode:'index', intersect:false}, plugins:{ legend:{ position:'bottom', labels:{ usePointStyle:true, boxWidth:8, font:{size:11} } } },
-    scales:{ y:{ ticks:{ callback:v => '$'+Math.round(v/1000)+'K', font:{family:'JetBrains Mono'} }, grid:{color:'#EEF2F5'} }, y2:{ position:'right', ticks:{ callback:v => '$'+v, font:{family:'JetBrains Mono'} }, grid:{drawOnChartArea:false} }, x:{ grid:{display:false} } } } });
+    scales:{ y:{ ticks:{ callback:v => '$'+Math.round(v/1000)+'K', font:{family:'JetBrains Mono'} }, grid:{color:'#EEF2F5'} }, x:{ grid:{display:false} } } } });
 
   const conVenta = A.serie.filter(r => r[3] > 0);
   /* Quien todavia no tiene un mes CERRADO con ventas (recien entra, o vendio solo
@@ -983,8 +1066,8 @@ function pintaPlanes(){
   });
 }
 function pintarTodo(){
-  try { pintaDespierta(); } catch (e) { console.error('despierta', e); }
-  hoy(); pintaFrena(); pintaTips(); pintaPlanes(); pintaEco();
+  /* v20: Despierta, lo que me está costando, estrategias, plan del mes y Mi meta en USD se jubilan (ocultos en #v20-jub). */
+  hoy(); pintaEco();
   try { pintaCurva(DIAG); } catch (e) { console.error('curva', e); }
   try { bloqueActividad(); } catch (e) { console.error('actividad2', e); }
   try { pintaMesAnterior(TOPP); } catch (e) { console.error('mes_anterior', e); }
@@ -993,21 +1076,18 @@ function pintarTodo(){
     const l = A.logros[0];
     setTimeout(() => { chispazo(l.chispa); if (!SOLO_LECTURA) SB.rpc('mi_proceso_visto', { p_id: l.id }); }, 900);
   }
-  $('p-guardar').onclick = () => { const t = $('p-plan').value.trim(), f = $('p-fecha').value, e = $('p-err'); e.className = 'bt-err';
-    if (SOLO_LECTURA) { e.textContent = 'Est\u00e1s viendo la pantalla de otra persona: el plan lo escribe ella, no se guarda desde aqu\u00ed.'; return; }
-    if (!t) { e.textContent = 'Escribe qué vas a hacer este mes.'; return; } if (!f) { e.textContent = 'Pon cuándo lo revisas: sin fecha no hay plan.'; return; }
-    e.textContent = 'Guardando…';
-    SB.from('asesor_plan').insert({ plan: t, fecha_revision: f }).select().single().then(({ data, error }) => {
-      if (error) { e.className = 'bt-err'; e.textContent = 'No se pudo guardar: ' + error.message; return; }
-      PLANES.unshift({ id: data.id, plan: t, rev: f, hecho: false, creado: HOYSTR, mesPlan: null });
-      $('p-plan').value = ''; e.className = 'bt-ok'; e.textContent = 'Anotado. Lo revisas el ' + Number(f.slice(8)) + ' de ' + MESL[Number(f.slice(5,7))-1] + '.';
-      pintaPlanes();
-    }); };
-  ['m-que','m-juntar','m-fecha','m-cuota'].forEach(id => $(id).oninput = simular); simular();
+  /* v20: el plan del mes y el simulador en USD se jubilan (sus funciones siguen en el archivo). */
   document.querySelectorAll('.pg-side a[data-go]').forEach(a => a.onclick = () => { document.querySelectorAll('.pg-side a[data-go]').forEach(x => x.classList.remove('on')); a.classList.add('on');
     document.querySelectorAll('.pg-section').forEach(s => s.classList.remove('on')); $('s-' + a.dataset.go).classList.add('on'); window.scrollTo(0,0);
     if (a.dataset.go === 'historia') historia(); });
+  /* v20: el desplegable de bonos manda a gabi-asesor.html#bonos */
+  if (location.hash === '#bonos') irABonos();
 }
+function irABonos(){
+  const a = document.querySelector('.pg-side a[data-go="historia"]'); if (a) a.click();
+  setTimeout(() => { const c = $('bonos'); if (c) c.scrollIntoView({ behavior:'smooth', block:'start' }); }, 80);
+}
+window.addEventListener('hashchange', () => { if (location.hash === '#bonos' && A) irABonos(); });
 
 
 
@@ -1430,6 +1510,14 @@ async function renderShell(session){
     const pTop = (SB.schema ? SB.schema('portal') : SB).rpc('mi_top_prev', args)
       .then(r => { if (r.error) { console.warn('mi_top_prev', r.error.message); return null; } return (r.data && !r.data.error) ? r.data : null; })
       .catch(e => { console.warn('mi_top_prev', e); return null; });
+    /* v20: bonos del mes y llamadas/positivos salen a la vez; se pintan cuando lleguen, sin frenar nada. */
+    const P20 = SB.schema ? SB.schema('portal') : SB;
+    const pBonos = P20.rpc('bonos_mes_vigente', args)
+      .then(r => { if (r.error) { console.warn('bonos_mes_vigente', r.error.message); return null; } return r.data || null; })
+      .catch(e => { console.warn('bonos_mes_vigente', e); return null; });
+    const pAct = P20.rpc('mi_actividad_hoy_mes', args)
+      .then(r => { if (r.error) { console.warn('mi_actividad_hoy_mes', r.error.message); return null; } return (r.data && !r.data.error) ? r.data : null; })
+      .catch(e => { console.warn('mi_actividad_hoy_mes', e); return null; });
     const { data, error } = await pProc;
     if (error) throw error;
     if (!data || data.error) throw new Error(SOLO_LECTURA
@@ -1441,6 +1529,8 @@ async function renderShell(session){
     prepararDatos(data);
     pintarCabecera();
     pintarTodo();
+    pBonos.then(b => { try { pintaBonosFranja(b); } catch (e) { console.error('bonos', e); } });
+    pAct.then(x => { try { pintaActNum(x); } catch (e) { console.error('actividad v20', e); } });
     if (!SOLO_LECTURA) {
       /* Despues de pintar, sin esperar: si al robot le toca, corre en la base sin que
          nadie lo mire. El .then es lo que dispara la peticion en supabase-js. */
@@ -1507,8 +1597,21 @@ function pintaMesAnterior(T){
     }
   }
 
-  /* 2 · como quedaste */
-  if (cierre) {
+  /* 2 · como quedaste — v20: la franja se retira; su dato queda en una línea dentro de "Los mejores de…" */
+  if (cierre) cierre.style.display = 'none';
+  { const ty = $('top-yo'), y = T.yo || {};
+    if (ty) {
+      const meta = Number(A && A.meta_combinada) || META || 70000;
+      if (y.ventas == null) { ty.style.display = ''; ty.innerHTML = '<b style="font-family:var(--pg-font-body)">Tú:</b> sin ventas registradas en ' + escH(mesTxt) + '.'; }
+      else {
+        const ok = Number(y.mc) >= meta;
+        ty.style.display = '';
+        ty.innerHTML = '<b style="font-family:var(--pg-font-body)">Tú en ' + escH(mesTxt) + ':</b> ' + nVentas(y.ventas) + ' · <b>' + usd(y.premium) + '</b> de premium · <b>' + usd(y.fee) + '</b> de fee · <b>' + usd(y.mc) + '</b> combinada (' + Math.round(Number(y.mc) / meta * 100) + ' % de tu meta) · '
+          + (y.puesto ? 'puesto <b>' + y.puesto + '</b> de ' + T.n : 'no entra al ranking de este mes') + ' · ' + (ok ? '<span style="color:var(--pg-pos);font-weight:700">meta cumplida</span>' : 'meta no alcanzada');
+      }
+    }
+  }
+  if (false) {
     const y = T.yo || {}, tiene = y.ventas != null;
     const meta = Number(A && A.meta_combinada) || META || 70000;
     const pct = tiene ? Math.round(Number(y.mc) / meta * 100) : null, ok = tiene && Number(y.mc) >= meta;
@@ -1547,7 +1650,7 @@ function pintaMesAnterior(T){
 /* v16: bonos desde el plan vigente. bonos_cop.lista = [{nombre, monto, regla, vara, meta}],
    vara: fee | premium | combinada | ventas | constancia. Sin lista = los del mes pasado ya cerraron. */
 function pintaBonosPlan(m, premMes, racha){
-  const el = $('bonos'); if (!el) return;
+  const el = $('bonos-v16'); if (!el) return;   /* v20: id renombrado (la tarjeta nueva de Mis números es #bonos) */
   const B = A && A.bonos, lista = B && Array.isArray(B.lista) ? B.lista.filter(b => b && b.nombre) : [];
   const card = el.closest('.inc-card'), st = card && card.querySelector('h3 .st');
   if (st) st.textContent = A.mesTxt;
@@ -1607,7 +1710,7 @@ function precargaSueno(s){
   if (s.cuota != null) $('sn-cuota').value = s.cuota;
 }
 
-function pintaResultadoSueno(r){
+function pintaResultadoSueno_v15(r){  /* v20: jubilada (simular_sueno) */
   const el = $('sn-resultado'); if (!el) return;
   if (!r) { el.innerHTML = ''; return; }
   let html = '';
@@ -1636,7 +1739,7 @@ function pintaResultadoSueno(r){
   el.innerHTML = html;
 }
 
-async function correrSimulacion(monto, meses, cuota){
+async function correrSimulacion_v15(monto, meses, cuota){  /* v20: jubilada */
   const errEl = $('sn-err');
   try {
     const { data, error } = await SB.rpc('simular_sueno', { p_monto_cop: monto, p_meses: meses, p_cuota_cop: cuota });
@@ -1647,14 +1750,14 @@ async function correrSimulacion(monto, meses, cuota){
   }
 }
 
-function pintaSueno(diag){
+function pintaSueno_v15(diag){  /* v20: jubilada */
   const s = diag && diag.sueno;
   if (!s) return;
   precargaSueno(s);
-  correrSimulacion(Number(s.monto) || 0, Math.max(1, Math.round(Number(s.meses) || 1)), Number(s.cuota) || 0);
+  correrSimulacion_v15(Number(s.monto) || 0, Math.max(1, Math.round(Number(s.meses) || 1)), Number(s.cuota) || 0);
 }
 
-function bindSueno(){
+function bindSueno_v15(){  /* v20: jubilada: guardar_sueno nunca guardó (plan y fecha_revision NOT NULL) */
   const btn = $('sn-ver'); if (!btn) return;
   btn.onclick = async () => {
     const errEl = $('sn-err'); if (errEl) errEl.textContent = '';
@@ -1668,14 +1771,215 @@ function bindSueno(){
       const g = await SB.rpc('guardar_sueno', { p_que: s.que, p_monto_cop: s.monto, p_meses: s.meses, p_cuota_cop: s.cuota });
       if (g.error) throw g.error;
       if (errEl) errEl.textContent = '';
-      await correrSimulacion(s.monto, s.meses, s.cuota);
+      await correrSimulacion_v15(s.monto, s.meses, s.cuota);
     } catch (e) {
       if (errEl) errEl.textContent = 'No se pudo guardar: ' + (e && e.message ? e.message : e);
     }
   };
 }
 
+/* ===================== v20 · MI SUEÑO, EN CUENTAS REALES =====================
+   portal.mi_sueno_plan(): la cuenta típica de la persona en sus últimos 3 meses
+   cerrados del BOS (cuentas = asegurados, no pólizas), cuánto tiene que vender
+   de más para el sueño, y dos palancas reales. El sueño sale de lo que se vende
+   DE MÁS: lo que hoy gana sigue igual. Se guarda con portal.guardar_sueno_v2();
+   si guardar falla, el plan igual se muestra. */
+const P20c = () => (SB.schema ? SB.schema('portal') : SB);
+const mesesTxt = m => m == null ? '—' : (m >= 120 ? 'más de 10 años' : m + (m === 1 ? ' mes' : ' meses'));
+const n1 = v => String(Math.round((Number(v) || 0) * 10) / 10).replace('.', ',');
+
+function pintaResultadoSueno(r){
+  const el = $('sn-resultado'); if (!el) return;
+  if (!r) { el.innerHTML = ''; return; }
+  if (r.error) { el.innerHTML = '<div class="v20-vacio">No pude armar tu plan (' + escH(r.error) + ').</div>'; return; }
+  const c = r.cuenta || {}, n = r.necesitas, tuya = c.fuente === 'tuya';
+  let h = '';
+  h += '<div class="sng-linea">' + copFmt(r.monto_cop) + ' son <b>' + usdOD(r.monto_usd) + '</b> a la TRM de la casa (' + copNum(r.trm) + '). '
+     + 'Para juntarlos en ' + mesesTxt(r.meses) + ' necesitas <b>' + usdOD(r.ahorro_mes) + '</b> de comisión <b style="font-family:var(--pg-font-body)">extra</b> al mes. '
+     + 'Hoy tu comisión es <b>' + usdOD(r.comision_mes) + '</b> al mes: esa sigue igual, el sueño sale de lo que vendas de más.</div>';
+  if (r.nuevo) h += '<div class="pg-ok-box" style="margin-bottom:10px">Vas aprendiendo y tu meta sube sola: tu sueño se mira a ' + mesesTxt(r.meses) + ' y se calcula con la cuenta típica del equipo.</div>';
+  h += '<div class="pg-eyebrow" style="margin:6px 0 2px">' + (tuya ? 'Tu cuenta típica · últimos 3 meses' : 'La cuenta típica del equipo · últimos 3 meses') + '</div>'
+     + '<div class="sng-tipica">'
+     + (tuya ? '<span><b>' + n1(c.cuentas_mes) + '</b> cuentas al mes</span>' : '')
+     + '<span><b>' + n1(c.polizas) + '</b> pólizas por cuenta</span>'
+     + (c.cobertura ? '<span>' + escH(c.cobertura) + '</span>' : '')
+     + '<span><b>' + usdOD(c.premium) + '</b> de premium</span>'
+     + '<span><b>' + usdOD(c.fee) + '</b> de fee</span>'
+     + '<span>te deja <b>' + usdOD(c.comision) + '</b> de comisión</span></div>';
+  if (n) {
+    h += '<div class="sng-nec"><div class="big">' + n.cuentas + '</div>'
+       + '<div class="t">cuentas al mes' + (tuya ? ' (hoy haces ' + n1(n.cuentas_hoy) + ')' : '') + '</div>'
+       + '<div class="s">Premium neto mínimo <b>' + usd(n.premium) + '</b> al mes · fee mínimo <b>' + usd(n.fee) + '</b> al mes</div></div>';
+  }
+  const pal = Array.isArray(r.palancas) ? r.palancas : [];
+  if (!r.realista && !r.nuevo) {
+    h += '<div class="pg-warn-box">En ' + mesesTxt(r.meses_pedidos) + ' no es realista: sería más del doble de lo que haces hoy. '
+       + '<b>Con una cuenta más al mes llegas en ' + mesesTxt(r.meses_realistas) + '</b>'
+       + (pal.length > 1 && r.meses_con_las_dos ? '; con las dos palancas de abajo, en <b>' + mesesTxt(r.meses_con_las_dos) + '</b>.' : '.') + '</div>';
+  }
+  if (pal.length) h += '<div class="pg-eyebrow" style="margin:12px 0 0">Dos palancas reales</div>';
+  pal.forEach(p => {
+    const d = p.detalle || {};
+    let txt = '';
+    if (p.codigo === 'cuenta') txt = 'Una cuenta como las tuyas' + (d.cobertura ? ' (' + escH(d.cobertura) + ', ' : ' (') + usd(d.premium) + ' de premium y ' + usd(d.fee) + ' de fee) te deja <b>' + usd(p.aporta_usd) + '</b> más al mes.';
+    else if (p.codigo === 'cobertura') txt = 'Tus cuentas llevan ' + n1(d.polizas_hoy) + ' pólizas y ' + usd(d.premium_hoy) + ' de premium. Si cada una llega a <b>' + usd(d.premium_completa) + '</b> (la segunda o tercera línea en la misma propuesta), sumas <b>' + usd(p.aporta_usd) + '</b> al mes sin vender más cuentas.';
+    else if (p.codigo === 'fee') txt = 'Cobras ' + usd(d.fee_hoy) + ' de fee por cuenta; el equipo cobra <b>' + usd(d.fee_equipo) + '</b>. Con eso sumas <b>' + usd(p.aporta_usd) + '</b> al mes sin vender más cuentas.';
+    h += '<div class="sng-plan"><h4>' + escH(p.titulo) + '</h4><p>' + txt + '</p><div class="pido">Solo con esto llegas en <b>' + mesesTxt(p.meses) + '</b>.</div></div>';
+  });
+  if (r.cuota_usd != null) h += '<div class="sng-linea" style="margin-top:12px">Y después, la cuota de <b>' + usdOD(r.cuota_usd) + ' al mes</b> es tu nueva base: tu comisión no puede bajar de <b>' + usdOD(r.comision_piso) + '</b>.</div>';
+  el.innerHTML = h;
+}
+
+async function correrSimulacion(monto, meses, cuota){
+  const errEl = $('sn-err');
+  try {
+    const a = { p_monto_cop: monto, p_meses: meses, p_cuota_cop: cuota };
+    if (SOLO_LECTURA && VER_COMO) a.p_nombre = VER_COMO.email;
+    const { data, error } = await P20c().rpc('mi_sueno_plan', a);
+    if (error) throw error;
+    pintaResultadoSueno(data);
+    return true;
+  } catch (e) {
+    if (errEl) errEl.textContent = 'No pude calcular tu plan: ' + (e && e.message ? e.message : e);
+    return false;
+  }
+}
+
+function pintaSueno(diag){
+  if (SOLO_LECTURA) return;          /* en "ver como" mi_diagnostico trae al que mira, no a la persona */
+  const s = diag && diag.sueno;
+  if (!s || !(Number(s.monto) > 0)) return;
+  precargaSueno(s);
+  correrSimulacion(Number(s.monto) || 0, Math.max(1, Math.round(Number(s.meses) || 1)), Number(s.cuota) || 0);
+}
+
+function bindSueno(){
+  const btn = $('sn-ver'); if (!btn) return;
+  btn.onclick = async () => {
+    const errEl = $('sn-err'); if (errEl) { errEl.textContent = ''; errEl.className = 'bt-err'; }
+    const s = leerSueno();
+    if (!s.que) { if (errEl) errEl.textContent = 'Escoge qué quieres.'; return; }
+    if (!s.monto || s.monto <= 0) { if (errEl) errEl.textContent = 'Cuánto tienes que juntar tiene que ser mayor que cero.'; return; }
+    if (!s.meses || s.meses <= 0) { if (errEl) errEl.textContent = 'En cuántos meses tiene que ser al menos 1.'; return; }
+    if (errEl) errEl.textContent = 'Calculando…';
+    btn.disabled = true;
+    const pGuardar = SOLO_LECTURA ? Promise.resolve({ solo: true })
+      : P20c().rpc('guardar_sueno_v2', { p_que: s.que, p_monto_cop: s.monto, p_meses: s.meses, p_cuota_cop: s.cuota })
+          .then(r => ({ ok: !r.error && r.data && r.data.ok, err: r.error }), e => ({ ok: false, err: e }));
+    const [okPlan, g] = await Promise.all([correrSimulacion(s.monto, s.meses, s.cuota), pGuardar]);
+    btn.disabled = false;
+    if (!okPlan) return;
+    if (errEl) {
+      if (g.solo) { errEl.className = 'sng-aviso'; errEl.textContent = 'Vista de otra persona: el plan se calcula con sus números y no se guarda.'; }
+      else if (g.ok) { errEl.className = 'bt-ok'; errEl.textContent = 'Guardado. Tu plan queda aquí la próxima vez.'; }
+      else { errEl.className = 'sng-aviso'; errEl.textContent = 'Tu plan está abajo; no se pudo guardar esta vez.'; console.warn('guardar_sueno_v2', g.err); }
+    }
+  };
+}
+
+/* ===================== v20 · BONOS DEL MES (franja de Mis números) ===================== */
+const copPesos = n => '$' + Math.round(Number(n) || 0).toLocaleString('es-CO');
+const fechaPago = iso => { if (!iso) return ''; const d = String(iso).slice(0,10); return Number(d.slice(8)) + ' de ' + MESL[Number(d.slice(5,7))-1]; };
+let BN = null, BN_SEL = 0;
+function pintaBonosFranja(B){
+  BN = B; const tabs = $('bn-tabs'), panel = $('bn-panel'); if (!tabs || !panel) return;
+  const mes = B && B.mesTxt ? B.mesTxt : (A ? A.mesTxt : 'este mes');
+  $('bn-titulo').textContent = 'Bonos de ' + mes;
+  const pago = $('bn-pago');
+  if (!B || !B.plan || !Array.isArray(B.bonos) || !B.bonos.length) {
+    $('bn-sub').textContent = '';
+    if (pago) pago.style.display = 'none';
+    tabs.innerHTML = '';
+    panel.innerHTML = '<div class="v20-vacio"><b>Los bonos de ' + escH(mes) + ' se publican en los próximos días.</b> Cuando salgan, aquí verás cada bono con sus condiciones y cuánto te falta. También arriba a la derecha, en todas las herramientas.</div>';
+    return;
+  }
+  $('bn-sub').textContent = 'ProtectGo' + (B.maxPorPersona ? ' · son acumulables (hasta ' + B.maxPorPersona + ' por persona)' : '') + ' · se pagan aparte de la comisión.';
+  if (pago) { pago.style.display = B.pago ? '' : 'none'; pago.textContent = 'Se pagan el ' + fechaPago(B.pago); }
+  if (BN_SEL >= B.bonos.length) BN_SEL = 0;
+  tabs.innerHTML = B.bonos.map((b, i) => {
+    const y = b.yo, total = Number(b.monto_cop || 0) + (b.extra ? Number(b.extra.monto_cop || 0) : 0);
+    const pie = y ? (y.cumple ? '<div class="p ok"><b>✓ Lo lograste</b></div>' : '<div class="p">Vas en <b>' + (y.pct == null ? '—' : y.pct + ' %') + '</b></div>')
+                  : '<div class="p">' + (b.logrados ? 'Ya lo lograron: <b>' + b.logrados + '</b>' : 'Nadie lo ha logrado aún') + '</div>';
+    return '<button type="button" role="tab" class="v20-tab' + (i === BN_SEL ? ' on' : '') + '" data-i="' + i + '" aria-selected="' + (i === BN_SEL) + '">'
+      + '<div class="n">' + escH(b.nombre) + '</div><div class="m">' + copPesos(b.monto_cop) + (b.extra ? ' <span style="font-size:11.5px;color:var(--pg-muted)">hasta ' + copPesos(total) + '</span>' : '') + '</div>' + pie + '</button>';
+  }).join('');
+  tabs.querySelectorAll('.v20-tab').forEach(t => t.onclick = () => { BN_SEL = Number(t.dataset.i); pintaBonosFranja(BN); });
+  const b = B.bonos[BN_SEL], y = b.yo, esPrem = b.medida === 'premium', obj = Number(b.objetivo) || 0;
+  const vara = esPrem ? 'premium neto' : 'combinada (premium + fee cobrado × 10)';
+  const cond = b.condiciones || {};
+  let h = '<p class="regla">' + escH(b.regla || '') + '</p><div class="v20-chips">'
+    + '<span class="am">' + copPesos(b.monto_cop) + '</span>'
+    + '<span>Vara: ' + vara + '</span>'
+    + (cond.combinada_min ? '<span>Combinada ≥ ' + usd(cond.combinada_min) + '</span>' : '')
+    + (cond.premium_min ? '<span>Premium ≥ ' + usd(cond.premium_min) + '</span>' : '')
+    + '<span>Solo ventas de ' + escH(mes) + '</span>'
+    + (B.pago ? '<span>Pago: ' + fechaPago(B.pago) + '</span>' : '') + '</div>';
+  if (y) {
+    const pc = y.pct == null ? 0 : y.pct;
+    h += '<div class="v20-avance"><div class="t">Mi avance</div>' + barra(pc, y.cumple ? '' : (pc >= 50 ? 'w' : 'a'))
+      + '<div class="bar-l"><span><b>' + usd(y.valor) + '</b>' + (esPrem ? ' de premium' : '') + '</span><span>' + usd(obj) + '</span></div>'
+      + '<div class="falta">' + (y.cumple ? '<span class="ok">✓ Lo lograste. Este bono ya es tuyo si se sostiene al cierre.</span>' : 'Te faltan <b>' + usd(y.falta) + '</b>' + (esPrem ? ' de premium.' : ' de combinada.')) + '</div></div>';
+  }
+  if (b.extra) {
+    const e = b.extra, ye = y && y.extra, ec = e.condiciones || {};
+    h += '<div class="v20-avance" style="border-color:#EAD09A"><div class="t">Extra · ' + escH(e.nombre || '') + ' · <span style="color:#A07813">+' + copPesos(e.monto_cop) + '</span></div>'
+      + '<div class="falta" style="margin:6px 0 4px">' + escH(e.regla || '') + '</div>';
+    if (ye) h += barra(ye.pct || 0, ye.cumple ? '' : 'w') + '<div class="bar-l"><span><b>' + usd(ye.mc) + '</b> combinada</span><span>' + usd(ec.combinada_min || 0) + '</span></div>'
+      + '<div class="falta">' + (ye.cumple ? '<span class="ok">✓ Extra ganado.</span>' : 'Para el extra: premium ≥ ' + usd(ec.premium_min || 0) + (y && y.cumple ? ' ✓' : '') + ' y te faltan <b>' + usd(ye.falta_mc) + '</b> de combinada.') + '</div>';
+    else h += '<div class="falta">' + (b.logrados_extra ? 'Ya lo lograron: <b>' + b.logrados_extra + '</b>' : 'Nadie lo ha logrado aún.') + '</div>';
+    h += '</div>';
+  }
+  const van = Array.isArray(b.van) ? b.van : [];
+  h += '<div class="v20-van"><span>Van adelante:</span>' + (van.length ? van.map(v => '<span class="q">' + fotoAv({ foto: v.foto, agente: v.nombre }, 'av') + '<span>' + escH(String(v.nombre || '').split(' ').slice(0,2).join(' ')) + ' <b>' + (v.pct == null ? '—' : v.pct + ' %') + '</b></span></span>').join('') : '<span>todavía nadie arranca</span>')
+    + (b.logrados ? '<span>· ya lo lograron: <b>' + b.logrados + '</b></span>' : '') + '</div>';
+  if (B.nota) h += '<div class="v20-nota">' + escH(B.nota) + '</div>';
+  panel.innerHTML = h;
+}
+
+/* ===================== v20 · LLAMADAS Y POSITIVOS (Mis números + Mi actividad de Hoy) =====================
+   portal.mi_actividad_hoy_mes(): el mes sale de la misma vista del tablero de Brahian
+   (v_actividad_equipo); hoy, de RingCentral (cada 15 min) y HubSpot del día.
+   Contactos = contactos nuevos en HubSpot (lo que Brahian llama positivos);
+   cotizados = negocios que entran a Audit/Quote. Sin usuario de RingCentral: guion. */
+function pintaActNum(X){
+  const tb = $('an-tabla'), tira = $('an-tira'), nota = $('an-nota');
+  if (!tb) return;
+  if (!X) { tb.innerHTML = '<tr><td>Todavía no llega tu actividad.</td></tr>'; if (tira) tira.innerHTML = ''; return; }
+  if ($('an-mes')) $('an-mes').textContent = A ? A.mesTxt : 'este mes';
+  const rc = !!X.tieneRc, H = X.hoy || {}, M = X.mes || {};
+  const ll = v => (!rc ? '—' : (v == null ? '0' : Number(v).toLocaleString('es-CO')));
+  const nn = v => (v == null ? '—' : Number(v).toLocaleString('es-CO'));
+  const fila = (k, sub, h, m, cls) => '<tr' + (cls ? ' class="' + cls + '"' : '') + '><td>' + k + (sub ? '<small>' + sub + '</small>' : '') + '</td><td>' + h + '</td><td>' + m + '</td></tr>';
+  tb.innerHTML = '<tr><th></th><th>Hoy</th><th>Este mes</th></tr>'
+    + fila('Llamadas', rc ? 'RingCentral' + (X.actualizado ? ' · ' + X.actualizado : '') : 'sin usuario de RingCentral', ll(H.llamadas), ll(M.llamadas))
+    + fila('De +2 min', 'hubo conversación', ll(H.conversaciones), ll(M.conversaciones))
+    + fila('Solo timbre', null, ll(H.soloTimbre), ll(M.soloTimbre))
+    + fila('SMS', null, H.sms == null ? '\u2014' : ll(H.sms), M.sms == null ? '\u2014' : ll(M.sms))
+    + fila('Contactos', 'nuevos en HubSpot', nn(H.contactos), nn(M.contactos), 'sep')
+    + fila('Cotizados', 'entran a Audit / Quote', nn(H.cotizados), nn(M.cotizados))
+    + fila('Cuentas vendidas', M.polizas ? nn(M.polizas) + ' pólizas en el mes' : null, nn(H.cuentas), nn(M.cuentas), 'sep')
+    + fila('Con fee / sin fee', 'cuentas del mes', '—', nn(M.conFee) + ' / ' + nn(M.sinFee));
+  if (tira) {
+    const S = Array.isArray(X.serie) ? X.serie : [], hoyIso = A ? A.hoy : '';
+    tira.innerHTML = S.length ? S.map(d => {
+      const f = d[0], l = d[1], c = Number(d[2]) || 0, q = Number(d[3]) || 0;
+      return '<div class="d' + ((c + q) > 0 ? ' con' : '') + (f === hoyIso ? ' hoy' : '') + '" title="' + f + '">'
+        + '<div class="f">' + DSP_DOW[dowDe(f)] + ' ' + Number(f.slice(8)) + '</div>'
+        + '<div class="l">' + (rc ? (l == null ? 0 : l) : '—') + '</div>'
+        + '<div class="c">' + (c ? c + ' cont.' : '') + (c && q ? ' · ' : '') + (q ? q + ' cot.' : '') + (!c && !q ? ' ' : '') + '</div></div>';
+    }).join('') : '<div class="v20-vacio">Sin días hábiles todavía.</div>';
+  }
+  if (nota) nota.textContent = 'Número grande: llamadas del día. Debajo, contactos y cotizados de HubSpot' + (X.hubspotHasta ? ' (datos hasta el ' + fechaPago(X.hubspotHasta) + ')' : '') + '. En verde, los días con algo en HubSpot.';
+  /* Hoy · Mi actividad: la misma lectura, corta */
+  const el = $('act2-bloque');
+  if (el) el.innerHTML =
+      '<div class="al2"><span class="k">Llamadas</span><span class="v">' + ll(H.llamadas) + '</span><span class="d">hoy · ' + ll(M.llamadas) + ' en el mes · ' + ll(M.conversaciones) + ' de más de 2 minutos</span></div>'
+    + '<div class="al2"><span class="k">Contactos</span><span class="v">' + nn(H.contactos) + '</span><span class="d">hoy · ' + nn(M.contactos) + ' nuevos en HubSpot este mes</span></div>'
+    + '<div class="al2"><span class="k">Cotizados</span><span class="v">' + nn(H.cotizados) + '</span><span class="d">hoy · ' + nn(M.cotizados) + ' a Audit / Quote este mes</span></div>';
+}
+
 document.addEventListener('DOMContentLoaded', boot);
+
 
 </script>
 <script>
@@ -1684,7 +1988,7 @@ document.addEventListener('DOMContentLoaded', boot);
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="gabi-asesor.html";
-var PGV_VERSION=19; // v19 - LO PERSONAL A LA VISTA. Carga pg-destellos.js v1: las felicitaciones, consejos y mensajes de Andres que son solo para la persona y no ha leido salen en una tarjeta destacada arriba a la derecha (Leido / Despues). Nada mas cambia. | v18 - VOLVER AL INDEX. Carga pg-volver.js v1: la misma pastilla fija "← Volver al Index" de todas las herramientas, arriba a la izquierda (Mi proceso no tenia como volver). Nada mas cambia. | v17 - ARRANQUE EN PARALELO. mi_proceso, mi_diagnostico y mi_top_prev salen a la vez (antes, uno detras de otro), y detectar_logros se dispara DESPUES de pintar sin esperarlo: cuando le tocaba el turno (cada 10 min) frenaba la pantalla 20-30 s. Preconnect a la base y a las fuentes. La compuerta de version reutiliza el cliente de la pantalla. Nada de lo que se muestra cambia. Del lado de la base, en la misma entrega: indice de expresion en bos_registros (mi_proceso 5,4 s -> 0,7 s; robot de logros 26 s -> 4 s). | v16 - El mes anterior, solo y cada mes: en la barra lateral el #1 por combinada y el #1 por fee cobrado del mes que cerro; debajo de Mi mes, una franja pequena con como quedo la persona (ventas, premium, fee, combinada contra su meta, puesto en el equipo, estado de bonos); y al final de Hoy los tres mejores por combinada y los tres mejores por fee. Sale de portal.mi_top_prev() (nueva, en paralelo con mi_diagnostico; si falla, los tres bloques no aparecen y nada mas cambia). Rota sola el 1 de cada mes. Respeta portal.top_exclusiones (sep-2026: Juliana Raigosa, cuenta asignada por direccion) y no cuenta un Unsold reversado. "Los mejores del mes" en curso se jubila. Los cuatro bonos quemados de septiembre se jubilan: la tarjeta lee bonos_cop.lista del plan vigente y, sin lista, dice que los del mes pasado cerraron y los nuevos se publican pronto. El Turbo se oculta solo cuando vence. "Agosto" quemado en dos textos pasa a ser el mes anterior real. | v15 - "Mi proceso" pasa a ser una sola pantalla de tres bloques (Mi mes, Mi actividad, Mi sueño) mas los mejores del mes; el resto (historia mes a mes, comision y escalones, patrones, palanca, estrategias, plan del mes y el detalle de Despierta) se movio a la pestana "Mi historia" sin borrar nada. Nuevo: Mi sueño (guardar_sueno / simular_sueno) y la franja de curva de aprendizaje de mi_diagnostico(). | v14 - combinada vuelve a premium + fee x10, igual que el reporte financiero; el motor ya la manda asi. | v12 - ARREGLO: 'Mi historia' y 'Mi meta' se veian en blanco. Dos </div> de mas (desde v4, el 5 de septiembre) cerraban <main> antes de tiempo y el navegador sacaba esas dos secciones fuera del contenedor: se pintaban 1000px mas abajo, detras del area vacia, y la grafica de Mi historia ni siquiera se dibujaba. Ademas la meta que se le muestra al asesor pasa a ser SIEMPRE la plena (70.000): la rampa de la camada es una vara de direccion, se queda en el tablero del equipo. | v11 - Tarjeta Llamadas de hoy en Despierta: justo despues del reloj aparece cuanto lleva hoy (salientes, contestadas, minutos al telefono y mensajes si hay), cuanto llevaba ayer, cuanto en el mes, y la tira de los ultimos 10 dias. Sale de A.llamadas, el mismo dato de RingCentral que ya entraba cada 15 minutos; si el asesor no tiene usuario de RingCentral la tarjeta simplemente no aparece. La vieja llamadasHtml() de Mi actividad (oculta desde v10) queda jubilada: ya no se llama desde ningun lado. // v10 - Despierta: el primer pantallazo de Hoy. Un reloj oscuro con los dias que lleva sin mandar nada a cotizar (diciendo hasta cuando llegan los datos de HubSpot, para no acusar dias que todavia no se sincronizan), la racha de dias seguidos con un positivo y la del equipo, y la promesa del dia: 1, 2 o 3 a cotizar, que se guarda en public.asesor_promesa_dia y se ve como cinco puntos de lunes a viernes. Debajo, la escalera del equipo con meses cerrados (cuantas ventas hace un mes segun cuanto se mando a cotizar) y Dos futuros, con la misma comision() de la casa: lo que paga su ritmo de hoy contra el de su mejor mes -o el escalon de arriba de la escalera si no tiene mejor mes- de aqui a fin de ano. Mi actividad queda oculta: el reloj la reemplaza, pero la funcion sigue ahi. Nada de la meta, los incentivos, el escalon ni la comision se toco. // v9 - Una sola meta y una sola vara. La meta del mes ya no es 70.000 fijo para todos: sale de v_meta_por_agente y es la MISMA que ve el lider en el tablero del equipo, con su rampa (50% los primeros 3 meses en operacion, 75% del 4 al 6, plena despues) y diciendo a cuanto sube y cuando. Y "combinada" pasa a significar lo mismo en toda la casa: premium + fee. El x10 no se borra: se queda en el bloque de incentivos, donde es verdad, porque es la vara del ESCALON DE COMISION, no la de la meta. Ese limite de direccion sigue sin aparecer en esta pantalla, ni en el texto ni en los comentarios. // v8 - "Ver como" real: con ?ver_como=<correo> en la URL, y SOLO si la sesion que abre el link es director o socio de verdad (gabi_accesos), la pantalla pide mi_proceso(<correo>) y muestra las cifras REALES de esa persona, con franja fija y todo lo que escribe apagado (plan del mes y marcar chispazo visto). Sin el parametro, o para cualquier otra sesion, nada cambia. // v7 - Llamadas en tiempo casi real (API de RingCentral cada 15 min): hoy, ayer, mensajes y hora de actualizacion. // v6 - Bloque de llamadas (RingCentral por correo diario -> public.actividad_llamadas_dia): total del mes, salientes, contestadas, minutos, ayer y la tira de dias. // v5 - Un positivo pasa a ser el negocio que ENTRA a la etapa Audit / Quote (mandado a cotizar), no el creado; se muestra aparte cuantos negocios monto. // v4 - Bloque Mi actividad con el estandar de un positivo por dia habil: barra del mes, la marca de donde deberia ir hoy, la tira de los ultimos dias habiles y el promedio del equipo. Sale de public.actividad_hubspot_dia. // v3 - La meta del asesor pasa de 80.000 a 70.000 y ya no va quemada en el HTML: sale de la RPC (A.meta_combinada), asi un cambio de meta no obliga a republicar. // v2 - Mi proceso v2: tres pestanas (Hoy, Mi historia, Mi meta) sobre la RPC public.mi_proceso(). Meta combinada (entonces 80.000), incentivos del mes con barras, mejores del equipo con foto, chispazos y eco anonimo, simulador y plan del mes guardado en public.asesor_plan. // v1 - Lo que dejas de ganar.
+var PGV_VERSION=20; // v20 - 6-oct-2026 REORGANIZACION (pedido de Andres). Hoy: Mi mes, Mi actividad (llamadas, contactos y cotizados con los mismos numeros del tablero de Brahian), Mi sueño EN CUENTAS REALES (portal.mi_sueno_plan: la cuenta tipica de los ultimos 3 meses cerrados del BOS, cuantas cuentas, premium neto y fee minimos, dos palancas reales y candado de realismo; se guarda con portal.guardar_sueno_v2, la v1 nunca guardo) y los mejores del mes anterior con una linea "Tu en ..." (la franja "como quedaste" se retira). "Mi historia" pasa a "Mis numeros": bonos del mes con una pestanita por bono y sus condiciones (portal.bonos_mes_vigente), la grafica de combinada contra la meta (sin las dos lineas de comision) y llamadas y positivos hoy / mes con la tira de dias (portal.mi_actividad_hoy_mes). Se jubilan, ocultos en #v20-jub sin borrar: lo que me esta costando, Despierta (reloj, escalera, dos futuros), mi comision y escalones, plan del mes, los incentivos viejos (meta, turbo, escalas, fee prometido) y Mi meta en USD. Carga pg-sombra.js (la columna del top, que aqui no salia) y pg-bonos.js (bonos del mes arriba a la derecha). | v19 - LO PERSONAL A LA VISTA. Carga pg-destellos.js v1: las felicitaciones, consejos y mensajes de Andres que son solo para la persona y no ha leido salen en una tarjeta destacada arriba a la derecha (Leido / Despues). Nada mas cambia. | v18 - VOLVER AL INDEX. Carga pg-volver.js v1: la misma pastilla fija "← Volver al Index" de todas las herramientas, arriba a la izquierda (Mi proceso no tenia como volver). Nada mas cambia. | v17 - ARRANQUE EN PARALELO. mi_proceso, mi_diagnostico y mi_top_prev salen a la vez (antes, uno detras de otro), y detectar_logros se dispara DESPUES de pintar sin esperarlo: cuando le tocaba el turno (cada 10 min) frenaba la pantalla 20-30 s. Preconnect a la base y a las fuentes. La compuerta de version reutiliza el cliente de la pantalla. Nada de lo que se muestra cambia. Del lado de la base, en la misma entrega: indice de expresion en bos_registros (mi_proceso 5,4 s -> 0,7 s; robot de logros 26 s -> 4 s). | v16 - El mes anterior, solo y cada mes: en la barra lateral el #1 por combinada y el #1 por fee cobrado del mes que cerro; debajo de Mi mes, una franja pequena con como quedo la persona (ventas, premium, fee, combinada contra su meta, puesto en el equipo, estado de bonos); y al final de Hoy los tres mejores por combinada y los tres mejores por fee. Sale de portal.mi_top_prev() (nueva, en paralelo con mi_diagnostico; si falla, los tres bloques no aparecen y nada mas cambia). Rota sola el 1 de cada mes. Respeta portal.top_exclusiones (sep-2026: Juliana Raigosa, cuenta asignada por direccion) y no cuenta un Unsold reversado. "Los mejores del mes" en curso se jubila. Los cuatro bonos quemados de septiembre se jubilan: la tarjeta lee bonos_cop.lista del plan vigente y, sin lista, dice que los del mes pasado cerraron y los nuevos se publican pronto. El Turbo se oculta solo cuando vence. "Agosto" quemado en dos textos pasa a ser el mes anterior real. | v15 - "Mi proceso" pasa a ser una sola pantalla de tres bloques (Mi mes, Mi actividad, Mi sueño) mas los mejores del mes; el resto (historia mes a mes, comision y escalones, patrones, palanca, estrategias, plan del mes y el detalle de Despierta) se movio a la pestana "Mi historia" sin borrar nada. Nuevo: Mi sueño (guardar_sueno / simular_sueno) y la franja de curva de aprendizaje de mi_diagnostico(). | v14 - combinada vuelve a premium + fee x10, igual que el reporte financiero; el motor ya la manda asi. | v12 - ARREGLO: 'Mi historia' y 'Mi meta' se veian en blanco. Dos </div> de mas (desde v4, el 5 de septiembre) cerraban <main> antes de tiempo y el navegador sacaba esas dos secciones fuera del contenedor: se pintaban 1000px mas abajo, detras del area vacia, y la grafica de Mi historia ni siquiera se dibujaba. Ademas la meta que se le muestra al asesor pasa a ser SIEMPRE la plena (70.000): la rampa de la camada es una vara de direccion, se queda en el tablero del equipo. | v11 - Tarjeta Llamadas de hoy en Despierta: justo despues del reloj aparece cuanto lleva hoy (salientes, contestadas, minutos al telefono y mensajes si hay), cuanto llevaba ayer, cuanto en el mes, y la tira de los ultimos 10 dias. Sale de A.llamadas, el mismo dato de RingCentral que ya entraba cada 15 minutos; si el asesor no tiene usuario de RingCentral la tarjeta simplemente no aparece. La vieja llamadasHtml() de Mi actividad (oculta desde v10) queda jubilada: ya no se llama desde ningun lado. // v10 - Despierta: el primer pantallazo de Hoy. Un reloj oscuro con los dias que lleva sin mandar nada a cotizar (diciendo hasta cuando llegan los datos de HubSpot, para no acusar dias que todavia no se sincronizan), la racha de dias seguidos con un positivo y la del equipo, y la promesa del dia: 1, 2 o 3 a cotizar, que se guarda en public.asesor_promesa_dia y se ve como cinco puntos de lunes a viernes. Debajo, la escalera del equipo con meses cerrados (cuantas ventas hace un mes segun cuanto se mando a cotizar) y Dos futuros, con la misma comision() de la casa: lo que paga su ritmo de hoy contra el de su mejor mes -o el escalon de arriba de la escalera si no tiene mejor mes- de aqui a fin de ano. Mi actividad queda oculta: el reloj la reemplaza, pero la funcion sigue ahi. Nada de la meta, los incentivos, el escalon ni la comision se toco. // v9 - Una sola meta y una sola vara. La meta del mes ya no es 70.000 fijo para todos: sale de v_meta_por_agente y es la MISMA que ve el lider en el tablero del equipo, con su rampa (50% los primeros 3 meses en operacion, 75% del 4 al 6, plena despues) y diciendo a cuanto sube y cuando. Y "combinada" pasa a significar lo mismo en toda la casa: premium + fee. El x10 no se borra: se queda en el bloque de incentivos, donde es verdad, porque es la vara del ESCALON DE COMISION, no la de la meta. Ese limite de direccion sigue sin aparecer en esta pantalla, ni en el texto ni en los comentarios. // v8 - "Ver como" real: con ?ver_como=<correo> en la URL, y SOLO si la sesion que abre el link es director o socio de verdad (gabi_accesos), la pantalla pide mi_proceso(<correo>) y muestra las cifras REALES de esa persona, con franja fija y todo lo que escribe apagado (plan del mes y marcar chispazo visto). Sin el parametro, o para cualquier otra sesion, nada cambia. // v7 - Llamadas en tiempo casi real (API de RingCentral cada 15 min): hoy, ayer, mensajes y hora de actualizacion. // v6 - Bloque de llamadas (RingCentral por correo diario -> public.actividad_llamadas_dia): total del mes, salientes, contestadas, minutos, ayer y la tira de dias. // v5 - Un positivo pasa a ser el negocio que ENTRA a la etapa Audit / Quote (mandado a cotizar), no el creado; se muestra aparte cuantos negocios monto. // v4 - Bloque Mi actividad con el estandar de un positivo por dia habil: barra del mes, la marca de donde deberia ir hoy, la tira de los ultimos dias habiles y el promedio del equipo. Sale de public.actividad_hubspot_dia. // v3 - La meta del asesor pasa de 80.000 a 70.000 y ya no va quemada en el HTML: sale de la RPC (A.meta_combinada), asi un cambio de meta no obliga a republicar. // v2 - Mi proceso v2: tres pestanas (Hoy, Mi historia, Mi meta) sobre la RPC public.mi_proceso(). Meta combinada (entonces 80.000), incentivos del mes con barras, mejores del equipo con foto, chispazos y eco anonimo, simulador y plan del mes guardado en public.asesor_plan. // v1 - Lo que dejas de ganar.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;
