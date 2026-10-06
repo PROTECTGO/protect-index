@@ -739,7 +739,7 @@ const SB_URL='https://hivpqsepwsfmafamxkzy.supabase.co';
 const SB_KEY='sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt';
 const sb=window.supabase.createClient(SB_URL,SB_KEY,{db:{schema:'portal'}});
 /* ===== v6 ===== */
-const PGV_VERSION=15; // v15 - Ronda 13 (split Operyx, liquidación mensual, clientes, servicios por partes): avisos de FAM en franja + contador, nada bloquea
+const PGV_VERSION=16; // v16 - Ronda 14: ficha de cliente solo con datos de la empresa (Recurrente/Eventual), etiqueta real del cobro, candado de DOT repetido. Antes: v15 - Ronda 13
 let CARGADO_EN=Date.now();
 let RENT=[], RENOV=[], RENOV_RES=null, CONFIG={}, TRM=4000, ERRORES={}, ES_DIR=false;
 let MES_SEL=new Date().getMonth();
@@ -7873,6 +7873,223 @@ async function r13AccionLiq(act, id, el) {
 (function () {
   var da0 = dirAutofill;
   dirAutofill = function () { var r = da0.apply(this, arguments); var d = document.querySelector('details.r13more'); if (d) d.open = true; return r; };
+})();
+
+
+
+/* =====================================================================
+   v16 — RONDA 14 (6-oct-2026)
+   1 · Ficha del cliente solo con datos de la empresa: sale el bloque
+       "Servicio puntual" (tipo de servicio, valor, mensaje y la oferta de
+       abrir el caso). Tipo de relación: Recurrente / Eventual (en la base
+       recurrente / puntual). servicio_puntual_id y valor_puntual se quedan
+       en la base pero el formulario ya no los lee ni los escribe.
+   2 · Etiqueta debajo del monto del cobro según su origen (adiós al
+       "tarifa fija semanal" fijo).
+   3 · Candado de DOT repetido al crear o editar un cliente.
+   Estas definiciones sobrescriben a las anteriores del archivo.
+   ===================================================================== */
+AMZ_VERSION = 15;
+
+/* ---------------------------------------------------------- 1 · formulario */
+clxFormHTML = function (editC) {
+  var e = editC || {}, nuevo = !editC;
+  var rel = nuevo ? 'recurrente' : r13RelDe(e);
+  var tipo = (e.esquema_tipo === 'porcentaje' || e.esquema_tipo === 'porcentaje_piso') ? 'porcentaje' : 'fija';
+  var pct = nuevo ? 9 : (e.esquema_pct != null && e.esquema_pct !== '' ? e.esquema_pct : '');
+  var piso = nuevo ? 100 : (e.esquema_tipo === 'porcentaje_piso' && e.esquema_piso ? e.esquema_piso : '');
+  if (!nuevo && tipo === 'fija') { pct = 9; piso = 100; }
+  var v = function (k) { return nuevo ? '' : esc(e[k] == null ? '' : e[k]); };
+  var opt = function (val, txt, sel) { return '<option value="' + val + '"' + (sel ? ' selected' : '') + '>' + txt + '</option>'; };
+  var po = e.pct_operyx != null ? Number(e.pct_operyx) : null;
+  var split = esDir()
+    ? '<div class="r13blk"><div class="r13blk-t">Reparto con Operyx <span>solo dirección</span></div>' +
+      '<div class="frow2"><div class="field"><label>Juan Pablo (Operyx) %</label><input id="ncPctOperyx" type="number" min="0" max="100" step="1" value="' + (po == null ? '' : po) + '" placeholder="regla ' + r13Regla('semanal') + '" oninput="r13SplitLive()"></div>' +
+      '<div class="field"><label>ProtectGo %</label><input id="ncPctPg" readonly value="' + (po == null ? '' : (100 - po)) + '" placeholder="' + (100 - r13Regla('semanal')) + '"></div></div>' +
+      '<div class="r13hint">Vacío = regla general ' + r13Regla('semanal') + '/' + (100 - r13Regla('semanal')) + '. Cada cobro guarda la foto del % el día que nace; cambiarlo aquí no mueve cobros viejos.</div></div>'
+    : (editC ? '<div class="r13blk"><div class="r13blk-t">Reparto del cobro</div><div class="r13hint">Costo de operación ' + r13N(po == null ? r13Regla('semanal') : po) + ' % · Margen de la agencia ' + r13N(100 - (po == null ? r13Regla('semanal') : po)) + ' %. Lo define dirección.</div></div>' : '');
+  return '' +
+    '<div class="field" style="background:#F2FBF8;border:1px dashed var(--pg-mint);border-radius:10px;padding:10px 12px"><label>🔎 Directorio de la agencia <span style="font-weight:400;text-transform:none">(clientes ya cotizados por los agentes)</span></label><select id="dirSel" onchange="dirAutofill()"><option value="">Cargando directorio…</option></select>' +
+    '<div style="font-size:11.5px;color:#12604f;margin-top:7px;line-height:1.55">¿No está en el directorio? Es normal: ahí solo aparecen los clientes <b>cotizados en Quick Quote</b>. <b>Regístralo abajo</b> con sus datos y queda igual de completo.</div></div>' +
+    '<div class="field"><label>Empresa * <span style="font-weight:400;text-transform:none">(nombre tal cual en el correo)</span></label><input id="ncEmpresa" value="' + v('empresa') + '" placeholder="Ej: EL POTRILLO TRANSPORTATION LLC"></div>' +
+    '<div class="frow2">' +
+      '<div class="field"><label>DOT #</label><input id="ncDot" value="' + v('dot') + '" placeholder="Ej: 4357113"></div>' +
+      '<div class="field"><label>Tipo de relación *</label><select id="ncRelacion" onchange="esquemaTipoChange()">' +
+        opt('recurrente', 'Recurrente', rel === 'recurrente') + opt('puntual', 'Eventual', rel === 'puntual') + '</select></div>' +
+    '</div>' +
+    '<div id="blkRecurrente" class="' + (rel === 'puntual' ? 'hidden' : '') + '">' +
+      '<div class="field"><label>Esquema de cobro</label><select id="ncEsquema" onchange="esquemaTipoChange()">' +
+        opt('fija', 'Monto fijo semanal (USD)', tipo === 'fija') + opt('porcentaje', 'Porcentaje del gross — Nivel 3', tipo === 'porcentaje') + '</select></div>' +
+      '<div id="blkFija" class="frow2' + (tipo === 'fija' ? '' : ' hidden') + '">' +
+        '<div class="field"><label>Tarifa semanal $ <span style="font-weight:400;text-transform:none">(monto libre)</span></label><input id="ncTarifa" type="number" step="0.01" min="0" value="' + (e.tarifa_semanal ? e.tarifa_semanal : '') + '" oninput="esquemaTipoChange()">' +
+          '<div style="margin-top:6px;display:flex;gap:6px;flex-wrap:wrap"><button class="pg-preset" type="button" onclick="presetEsquema(\'n1\')">Nivel 1 · $70</button><button class="pg-preset" type="button" onclick="presetEsquema(\'n2\')">Nivel 2 · $150</button></div></div>' +
+        '<div class="field"><label># Camiones</label><input id="ncUnidades" type="number" min="1" value="' + (e.unidades_activas || 1) + '" oninput="esquemaTipoChange()"></div>' +
+      '</div>' +
+      '<div id="blkPct" class="frow2' + (tipo === 'porcentaje' ? '' : ' hidden') + '">' +
+        '<div class="field"><label>Porcentaje del gross %</label><input id="ncPct" type="number" step="0.01" min="0" value="' + pct + '" oninput="esquemaTipoChange()"></div>' +
+        '<div class="field"><label>Piso mínimo semanal $ <span style="font-weight:400;text-transform:none">(vacío = sin piso)</span></label><input id="ncPiso" type="number" step="0.01" min="0" value="' + piso + '" oninput="esquemaTipoChange()"></div>' +
+      '</div>' +
+      '<div class="pg-desglose" id="ncDesglose"></div>' +
+    '</div>' +
+    split +
+    '<details class="r13more"' + (nuevo ? '' : ' open') + '><summary>Datos de contacto y opcionales</summary>' +
+      '<div class="field"><label>Códigos internos</label><input id="ncCodigos" value="' + v('codigos') + '" placeholder="Código interno del cliente, si aplica"></div>' +
+      '<div class="frow2"><div class="field"><label>DBA</label><input id="ncDba" value="' + v('dba') + '" placeholder="Nombre comercial, si es distinto"></div><div class="field"><label>MC #</label><input id="ncMc" value="' + v('mc') + '"></div></div>' +
+      '<div class="frow2"><div class="field"><label>Representante legal</label><input id="ncRep" value="' + v('representante') + '"></div><div class="field"><label>Teléfono</label><input id="ncTel" value="' + v('telefono') + '"></div></div>' +
+      '<div class="field"><label>Email</label><input id="ncEmail" value="' + v('email') + '"></div>' +
+      '<div class="field"><label>Notas</label><textarea id="ncNotas" rows="2">' + v('notas') + '</textarea></div>' +
+    '</details>' +
+    '<div class="r13hint" style="margin:4px 0 10px">Los cobros y servicios se registran desde 🧩 Servicios Pro o 📸 Cargar viaje, con este cliente.</div>' +
+    '<button class="pg-btn" onclick="crearCliente()">' + (editC ? 'Guardar cambios' : 'Registrar cliente') + ' <span class="a">→</span></button>' +
+    (function () { setTimeout(function () { try { esquemaTipoChange(); } catch (x) { } }, 0); return ''; })();
+};
+r13FormObj = function () {
+  var t = $('ncEsquema') ? $('ncEsquema').value : 'fija';
+  var piso = parseFloat(($('ncPiso') || {}).value);
+  return {
+    tipo_relacion: $('ncRelacion') ? $('ncRelacion').value : 'recurrente',
+    esquema_tipo: t === 'porcentaje' ? (piso > 0 ? 'porcentaje_piso' : 'porcentaje') : 'fija',
+    esquema_pct: parseFloat(($('ncPct') || {}).value) || 0, esquema_piso: piso > 0 ? piso : null,
+    unidades_activas: parseInt(($('ncUnidades') || {}).value, 10) || 1,
+    tarifa_semanal: parseFloat(($('ncTarifa') || {}).value) || 0
+  };
+};
+_cliEsqObjDeForm = r13FormObj;
+esquemaTipoChange = function () {
+  if (!$('ncRelacion')) return;
+  var o = r13FormObj(), punt = o.tipo_relacion === 'puntual', t = $('ncEsquema') ? $('ncEsquema').value : 'fija';
+  if ($('blkRecurrente')) $('blkRecurrente').classList.toggle('hidden', punt);
+  if ($('blkFija')) $('blkFija').classList.toggle('hidden', t !== 'fija');
+  if ($('blkPct')) $('blkPct').classList.toggle('hidden', t !== 'porcentaje');
+  var d = $('ncDesglose'); if (!d || punt) return;
+  var r = calcMontoEsquema(o, 3000);
+  d.innerHTML = 'Con este esquema, una semana con gross de $3,000 se cobraría <b>' + fmt$(r.monto) + '</b>' + (o.esquema_tipo === 'fija' ? '' : ' · ' + r.desglose);
+};
+(function () {
+  var lab0 = esquemaLabel;
+  esquemaLabel = function (c) { if (c && c.tipo_relacion === 'puntual') return 'Eventual'; return lab0(c); };
+})();
+
+/* ---------------------------------------------------------- 3 · DOT repetido */
+function r14Dot(d) { return String(d || '').replace(/\D/g, ''); }
+function r14DotDe(dot, excepto) {
+  var k = r14Dot(dot); if (!k) return null;
+  var vivo = CLIENTES.find(function (c) { return c.id !== excepto && r14Dot(c.dot) === k; });
+  if (vivo) return { c: vivo, elim: false };
+  var ju = CLIENTES_ELIM.find(function (c) { return c.id !== excepto && r14Dot(c.dot) === k; });
+  return ju ? { c: ju, elim: true } : null;
+}
+function r14AbrirCliente(id) {
+  window.CLI_F = 'todos'; window.CLI_Q = '';
+  if (DETALLE !== id) clxToggleFicha(id); else render();
+  setTimeout(function () { var el = document.querySelector('#cliLista .card[data-card="' + id + '"]'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 80);
+}
+function r14AvisoDot(hit, dot) {
+  var c = hit.c;
+  if (!hit.elim) {
+    return pgConfirm({
+      titulo: 'Ese DOT ya está registrado', peligro: false, textoBoton: 'Abrir ese cliente',
+      cuerpo: 'Ya existe <b>' + esc(c.empresa) + '</b> con el DOT <span class="mono">' + esc(c.dot || dot) + '</span>. No se crea otro: abre el que ya está y edítalo si hace falta.',
+      onOk: function () { return r14AbrirCliente(c.id); }
+    });
+  }
+  if (esDir()) {
+    return pgConfirm({
+      titulo: 'Ese DOT es de un cliente eliminado', peligro: false, textoBoton: 'Restaurar ese cliente',
+      cuerpo: '<b>' + esc(c.empresa) + '</b> (DOT <span class="mono">' + esc(c.dot || dot) + '</span>) está eliminado. En vez de crear otro, restáuralo y queda con toda su historia.',
+      onOk: function () { return r13Restaurar(c.id); }
+    });
+  }
+  return pgConfirm({
+    titulo: 'Ese DOT es de un cliente eliminado', peligro: false, textoBoton: 'Entendido',
+    cuerpo: '<b>' + esc(c.empresa) + '</b> (DOT <span class="mono">' + esc(c.dot || dot) + '</span>) existe pero está eliminado. No se crea otro: pídele a dirección que lo restaure.',
+    onOk: function () { }
+  });
+}
+
+/* ---------------------------------------------------------- 1 · guardar */
+crearCliente = async function () {
+  var empresa = ($('ncEmpresa').value || '').trim();
+  if (!empresa) return toast('Falta la empresa');
+  var o = r13FormObj(), editId = EDIT.cliente;
+  var g = function (id) { var el = $(id); return el ? (el.value || '').trim() || null : null; };
+  var orig = editId ? (cli(editId) || {}) : null;
+  var dotCambio = !editId || r14Dot(orig.dot) !== r14Dot(g('ncDot'));
+  var hit = dotCambio ? r14DotDe(g('ncDot'), editId) : null;
+  if (hit && (!editId || !hit.elim)) return r14AvisoDot(hit, g('ncDot'));
+  var row = {
+    empresa: empresa, dba: g('ncDba'), dot: g('ncDot'), mc: g('ncMc'), representante: g('ncRep'), telefono: g('ncTel'),
+    email: g('ncEmail'), codigos: g('ncCodigos'), notas: g('ncNotas'), tipo_relacion: o.tipo_relacion
+  };
+  if (o.tipo_relacion === 'puntual') {
+    Object.assign(row, { esquema_tipo: 'fija', tarifa_semanal: null, esquema_pct: null, esquema_piso: null });
+  } else {
+    if (o.esquema_tipo === 'fija' && !(o.tarifa_semanal > 0)) return toast('Escribe la tarifa semanal');
+    if (o.esquema_tipo !== 'fija' && !(o.esquema_pct > 0)) return toast('Escribe el porcentaje');
+    Object.assign(row, {
+      esquema_tipo: o.esquema_tipo, unidades_activas: o.unidades_activas,
+      esquema_pct: o.esquema_tipo === 'fija' ? null : o.esquema_pct, esquema_piso: o.esquema_tipo === 'porcentaje_piso' ? o.esquema_piso : null,
+      tarifa_semanal: o.esquema_tipo === 'fija' ? o.tarifa_semanal : null
+    });
+  }
+  if (esDir() && $('ncPctOperyx')) {
+    var pv = $('ncPctOperyx').value.trim(), p = pv === '' ? null : Number(pv);
+    if (p != null && !(p >= 0 && p <= 100)) return toast('El % de Operyx va de 0 a 100');
+    row.pct_operyx = p;
+  }
+  var r;
+  if (editId) r = await sb.from('amazon_clientes').update(row).eq('id', editId).select().single();
+  else r = await sb.from('amazon_clientes').insert(row).select().single();
+  if (r.error) return toast('Error: ' + r.error.message);
+  var nuevoId = editId || (r.data && r.data.id);
+  await eventoAudit(editId ? 'editado' : 'cliente_creado', (editId ? 'Cliente editado: ' : 'Cliente registrado: ') + empresa +
+    ' · ' + (o.tipo_relacion === 'puntual' ? 'eventual' : 'recurrente'), { cliente_id: nuevoId });
+  if (!editId) await r13BorrBorrar('cliente');
+  EDIT.cliente = null;
+  toast(editId ? 'Cliente actualizado' : 'Cliente registrado');
+  await loadAll(); render();
+};
+R13_FORMS.cliente.ids = ['ncEmpresa', 'ncDot', 'ncRelacion', 'ncEsquema', 'ncTarifa', 'ncUnidades', 'ncPct', 'ncPiso', 'ncPctOperyx', 'ncCodigos', 'ncDba', 'ncMc', 'ncRep', 'ncTel', 'ncEmail', 'ncNotas'];
+R13_FORMS.cliente.llave = ['ncEmpresa', 'ncDot', 'ncTarifa', 'ncCodigos', 'ncDba', 'ncMc', 'ncRep', 'ncTel', 'ncEmail', 'ncNotas'];
+
+/* ---------------------------------------------------------- 2 · etiqueta del cobro */
+function r14EtiquetaCobro(c) {
+  if (!c) return null;
+  if (c.servpro_id || c.tipo === 'servicio') {
+    return 'Servicio profesional · ' + (c.parte === 'anticipo' ? 'Upfront fee' : (c.parte === 'saldo' ? 'Saldo final' : 'Pago único'));
+  }
+  if (/sin origen/i.test(c.notas || '')) return 'Cobro manual';
+  var cl = cli(c.cliente_id) || (typeof r13Cli === 'function' ? r13Cli(c.cliente_id) : null);
+  var lds = loadsDeCobro(c.id);
+  var gross = Number(c.gross_total) || lds.reduce(function (a, l) { return a + (Number(l.tarifa) || 0); }, 0);
+  var t = cl ? (cl.esquema_tipo || 'fija') : 'fija';
+  if ((t === 'porcentaje' || t === 'porcentaje_piso') && cl.tipo_relacion !== 'puntual') {
+    var pct = Number(cl.esquema_pct) || 0, porPct = Math.round(pct * gross) / 100, piso = Number(cl.esquema_piso) || 0;
+    if (t === 'porcentaje_piso' && piso && Number(c.monto) > porPct + 0.005 && Math.abs(Number(c.monto) - piso) < 0.01) return 'Comisión carga logística · piso semanal ' + ui.money2(piso);
+    return 'Comisión carga logística (' + r13N(pct) + ' % gross)' + (gross ? ' · ' + ui.money(gross) + ' gross' : '');
+  }
+  if (t === 'fija' && cl && cl.tipo_relacion !== 'puntual' && Number(cl.tarifa_semanal) > 0) return 'Tarifa semanal recurrente';
+  if (lds.length) return 'Carga logística · ' + lds.length + ' viaje' + (lds.length === 1 ? '' : 's');
+  return null;
+}
+function r14ConEtiqueta(html, c) {
+  var et = r14EtiquetaCobro(c);
+  return html.replace(/<div class="c-prem">([\s\S]*?)<\/div>/, function (m, inner) {
+    var prem = inner.replace(/<span class="pz">[\s\S]*?<\/span>/, '');
+    return '<div class="c-prem">' + prem + (et ? '<span class="pz">' + ui.esc(et) + '</span>' : '') + '</div>';
+  });
+}
+(function () {
+  var cc0 = cobCard, ccc0 = clxCardCobro;
+  cobCard = function (c) { return r14ConEtiqueta(cc0.apply(this, arguments), c); };
+  clxCardCobro = function (c) { return r14ConEtiqueta(ccc0.apply(this, arguments), c); };
+})();
+
+(function () {
+  var st = document.createElement('style');
+  st.textContent = '.card .c-prem .pz{white-space:normal;overflow-wrap:anywhere;max-width:190px;margin-left:auto;text-align:right}' +
+    '@media(max-width:480px){.card .c-prem .pz{max-width:150px}}';
+  document.head.appendChild(st);
 })();
 
 </script>
