@@ -10,7 +10,12 @@
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <script src="pg-volver.js" defer></script>
 <!-- ===================================================================
-     Guidelines MGA · v1 (6-oct-2026)
+     Guidelines MGA · v2 (6-oct-2026)
+     v2: ficha reorganizada (Perfilar arriba; cómo trabajar en acordeones;
+         programas y tablas; notas), vista expandida a pantalla completa
+         (botón Expandir / tecla E / doble clic en el nombre; flechas para
+         pasar de mercado; Esc cierra; #m=<id>&x=1), lista ordenada por nombre.
+     v1: Guidelines MGA (6-oct-2026)
      Los guidelines y apetitos de los 40 mercados (lo mismo del deck), vivos
      y buscables, dentro del Protect Index.
      - Datos: portal.guidelines_mga (fichas), portal.guidelines_tipos (los 5
@@ -195,6 +200,81 @@ a.ej:hover{border-color:var(--mint)}
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:50;max-width:90vw}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .cargando{padding:60px 0;text-align:center;color:var(--muted)}
+/* v2 · ficha reorganizada */
+.fh .xbtn{margin-left:auto;align-self:flex-start}
+.sec{font:700 11px var(--f-tit);letter-spacing:.14em;text-transform:uppercase;color:var(--mint-deep);margin:24px 0 0;display:flex;align-items:center;gap:10px}
+.sec::after{content:"";flex:1;height:1px;background:var(--line)}
+.sec+.cards,.sec+.dls{margin-top:10px}
+.cards{grid-template-columns:repeat(auto-fit,minmax(270px,1fr))}
+.info .b b.big{font:700 14px var(--f-tit);color:var(--ink)}
+.info .b .viejo{margin-top:4px}
+details.mini{margin-top:4px}
+details.mini>summary{cursor:pointer;color:var(--mint-deep);font-weight:600;font-size:12.5px;list-style:none}
+details.mini>summary::-webkit-details-marker{display:none}
+details.mini>summary::after{content:" ▾"}
+details.mini[open]>summary::after{content:" ▴"}
+details.mini>div{margin-top:4px}
+.card li.mas{display:none}
+.card.full li.mas{display:list-item}
+.vermas{background:none;border:none;color:var(--mint-deep);font:600 12.5px var(--f-body);cursor:pointer;padding:6px 0 0}
+.card.full .vermas{display:none}
+.dls{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+details.dl{background:#fff;border:1px solid var(--line);border-radius:12px}
+details.dl>summary{list-style:none;cursor:pointer;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:10px;font:700 12.5px var(--f-tit);letter-spacing:.06em;text-transform:uppercase;color:var(--ink);border-radius:12px}
+details.dl>summary::-webkit-details-marker{display:none}
+details.dl>summary:focus-visible{outline:none;box-shadow:inset 0 0 0 2px var(--mint)}
+details.dl>summary::after{content:"+";font:700 17px var(--f-num);color:var(--mint-deep);line-height:1}
+details.dl[open]>summary::after{content:"−"}
+details.dl .ct{font:600 11px var(--f-num);background:#EEF2F5;border-radius:999px;padding:1px 8px;color:var(--ink);margin-left:8px;letter-spacing:0;text-transform:none}
+details.dl>ul{margin:0;padding:0 16px 14px 34px;font-size:13px;line-height:1.55}
+details.dl>ul li{margin-bottom:3px;overflow-wrap:anywhere}
+details.dl .tbx{padding:0 14px 14px}
+details.dl .tbx .fn{font-size:12px;color:var(--muted);margin-top:6px}
+/* v2 · vista expandida */
+dialog.xp{padding:0;border:none;width:100vw;height:100vh;max-width:100vw;max-height:100vh;margin:0;background:var(--bg);color:var(--txt)}
+dialog.xp::backdrop{background:rgba(13,48,64,.55)}
+dialog.xp:not([open]){display:none}
+dialog.xp[open]{display:flex;flex-direction:column}
+html.xp-on,html.xp-on body{overflow:hidden}
+.xp-bar{flex:none;display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 20px;background:#fff;border-bottom:1px solid var(--line);flex-wrap:wrap;position:relative;z-index:6}
+.xp-id{display:flex;gap:10px;align-items:center;min-width:0;flex:1}
+.xp-id .t{min-width:0}
+.xp-id b{display:block;font:800 15px var(--f-tit);color:var(--ink);line-height:1.2;overflow-wrap:anywhere}
+.xp-id .sello{margin-top:3px}
+.xp-nav{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.xp-nav .mono{font-size:12px;color:var(--muted);padding:0 4px}
+.xp-nav .btn2:disabled{opacity:.4;cursor:default}
+.xp-x{border-color:var(--ink)}
+.xp-body{flex:1;overflow:auto;-webkit-overflow-scrolling:touch}
+.xwrap{position:relative;min-height:100%}
+.xficha{max-width:1100px;margin:0 auto;padding:28px 28px 70px;font-size:16px}
+.xficha .fh .logo{width:88px;height:88px}
+.xficha .fh h2{font-size:27px}
+.xficha .fh .prog{font-size:16px}
+.xficha .fh .via{font-size:15px}
+.xficha .covs .cv{font-size:13.5px;padding:5px 10px}
+.xficha .info .b{font-size:15px}
+.xficha .info .b b.big{font-size:16px}
+.xficha .porconf{font-size:15px}
+.xficha .sec{font-size:12.5px;margin-top:30px}
+.xficha .cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.xficha .card{padding:18px 20px}
+.xficha .card h3,.xficha details.dl>summary{font-size:14px}
+.xficha .card ul,.xficha details.dl>ul{font-size:15.5px;line-height:1.62}
+.xficha .card .car b{font-size:15.5px}
+.xficha table{font-size:14.5px}
+.xficha th{font-size:12px}
+.xficha .ap .tx{font-size:15px}
+@media (max-width:860px){
+  .xficha .cards{grid-template-columns:minmax(0,1fr)}
+  .xficha{padding:18px 14px 70px}
+  .xficha .fh .logo{width:64px;height:64px}
+  .xficha .fh h2{font-size:22px}
+  .xp-bar{padding:8px 12px}
+  .xp-id{flex-basis:100%}
+  .xp-nav{width:100%}
+  .xp-nav .xp-x{margin-left:auto}
+}
 @media (max-width:860px){
   .mk{grid-template-columns:minmax(0,1fr)}
   .lista{position:static;max-height:none}
@@ -264,6 +344,18 @@ a.ej:hover{border-color:var(--mint)}
   </section>
   <section id="vTipos" hidden><div class="tipos" id="tipos"></div></section>
   <section id="vAportes" hidden class="bandeja"><div id="bandeja"></div></section>
+  <dialog class="xp prot" id="xp" aria-label="Ficha a pantalla completa">
+   <div class="xp-bar">
+    <div class="xp-id" id="xpId"></div>
+    <div class="xp-nav">
+     <button class="btn2" id="xpPrev" type="button" title="Mercado anterior (←)">← Anterior</button>
+     <span class="mono" id="xpPos"></span>
+     <button class="btn2" id="xpNext" type="button" title="Mercado siguiente (→)">Siguiente →</button>
+     <button class="btn2 xp-x" id="xpCerrar" type="button" title="Cerrar (Esc)">✕ Cerrar</button>
+    </div>
+   </div>
+   <div class="xp-body" id="xpBody"><div class="xwrap"><div class="wm"></div><div class="xficha" id="xficha"></div></div></div>
+  </dialog>
  </div>
 </div>
 <div class="toast" id="toast" role="status"></div>
@@ -502,47 +594,71 @@ function arreglarLogos(root){
 
 /* ---------------- ficha ---------------- */
 function lista(items){ items=arr(items); return items.length?"<ul>"+items.map(function(x){return "<li>"+esc(x)+"</li>";}).join("")+"</ul>":""; }
-function card(tit,items,bad){ var l=lista(items); return l?'<div class="card'+(bad?" bad":"")+'"><h3><i></i>'+esc(tit)+'</h3>'+l+'</div>':""; }
+var TOPE=8; /* ítems visibles por tarjeta en la vista normal; el resto con "Ver N más" */
+function card(tit,items,bad,full){ items=arr(items); if(!items.length)return "";
+  var lim=full?items.length:TOPE, mas=items.length-lim;
+  return '<div class="card'+(bad?" bad":"")+(mas>0?"":" full")+'"><h3><i></i>'+esc(tit)+'</h3><ul>'+
+    items.map(function(x,i){return '<li'+(i>=lim?' class="mas"':'')+'>'+esc(x)+'</li>';}).join("")+'</ul>'+
+    (mas>0?'<button class="vermas" type="button" data-act="vermas">Ver '+mas+' más</button>':"")+'</div>'; }
+function acord(tit,items,abierto){ items=arr(items); if(!items.length)return "";
+  return '<details class="dl"'+(abierto?" open":"")+'><summary><span>'+esc(tit)+'<span class="ct">'+items.length+'</span></span></summary>'+lista(items)+'</details>'; }
+function sec(tit,cuerpo){ return cuerpo?'<div class="sec">'+esc(tit)+'</div>'+cuerpo:""; }
+function estadosCorto(f){ var st=f.states||{}, n=arr(st.list).length;
+  if(st.mode==="all")return "Todos los estados";
+  if(st.mode==="all_except")return "Todos excepto "+n;
+  if(st.mode==="only")return "Solo "+n+" estado"+(n===1?"":"s");
+  return st.label?"Ver detalle":"—"; }
 function cardCarriers(cs){
   if(!Array.isArray(cs)||!cs.length)return "";
   var h=cs.map(function(c){ if(typeof c==="string")return '<div class="car">• '+esc(c)+'</div>'; if(!c)return "";
     return '<div class="car"><b>'+esc(c.name||"—")+'</b>'+lista(c.detail)+'</div>'; }).join("");
   return '<div class="card"><h3><i></i>Carriers</h3>'+h+'</div>';
 }
-function tablas(ts){
+function tablas(ts,full){
   if(!Array.isArray(ts)||!ts.length)return "";
-  return '<div class="tbls">'+ts.map(function(t){ if(!t)return "";
+  return '<div class="dls">'+ts.map(function(t){ if(!t)return "";
     var hd=arr(t.headers), rows=Array.isArray(t.rows)?t.rows:[];
-    return '<div class="tbl">'+(t.title?'<h3>'+esc(t.title)+'</h3>':"")+'<div class="tw"><table>'+
+    return '<details class="dl tb"'+(full?" open":"")+'><summary><span>'+esc(t.title||"Tabla")+'<span class="ct">'+rows.length+' fila'+(rows.length===1?"":"s")+'</span></span></summary><div class="tbx"><div class="tw"><table>'+
       (hd.length?'<thead><tr>'+hd.map(function(x){return "<th>"+esc(x)+"</th>";}).join("")+'</tr></thead>':"")+
       '<tbody>'+rows.map(function(r){return "<tr>"+(Array.isArray(r)?r:[r]).map(function(c){return "<td>"+guion(c)+"</td>";}).join("")+"</tr>";}).join("")+'</tbody></table></div>'+
-      (t.footnote?'<div class="fn">'+esc(t.footnote)+'</div>':"")+'</div>';
+      (t.footnote?'<div class="fn">'+esc(t.footnote)+'</div>':"")+'</div></details>';
   }).join("")+'</div>';
 }
 function pintarFicha(){
-  var f=FX[S.sel]; var el=$("ficha");
+  var X=XP, f=FX[S.sel]; var el=X?$("xficha"):$("ficha");
   if(!f){el.innerHTML='<div class="vacio">Elige un mercado de la lista.</div>';return;}
   var P=S.parsed||{cov:[]};
   var logos=logoHtml(f.logo,f.name)+(f.logo2?logoHtml(f.logo2,f.name):"");
   var covs=arr(f.coverages).map(function(c){var hit=covCanon(c).some(function(k){return P.cov.indexOf(k)>=0||$("fCov").value===k;});return '<span class="cv'+(hit?" hit":"")+'">'+esc(c)+'</span>';}).join("")||'<span class="cv">—</span>';
   var pend=arr(f.pending);
   var dep=S.depende[f.id]?'<div class="porconf" style="border-left-color:var(--ambar)"><div class="l">Depende en '+esc(S.depende[f.id].join(", "))+'</div>La disponibilidad en ese estado tiene condiciones: revisa el detalle de estados.</div>':"";
-  var h='<div class="fh"><div class="logos">'+logos+'</div><div class="t"><h2>'+esc(f.name)+'</h2>'+(f.program?'<div class="prog">'+esc(f.program)+'</div>':"")+
+  var st=f.states||{}, conDet=!!(st.label||st.note||arr(st.list).length);
+  var estBox='<div class="b"><div class="l">Estados</div><b class="big">'+esc(estadosCorto(f))+'</b>'+
+    (conDet?'<details class="mini"'+(X?" open":"")+'><summary>'+(X?"Detalle":"Ver detalle")+'</summary><div>'+estadosTexto(f)+'</div></details>':"")+'</div>';
+  var verBox='<div class="b"><div class="l">Verificado</div><span class="mono">'+fecha(f.verificado)+'</span> · por '+guion(f.verificado_por)+
+    (viejo(f.verificado)?'<div class="viejo"><span class="dot"></span>más de 6 meses sin verificar</div>':"")+
+    (f.doc_url&&/^https:\/\//.test(f.doc_url)?'<div><a href="'+esc(f.doc_url)+'" target="_blank" rel="noopener">Guideline oficial ↗</a></div>':"")+'</div>';
+  var perfilar=card("Aceptables",f.acceptable,false,X)+card("Inaceptables",f.unacceptable,true,X)+card("Conductores",f.driver,false,X);
+  var trabajar=acord("Cómo funciona este mercado",f.how_it_works,true)+acord("Cómo someter",f.submission,X)+acord("Pricing y pagos",f.pricing,X)+acord("Nuevo negocio",f.new_business,X);
+  var progs=cardCarriers(f.carriers), tbs=tablas(f.tables,X);
+  var h='<div class="fh"><div class="logos">'+logos+'</div><div class="t"><h2 title="'+(X?"":"Doble clic para expandir")+'">'+esc(f.name)+'</h2>'+(f.program?'<div class="prog">'+esc(f.program)+'</div>':"")+
     '<div class="pills">'+tipoPill(f.tipo)+'<span class="sello s-'+esc(f.estado||"activo")+'"><span class="dot d-'+esc(f.estado||"activo")+'"></span>'+esc(EST_L[f.estado]||"Activo")+'</span></div>'+
-    '<div class="via">'+guion(f.via)+'</div></div></div>'+
+    '<div class="via">'+guion(f.via)+'</div></div>'+
+    (X?"":'<button class="btn2 xbtn" type="button" data-act="expandir" title="Leer a pantalla completa (tecla E)">⤢ Expandir</button>')+'</div>'+
     '<div class="covs">'+covs+'</div>'+
-    '<div class="info"><div class="b"><div class="l">Estados</div>'+estadosTexto(f)+'</div>'+
-    '<div class="b"><div class="l">Nota de cobertura</div>'+guion(f.coverage_note)+'</div></div>'+dep+
+    '<div class="info">'+estBox+'<div class="b"><div class="l">Nota de cobertura</div>'+guion(f.coverage_note)+'</div>'+verBox+'</div>'+dep+
     (pend.length?'<div class="porconf"><div class="l">▲ Por confirmar</div>'+lista(pend)+'</div>':"")+
-    '<div class="verif"><span>Verificado: '+fecha(f.verificado)+' · por '+guion(f.verificado_por)+'</span>'+(viejo(f.verificado)?'<span class="viejo"><span class="dot"></span>más de 6 meses sin verificar</span>':"")+
-    (f.doc_url&&/^https:\/\//.test(f.doc_url)?'<a href="'+esc(f.doc_url)+'" target="_blank" rel="noopener">Guideline oficial (Drive) ↗</a>':"")+'</div>'+
-    '<div class="cards">'+card("Cómo trabaja",f.how_it_works)+card("Aceptables",f.acceptable)+card("Inaceptables",f.unacceptable,true)+
-      card("Driver",f.driver)+card("New business",f.new_business)+cardCarriers(f.carriers)+card("Precios",f.pricing)+card("Envío",f.submission)+card("Notas",f.notes)+'</div>'+
-    tablas(f.tables)+
+    sec("Perfilar",perfilar?'<div class="cards">'+perfilar+'</div>':"")+
+    sec("Cómo trabajar con ellos",trabajar?'<div class="dls">'+trabajar+'</div>':"")+
+    sec("Programas y tablas",(progs?'<div class="cards">'+progs+'</div>':"")+tbs)+
+    (arr(f.notes).length?'<div class="dls" style="margin-top:14px">'+acord("Notas",f.notes,X)+'</div>':"")+
     '<div id="expBox">'+expHtml(f)+'</div>';
   el.innerHTML=h;
   arreglarLogos(el);
   resaltar(el,(S.parsed||{hl:[]}).hl);
+  /* si la búsqueda cae dentro de algo plegado, se abre solo */
+  el.querySelectorAll("details").forEach(function(d){ if(d.querySelector("mark"))d.open=true; });
+  el.querySelectorAll(".card").forEach(function(c){ if(c.querySelector("li.mas mark"))c.classList.add("full"); });
   marca();
 }
 
@@ -686,13 +802,15 @@ function pintarTipos(){
 }
 
 /* ---------------- navegación ---------------- */
-function leerHash(){ var m=/^#m=(.+)$/.exec(location.hash); return m?decodeURIComponent(m[1]):null; }
+function leerHashX(){ var m=/^#m=([^&]+)(&x=1)?$/.exec(location.hash); if(!m)return null; try{return {id:decodeURIComponent(m[1]),x:!!m[2]};}catch(e){return null;} }
+function leerHash(){ var h=leerHashX(); return h?h.id:null; }
+function ponerHash(){ if(!S.sel)return; var h="#m="+encodeURIComponent(S.sel)+(XP?"&x=1":""); if(location.hash!==h)history.replaceState(null,"",h); }
 function abrir(id,conHash){
   if(!FX[id])return;
   if(S.sel!==id){S.formAbierto=false;S.editando=null;}
   S.sel=id; verVista("mercados");
   $("mk").classList.add("solo-ficha");
-  if(conHash&&leerHash()!==id){ history.replaceState(null,"","#m="+encodeURIComponent(id)); }
+  if(conHash)ponerHash();
   document.querySelectorAll(".it").forEach(function(x){x.classList.toggle("sel",x.getAttribute("data-id")===id);});
   pintarFicha();
   if(window.innerWidth<=860){ window.scrollTo(0,$("mk").offsetTop-8); }
@@ -712,12 +830,49 @@ function verVista(v){
   if(v==="aportes")pintarBandeja();
 }
 
+/* ---------------- vista expandida (v2) ---------------- */
+var XP=false, XPscroll=0;
+function abrirX(conHash){
+  if(!S.sel||!FX[S.sel])return;
+  if(!XP){
+    XPscroll=window.scrollY||0; XP=true;
+    $("ficha").innerHTML=""; /* una sola superficie viva: ids únicos (expBox, formularios) */
+    var d=$("xp"); try{ if(!d.open)d.showModal(); }catch(e){ d.setAttribute("open",""); }
+    document.documentElement.classList.add("xp-on");
+  }
+  pintarX();
+  if(conHash!==false)ponerHash();
+}
+function pintarX(){
+  var f=FX[S.sel]; if(!f)return;
+  $("xpId").innerHTML=logoHtml(f.logo,f.name)+'<div class="t"><b>'+esc(f.name)+'</b><span class="sello s-'+esc(f.estado||"activo")+'"><span class="dot d-'+esc(f.estado||"activo")+'"></span>'+esc(EST_L[f.estado]||"Activo")+'</span></div>';
+  arreglarLogos($("xpId"));
+  var i=S.res.indexOf(f), n=S.res.length;
+  $("xpPos").textContent=i>=0?(i+1)+" / "+n:"";
+  $("xpPrev").disabled=!(i>0); $("xpNext").disabled=!(i>=0&&i<n-1);
+  pintarFicha();
+  $("xpBody").scrollTop=0;
+}
+function moverX(d){
+  var i=S.res.indexOf(FX[S.sel]); if(i<0)return; var j=i+d; if(j<0||j>=S.res.length)return;
+  S.sel=S.res[j].id; S.formAbierto=false; S.editando=null;
+  document.querySelectorAll(".it").forEach(function(x){x.classList.toggle("sel",x.getAttribute("data-id")===S.sel);});
+  pintarX(); ponerHash();
+}
+function cerrarX(){
+  if(!XP)return; XP=false;
+  var d=$("xp"); if(d.open){ try{d.close();}catch(e){d.removeAttribute("open");} }
+  $("xficha").innerHTML=""; document.documentElement.classList.remove("xp-on");
+  pintarFicha(); ponerHash();
+  window.scrollTo(0,XPscroll);
+  var it=document.querySelector('.it[data-id="'+(S.sel||"")+'"]'); if(it&&window.innerWidth>860)it.scrollIntoView({block:"nearest"});
+}
+
 /* ---------------- marca de agua ---------------- */
 function marca(){
   var txt=EMAIL+" · "+fecha(new Date().toISOString().slice(0,10));
   var svg='<svg xmlns="http://www.w3.org/2000/svg" width="360" height="200"><text x="20" y="120" transform="rotate(-24 180 100)" font-family="Inter,Arial,sans-serif" font-size="14" fill="#1B2D3A" fill-opacity="0.075">'+esc(txt)+'</text></svg>';
-  $("wm").style.backgroundImage='url("data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg)+'")';
-  $("wm").setAttribute("data-email",EMAIL);
+  document.querySelectorAll(".wm").forEach(function(w){ w.style.backgroundImage='url("data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg)+'")'; w.setAttribute("data-email",EMAIL); });
 }
 
 /* ---------------- anti-descarga ---------------- */
@@ -744,12 +899,32 @@ function enlazar(){
     if(e.key==="ArrowDown"&&it.nextElementSibling){e.preventDefault();it.nextElementSibling.focus();}
     if(e.key==="ArrowUp"&&it.previousElementSibling){e.preventDefault();it.previousElementSibling.focus();} });
   document.querySelectorAll(".tab").forEach(function(t){ t.addEventListener("click",function(){ verVista(t.getAttribute("data-view")); }); });
-  window.addEventListener("hashchange",function(){ var id=leerHash(); if(id&&FX[id]&&id!==S.sel)abrir(id,false); });
+  window.addEventListener("hashchange",function(){ var h=leerHashX(); if(!h||!FX[h.id]){ if(XP)cerrarX(); return; }
+    if(h.id!==S.sel){ if(XP){ S.sel=h.id; pintarX(); } else abrir(h.id,false); }
+    if(h.x&&!XP)abrirX(false); else if(!h.x&&XP)cerrarX(); });
+  /* vista expandida */
+  $("xpCerrar").addEventListener("click",cerrarX);
+  $("xpPrev").addEventListener("click",function(){moverX(-1);});
+  $("xpNext").addEventListener("click",function(){moverX(1);});
+  $("xp").addEventListener("cancel",function(e){ e.preventDefault(); cerrarX(); });
+  $("ficha").addEventListener("dblclick",function(e){ if(e.target.closest(".fh h2"))abrirX(); });
+  document.addEventListener("keydown",function(e){
+    if(e.ctrlKey||e.metaKey||e.altKey||enCampo(e.target))return;
+    if(XP){
+      if(e.key==="ArrowLeft"){e.preventDefault();moverX(-1);}
+      else if(e.key==="ArrowRight"){e.preventDefault();moverX(1);}
+      else if(e.key==="Escape"){e.preventDefault();cerrarX();}
+      return;
+    }
+    if((e.key==="e"||e.key==="E")&&S.view==="mercados"&&S.sel&&FX[S.sel]&&!$("vMercados").hidden){ e.preventDefault(); abrirX(); }
+  });
   document.addEventListener("input",function(e){ var t=e.target; if(t.getAttribute&&t.getAttribute("data-f")==="texto"){ var c=t.closest(".frm").querySelector('[data-f="cnt"]'); if(c)c.textContent=t.value.trim().length+" / mín. 20"; } });
   document.addEventListener("click",function(e){
     var b=e.target.closest("[data-act]"); if(!b)return;
     var act=b.getAttribute("data-act"), id=b.getAttribute("data-id");
-    if(act==="ir"){ e.preventDefault(); abrir(id,true); }
+    if(act==="ir"){ e.preventDefault(); if(XP)cerrarX(); abrir(id,true); }
+    else if(act==="expandir"){ abrirX(); }
+    else if(act==="vermas"){ var cd=b.closest(".card"); if(cd)cd.classList.add("full"); }
     else if(act==="abrirForm"){ S.formAbierto=true; repintarExp(); var ta=document.querySelector('[data-frm="nuevo"] textarea'); if(ta)ta.focus(); }
     else if(act==="cancelar"){ if(id==="nuevo")S.formAbierto=false; else S.editando=null; repintarExp(); }
     else if(act==="guardar"){ guardar(id); }
@@ -770,7 +945,8 @@ function montar(tipos,fichas,aportes,personas){
   TIPOS=(tipos||[]).slice().sort(function(a,b){return (a.orden||0)-(b.orden||0);}); TIPO={}; TIPOS.forEach(function(t){TIPO[t.key]=t;});
   APORTES=(aportes||[]).slice();
   PERSONAS={}; (personas||[]).forEach(function(p){ if(p&&p.email)PERSONAS[String(p.email).toLowerCase()]=p.nombre; });
-  FICHAS=(fichas||[]).slice().sort(function(a,b){return ((a.orden==null?9999:a.orden)-(b.orden==null?9999:b.orden))||String(a.name).localeCompare(String(b.name));});
+  /* v2: orden por nombre (decisión de Andrés 6-oct-2026); orden solo desempata */
+  FICHAS=(fichas||[]).slice().sort(function(a,b){return String(a.name||"").localeCompare(String(b.name||""),"es",{sensitivity:"base"})||((a.orden==null?9999:a.orden)-(b.orden==null?9999:b.orden));});
   FX={}; FICHAS.forEach(function(f){FX[f.id]=f;}); FICHAS.forEach(prep);
   $("app").style.display="block"; $("bloqueo").style.display="none";
   $("yo").textContent=EMAIL||"—";
@@ -778,7 +954,7 @@ function montar(tipos,fichas,aportes,personas){
   llenarFiltros(); contarNuevos(); marca();
   S.parsed=parse("");
   aplicar();
-  var h=leerHash(); if(h&&FX[h])abrir(h,false);
+  var h=leerHashX(); if(h&&FX[h.id]){ abrir(h.id,false); if(h.x)abrirX(false); }
 }
 function fijarUsuario(email){ EMAIL=String(email||"").toLowerCase(); ADM=EMAIL===ADMIN; }
 
@@ -821,7 +997,7 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="guidelines.html";
-var PGV_VERSION=1; // v1 - Guidelines MGA: 40 fichas y 5 tipos de mercado desde portal.guidelines_*, búsqueda con sinónimos y estados, filtros, experiencias del equipo con sellos y bandeja de sales@, anti-descarga y marca de agua.
+var PGV_VERSION=2; // v2 - ficha reorganizada (Perfilar / cómo trabajar / programas y tablas / notas), vista expandida a pantalla completa con navegación y lista por nombre. v1 - Guidelines MGA: 40 fichas y 5 tipos de mercado desde portal.guidelines_*, búsqueda con sinónimos y estados, filtros, experiencias del equipo con sellos y bandeja de sales@, anti-descarga y marca de agua.
 if(/[?&]demo=1\b/.test(location.search))return;
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
