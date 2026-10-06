@@ -739,7 +739,7 @@ const SB_URL='https://hivpqsepwsfmafamxkzy.supabase.co';
 const SB_KEY='sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt';
 const sb=window.supabase.createClient(SB_URL,SB_KEY,{db:{schema:'portal'}});
 /* ===== v6 ===== */
-const PGV_VERSION=16; // v16 - Ronda 14: ficha de cliente solo con datos de la empresa (Recurrente/Eventual), etiqueta real del cobro, candado de DOT repetido. Antes: v15 - Ronda 13
+const PGV_VERSION=17; // v17 - 6-oct-2026: carga la columna del top (../pg-sombra.js) y la pastilla de bonos del mes (../pg-bonos.js), como el resto de herramientas. Nada más cambia. | v16 - Ronda 14: ficha de cliente solo con datos de la empresa (Recurrente/Eventual), etiqueta real del cobro, candado de DOT repetido. Antes: v15 - Ronda 13
 let CARGADO_EN=Date.now();
 let RENT=[], RENOV=[], RENOV_RES=null, CONFIG={}, TRM=4000, ERRORES={}, ES_DIR=false;
 let MES_SEL=new Date().getMonth();
@@ -8093,5 +8093,7 @@ function r14ConEtiqueta(html, c) {
 })();
 
 </script>
+<script src="../pg-sombra.js" defer></script>
+<script src="../pg-bonos.js" defer></script>
 </body>
 </html>
