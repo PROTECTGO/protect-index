@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <!-- ===================================================================
-     Kit de Referidos · v1 (1-oct-2026)
+     Kit de Referidos · v2 (6-oct-2026)
      El asesor escribe su WhatsApp y los datos del referidor; la página
      arma con SU firma: propuesta ES/EN, portafolio ES/EN, tarjeta de
      WhatsApp ES/EN, ZIP y los textos para enviar.
@@ -356,9 +356,9 @@ async function tarjeta(lang,d){
   var en=lang==="en", partes=d.aNombre.split(/\s+/), l1=partes.shift()||"", l2=partes.join(" ");
   var foto=await cargarImg(persona.foto_url);
   var tel=d.aTel&&telValido(d.aTel)?fmtTel(d.aTel):"";
-  var tx=en?{k1:"Your contact at",rl:"Insurance for truckers<br>and businesses in Texas",pill:"We speak English and Spanish",hd:"Own a truck or a business?<br><span>Let us insure it.</span>",
+  var tx=en?{k1:"Your contact at",rl:"Insurance for truckers<br>and businesses nationwide",pill:"We speak English and Spanish",hd:"Own a truck or a business?<br><span>Let us insure it.</span>",
              t1:"Truckers",p1:"Owner-operators and fleets, new and experienced.",t2:"Businesses",p2:"Restaurants, contractors, auto shops, retail and more.",cta:"Message me for a quote today",call:"Call or text",scan:"Scan to message me",qr:"Hi "+d.aNombre+", I would like an insurance quote"}
-           :{k1:"Tu contacto en",rl:"Seguros para transportistas<br>y negocios en Texas",pill:"Atención en español e inglés",hd:"¿Tienes camión o negocio?<br><span>Asegúralo con nosotros.</span>",
+           :{k1:"Tu contacto en",rl:"Seguros para transportistas<br>y negocios en todo EE. UU.",pill:"Atención en español e inglés",hd:"¿Tienes camión o negocio?<br><span>Asegúralo con nosotros.</span>",
              t1:"Transportistas",p1:"Owner-operators y flotas, nuevos y con experiencia.",t2:"Negocios",p2:"Restaurantes, contratistas, talleres, tiendas y más.",cta:"Escríbeme y te cotizo hoy",call:"Llamadas y texto",scan:"Escanea y escríbeme",qr:"Hola "+d.aNombre+", quiero cotizar mi seguro"};
   var nmSize=Math.max(l1.length,l2.length)>11?52:62;
   var html='<div class="tj">'+SVG.shield+
@@ -533,7 +533,7 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="kit-referidos.html";
-var PGV_VERSION=1; // v1 - Kit de Referidos: firma desde v_personas, tarjeta PNG, PDFs estampados, ZIP, textos para copiar y pestaña Seguimiento (referidores, referidos, conversión, unidades)
+var PGV_VERSION=2; // v2 - Tarjeta y portafolio con cobertura nacional (ya no dicen un solo estado). | v1 - Kit de Referidos: firma desde v_personas, tarjeta PNG, PDFs estampados, ZIP, textos para copiar y pestaña Seguimiento (referidores, referidos, conversión, unidades)
 if(/[?&]demo=1\b/.test(location.search)||window.KR_DEMO===true)return;
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
