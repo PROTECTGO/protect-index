@@ -1,6 +1,8 @@
 /* =====================================================================
    ms-statement.js · Monthly Account Statement (Operyx Group × ProtectGo)
    Ronda 13 · 5-oct-2026. Lo usan amazon-relay/index.html y fam.html.
+   Ronda 15 · 7-oct-2026: si la liquidación tiene código bancario (codigo_banco_operyx)
+   el PDF, el Excel/CSV y el correo dicen "Paid · Confirmation #".
    Necesita pdf-lib (window.PDFLib) ya cargado. Carta vertical, inglés.
    API:
      MSStatement.pdfBytes(st, pagoTxt)  -> Promise<Uint8Array>
@@ -35,6 +37,7 @@
   }
   function lineas(st) { return Array.isArray(st.lineas) ? st.lineas : []; }
   function nombre(st) { return (st.numero || 'MS') + '_Operyx_Statement'; }
+  function pagado(st) { return st && st.codigo_banco_operyx ? 'Paid · Confirmation # ' + st.codigo_banco_operyx + ' · ' + fUS(st.fecha_transferencia || st.pagado_at) + ' · ' + usd(st.monto_transferido != null ? st.monto_transferido : st.total_operyx) : ''; }
 
   function filas(st) {
     return lineas(st).map(function (l) {
@@ -42,7 +45,8 @@
         Block: l.blk === 'A' ? 'A · 100% Operyx' : 'B · Standard split',
         Date: l.fecha || '', Client: l.cliente || '', DOT: l.dot || '', 'Load ID / Ref': l.ref || '', Type: tipoEN(l.tipo), Service: l.tipo || '',
         Gross: n(l.gross), 'Service fee': n(l.fee), 'Rate / Split': (l.rate || '') + ' · ' + pct(l.pct_operyx) + '/' + pct(100 - n(l.pct_operyx)),
-        'Due Operyx': n(l.operyx), 'Retained ProtectGo': n(l.protectgo), 'Transaction #': l.transaccion || ''
+        'Due Operyx': n(l.operyx), 'Retained ProtectGo': n(l.protectgo), 'Transaction #': l.transaccion || '',
+        'Bank confirmation # (Operyx)': st.codigo_banco_operyx || '', 'Transfer date': st.fecha_transferencia || ''
       };
     });
   }
@@ -55,7 +59,7 @@
       'Total service fees collected: ' + usd(st.fees != null ? st.fees : st.cobrado) + '\n' +
       'Total retained by ProtectGo: ' + usd(st.total_protectgo) + '\n' +
       'TOTAL DUE TO JUAN PABLO (OPERYX): ' + usd(st.total_operyx) + '\n' +
-      'Due date: ' + fUS(st.due_date) + '\n\n' +
+      'Due date: ' + fUS(st.due_date) + '\n' + (pagado(st) ? pagado(st) + '\n' : '') + '\n' +
       '(Attach the PDF ' + nombre(st) + '.pdf before sending.)\n\nThank you.';
     return { to: 'fam@protectgoservices.com', subject: subj, body: body };
   }
@@ -114,6 +118,7 @@
     tx(usd(st.total_operyx != null ? st.total_operyx : st.operario), W - M - 10, y, { b: true, s: 12, c: C.ink, r: true });
     tx((st.cobros || 0) + ' operation(s) · ' + lineas(st).length + ' line(s)', M, y - 24, { s: 8, c: C.mut });
     y -= 40;
+    if (pagado(st)) { rect(M, y - 6, W - 2 * M, 20, C.mint); tx(pagado(st), M + 10, y, { b: true, s: 9.5, c: C.white, max: W - 2 * M - 20 }); y -= 30; }
 
     /* ---- detalle ---- */
     var cols = [
@@ -161,7 +166,8 @@
     var pl = pago ? pago.split(/\r?\n/) : ['Payment details on file.'];
     espacio(40 + pl.length * 12);
     tx('PAYMENT INSTRUCTIONS', M, y, { b: true, s: 9, c: C.mint }); y -= 14;
-    tx('Please remit ' + usd(st.total_operyx != null ? st.total_operyx : st.operario) + ' to Juan Pablo (Operyx Group) on or before ' + fUS(st.due_date) + '.', M, y, { s: 9 }); y -= 14;
+    if (pagado(st)) { tx(pagado(st) + '.', M, y, { b: true, s: 9, c: C.mint, max: W - 2 * M }); y -= 14; }
+    else { tx('Please remit ' + usd(st.total_operyx != null ? st.total_operyx : st.operario) + ' to Juan Pablo (Operyx Group) on or before ' + fUS(st.due_date) + '.', M, y, { s: 9 }); y -= 14; }
     pl.forEach(function (t) { espacio(14); tx(t, M, y, { s: 9, max: W - 2 * M }); y -= 12; });
 
     /* ---- pie en todas las páginas ---- */
@@ -181,5 +187,5 @@
     return bytes;
   }
 
-  window.MSStatement = { pdfBytes: pdfBytes, descargarPDF: descargarPDF, filas: filas, nombre: nombre, correo: correo, mes: mes, usd: usd };
+  window.MSStatement = { pdfBytes: pdfBytes, descargarPDF: descargarPDF, filas: filas, nombre: nombre, correo: correo, mes: mes, usd: usd, pagado: pagado };
 })();
