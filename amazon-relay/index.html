@@ -739,7 +739,7 @@ const SB_URL='https://hivpqsepwsfmafamxkzy.supabase.co';
 const SB_KEY='sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt';
 const sb=window.supabase.createClient(SB_URL,SB_KEY,{db:{schema:'portal'}});
 /* ===== v6 ===== */
-const PGV_VERSION=17; // v17 - 6-oct-2026: carga la columna del top (../pg-sombra.js) y la pastilla de bonos del mes (../pg-bonos.js), como el resto de herramientas. Nada más cambia. | v16 - Ronda 14: ficha de cliente solo con datos de la empresa (Recurrente/Eventual), etiqueta real del cobro, candado de DOT repetido. Antes: v15 - Ronda 13
+const PGV_VERSION=18; // v18 - Ronda 15: menú retráctil (sin columna del top ni bonos), Enviar a FAM desde Invoices, estado del invoice = el de su cobro, barra con periodo, refresco cada 30 s, código bancario en la liquidación Operyx. Antes: v17 - carga pg-sombra/pg-bonos. v16 - Ronda 14
 let CARGADO_EN=Date.now();
 let RENT=[], RENOV=[], RENOV_RES=null, CONFIG={}, TRM=4000, ERRORES={}, ES_DIR=false;
 let MES_SEL=new Date().getMonth();
@@ -8092,8 +8092,458 @@ function r14ConEtiqueta(html, c) {
   document.head.appendChild(st);
 })();
 
+
+/* =====================================================================
+   AMAZON RELAY · v18 · RONDA 15 (7-oct-2026)
+   1) Menú lateral retráctil (« / ») · sin la columna del top ni la pastilla de bonos.
+   2) "Enviar a FAM" también desde Invoices + oferta al emitir el invoice.
+      "Marcar pagado" del invoice: solo dirección.
+   3) La pastilla del invoice sale del estado de su cobro · barra
+      "Cobrado vs comprometido" con periodo · refresco solo cada 30 s.
+   4) Liquidación Operyx (dirección): "Registrar pago a Operyx" con el
+      código de confirmación del banco (rpc amazon_liquidar_operyx).
+   Estas definiciones sobrescriben a las anteriores del archivo.
+   ===================================================================== */
+AMZ_VERSION = 18;
+
+/* ---------------------------------------------------------- estilos */
+(function () {
+  var st = document.createElement('style');
+  st.textContent =
+    '.r15tog{position:absolute;top:16px;right:10px;width:30px;height:30px;border-radius:8px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.05);color:#b9c6d0;font:700 15px/1 var(--f-num,monospace);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:3;padding:0}' +
+    '.r15tog:hover{color:#fff;background:rgba(45,191,163,.16)}.r15tog:focus-visible{outline:2px solid var(--mint);outline-offset:2px}' +
+    '.pg-side{transition:width .15s ease,padding .15s ease}' +
+    '@media(min-width:1081px){' +
+      'body.side-min{--side-w:64px}' +
+      'body.side-min .pg-side{padding:96px 8px 22px;overflow-x:hidden}' +
+      'body.side-min .r15tog{top:56px;left:17px;right:auto}' +
+      'body.side-min .pg-side .t,body.side-min .pg-brand .prod,body.side-min .nav-lbl,body.side-min .pg-foot{display:none}' +
+      'body.side-min .pg-brand{justify-content:center;margin:0 0 14px}' +
+      'body.side-min .pg-side a{justify-content:center;padding:10px 0;gap:0}' +
+      'body.side-min .pg-side a .k{width:auto;font-size:12.5px;color:#8da0ad}' +
+      'body.side-min .pg-side a.on .k{color:var(--mint)}' +
+      'body.side-min .pg-side a .b,body.side-min .pg-side a .famb{position:absolute;top:2px;right:2px;margin:0;padding:0 4px;min-width:0;font-size:9px}' +
+      'body.side-min .volver{font-size:0;padding:8px 12px;left:12px}' +
+      'body.side-min .volver::before{content:"←";font-size:14px}' +
+    '}' +
+    '@media(max-width:1080px){.r15tog{display:none}}' +
+    '.r15per{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 10px}' +
+    '.r15per .chip{cursor:pointer}' +
+    '.card .famnota.r15inv{margin-top:6px}' +
+    '.r15liqcod{margin:8px 0 0;font-size:12px;color:var(--pg-muted,#5f7382)}.r15liqcod b{font-family:var(--f-num,monospace);color:var(--txt,#1B2D3A)}' +
+    '.r15f{display:grid;gap:8px;text-align:left}.r15f label{display:grid;gap:4px;font-size:12px;font-weight:600}' +
+    '.r15f input,.r15f textarea{font:inherit;font-size:13px;padding:8px 10px;border:1px solid #d6dee3;border-radius:8px;width:100%;box-sizing:border-box}' +
+    '.r15f .dif{font-size:12px;color:#8A6A14;background:#FBF1D8;border-radius:8px;padding:6px 10px}' +
+    '.r15f .err{font-size:12px;color:#D5594F;font-weight:600}';
+  document.head.appendChild(st);
+})();
+
+/* ---------------------------------------------------------- 1 · menú retráctil */
+function r15MenuInit() {
+  var side = $('side'); if (!side || side.dataset.r15) return;
+  side.dataset.r15 = '1';
+  var b = document.createElement('button');
+  b.type = 'button'; b.className = 'r15tog'; b.id = 'r15Tog';
+  side.insertBefore(b, side.firstChild);
+  side.querySelectorAll('a[data-v]').forEach(function (a) {
+    var t = a.querySelector('.t'); if (t && !a.title) a.title = t.textContent.trim();
+  });
+  r15MenuPintar();
+  b.addEventListener('click', function () { document.body.classList.toggle('side-min'); r15MenuPintar(); });
+}
+function r15MenuPintar() {
+  var b = $('r15Tog'); if (!b) return;
+  var min = document.body.classList.contains('side-min');
+  b.textContent = min ? '»' : '«';
+  b.title = min ? 'Mostrar el menú' : 'Recoger el menú';
+  b.setAttribute('aria-label', b.title);
+  b.setAttribute('aria-expanded', min ? 'false' : 'true');
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', r15MenuInit); else r15MenuInit();
+
+/* ---------------------------------------------------------- utilidades */
+function r15CobroDe(i) { return i && i.cobro_id ? COBROS.find(function (x) { return x.id === i.cobro_id; }) : null; }
+/* estado que se muestra del invoice: manda el de su cobro */
+function r15EstadoInv(i) {
+  if (!i) return 'por_cobrar';
+  if (i.estado === 'anulado') return 'anulado';
+  var c = r15CobroDe(i);
+  if (!c || c.estado === 'anulado') return i.estado === 'pagado' ? 'pagado' : 'por_cobrar';
+  if (c.estado === 'enviado_fam') return 'enviado';
+  if (c.estado === 'fondos_validados') return 'validado';
+  if (c.estado === 'pagado') return 'pagado';
+  if (i.estado === 'pagado') return 'pagado'; /* marcado a mano por dirección */
+  if (c.estado === 'autorizado' && c.devuelto_at) return 'devuelto';
+  return 'por_cobrar';
+}
+var R15_PILL = {
+  por_cobrar: { cls: 'p-cot', txt: 'Por cobrar' },
+  devuelto: { cls: 'p-per', txt: 'Devuelto por FAM' },
+  enviado: { cls: 'p-pend', txt: 'Enviado a FAM' },
+  validado: { cls: 'p-ren', txt: 'Fondos validados' },
+  pagado: { cls: 'p-ren', txt: 'Pagado · cerrado' },
+  anulado: { cls: 'p-per', txt: 'Anulado' }
+};
+function r15PuedeEnviar(i, c) {
+  return !!(i && c && i.estado === 'por_cobrar' && (c.estado === 'registrado' || c.estado === 'autorizado'));
+}
+
+/* ---------------------------------------------------------- 2 · invoices: acciones y franja */
+(function () {
+  var ia0 = invAcciones;
+  invAcciones = function (i) {
+    var acc = ia0.apply(this, arguments);
+    if (!esDir()) acc = acc.filter(function (a) { return a.act !== 'pagar'; });
+    var c = r15CobroDe(i);
+    if (r15PuedeEnviar(i, c)) acc.unshift({ lbl: c.devuelto_at ? '🏦 Reenviar a FAM' : '🏦 Enviar a FAM', act: 'fam' });
+    else if (c && c.estado === 'enviado_fam') acc.unshift({ lbl: '⏳ En bandeja de FAM', act: 'famwait', disabled: true, title: 'FAM valida los fondos desde su bandeja' });
+    return acc;
+  };
+})();
+function r15NotaInv(i) {
+  var c = r15CobroDe(i); if (!c || i.estado === 'anulado') return '';
+  if (c.estado === 'enviado_fam' && c.enviado_fam_at) {
+    var d = famDias(c.enviado_fam_at);
+    return '<div class="famnota r15inv' + (d >= 3 ? ' tarde' : '') + '">⏳ En bandeja de FAM desde ' + esc(famFechaHora(c.enviado_fam_at)) + (d ? ' · ' + d + ' día' + (d === 1 ? '' : 's') : '') + '</div>';
+  }
+  if (c.estado === 'autorizado' && c.devuelto_at) return '<div class="famnota r15inv tarde">↩ Devuelto por FAM: ' + esc(c.devuelto_motivo || 'sin motivo') + '</div>';
+  if (c.estado === 'fondos_validados') return '<div class="famnota r15inv ok">✓ Validado por FAM' + (c.validado_at ? ' ' + esc(famFechaHora(c.validado_at)) : '') + ' · entra al statement del lunes</div>';
+  if (c.estado === 'pagado') return '<div class="famnota r15inv ok">✓ Pagado · cerrado en el statement semanal</div>';
+  return '';
+}
+invCard = function (i) {
+  var cob = r15CobroDe(i), est = r15EstadoInv(i);
+  var meta = [
+    i.fecha ? ui.fecha(i.fecha) : null,
+    cob && cob.concepto ? ui.esc(cob.concepto) : null,
+    cob ? 'cobro de ' + ui.esc(cliName(cob.cliente_id)) : 'invoice suelto'
+  ];
+  var html = ui.card({
+    id: i.id,
+    nom: 'INV-' + ui.esc(i.numero) + ' · ' + ui.esc(cliName(i.cliente_id)),
+    meta: meta,
+    prem: ui.money2(i.total),
+    pill: R15_PILL[est] || R15_PILL.por_cobrar,
+    u: est === 'pagado' || est === 'validado' ? 'mint' : (est === 'anulado' ? 'gris' : 'ambar'),
+    hecha: est === 'pagado',
+    acciones: invAcciones(i)
+  });
+  var nota = r15NotaInv(i);
+  if (!nota) return html;
+  var k = html.indexOf('<div class="acciones">');
+  return k > 0 ? html.slice(0, k) + nota + html.slice(k) : html.replace('<div class="c-prem">', nota + '<div class="c-prem">');
+};
+invPasaChip = function (i, f) {
+  if (!f || f === 'todos') return true;
+  var e = r15EstadoInv(i);
+  if (f === 'por_cobrar') return e === 'por_cobrar' || e === 'devuelto';
+  return e === f;
+};
+(function () {
+  var vi0 = vInvoices;
+  vInvoices = function () {
+    var html = vi0.apply(this, arguments);
+    var a = html.indexOf('<div id="invChips">'), b = html.indexOf('<div id="invLista">');
+    if (a < 0 || b < 0) return html;
+    var n = function (k) { return INVOICES.filter(function (i) { return invPasaChip(i, k); }).length; };
+    var chips = ui.chips([
+      { id: 'todos', lbl: 'Todos', n: INVOICES.length, on: INV_F === 'todos' },
+      { id: 'por_cobrar', lbl: 'Por cobrar', n: n('por_cobrar'), on: INV_F === 'por_cobrar' },
+      { id: 'enviado', lbl: 'Enviado a FAM', n: n('enviado'), on: INV_F === 'enviado' },
+      { id: 'validado', lbl: 'Fondos validados', n: n('validado'), on: INV_F === 'validado' },
+      { id: 'pagado', lbl: 'Pagado', n: n('pagado'), on: INV_F === 'pagado' },
+      { id: 'anulado', lbl: 'Anulado', n: n('anulado'), on: INV_F === 'anulado' }
+    ], ui.buscar('invQ', 'Buscar por número, cliente o concepto'));
+    return html.slice(0, a) + '<div id="invChips">' + chips + '</div>\n  ' + html.slice(b)
+      .replace('sale en inglés por defecto.</div>', 'sale en inglés por defecto. El estado de cada invoice es el de su cobro.</div>');
+  };
+})();
+/* "Marcar pagado" del invoice: solo dirección */
+(function () {
+  var mp0 = marcarPagado;
+  marcarPagado = async function (id) {
+    if (!esDir()) return toast('El pagado lo pone FAM al validar los fondos');
+    return mp0.apply(this, arguments);
+  };
+})();
+
+/* enviar a FAM: misma confirmación de Cobros; el toast dice si va con invoice */
+function famConfirmarEnvio(c) {
+  var inv = INVOICES.find(function (v) { return v.cobro_id === c.id && v.estado !== 'anulado'; });
+  var memo = famMemo(c);
+  var cuerpo = 'Sale a la bandeja de FAM el cobro de <b>' + esc(cliName(c.cliente_id)) + '</b> por <b>' + fmt$(c.monto) + '</b>.<br><br>' +
+    '· Memo: <span class="mono">' + esc(memo) + '</span><br>' +
+    '· Invoice: ' + (inv ? '<b>' + esc(inv.numero) + '</b>' : '<span style="color:#D9A520">sin invoice</span>') + '<br>' +
+    '· FAM lo ve de inmediato en <b>fam.html → Amazon · Validar fondos</b>.' +
+    (c.devuelto_at ? '<br><br>FAM lo había devuelto: <i>' + esc(c.devuelto_motivo || '') + '</i>' : '');
+  pgConfirm({
+    titulo: c.devuelto_at ? '¿Reenviar a FAM?' : '¿Enviar a FAM?',
+    cuerpo: cuerpo,
+    aviso: inv ? null : 'Este cobro no tiene invoice. FAM puede validar igual, pero lo normal es mandarlo con invoice.',
+    textoBoton: c.devuelto_at ? 'Sí, reenviar' : 'Sí, enviar a FAM',
+    peligro: false,
+    onOk: function () { return r15EnviarFam(c, inv); }
+  });
+}
+async function r15EnviarFam(c, inv) {
+  var r = await sb.rpc('amazon_enviar_fam', { p_cobro: c.id });
+  if (r.error) return toast('Error: ' + r.error.message);
+  await loadAll();
+  if (DETALLE) abrirCliente(DETALLE); else render();
+  toast(inv ? 'Cobro e invoice enviados a la bandeja de FAM' : 'Cobro enviado a la bandeja de FAM');
+}
+function r15EnviarDesdeInvoice(invId) {
+  var i = INVOICES.find(function (x) { return x.id === invId; }), c = r15CobroDe(i);
+  if (!r15PuedeEnviar(i, c)) return toast('Este invoice no tiene un cobro listo para FAM');
+  famConfirmarEnvio(c);
+}
+document.addEventListener('click', function (e) {
+  var b = e.target.closest && e.target.closest('#invLista [data-act="fam"]');
+  if (b) { e.preventDefault(); e.stopImmediatePropagation(); if (!b.disabled) r15EnviarDesdeInvoice(b.dataset.id); return; }
+  var w = e.target.closest && e.target.closest('#invLista [data-act="famwait"]');
+  if (w) { e.preventDefault(); e.stopImmediatePropagation(); }
+}, true);
+
+/* al emitir un invoice desde un cobro: "¿Enviar ya a FAM?" */
+(function () {
+  var ci0 = crearInvoice;
+  crearInvoice = async function () {
+    var antes = {}; INVOICES.forEach(function (i) { antes[i.id] = 1; });
+    var r = await ci0.apply(this, arguments);
+    var nuevo = INVOICES.find(function (i) { return !antes[i.id] && i.cobro_id; });
+    var c = r15CobroDe(nuevo);
+    if (nuevo && r15PuedeEnviar(nuevo, c)) setTimeout(function () { r15OfrecerFam(nuevo, c); }, 700);
+    return r;
+  };
+})();
+function r15OfrecerFam(inv, c) {
+  pgConfirm({
+    titulo: 'Invoice ' + esc(inv.numero) + ' listo · ¿Enviar ya a FAM?',
+    cuerpo: 'El cobro de <b>' + esc(cliName(c.cliente_id)) + '</b> por <b>' + fmt$(c.monto) + '</b> puede salir ya a la bandeja de FAM con su invoice.<br>' +
+      '· Memo: <span class="mono">' + esc(famMemo(c)) + '</span>' +
+      (c.devuelto_at ? '<br><br>FAM lo había devuelto: <i>' + esc(c.devuelto_motivo || '') + '</i>' : ''),
+    textoBoton: 'Sí, enviar a FAM', textoCancelar: 'Ahora no', peligro: false,
+    onOk: function () { return r15EnviarFam(c, inv); }
+  });
+}
+
+/* ---------------------------------------------------------- 3b · barra con periodo */
+var R15_PER = 'mes';
+function r15MesISO(delta) {
+  var h = famHoy(), y = +h.slice(0, 4), m = +h.slice(5, 7) - 1 + (delta || 0);
+  var d = new Date(y, m, 1);
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+}
+function r15FechaCobro(c) { return String(c.periodo_desde || c.created_at || '').slice(0, 10); }
+function r15EnPeriodo(c) {
+  if (R15_PER === 'todo') return true;
+  return r15FechaCobro(c).slice(0, 7) === r15MesISO(R15_PER === 'ant' ? -1 : 0);
+}
+cobBarrowsClientes = function () {
+  var MESN = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+  var nomMes = function (ym) { return MESN[+ym.slice(5, 7) - 1] + ' ' + ym.slice(0, 4); };
+  var chips = '<div class="r15per" role="tablist">' + [
+    { id: 'mes', lbl: 'Este mes · ' + nomMes(r15MesISO(0)) },
+    { id: 'ant', lbl: 'Mes pasado · ' + nomMes(r15MesISO(-1)) },
+    { id: 'todo', lbl: 'Todo' }
+  ].map(function (p) { return '<button type="button" class="chip' + (R15_PER === p.id ? ' on' : '') + '" data-r15per="' + p.id + '" role="tab" aria-selected="' + (R15_PER === p.id) + '">' + esc(p.lbl) + '</button>'; }).join('') + '</div>';
+  var por = {};
+  COBROS.forEach(function (c) {
+    if (c.estado === 'anulado' || !r15EnPeriodo(c)) return;
+    var g = por[c.cliente_id] || (por[c.cliente_id] = { total: 0, pagado: 0, validado: 0, prog: 0 });
+    var m = Number(c.monto) || 0;
+    g.total += m;
+    if (c.estado === 'pagado') g.pagado += m;
+    else if (c.estado === 'fondos_validados') g.validado += m;
+    else if (c.estado === 'programado') g.prog += m;
+  });
+  var ids = Object.keys(por).filter(function (id) { return por[id].total > 0; });
+  var filas;
+  if (!ids.length) filas = ui.vacio(R15_PER === 'todo' ? 'Sin cobros registrados todavía.' : 'Sin cobros en este periodo.');
+  else {
+    ids.sort(function (a, b) { return por[b].total - por[a].total; });
+    filas = ids.map(function (id) {
+      var g = por[id];
+      var marcas = g.validado ? [{ pos: g.pagado + g.validado, cls: 'prom', lab: 'validado ' + ui.moneyC(g.validado) }] : [];
+      return ui.barrow({
+        l: cliName(id), val: g.pagado, max: g.total, marcas: marcas,
+        n: g.pagado ? ui.money(g.pagado) : '—',
+        nsub: 'de ' + ui.money(g.total) + (g.prog ? ' · ' + ui.money(g.prog) + ' programado' : '')
+      });
+    }).join('');
+  }
+  return '<div id="r15Bar">' + chips + filas + '</div>';
+};
+(function () {
+  var vc0 = vCobros;
+  vCobros = function () {
+    return vc0.apply(this, arguments).replace('Verde = ya pagado. La marca es lo que ya tiene fondos validados y está por pagarse.',
+      'Verde = pagado (cerrado en el statement). La marca = fondos validados por FAM. Total = todo lo comprometido del cliente en el periodo, incluidos los saldos programados.');
+  };
+})();
+document.addEventListener('click', function (e) {
+  var p = e.target.closest && e.target.closest('[data-r15per]'); if (!p) return;
+  e.preventDefault(); e.stopImmediatePropagation();
+  R15_PER = p.dataset.r15per;
+  var el = $('r15Bar'); if (!el) return;
+  var tmp = document.createElement('div'); tmp.innerHTML = cobBarrowsClientes();
+  var nuevo = tmp.firstChild; el.parentNode.replaceChild(nuevo, el);
+  try { ui.mount(nuevo); } catch (err) { }
+}, true);
+
+/* ---------------------------------------------------------- 3c · refresco solo cada 30 s */
+var R15_SUCIO = false, R15_OCUP = false, R15_PEND = false;
+document.addEventListener('input', function (e) { var v = $('vista'); if (v && e.target && v.contains(e.target) && e.target.type !== 'search') R15_SUCIO = true; }, true);
+(function () {
+  var r0 = render;
+  render = function () { R15_SUCIO = false; R15_PEND = false; return r0.apply(this, arguments); };
+})();
+function r15Ocupado() {
+  if ($('pgmOv')) return true;
+  var ae = document.activeElement, v = $('vista');
+  if (ae && v && v.contains(ae) && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)) return true;
+  if (R15_SUCIO) return true;
+  if (typeof EDIT !== 'undefined' && EDIT && Object.keys(EDIT).some(function (k) { return EDIT[k]; })) return true;
+  return false;
+}
+function r15Foto() {
+  var m = {};
+  COBROS.forEach(function (c) { m['c' + c.id] = c.estado + '|' + (c.devuelto_at || '') + '|' + (c.monto || ''); });
+  INVOICES.forEach(function (i) { m['i' + i.id] = i.estado; });
+  m._n = [LOADS.length, SERVPRO.length, CLIENTES.length].join('/');
+  return m;
+}
+async function r15Tick() {
+  if (document.hidden || R15_OCUP || typeof ME === 'undefined' || !ME || typeof CARGADO_EN === 'undefined' || !CARGADO_EN) return;
+  if (r15Ocupado()) return;
+  R15_OCUP = true;
+  try {
+    var antes = r15Foto(), cobAntes = {};
+    COBROS.forEach(function (c) { cobAntes[c.id] = c; });
+    await loadAll();
+    var ahora = r15Foto();
+    var claves = Object.keys(ahora).concat(Object.keys(antes)).filter(function (k, i, a) { return a.indexOf(k) === i && ahora[k] !== antes[k]; });
+    if (!claves.length) { r15Sello(); return; }
+    var msgs = [], pag = 0;
+    COBROS.forEach(function (c) {
+      var a = cobAntes[c.id]; if (!a || a.estado === c.estado && (a.devuelto_at || '') === (c.devuelto_at || '')) return;
+      if (c.estado === 'fondos_validados') msgs.push('FAM validó ' + fmt$(c.monto) + ' de ' + cliName(c.cliente_id));
+      else if (c.estado === 'autorizado' && c.devuelto_at && c.devuelto_at !== a.devuelto_at) msgs.push('FAM devolvió ' + fmt$(c.monto) + ' de ' + cliName(c.cliente_id) + ': ' + (c.devuelto_motivo || 'sin motivo'));
+      else if (c.estado === 'pagado') pag++;
+    });
+    if (pag) msgs.push('Statement del lunes: ' + pag + ' cobro' + (pag === 1 ? '' : 's') + ' pasaron a Pagado');
+    if (r15Ocupado()) R15_PEND = true;
+    else if (VIEW === 'clientes' && DETALLE) abrirCliente(DETALLE);
+    else render();
+    if (msgs.length) toast(msgs[0] + (msgs.length > 1 ? ' (+' + (msgs.length - 1) + ' más)' : ''));
+  } catch (err) { console.warn('r15Tick', err); }
+  finally { R15_OCUP = false; }
+}
+function r15Sello() {
+  try { if ($('topSello')) $('topSello').textContent = 'datos al ' + ui.hora(CARGADO_EN); if ($('pie')) $('pie').textContent = ui.sello(CARGADO_EN); } catch (e) { }
+}
+setInterval(r15Tick, 30000);
+document.addEventListener('visibilitychange', function () { if (!document.hidden) setTimeout(r15Tick, 400); });
+
+/* ---------------------------------------------------------- 4 · Liquidación Operyx (dirección) */
+var R15_VALIDAR = null;
+(function () {
+  var cm0 = pgCerrarModal;
+  pgCerrarModal = function () { R15_VALIDAR = null; return cm0.apply(this, arguments); };
+})();
+document.addEventListener('click', function (e) {
+  if (!R15_VALIDAR || !e.target || e.target.id !== 'pgmOk') return;
+  var msg = R15_VALIDAR();
+  if (msg) { e.preventDefault(); e.stopImmediatePropagation(); var er = $('r15Err'); if (er) er.textContent = msg; }
+}, true);
+document.addEventListener('input', function (e) {
+  if (!e.target || e.target.id !== 'r15M') return;
+  var tot = Number(e.target.dataset.tot) || 0, v = Number(e.target.value), d = $('r15Dif');
+  if (!d) return;
+  var dif = Math.round((v - tot) * 100) / 100;
+  d.style.display = (e.target.value !== '' && Math.abs(dif) >= 0.01) ? '' : 'none';
+  d.textContent = 'Transferiste ' + fmt$(Math.abs(dif)) + (dif < 0 ? ' menos' : ' más') + ' que el total del mes (' + fmt$(tot) + '). Escribe una nota para poder cerrar.';
+});
+function r15FormPago(st) {
+  var tot = Number(st.total_operyx) || 0;
+  return '<div class="r15f">' +
+    '<label>Código de confirmación bancaria (transferencia a Operyx)<input id="r15C" autocomplete="off" placeholder="Ej. el # de confirmación de Chase"></label>' +
+    '<label>Fecha de la transferencia<input id="r15F" type="date" value="' + famHoy() + '"></label>' +
+    '<label>Monto transferido<input id="r15M" type="number" step="0.01" min="0" value="' + tot.toFixed(2) + '" data-tot="' + tot + '"></label>' +
+    '<div class="dif" id="r15Dif" style="display:none"></div>' +
+    '<label>Nota (obligatoria si el monto no cuadra)<textarea id="r15N" rows="2"></textarea></label>' +
+    '<div class="err" id="r15Err"></div></div>';
+}
+function r15ValidarPago(st) {
+  var cod = (($('r15C') || {}).value || '').trim();
+  if (!cod) return 'Falta el código de confirmación del banco';
+  var m = ($('r15M') || {}).value, tot = Number(st.total_operyx) || 0;
+  if (m === '' || isNaN(Number(m))) return 'Escribe el monto transferido';
+  if (Math.abs(Math.round((Number(m) - tot) * 100) / 100) >= 0.01 && !(($('r15N') || {}).value || '').trim()) return 'El monto no cuadra con el total del mes: escribe una nota';
+  return null;
+}
+function r15RegistrarPago(st) {
+  var pag = st.estado === 'pagado';
+  R15_VALIDAR = null;
+  pgConfirm({
+    titulo: (pag ? 'Agregar código bancario · ' : 'Registrar pago a Operyx · ') + esc(st.numero),
+    cuerpo: 'Total a Juan Pablo (Operyx): <b>' + fmt$(st.total_operyx) + '</b> · ' + (st.cobros || 0) + ' operación(es).<br>' +
+      (pag ? 'El mes ya está marcado pagado: el código queda en la liquidación y en cada transacción que todavía no lo tenga.' : 'El código queda en la liquidación y en cada transacción del mes, y el mes queda pagado.'),
+    extra: r15FormPago(st),
+    textoBoton: pag ? 'Asignar código' : 'Asignar y cerrar mes', peligro: false,
+    onOk: async function () {
+      var r = await sb.rpc('amazon_liquidar_operyx', {
+        p_statement: st.id, p_codigo: ($('r15C').value || '').trim(), p_fecha: $('r15F').value || null,
+        p_monto: Number($('r15M').value), p_nota: ($('r15N').value || '').trim() || null
+      });
+      if (r.error) return toast('Error: ' + r.error.message);
+      var d = r.data || {};
+      toast(st.numero + ' pagada · código asignado a ' + (d.cobros || 0) + ((d.cobros || 0) === 1 ? ' transacción' : ' transacciones'));
+      await loadAll(); render();
+    }
+  });
+  R15_VALIDAR = function () { return r15ValidarPago(st); };
+  setTimeout(function () { var c = $('r15C'); if (c) c.focus(); }, 50);
+}
+(function () {
+  var al0 = r13AccionLiq;
+  r13AccionLiq = async function (act, id, el) {
+    var st = (LIQ || []).find(function (s) { return s.id === id; });
+    if ((act === 'pagar' || act === 'codigo') && st) return r15RegistrarPago(st);
+    return al0.apply(this, arguments);
+  };
+})();
+(function () {
+  var vl0 = vLiquidacion;
+  vLiquidacion = function () {
+    return vl0.apply(this, arguments).split('>Marcar mes pagado</button>').join('>Registrar pago a Operyx</button>');
+  };
+  var r0 = render;
+  render = function () {
+    var out = r0.apply(this, arguments);
+    if (VIEW === 'liquidacion') { try { r15LiqDecorar(); } catch (e) { console.warn(e); } }
+    return out;
+  };
+})();
+function r15LiqDecorar() {
+  (LIQ || []).forEach(function (st) {
+    var b = document.querySelector('#vista [data-liq="pdf"][data-id="' + st.id + '"]'); if (!b) return;
+    var card = b.closest('.r13liq'); if (!card || card.dataset.r15) return;
+    card.dataset.r15 = '1';
+    if (st.codigo_banco_operyx) {
+      var pill = card.querySelector('.h .pill');
+      if (pill) pill.textContent = 'Pagado ' + ui.fecha(st.fecha_transferencia || st.pagado_at);
+      var p = document.createElement('div'); p.className = 'r15liqcod';
+      p.innerHTML = 'Transferencia a Operyx · código <b>' + esc(st.codigo_banco_operyx) + '</b> · ' + esc(ui.fecha(st.fecha_transferencia)) + ' · ' + fmt$(st.monto_transferido != null ? st.monto_transferido : st.total_operyx) +
+        (st.nota_transferencia ? ' · ' + esc(st.nota_transferencia) : '');
+      var g = card.querySelector('.g'); if (g) g.parentNode.insertBefore(p, g.nextSibling);
+    } else if (st.estado === 'pagado') {
+      var acts = card.querySelector('.acts');
+      if (acts) acts.insertAdjacentHTML('beforeend', '<button type="button" class="pg-btn sm mint" data-liq="codigo" data-id="' + st.id + '">Agregar código bancario</button>');
+    }
+  });
+}
+
 </script>
-<script src="../pg-sombra.js" defer></script>
-<script src="../pg-bonos.js" defer></script>
 </body>
 </html>
