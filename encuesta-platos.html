@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Plato del Super Bowl · ProtectGo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+  /* Una sola pantalla: encabezado del evento, dos platos lado a lado (apilados en teléfono), y debajo el tablero de Andrés. */
+  :root{--petrol:#002F3D;--petrol2:#001E28;--teal:#2DBFA3;--teal2:#229A82;--menta:#BADFCE;--menta2:#E4F2EB;--bg:#FAF9F5;--muted:#4a6a75;--ambar:#D9A520;--linea:#d9e6e3;--blanco:#fff}
+  *{box-sizing:border-box}
+  [hidden]{display:none!important}
+  body{margin:0;background:var(--bg);font-family:Inter,system-ui,sans-serif;color:var(--petrol);padding:20px 16px 40px}
+  .wrap{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+  .hero{background:var(--petrol);color:#fff;border-radius:16px;padding:22px 20px;display:flex;flex-direction:column;gap:6px}
+  .eyebrow{font-family:Montserrat,sans-serif;font-size:11px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:var(--menta)}
+  h1{font-family:Montserrat,sans-serif;font-size:26px;line-height:1.15;margin:0;text-wrap:balance}
+  .datos{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:#d6ebe4;margin-top:4px}
+  .datos b{color:#fff;font-weight:600}
+  .quien{font-size:13px;color:var(--muted)}
+  .quien b{color:var(--petrol)}
+  .platos{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media (max-width:560px){.platos{grid-template-columns:1fr}}
+  .plato{all:unset;box-sizing:border-box;cursor:pointer;background:var(--blanco);border:2px solid var(--linea);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:8px;min-width:0;transition:border-color .15s, box-shadow .15s}
+  .plato:hover{border-color:var(--teal)}
+  .plato:focus-visible{outline:3px solid var(--ambar);outline-offset:2px}
+  .plato[aria-pressed="true"]{border-color:var(--teal);box-shadow:0 0 0 3px var(--menta2);background:#F6FBF9}
+  .plato .tag{font-family:Montserrat,sans-serif;font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--teal2)}
+  .plato h2{font-family:Montserrat,sans-serif;font-size:19px;margin:0;line-height:1.2}
+  .plato p{margin:0;font-size:13.5px;line-height:1.5;color:var(--muted)}
+  .plato .marca{margin-top:auto;padding-top:6px;font-family:Montserrat,sans-serif;font-size:12px;font-weight:700;color:var(--muted)}
+  .plato[aria-pressed="true"] .marca{color:var(--teal2)}
+  .plato[disabled]{cursor:wait;opacity:.6}
+  .estado{font-size:13px;min-height:18px;color:var(--muted)}
+  .estado.ok{color:var(--teal2);font-weight:600}
+  .estado.err{color:#b3261e;font-weight:600}
+  .login{background:var(--blanco);border:1px solid var(--linea);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:10px}
+  .login h2{font-family:Montserrat,sans-serif;font-size:16px;margin:0}
+  .login p{margin:0;font-size:13px;color:var(--muted)}
+  .login input{font:inherit;font-size:14px;padding:10px 12px;border:1px solid #cfe0e4;border-radius:8px;width:100%}
+  .btn{font-family:Montserrat,sans-serif;font-weight:700;font-size:13px;border:none;border-radius:8px;padding:11px 16px;background:var(--petrol);color:#fff;cursor:pointer}
+  .btn:focus-visible{outline:3px solid var(--ambar);outline-offset:2px}
+  .panel{background:var(--blanco);border:1px solid var(--linea);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:12px}
+  .panel h2{font-family:Montserrat,sans-serif;font-size:16px;margin:0}
+  .totales{display:flex;flex-wrap:wrap;gap:10px}
+  .tot{flex:1 1 140px;border:1px solid var(--linea);border-radius:10px;padding:10px 12px}
+  .tot .n{font-family:Montserrat,sans-serif;font-size:24px;font-weight:800;font-variant-numeric:tabular-nums}
+  .tot .l{font-size:12px;color:var(--muted)}
+  .tabla{overflow-x:auto}
+  table{border-collapse:collapse;width:100%;font-size:13px}
+  th{text-align:left;font-family:Montserrat,sans-serif;font-size:11px;letter-spacing:.6px;text-transform:uppercase;color:var(--muted);padding:6px 8px;border-bottom:1px solid var(--linea)}
+  td{padding:7px 8px;border-bottom:1px solid #eef3f2;vertical-align:top}
+  tr.area td{background:var(--menta2);font-family:Montserrat,sans-serif;font-weight:700;font-size:12px}
+  .pill{display:inline-block;border-radius:20px;padding:2px 9px;font-size:11.5px;font-weight:600}
+  .pill.f{background:#E4F2EB;color:#1d6b5a}
+  .pill.h{background:#FBF1D6;color:#7a5a08}
+  .pill.n{background:#eef1f2;color:#6b7f86}
+  .pie{font-size:11px;color:var(--muted);text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <div class="eyebrow">Evento del equipo · Elige tu plato</div>
+    <h1>Super Bowl ProtectGo</h1>
+    <div class="datos">
+      <span><b>Viernes 9 de octubre</b></span>
+      <span><b>2:00 pm</b></span>
+      <span>7 # 23 Sur - 120, San Jorge, Envigado</span>
+    </div>
+  </header>
+
+  <section class="login" id="login" hidden>
+    <h2>Entra con tu usuario del Index</h2>
+    <p>El mismo correo y la misma clave con los que entras al portal.</p>
+    <form id="loginForm" style="display:flex;flex-direction:column;gap:10px">
+      <input id="loginCorreo" type="email" autocomplete="username" placeholder="tu correo" required>
+      <input id="loginClave" type="password" autocomplete="current-password" placeholder="tu clave" required>
+      <button class="btn" type="submit">Entrar</button>
+    </form>
+    <div class="estado" id="loginEstado"></div>
+  </section>
+
+  <section id="votar" hidden style="display:flex;flex-direction:column;gap:12px">
+    <div class="quien" id="quien"></div>
+    <div class="platos">
+      <button class="plato" id="op-fettuccine" data-plato="fettuccine" aria-pressed="false" type="button">
+        <span class="tag">Opción 1 · Pasta</span>
+        <h2>Fettuccine y Pollo en Finas Hierbas</h2>
+        <p>Pasta fettuccine al dente, pollo en finas hierbas a la parrilla, tocineta ahumada, champiñones en salsa de pimentones y cebollas tatemadas, queso parmesano y albahaca.</p>
+        <span class="marca">Toca para elegir</span>
+      </button>
+      <button class="plato" id="op-hamburguesa" data-plato="hamburguesa" aria-pressed="false" type="button">
+        <span class="tag">Opción 2 · Hamburguesa</span>
+        <h2>Hamburguesa Tribv</h2>
+        <p>Pan tipo brioche, 150 gr de carne angus a término, mermelada de tocino, salsa de queso cheddar, rúgula, vegetales frescos, salsa ryu, acompañada de papas.</p>
+        <span class="marca">Toca para elegir</span>
+      </button>
+    </div>
+    <div class="estado" id="estado"></div>
+  </section>
+
+  <section class="panel" id="panel" hidden>
+    <h2>Resultados por área</h2>
+    <div class="totales" id="totales"></div>
+    <div class="tabla"><table id="tablaRes"><thead><tr><th>Persona</th><th>Plato</th></tr></thead><tbody></tbody></table></div>
+  </section>
+
+  <div class="pie">ProtectGo · puedes cambiar tu elección mientras la encuesta esté abierta</div>
+</div>
+
+<script defer src="pg-auth.js"></script>
+<script>
+const SUPABASE_URL = "https://hivpqsepwsfmafamxkzy.supabase.co";
+const SUPABASE_KEY = "sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {db:{schema:'portal'}});
+const ENCUESTA = 'superbowl_oct2026';
+const MAESTRO = 'sales@protectgoservices.com';
+const NOMBRE_PLATO = {fettuccine:'Fettuccine y Pollo', hamburguesa:'Hamburguesa Tribv'};
+const AREA_LABEL = {ventas:'Ventas', renovaciones:'Renovaciones', kam:'KAM', fam:'FAM', coi:'COI', rrhh:'RRHH'};
+const AREA_ORDEN = ['ventas','renovaciones','kam','fam','coi','rrhh'];
+let correo = '';
+let miPlato = null;
+let enviando = false;
+
+const $ = id => document.getElementById(id);
+function estado(t, cls){ const e=$('estado'); e.textContent=t||''; e.className='estado'+(cls?' '+cls:''); }
+
+function pintarSeleccion(){
+  document.querySelectorAll('.plato').forEach(b=>{
+    const sel = b.dataset.plato === miPlato;
+    b.setAttribute('aria-pressed', sel ? 'true' : 'false');
+    b.querySelector('.marca').textContent = sel ? '✓ Tu elección' : (miPlato ? 'Cambiar a este' : 'Toca para elegir');
+  });
+}
+
+async function cargarMiVoto(){
+  const {data, error} = await sb.from('encuesta_platos_votos').select('plato').eq('encuesta',ENCUESTA).eq('user_email',correo).maybeSingle();
+  if(!error && data) miPlato = data.plato;
+  pintarSeleccion();
+  if(miPlato) estado('Ya elegiste: ' + NOMBRE_PLATO[miPlato] + '. Puedes cambiarlo.', 'ok');
+}
+
+async function votar(plato){
+  if(enviando || !correo) return;
+  enviando = true;
+  document.querySelectorAll('.plato').forEach(b=>b.disabled=true);
+  estado('Guardando…');
+  const {error} = await sb.from('encuesta_platos_votos')
+    .upsert({encuesta:ENCUESTA, user_email:correo, plato, votado_at:new Date().toISOString()}, {onConflict:'encuesta,user_email'});
+  document.querySelectorAll('.plato').forEach(b=>b.disabled=false);
+  enviando = false;
+  if(error){ estado('No se pudo guardar. Revisa tu conexión y vuelve a tocar el plato.', 'err'); return; }
+  miPlato = plato; pintarSeleccion();
+  estado('Listo, quedó: ' + NOMBRE_PLATO[plato] + '. ¡Nos vemos el viernes!', 'ok');
+  if(correo === MAESTRO) cargarPanel();
+}
+
+function areaDe(lista){
+  const set = new Set((lista||[]).map(a=>String(a||'').toLowerCase()));
+  for(const a of AREA_ORDEN) if(set.has(a)) return a;
+  return 'direccion';
+}
+
+async function cargarPanel(){
+  $('panel').hidden = false;
+  const [p, a, v] = await Promise.all([
+    sb.from('v_personas').select('email,nombre'),
+    sb.from('novedades_personas_areas').select('user_email,area'),
+    sb.from('encuesta_platos_votos').select('user_email,plato').eq('encuesta',ENCUESTA)
+  ]);
+  const personas = (p.data||[]).filter(x=>x.email && !/^ejemplo/i.test(x.email));
+  const areas = {}; (a.data||[]).forEach(r=>{ const k=(r.user_email||'').toLowerCase(); (areas[k]=areas[k]||[]).push(r.area); });
+  const votos = {}; (v.data||[]).forEach(r=>{ votos[(r.user_email||'').toLowerCase()] = r.plato; });
+  const vistos = new Set(); const grupos = {};
+  personas.forEach(x=>{
+    const k = x.email.toLowerCase(); if(vistos.has(k)) return; vistos.add(k);
+    const ar = areaDe(areas[k]); (grupos[ar]=grupos[ar]||[]).push({nombre:x.nombre||k, plato:votos[k]||null});
+  });
+  let f=0,h=0,n=0;
+  Object.values(grupos).flat().forEach(r=>{ if(r.plato==='fettuccine')f++; else if(r.plato==='hamburguesa')h++; else n++; });
+  $('totales').innerHTML = '';
+  [[f,'Fettuccine y Pollo'],[h,'Hamburguesa Tribv'],[n,'Sin votar']].forEach(([num,l])=>{
+    const d=document.createElement('div'); d.className='tot';
+    d.innerHTML='<div class="n"></div><div class="l"></div>';
+    d.querySelector('.n').textContent = num; d.querySelector('.l').textContent = l;
+    $('totales').appendChild(d);
+  });
+  const tb = $('tablaRes').querySelector('tbody'); tb.innerHTML='';
+  [...AREA_ORDEN,'direccion'].forEach(ar=>{
+    const g = grupos[ar]; if(!g||!g.length) return;
+    g.sort((x,y)=>x.nombre.localeCompare(y.nombre,'es'));
+    const tr=document.createElement('tr'); tr.className='area';
+    const td=document.createElement('td'); td.colSpan=2; td.textContent=(AREA_LABEL[ar]||'Dirección y general')+' · '+g.length; tr.appendChild(td); tb.appendChild(tr);
+    g.forEach(r=>{
+      const fila=document.createElement('tr');
+      const a1=document.createElement('td'); a1.textContent=r.nombre;
+      const a2=document.createElement('td'); const s=document.createElement('span');
+      s.className='pill '+(r.plato==='fettuccine'?'f':r.plato==='hamburguesa'?'h':'n');
+      s.textContent = r.plato ? NOMBRE_PLATO[r.plato] : '—';
+      a2.appendChild(s); fila.appendChild(a1); fila.appendChild(a2); tb.appendChild(fila);
+    });
+  });
+}
+
+async function usarSesion(session){
+  correo = (session && session.user && session.user.email ? session.user.email : '').toLowerCase();
+  if(!correo){ $('login').hidden=false; $('votar').hidden=true; $('panel').hidden=true; return; }
+  $('login').hidden = true; $('votar').hidden = false;
+  let nombre = '';
+  try{ const r = await sb.from('v_personas').select('nombre').eq('email',correo).maybeSingle(); nombre = r.data && r.data.nombre ? r.data.nombre : ''; }catch(e){}
+  $('quien').innerHTML = 'Votando como <b></b>';
+  $('quien').querySelector('b').textContent = nombre ? (nombre.split(' ')[0] + ' · ' + correo) : correo;
+  await cargarMiVoto();
+  if(correo === MAESTRO) cargarPanel();
+}
+
+document.querySelectorAll('.plato').forEach(b=>b.addEventListener('click',()=>votar(b.dataset.plato)));
+$('loginForm').addEventListener('submit', async ev=>{
+  ev.preventDefault();
+  const email=$('loginCorreo').value.trim().toLowerCase(), password=$('loginClave').value;
+  $('loginEstado').textContent='Entrando…'; $('loginEstado').className='estado';
+  const {error} = await sb.auth.signInWithPassword({email,password});
+  if(error){ $('loginEstado').textContent='Correo o clave incorrectos.'; $('loginEstado').className='estado err'; return; }
+  $('loginClave').value='';
+});
+
+(async function init(){
+  const r = await sb.auth.getSession();
+  await usarSesion(r && r.data ? r.data.session : null);
+  sb.auth.onAuthStateChange((evt, session)=>{ if(evt==='SIGNED_IN'||evt==='SIGNED_OUT') usarSesion(session); });
+})();
+</script>
+<script>
+(function(){
+"use strict";
+var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
+var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
+var PGV_ARCHIVO="encuesta-platos.html";
+var PGV_VERSION=1; // v1 - 7-oct-2026: encuesta de platos del evento Super Bowl (vie 9-oct, 2 pm, Envigado). Cada persona elige Fettuccine o Hamburguesa con su sesion del portal; sales@ ve los resultados por area. Tabla portal.encuesta_platos_votos (RLS: cada quien lo suyo, sales@ todo).
+function pgvBanner(){
+  if(document.getElementById('pgvBar'))return;
+  var b=document.createElement('div');
+  b.id='pgvBar';
+  b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:#D9A520;color:#0D3040;font:600 13px Arial,Helvetica,sans-serif;padding:10px 16px;display:flex;align-items:center;justify-content:center;gap:12px';
+  b.innerHTML='Hay una versión nueva de esta página. <button id="pgvBtn" type="button" style="font:700 13px Arial,Helvetica,sans-serif;background:#0D3040;color:#fff;border:none;border-radius:6px;padding:6px 12px;cursor:pointer">Actualizar</button>';
+  document.body.appendChild(b);
+  document.getElementById('pgvBtn').addEventListener('click',function(){location.reload(true);});
+}
+function pgvRun(){
+  try{
+    var c=window.supabase.createClient(PGV_URL,PGV_KEY,{db:{schema:'portal'}});
+    c.from('app_versiones').select('version').eq('archivo',PGV_ARCHIVO).maybeSingle().then(function(r){
+      if(!r||r.error||!r.data)return;
+      if(Number(r.data.version)>PGV_VERSION)pgvBanner();
+    });
+  }catch(e){}
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(pgvRun,400);});
+else setTimeout(pgvRun,400);
+setInterval(pgvRun,600000);
+})();
+</script>
+</body>
+</html>
