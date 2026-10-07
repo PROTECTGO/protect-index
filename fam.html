@@ -581,7 +581,7 @@ else setTimeout(init,60);
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="fam.html";
-var PGV_VERSION=8; // v8 - Ronda 13: desglose Operyx/ProtectGo por cobro + liquidación mensual a Operyx (MS-YYYY-MM). Antes: v7 - Bandeja FAM de Amazon Relay (validar fondos + statement semanal). Antes: v5 - Protect Index: las direcciones internas del sitio pasan a relativas (el sitio ya no depende de como se llame el repo). Las que viajan por correo (recuperar contrasena, fotos de firma, sello de RRHH) quedan absolutas apuntando a protect-index.
+var PGV_VERSION=9; // v9 - Ronda 15: código de confirmación bancaria al pagar la liquidación mensual a Operyx (Registrar pago a Operyx · rpc amazon_liquidar_operyx), columna y filtro Liquidación Operyx en Pagos validados, Liquidar transacciones filtradas. Antes: v8 - Ronda 13: desglose Operyx/ProtectGo por cobro + liquidación mensual a Operyx (MS-YYYY-MM). Antes: v7 - Bandeja FAM de Amazon Relay (validar fondos + statement semanal). Antes: v5 - Protect Index: las direcciones internas del sitio pasan a relativas (el sitio ya no depende de como se llame el repo). Las que viajan por correo (recuperar contrasena, fotos de firma, sello de RRHH) quedan absolutas apuntando a protect-index.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;
@@ -629,7 +629,10 @@ setInterval(pgvCheck,600000);
   var sbA = null, ME = '', CARGANDO = false;
   var D = { cobros: [], cli: {}, loads: [], inv: [], st: [], rep: {}, regla: null, reglaSrv: null, act: [], pago: '' };
   var ST_TAB = null; /* 'semanal' | 'mensual' */
-  var PV = { q: '', desde: '', hasta: '', metodo: '' }; /* filtros de Pagos validados */
+  var PV = { q: '', desde: '', hasta: '', metodo: '', liq: '' }; /* filtros de Pagos validados */
+  var MSF = {}; /* r15: formulario 'Registrar pago a Operyx' abierto por liquidación */
+  var MSNOTA = {}; /* r15: qué filas del filtro entran / no entran */
+  var PVSEL = null; /* r15: varias liquidaciones en el filtro → escoger */
   var ACT_ABIERTA = false;
   var ABIERTO = {}; /* id → 'viajes' | 'validar' | 'devolver' */
   var $f = function (id) { return document.getElementById(id); };
@@ -667,6 +670,8 @@ setInterval(pgvCheck,600000);
       else if (t.id === 'pvDesde') { PV.desde = t.value; pvRepintar(); }
       else if (t.id === 'pvHasta') { PV.hasta = t.value; pvRepintar(); }
       else if (t.id === 'pvMet') { PV.metodo = t.value; pvRepintar(); }
+      else if (t.id === 'pvLiq') { PV.liq = t.value; pvRepintar(); }
+      else if (/^msM_/.test(t.id)) msDif(t.id.slice(4));
     });
   }
   function sesion(s) {
@@ -763,6 +768,8 @@ setInterval(pgvCheck,600000);
       if (PV.desde && (c.fecha_pago || '') < PV.desde) return false;
       if (PV.hasta && (c.fecha_pago || '9999') > PV.hasta) return false;
       if (PV.metodo && (c.metodo_pago || '') !== PV.metodo) return false;
+      if (PV.liq === 'pagadas' && !c.codigo_liquidacion_operyx) return false;
+      if (PV.liq === 'pendientes' && c.codigo_liquidacion_operyx) return false;
       if (!q) return true;
       var cl = D.cli[c.cliente_id] || {}, inv = invDe(c);
       return [memo(c), c.transaccion, cl.empresa, cl.dot, inv && inv.numero, c.concepto].some(function (v) { return String(v || '').toLowerCase().indexOf(q) >= 0; });
@@ -778,20 +785,22 @@ setInterval(pgvCheck,600000);
       '<label>Desde <input type="date" id="pvDesde" value="' + esc(PV.desde) + '"></label>' +
       '<label>Hasta <input type="date" id="pvHasta" value="' + esc(PV.hasta) + '"></label>' +
       '<select id="pvMet"><option value="">Todos los métodos</option>' + ['ACH', 'Zelle', 'Tarjeta', 'Wire', 'Cheque', 'Otro'].map(function (m) { return '<option' + (PV.metodo === m ? ' selected' : '') + '>' + m + '</option>'; }).join('') + '</select>' +
+      '<select id="pvLiq"><option value="">Liquidación: todas</option><option value="pagadas"' + (PV.liq === 'pagadas' ? ' selected' : '') + '>Pagadas a Operyx</option><option value="pendientes"' + (PV.liq === 'pendientes' ? ' selected' : '') + '>Pendientes</option></select>' +
       (L.length ? '<button class="fa-lnk" data-fa="pv-xlsx">Excel</button><button class="fa-lnk" data-fa="pv-csv">CSV</button>' : '') +
       '</div>';
     if (!hayAlgo) return '<div class="fa-vacio">Todavía no hay pagos validados. Aparecen aquí apenas valides el primero.</div>';
     if (!L.length) return filtros + '<div class="fa-vacio">Nada coincide con el filtro.</div>';
-    return filtros + '<div class="fa-tbl"><table><tr><th>Pago</th><th>Cliente</th><th>Memo</th><th>Invoice</th><th># Transacción</th><th>Método</th><th class="r">Cobrado</th><th class="r">A Operyx</th><th>Statement</th></tr>' +
+    return filtros + '<div class="fa-tbl"><table><tr><th>Pago</th><th>Cliente</th><th>Memo</th><th>Invoice</th><th># Transacción</th><th>Método</th><th class="r">Cobrado</th><th class="r">A Operyx</th><th>Statement</th><th>Liquidación Operyx</th></tr>' +
       L.map(function (c) { var cl = D.cli[c.cliente_id] || {}, inv = invDe(c), st = stDe(c);
-        return '<tr><td>' + fecha(c.fecha_pago) + '</td><td>' + esc(cl.empresa || '—') + '<div class="fa-meta">DOT ' + esc(cl.dot || '—') + '</div></td><td class="mono">' + esc(memo(c)) + '</td><td class="mono">' + esc(inv ? inv.numero : '—') + '</td><td class="mono">' + esc(c.transaccion || '—') + '</td><td>' + esc(c.metodo_pago || '—') + '</td><td class="r">' + money(c.monto) + '</td><td class="r">' + money(split(c).mo) + '<div class="fa-meta">' + r13n(split(c).pct) + ' %</div></td><td>' + (st ? '<span class="mono">' + esc(st.numero) + '</span>' + (st.estado === 'montado' ? ' <span class="fa-pill ok">montado</span>' : ' <span class="fa-pill pend">por montar</span>') : '<span class="fa-pill pend">próximo lunes</span>') + '</td></tr>'; }).join('') +
-      '<tr class="tot"><td colspan="6">Total del filtro (' + L.length + ') · a Operyx ' + money(tot.o) + ' · retención ProtectGo ' + money(tot.a) + '</td><td class="r">' + money(tot.c) + '</td><td class="r">' + money(tot.o) + '</td><td></td></tr></table></div>';
+        return '<tr><td>' + fecha(c.fecha_pago) + '</td><td>' + esc(cl.empresa || '—') + '<div class="fa-meta">DOT ' + esc(cl.dot || '—') + '</div></td><td class="mono">' + esc(memo(c)) + '</td><td class="mono">' + esc(inv ? inv.numero : '—') + '</td><td class="mono">' + esc(c.transaccion || '—') + '</td><td>' + esc(c.metodo_pago || '—') + '</td><td class="r">' + money(c.monto) + '</td><td class="r">' + money(split(c).mo) + '<div class="fa-meta">' + r13n(split(c).pct) + ' %</div></td><td>' + (st ? '<span class="mono">' + esc(st.numero) + '</span>' + (st.estado === 'montado' ? ' <span class="fa-pill ok">montado</span>' : ' <span class="fa-pill pend">por montar</span>') : '<span class="fa-pill pend">próximo lunes</span>') + '</td><td>' + liqCelda(c) + '</td></tr>'; }).join('') +
+      '<tr class="tot"><td colspan="6">Total del filtro (' + L.length + ') · a Operyx ' + money(tot.o) + ' · retención ProtectGo ' + money(tot.a) + '</td><td class="r">' + money(tot.c) + '</td><td class="r">' + money(tot.o) + '</td><td></td><td></td></tr></table></div>' + pvLiqBarra(L);
   }
   function pvExport(tipo) {
     var L = pvFiltrados();
     var F = L.map(function (c) { var cl = D.cli[c.cliente_id] || {}, inv = invDe(c), st = stDe(c), sp = split(c);
       return [st ? st.numero : '', cl.empresa || '', cl.dot || '', c.concepto || '', inv ? inv.numero : '', c.periodo_desde || '', c.periodo_hasta || '', viajesDe(c).length,
-        Number(c.gross_total) || 0, Number(c.monto) || 0, c.fecha_pago || '', c.metodo_pago || '', c.transaccion || '', memo(c), sp.mo, sp.mp, c.id]; });
+        Number(c.gross_total) || 0, Number(c.monto) || 0, c.fecha_pago || '', c.metodo_pago || '', c.transaccion || '', memo(c), sp.mo, sp.mp, c.id, (msDe(c) || {}).numero || '', c.codigo_liquidacion_operyx || '']; });
+    var COLS = COLS0.concat(['Liquidación Operyx', 'Código banco (Operyx)']);
     var nombre = 'pagos-validados-' + hoy();
     if (tipo === 'csv') {
       var q = function (v) { v = String(v == null ? '' : v); return /[",\n;]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
@@ -906,6 +915,11 @@ setInterval(pgvCheck,600000);
     if (act === 'ms-csv' && st) return msExport(st, 'csv');
     if (act === 'ms-correo' && st) return msCorreo(st);
     if (act === 'ms-pagar' && st) return msPagar(st, b);
+    if (act === 'ms-form' && st) { MSF[st.id] = true; ST_TAB = 'mensual'; pintar(); var fc = $f('msC_' + st.id); if (fc) { fc.focus(); fc.scrollIntoView({ behavior: 'smooth', block: 'center' }); } return; }
+    if (act === 'ms-form-x' && st) { MSF[st.id] = false; MSNOTA[st.id] = ''; pintar(); return; }
+    if (act === 'ms-liquidar' && st) return msLiquidar(st, b);
+    if (act === 'pv-liquidar') return pvLiquidar();
+    if (act === 'pv-liq-ms' && st) { PVSEL = null; return pvAbrirLiq(st); }
     if (act === 'ms-ver') { ST_TAB = 'mensual'; pintar(); var sx = document.querySelector('#famAmz .fa-ms'); if (sx) sx.scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
     if (act === 'st-print' && st) return imprimir(st);
     if (act === 'st-xlsx' && st) return exportar(st, 'xlsx');
@@ -1001,17 +1015,92 @@ setInterval(pgvCheck,600000);
     return gen + L.map(function (s) {
       var pag = s.estado === 'pagado';
       return '<div class="fa-ms' + (pag ? ' pag' : '') + '"><div class="fa-ms-h"><div><div class="fa-nom">' + esc(s.numero) + ' · ' + esc(mesDe(s.desde, true)) + '</div><div class="fa-meta">' + fecha(s.desde) + ' → ' + fecha(s.hasta) + ' · vence ' + fecha(s.due_date) + '</div></div>' +
-        '<span class="fa-pill ' + (pag ? 'ok' : 'pend') + '">' + (pag ? 'Pagado ' + fecha(s.pagado_at) : 'Por pagar') + '</span></div>' +
+        '<span class="fa-pill ' + (pag ? 'ok' : 'pend') + '">' + (pag ? 'Pagado ' + fecha(s.fecha_transferencia || s.pagado_at) : 'Por pagar') + '</span></div>' +
         '<div class="fa-ms-g"><div><span>Operaciones</span><b>' + (s.cobros || 0) + '</b></div><div><span>Gross gestionado</span><b>' + money(s.gross) + '</b></div><div><span>Fees cobrados</span><b>' + money(s.fees != null ? s.fees : s.cobrado) + '</b></div>' +
         '<div><span>Retenido ProtectGo</span><b>' + money(s.total_protectgo) + '</b></div><div class="tot"><span>Total a Operyx</span><b>' + money(s.total_operyx) + '</b></div></div>' +
+        msCodigoHTML(s) + (MSF[s.id] ? msFormHTML(s) : '') +
         '<div class="fa-acts"><button class="btn fa-mini" data-fa="ms-pdf" data-id="' + s.id + '">PDF statement</button><button class="fa-lnk" data-fa="ms-xlsx" data-id="' + s.id + '">Excel</button><button class="fa-lnk" data-fa="ms-csv" data-id="' + s.id + '">CSV</button>' +
-        '<button class="fa-lnk" data-fa="ms-correo" data-id="' + s.id + '">✉ Correo a Jeff</button>' + (pag ? '' : '<button class="btn sec fa-mini" data-fa="ms-pagar" data-id="' + s.id + '">Marcar mes pagado</button>') + '</div></div>';
+        '<button class="fa-lnk" data-fa="ms-correo" data-id="' + s.id + '">✉ Correo a Jeff</button>' + (s.codigo_banco_operyx || MSF[s.id] ? '' : '<button class="btn sec fa-mini" data-fa="ms-form" data-id="' + s.id + '">' + (pag ? 'Agregar código bancario' : 'Registrar pago a Operyx') + '</button>') + '</div></div>';
     }).join('');
+  }
+  /* ---------- r15 · código bancario de la liquidación mensual a Operyx ---------- */
+  function msDe(c) { return c.statement_mensual_id ? D.st.find(function (s) { return s.id === c.statement_mensual_id; }) || null : null; }
+  function liqCelda(c) {
+    var ms = msDe(c);
+    if (c.codigo_liquidacion_operyx) return '<span class="mono">' + esc(ms ? ms.numero : '—') + '</span> <span class="fa-pill ok">pagada</span><div class="fa-meta mono">' + esc(c.codigo_liquidacion_operyx) + (ms && ms.fecha_transferencia ? ' · ' + fecha(ms.fecha_transferencia) : '') + '</div>';
+    if (ms) return '<span class="mono">' + esc(ms.numero) + '</span> <span class="fa-pill pend">' + (ms.estado === 'pagado' ? 'pagada sin código' : 'pendiente de pago') + '</span>';
+    return '<span class="fa-meta">sin cierre aún</span>';
+  }
+  function pvLiqBarra(L) {
+    var sin = L.filter(function (c) { return !c.codigo_liquidacion_operyx; });
+    if (!sin.length) return '';
+    var h = '<div class="fa-pvliq"><button class="btn sec fa-mini" data-fa="pv-liquidar">Liquidar transacciones filtradas</button><span class="fa-sub">Abre la liquidación mensual que corresponde y te dice qué filas entran.</span></div>';
+    if (PVSEL && PVSEL.length) h += '<div class="fa-pvsel"><span class="fa-sub">En el filtro hay varias liquidaciones pendientes. ¿Cuál vas a pagar?</span>' + PVSEL.map(function (s) { return '<button class="fa-lnk" data-fa="pv-liq-ms" data-id="' + s.id + '">' + esc(s.numero) + ' · ' + money(s.total_operyx) + '</button>'; }).join('') + '</div>';
+    return h;
+  }
+  function pvLiquidar() {
+    var L = pvFiltrados().filter(function (c) { return !c.codigo_liquidacion_operyx; });
+    var ids = []; L.forEach(function (c) { var ms = msDe(c); if (ms && !ms.codigo_banco_operyx && ids.indexOf(ms.id) < 0) ids.push(ms.id); });
+    if (!ids.length) { PVSEL = null; aviso('Estas transacciones todavía no tienen cierre mensual: genera el cierre del mes primero'); return; }
+    var sts = ids.map(function (id) { return D.st.find(function (s) { return s.id === id; }); });
+    if (sts.length > 1) { PVSEL = sts; pvRepintar(); return; }
+    PVSEL = null; pvAbrirLiq(sts[0]);
+  }
+  function pvAbrirLiq(st) {
+    var L = pvFiltrados().filter(function (c) { return !c.codigo_liquidacion_operyx; });
+    var entran = L.filter(function (c) { return c.statement_mensual_id === st.id; });
+    var otras = L.filter(function (c) { return c.statement_mensual_id && c.statement_mensual_id !== st.id; });
+    var sinMs = L.filter(function (c) { return !c.statement_mensual_id; });
+    var ret = entran.reduce(function (t, c) { return t + split(c).mp; }, 0);
+    var partes = ['Entran ' + entran.length + (entran.length === 1 ? ' transacción' : ' transacciones') + ' del filtro'];
+    if (sinMs.length) partes.push('no entran ' + sinMs.length + ': aún no tienen cierre mensual (van en el próximo cierre)');
+    if (otras.length) partes.push('no entran ' + otras.length + ': son de otra liquidación');
+    if (ret > 0.004) partes.push('la retención ProtectGo (' + money(ret) + ') no se transfiere');
+    MSNOTA[st.id] = partes.join(' · ') + '.';
+    MSF[st.id] = true; ST_TAB = 'mensual'; pintar();
+    var fc = $f('msC_' + st.id); if (fc) { fc.focus(); fc.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+  }
+  function msCodigoHTML(s) {
+    if (!s.codigo_banco_operyx) return '';
+    return '<div class="fa-mscod">🏦 Transferencia a Operyx · código <b class="mono">' + esc(s.codigo_banco_operyx) + '</b> · ' + fecha(s.fecha_transferencia) + ' · ' + money(s.monto_transferido != null ? s.monto_transferido : s.total_operyx) +
+      (s.nota_transferencia ? '<div class="fa-meta">' + esc(s.nota_transferencia) + '</div>' : '') + '</div>';
+  }
+  function msFormHTML(s) {
+    var tot = Number(s.total_operyx) || 0, pag = s.estado === 'pagado';
+    return '<div class="fa-msform">' +
+      (MSNOTA[s.id] ? '<div class="fa-msnota">' + esc(MSNOTA[s.id]) + '</div>' : '') +
+      (pag ? '<div class="fa-meta">El mes ya está marcado pagado: el código queda en la liquidación y en cada transacción que todavía no lo tenga.</div>' : '') +
+      '<label>Código de confirmación bancaria (transferencia a Operyx)<input id="msC_' + s.id + '" autocomplete="off" placeholder="Ej. el # de confirmación de Chase"></label>' +
+      '<div class="fa-msrow"><label>Fecha de la transferencia<input type="date" id="msF_' + s.id + '" value="' + hoy() + '"></label>' +
+      '<label>Monto transferido<input type="number" step="0.01" min="0" id="msM_' + s.id + '" value="' + tot.toFixed(2) + '"></label></div>' +
+      '<div class="fa-msdif" id="msDf_' + s.id + '" style="display:none"></div>' +
+      '<label>Nota (obligatoria si el monto no cuadra)<textarea id="msN_' + s.id + '" rows="2"></textarea></label>' +
+      '<div class="fa-acts"><button class="btn fa-mini" data-fa="ms-liquidar" data-id="' + s.id + '">' + (pag ? 'Asignar código' : 'Asignar y cerrar mes') + '</button><button class="fa-lnk" data-fa="ms-form-x" data-id="' + s.id + '">Cancelar</button></div></div>';
+  }
+  function msDif(id) {
+    var s = D.st.find(function (x) { return x.id === id; }), el = $f('msM_' + id), d = $f('msDf_' + id); if (!s || !el || !d) return;
+    var dif = Math.round(((Number(el.value) || 0) - (Number(s.total_operyx) || 0)) * 100) / 100;
+    d.style.display = (el.value !== '' && Math.abs(dif) >= 0.01) ? '' : 'none';
+    d.textContent = 'Transferiste ' + money(Math.abs(dif)) + (dif < 0 ? ' menos' : ' más') + ' que el total del mes (' + money(s.total_operyx) + '). Escribe una nota para poder cerrar.';
+  }
+  function msLiquidar(st, b) {
+    var cod = ($f('msC_' + st.id).value || '').trim(), fe = $f('msF_' + st.id).value || null, mo = $f('msM_' + st.id).value, no = ($f('msN_' + st.id).value || '').trim();
+    if (!cod) { aviso('Falta el código de confirmación del banco'); $f('msC_' + st.id).focus(); return; }
+    if (mo === '' || isNaN(Number(mo))) { aviso('Escribe el monto transferido'); $f('msM_' + st.id).focus(); return; }
+    var dif = Math.round((Number(mo) - (Number(st.total_operyx) || 0)) * 100) / 100;
+    if (Math.abs(dif) >= 0.01 && !no) { msDif(st.id); aviso('El monto no cuadra con el total del mes: escribe una nota'); $f('msN_' + st.id).focus(); return; }
+    ocupado(b, 'Asignando…');
+    sbA.rpc('amazon_liquidar_operyx', { p_statement: st.id, p_codigo: cod, p_fecha: fe, p_monto: Number(mo), p_nota: no || null }).then(function (r) {
+      if (r.error) { libre(b); aviso('No se pudo registrar: ' + r.error.message); return; }
+      var x = r.data || {}; MSF[st.id] = false; MSNOTA[st.id] = '';
+      aviso(st.numero + ' pagada · código asignado a ' + (x.cobros || 0) + ((x.cobros || 0) === 1 ? ' transacción' : ' transacciones'));
+      cargar();
+    });
   }
   function cargarMS() {
     if (window.MSStatement) return Promise.resolve(window.MSStatement);
     var pdf = window.PDFLib ? Promise.resolve() : new Promise(function (ok, ko) { var s = document.createElement('script'); s.src = 'amazon-relay/lib/pdf-lib.min.js'; s.onload = ok; s.onerror = function () { ko(new Error('No se pudo cargar pdf-lib')); }; document.head.appendChild(s); });
-    return pdf.then(function () { return new Promise(function (ok, ko) { var s = document.createElement('script'); s.src = 'amazon-relay/lib/ms-statement.js?v=8'; s.onload = function () { window.MSStatement ? ok(window.MSStatement) : ko(new Error('ms-statement no cargó')); }; s.onerror = function () { ko(new Error('No se pudo cargar el formato del statement')); }; document.head.appendChild(s); }); });
+    return pdf.then(function () { return new Promise(function (ok, ko) { var s = document.createElement('script'); s.src = 'amazon-relay/lib/ms-statement.js?v=9'; s.onload = function () { window.MSStatement ? ok(window.MSStatement) : ko(new Error('ms-statement no cargó')); }; s.onerror = function () { ko(new Error('No se pudo cargar el formato del statement')); }; document.head.appendChild(s); }); });
   }
   function msPDF(st, b) {
     ocupado(b, 'Armando PDF…');
@@ -1079,7 +1168,7 @@ setInterval(pgvCheck,600000);
   }
 
   /* ---------- statement: Excel / CSV con columnas del registro de Amazon ---------- */
-  var COLS = ['Semana', 'Cliente', 'DOT', 'Concepto', 'Invoice #', 'Periodo desde', 'Periodo hasta', 'Viajes', 'Gross', 'Cobrado', 'Fecha de pago', 'Método', '# Transacción', 'Memo', 'Operyx', 'ProtectGo', 'id'];
+  var COLS0, COLS = COLS0 = ['Semana', 'Cliente', 'DOT', 'Concepto', 'Invoice #', 'Periodo desde', 'Periodo hasta', 'Viajes', 'Gross', 'Cobrado', 'Fecha de pago', 'Método', '# Transacción', 'Memo', 'Operyx', 'ProtectGo', 'id'];
   function filasExport(st) {
     return lineasDe(st).map(function (x) {
       return [st.numero, x.cliente || '', x.dot || '', x.concepto || '', x.invoice || '', x.periodo_desde || '', x.periodo_hasta || '', x.viajes ? x.viajes.length : 0,
@@ -1149,6 +1238,12 @@ setInterval(pgvCheck,600000);
     '.fam-barpill i{width:8px;height:8px;border-radius:50%;background:#D9A520;display:inline-block}' +
     '.fa-sub{font-family:var(--font-body);font-weight:400;font-size:12px;color:var(--faint)}.fa-act-t{cursor:pointer;user-select:none}' +
     '.fa-filtros{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}.fa-filtros input,.fa-filtros select{font:inherit;font-size:13px;padding:7px 10px;border:1px solid var(--line);border-radius:var(--r-sm);background:#fff}' +
+    '.fa-pvliq{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px}.fa-pvsel{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:6px}' +
+    '.fa-mscod{margin:10px 0 0;padding:8px 12px;border-radius:var(--r-sm);background:var(--mint-soft);color:var(--teal-2);font-size:12.5px}' +
+    '.fa-msform{margin-top:12px;padding:12px;border:1px solid var(--line);border-radius:var(--r-sm);background:#fff;display:grid;gap:8px}' +
+    '.fa-msform label{display:grid;gap:4px;font-size:12px;font-weight:600;color:var(--navy)}.fa-msform input,.fa-msform textarea{font:inherit;font-size:13px;padding:7px 10px;border:1px solid var(--line);border-radius:var(--r-sm);width:100%;box-sizing:border-box;min-width:0}' +
+    '.fa-msrow{display:grid;grid-template-columns:1fr 1fr;gap:8px}@media(max-width:520px){.fa-msrow{grid-template-columns:1fr}}' +
+    '.fa-msnota{font-size:12px;background:var(--mint-soft);color:var(--teal-2);border-radius:var(--r-sm);padding:6px 10px}.fa-msdif{font-size:12px;color:#8A6A14;background:#FBF1D8;border-radius:var(--r-sm);padding:6px 10px}' +
     '.fa-filtros input#pvQ{flex:1;min-width:200px}.fa-filtros label{font-size:11px;color:var(--faint);display:inline-flex;align-items:center;gap:6px}' +
     '.fa-tbl td .fa-meta{font-size:11px}' +
     '.fa-act{background:#fff;border:1px solid var(--line);border-radius:var(--r-md)}.fa-act-i{display:grid;grid-template-columns:28px 1fr auto;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);align-items:center}' +
