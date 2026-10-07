@@ -1,5 +1,6 @@
 /* ============================================================================
- * pg-novedades.js  ·  Widget lector de Novedades ProtectGo  ·  v4.9
+ * pg-novedades.js  ·  Widget lector de Novedades ProtectGo  ·  v4.10
+ * v4.10 (7-oct-2026): las direcciones web del cuerpo salen como enlace tocable (nueva pestaña)
  * v4.9 (6-oct-2026): carga pg-bonos.js v1 (la pastilla de bonos del mes, arriba a la derecha)
  * v4.8 (2-oct-2026): carga también pg-destellos.js v1 (lo personal no leído, destacado al abrir)
  * v4.7 (2-oct-2026): carga también pg-volver.js v1 ("← Volver al Index" igual en todas)
@@ -494,6 +495,8 @@
       + '.pgnov-rx.mia .n{color:var(--mint);}'
       + '.pgnov-link{font-size:12.5px;font-weight:600;color:var(--mint);text-decoration:none;}'
       + '.pgnov-link:hover{text-decoration:underline;}'
+      + '.pgnov-url{color:var(--mint);font-weight:600;text-decoration:underline;text-underline-offset:3px;word-break:break-all;}'
+      + '.claro .pgnov-url{color:var(--mint-deep);}'
 
       /* ===================================================================
          TEMA CLARO (default v4) — temática Renovaciones v27
@@ -733,11 +736,39 @@
     return elemento;
   }
 
-  /* Párrafo/línea de cuerpo con las cifras ya en mono. */
+  /* v4.10: las direcciones web del cuerpo salen como enlace tocable (nueva
+     pestaña). Reconoce http(s)://... y dominio/ruta tipo protectgo.github.io/...
+     Solo nodos de texto y createElement, nunca innerHTML. */
+  var RE_URL = /(https?:\/\/[^\s<>"']+|\b[a-z0-9-]+(?:\.[a-z0-9-]+)+\/[^\s<>"']*)/gi;
+
+  function pintarEnlaces(elemento, texto) {
+    var s = String(texto === undefined || texto === null ? '' : texto);
+    var m, ultimo = 0, a, url, cola;
+    RE_URL.lastIndex = 0;
+    while ((m = RE_URL.exec(s)) !== null) {
+      if (!m[0]) { RE_URL.lastIndex++; continue; }
+      url = m[0]; cola = '';
+      while (/[.,;:)!?]$/.test(url)) { cola = url.slice(-1) + cola; url = url.slice(0, -1); }
+      if (m.index > ultimo) { pintarCifras(elemento, s.slice(ultimo, m.index)); }
+      a = document.createElement('a');
+      a.className = 'pgnov-url';
+      a.href = /^https?:\/\//i.test(url) ? url : 'https://' + url;
+      a.target = '_blank';
+      a.rel = 'noopener';
+      a.textContent = url;
+      elemento.appendChild(a);
+      if (cola) { elemento.appendChild(document.createTextNode(cola)); }
+      ultimo = m.index + m[0].length;
+    }
+    if (ultimo < s.length) { pintarCifras(elemento, s.slice(ultimo)); }
+    return elemento;
+  }
+
+  /* Párrafo/línea de cuerpo con las cifras ya en mono y los enlaces tocables. */
   function parrafo(tag, clase, texto) {
     var e = document.createElement(tag);
     if (clase) { e.className = clase; }
-    return pintarCifras(e, texto);
+    return pintarEnlaces(e, texto);
   }
 
   function iniciales(nombre) {
