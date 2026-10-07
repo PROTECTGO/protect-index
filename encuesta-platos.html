@@ -169,7 +169,7 @@ function areaDe(lista){
 async function cargarPanel(){
   $('panel').hidden = false;
   const [p, a, v] = await Promise.all([
-    sb.from('v_personas').select('email,nombre'),
+    sb.from('v_personas').select('email,nombre,area_rrhh'),
     sb.from('novedades_personas_areas').select('user_email,area'),
     sb.from('encuesta_platos_votos').select('user_email,plato').eq('encuesta',ENCUESTA)
   ]);
@@ -179,7 +179,7 @@ async function cargarPanel(){
   const vistos = new Set(); const grupos = {};
   personas.forEach(x=>{
     const k = x.email.toLowerCase(); if(vistos.has(k)) return; vistos.add(k);
-    const ar = areaDe(areas[k]); (grupos[ar]=grupos[ar]||[]).push({nombre:x.nombre||k, plato:votos[k]||null});
+    const ar = areaDe((areas[k]||[]).concat([x.area_rrhh])); (grupos[ar]=grupos[ar]||[]).push({nombre:x.nombre||k, plato:votos[k]||null});
   });
   let f=0,h=0,n=0;
   Object.values(grupos).flat().forEach(r=>{ if(r.plato==='fettuccine')f++; else if(r.plato==='hamburguesa')h++; else n++; });
@@ -241,7 +241,7 @@ $('loginForm').addEventListener('submit', async ev=>{
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="encuesta-platos.html";
-var PGV_VERSION=1; // v1 - 7-oct-2026: encuesta de platos del evento Super Bowl (vie 9-oct, 2 pm, Envigado). Cada persona elige Fettuccine o Hamburguesa con su sesion del portal; sales@ ve los resultados por area. Tabla portal.encuesta_platos_votos (RLS: cada quien lo suyo, sales@ todo).
+var PGV_VERSION=2; // v2 - 7-oct-2026: el area sale tambien de area_rrhh (Ventas y Simon en KAM no tienen fila en novedades_personas_areas). | v1 - 7-oct-2026: encuesta de platos del evento Super Bowl (vie 9-oct, 2 pm, Envigado). Cada persona elige Fettuccine o Hamburguesa con su sesion del portal; sales@ ve los resultados por area. Tabla portal.encuesta_platos_votos (RLS: cada quien lo suyo, sales@ todo).
 function pgvBanner(){
   if(document.getElementById('pgvBar'))return;
   var b=document.createElement('div');
