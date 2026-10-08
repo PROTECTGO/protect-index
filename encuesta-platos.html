@@ -60,6 +60,11 @@
   .pill.h{background:#FBF1D6;color:#7a5a08}
   .pill.n{background:#eef1f2;color:#6b7f86}
   .pie{font-size:11px;color:var(--muted);text-align:center}
+  .quiensoy{background:var(--blanco);border:2px solid var(--ambar);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:8px}
+  .quiensoy label{font-family:Montserrat,sans-serif;font-weight:700;font-size:14px}
+  .quiensoy p{margin:0;font-size:12.5px;color:var(--muted)}
+  .quiensoy select{font:inherit;font-size:15px;padding:10px 12px;border:1px solid #cfe0e4;border-radius:8px;width:100%;background:#fff;color:var(--petrol)}
+  tr.excl td{color:#8a9aa0}
 </style>
 </head>
 <body>
@@ -87,6 +92,11 @@
 
   <section id="votar" hidden style="display:flex;flex-direction:column;gap:12px">
     <div class="quien" id="quien"></div>
+    <div class="quiensoy" id="quienSoy" hidden>
+      <label for="selPersona">¿Quién eres?</label>
+      <p>Entraste con la cuenta del área. Elige tu nombre antes de tocar el plato, para que el voto quede a tu nombre.</p>
+      <select id="selPersona"><option value="">Selecciona tu nombre</option></select>
+    </div>
     <div class="platos">
       <button class="plato" id="op-fettuccine" data-plato="fettuccine" aria-pressed="false" type="button">
         <span class="tag">Opción 1 · Pasta</span>
@@ -126,6 +136,9 @@ const AREA_ORDEN = ['ventas','renovaciones','kam','fam','coi','rrhh'];
 let correo = '';
 let miPlato = null;
 let enviando = false;
+let cuentaCompartida = false;
+let persona = '';
+let personasCache = [];
 
 const $ = id => document.getElementById(id);
 function estado(t, cls){ const e=$('estado'); e.textContent=t||''; e.className='estado'+(cls?' '+cls:''); }
@@ -139,24 +152,28 @@ function pintarSeleccion(){
 }
 
 async function cargarMiVoto(){
-  const {data, error} = await sb.from('encuesta_platos_votos').select('plato').eq('encuesta',ENCUESTA).eq('user_email',correo).maybeSingle();
+  miPlato = null;
+  if(cuentaCompartida && !persona){ pintarSeleccion(); estado(''); return; }
+  const {data, error} = await sb.from('encuesta_platos_votos').select('plato').eq('encuesta',ENCUESTA).eq('user_email',correo).eq('persona_email',persona).maybeSingle();
   if(!error && data) miPlato = data.plato;
   pintarSeleccion();
-  if(miPlato) estado('Ya elegiste: ' + NOMBRE_PLATO[miPlato] + '. Puedes cambiarlo.', 'ok');
+  if(miPlato) estado('Ya elegiste: ' + NOMBRE_PLATO[miPlato] + '. Puedes cambiarlo.', 'ok'); else estado('');
 }
 
 async function votar(plato){
   if(enviando || !correo) return;
+  if(cuentaCompartida && !persona){ estado('Primero elige tu nombre en la lista de arriba.', 'err'); $('selPersona').focus(); return; }
   enviando = true;
   document.querySelectorAll('.plato').forEach(b=>b.disabled=true);
   estado('Guardando…');
   const {error} = await sb.from('encuesta_platos_votos')
-    .upsert({encuesta:ENCUESTA, user_email:correo, plato, votado_at:new Date().toISOString()}, {onConflict:'encuesta,user_email'});
+    .upsert({encuesta:ENCUESTA, user_email:correo, persona_email:persona, plato, votado_at:new Date().toISOString()}, {onConflict:'encuesta,user_email,persona_email'});
   document.querySelectorAll('.plato').forEach(b=>b.disabled=false);
   enviando = false;
   if(error){ estado('No se pudo guardar. Revisa tu conexión y vuelve a tocar el plato.', 'err'); return; }
   miPlato = plato; pintarSeleccion();
-  estado('Listo, quedó: ' + NOMBRE_PLATO[plato] + '. ¡Nos vemos el viernes!', 'ok');
+  const quienTxt = cuentaCompartida ? (' a nombre de ' + ($('selPersona').selectedOptions[0]||{}).textContent) : '';
+  estado('Listo, quedó: ' + NOMBRE_PLATO[plato] + quienTxt + '. ¡Nos vemos el viernes!', 'ok');
   if(correo === MAESTRO) cargarPanel();
 }
 
@@ -168,23 +185,25 @@ function areaDe(lista){
 
 async function cargarPanel(){
   $('panel').hidden = false;
-  const [p, a, v] = await Promise.all([
+  const [p, a, v, xx] = await Promise.all([
     sb.from('v_personas').select('email,nombre,area_rrhh'),
     sb.from('novedades_personas_areas').select('user_email,area'),
-    sb.from('encuesta_platos_votos').select('user_email,plato').eq('encuesta',ENCUESTA)
+    sb.from('encuesta_platos_votos').select('user_email,persona_email,plato,votado_at').eq('encuesta',ENCUESTA).order('votado_at'),
+    sb.from('encuesta_platos_exclusiones').select('email,motivo').eq('encuesta',ENCUESTA)
   ]);
+  const ex = {}; (xx.data||[]).forEach(r=>{ ex[(r.email||'').toLowerCase()] = r.motivo; });
   const personas = (p.data||[]).filter(x=>x.email && !/^ejemplo/i.test(x.email));
   const areas = {}; (a.data||[]).forEach(r=>{ const k=(r.user_email||'').toLowerCase(); (areas[k]=areas[k]||[]).push(r.area); });
-  const votos = {}; (v.data||[]).forEach(r=>{ votos[(r.user_email||'').toLowerCase()] = r.plato; });
+  const votos = {}; (v.data||[]).forEach(r=>{ const k=((r.persona_email||'')||(r.user_email||'')).toLowerCase(); votos[k] = r.plato; });
   const vistos = new Set(); const grupos = {};
   personas.forEach(x=>{
     const k = x.email.toLowerCase(); if(vistos.has(k)) return; vistos.add(k);
-    const ar = areaDe((areas[k]||[]).concat([x.area_rrhh])); (grupos[ar]=grupos[ar]||[]).push({nombre:x.nombre||k, plato:votos[k]||null});
+    const ar = areaDe((areas[k]||[]).concat([x.area_rrhh])); (grupos[ar]=grupos[ar]||[]).push({nombre:x.nombre||k, plato:votos[k]||null, motivo:votos[k]?null:(ex[k]||null)});
   });
   let f=0,h=0,n=0;
-  Object.values(grupos).flat().forEach(r=>{ if(r.plato==='fettuccine')f++; else if(r.plato==='hamburguesa')h++; else n++; });
+  let nv=0; Object.values(grupos).flat().forEach(r=>{ if(r.plato==='fettuccine')f++; else if(r.plato==='hamburguesa')h++; else if(r.motivo)nv++; else n++; });
   $('totales').innerHTML = '';
-  [[f,'Fettuccine y Pollo'],[h,'Hamburguesa Tribv'],[n,'Sin votar']].forEach(([num,l])=>{
+  [[f,'Fettuccine y Pollo'],[h,'Hamburguesa Tribv'],[n,'Faltan por votar'],[nv,'No van']].forEach(([num,l])=>{
     const d=document.createElement('div'); d.className='tot';
     d.innerHTML='<div class="n"></div><div class="l"></div>';
     d.querySelector('.n').textContent = num; d.querySelector('.l').textContent = l;
@@ -197,11 +216,11 @@ async function cargarPanel(){
     const tr=document.createElement('tr'); tr.className='area';
     const td=document.createElement('td'); td.colSpan=2; td.textContent=(AREA_LABEL[ar]||'Dirección y general')+' · '+g.length; tr.appendChild(td); tb.appendChild(tr);
     g.forEach(r=>{
-      const fila=document.createElement('tr');
+      const fila=document.createElement('tr'); if(r.motivo) fila.className='excl';
       const a1=document.createElement('td'); a1.textContent=r.nombre;
       const a2=document.createElement('td'); const s=document.createElement('span');
       s.className='pill '+(r.plato==='fettuccine'?'f':r.plato==='hamburguesa'?'h':'n');
-      s.textContent = r.plato ? NOMBRE_PLATO[r.plato] : '—';
+      s.textContent = r.plato ? NOMBRE_PLATO[r.plato] : (r.motivo ? 'No va · ' + r.motivo : '—');
       a2.appendChild(s); fila.appendChild(a1); fila.appendChild(a2); tb.appendChild(fila);
     });
   });
@@ -212,7 +231,24 @@ async function usarSesion(session){
   if(!correo){ $('login').hidden=false; $('votar').hidden=true; $('panel').hidden=true; return; }
   $('login').hidden = true; $('votar').hidden = false;
   let nombre = '';
-  try{ const r = await sb.from('v_personas').select('nombre').eq('email',correo).maybeSingle(); nombre = r.data && r.data.nombre ? r.data.nombre : ''; }catch(e){}
+  try{
+    const r = await sb.from('v_personas').select('email,nombre');
+    personasCache = (r.data||[]).filter(x=>x.email && !/^ejemplo/i.test(x.email));
+    const yo = personasCache.find(x=>x.email.toLowerCase()===correo);
+    nombre = yo && yo.nombre ? yo.nombre : '';
+    cuentaCompartida = !yo && correo !== MAESTRO;
+  }catch(e){}
+  if(cuentaCompartida){
+    let excl = {};
+    try{ const x = await sb.from('encuesta_platos_exclusiones').select('email').eq('encuesta',ENCUESTA); (x.data||[]).forEach(r=>excl[(r.email||'').toLowerCase()]=1); }catch(e){}
+    const sel = $('selPersona'); sel.length = 1;
+    const vistos = new Set();
+    personasCache.filter(x=>!excl[x.email.toLowerCase()]).sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||'','es')).forEach(x=>{
+      const k=x.email.toLowerCase(); if(vistos.has(k)) return; vistos.add(k);
+      const o=document.createElement('option'); o.value=k; o.textContent=x.nombre||k; sel.appendChild(o);
+    });
+    $('quienSoy').hidden = false;
+  } else { $('quienSoy').hidden = true; persona = ''; }
   $('quien').innerHTML = 'Votando como <b></b>';
   $('quien').querySelector('b').textContent = nombre ? (nombre.split(' ')[0] + ' · ' + correo) : correo;
   await cargarMiVoto();
@@ -220,6 +256,7 @@ async function usarSesion(session){
 }
 
 document.querySelectorAll('.plato').forEach(b=>b.addEventListener('click',()=>votar(b.dataset.plato)));
+$('selPersona').addEventListener('change', ()=>{ persona = $('selPersona').value; cargarMiVoto(); });
 $('loginForm').addEventListener('submit', async ev=>{
   ev.preventDefault();
   const email=$('loginCorreo').value.trim().toLowerCase(), password=$('loginClave').value;
@@ -241,7 +278,7 @@ $('loginForm').addEventListener('submit', async ev=>{
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="encuesta-platos.html";
-var PGV_VERSION=2; // v2 - 7-oct-2026: el area sale tambien de area_rrhh (Ventas y Simon en KAM no tienen fila en novedades_personas_areas). | v1 - 7-oct-2026: encuesta de platos del evento Super Bowl (vie 9-oct, 2 pm, Envigado). Cada persona elige Fettuccine o Hamburguesa con su sesion del portal; sales@ ve los resultados por area. Tabla portal.encuesta_platos_votos (RLS: cada quien lo suyo, sales@ todo).
+var PGV_VERSION=3; // v3 - 8-oct-2026: cuentas de area (coi@, rrhh@, kam@, endorsement@...) eligen su nombre antes de votar (columna persona_email); el panel de sales@ separa 'Faltan por votar' de 'No van' (tabla encuesta_platos_exclusiones). | v2 - 7-oct-2026: el area sale tambien de area_rrhh (Ventas y Simon en KAM no tienen fila en novedades_personas_areas). | v1 - 7-oct-2026: encuesta de platos del evento Super Bowl (vie 9-oct, 2 pm, Envigado). Cada persona elige Fettuccine o Hamburguesa con su sesion del portal; sales@ ve los resultados por area. Tabla portal.encuesta_platos_votos (RLS: cada quien lo suyo, sales@ todo).
 function pgvBanner(){
   if(document.getElementById('pgvBar'))return;
   var b=document.createElement('div');
