@@ -395,6 +395,102 @@ body { margin: 0; background: var(--bg); font-family: var(--f-body); color: var(
   .ph{padding:16px 16px 0}
   .months{padding-left:16px;padding-right:16px}
 }
+/* ===== v36 · 00 CARTERA (motor v3) — todo con alcance #p-cartera / .xp ===== */
+#p-cartera{--lav:#B9C3F3;--azul:#5B6BD6;--gris:#B6C2CB;--verde:#229A82}
+#p-cartera .ct-cifras{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:12px}
+#p-cartera .ct-ci{background:#fff;border:1px solid var(--line);border-left:4px solid var(--line);border-radius:12px;padding:10px 14px;cursor:pointer;text-align:left;font:inherit;color:inherit}
+#p-cartera .ct-ci.on{box-shadow:0 0 0 2px var(--ink) inset}
+#p-cartera .ct-ci:focus-visible{outline:2px solid var(--mint);outline-offset:2px}
+#p-cartera .ct-ci .v{font:700 24px var(--f-num);color:var(--ink);line-height:1.1;display:block}
+#p-cartera .ct-ci .l{font-size:11.5px;color:var(--muted);margin-top:2px;display:block}
+#p-cartera .ct-ci.r{border-left-color:var(--rojo)}#p-cartera .ct-ci.a{border-left-color:var(--ambar)}#p-cartera .ct-ci.x{border-left-color:var(--ink)}#p-cartera .ct-ci.g{border-left-color:var(--mint-deep)}
+#p-cartera .ct-barra{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:6px 0 8px}
+#p-cartera .ct-ley{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--muted)}
+#p-cartera .ct-ley span{display:inline-flex;align-items:center;gap:5px}
+#p-cartera .ct-ley i{width:16px;height:5px;border-radius:3px;display:inline-block}
+#p-cartera .ct-ctl{display:flex;gap:8px;flex-wrap:wrap}
+#p-cartera .ct-busca,#p-cartera .ct-sel{font:500 12.5px var(--f-body);padding:7px 11px;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--txt)}
+#p-cartera .ct-busca{width:230px;max-width:100%}
+#p-cartera .ct-card{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+#p-cartera .ct-eje,#p-cartera .ct-cta{display:grid;grid-template-columns:230px minmax(0,1fr) 96px;gap:12px;padding:9px 14px;border-bottom:1px solid var(--line);align-items:center}
+#p-cartera .ct-eje{font:600 10px var(--f-num);color:var(--muted);padding:8px 14px}
+#p-cartera .ct-eje .ms{position:relative;height:12px;margin-left:32px;margin-right:90px}
+#p-cartera .ct-eje .ms span{position:absolute;transform:translateX(-50%);white-space:nowrap}
+#p-cartera .ct-eje .ms span:first-child{transform:none}#p-cartera .ct-eje .ms span:last-child{transform:translateX(-100%)}
+#p-cartera .ct-cta{cursor:pointer}
+#p-cartera .ct-cta:hover{background:#FAFCFB}
+#p-cartera .ct-cta:focus-visible{outline:2px solid var(--mint);outline-offset:-2px}
+#p-cartera .ct-n b{display:block;color:var(--ink);font:700 13px var(--f-tit);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#p-cartera .ct-n small{color:var(--muted);font-size:11px}
+#p-cartera .ct-p{text-align:right;font:700 13px var(--f-num);color:var(--ink)}
+#p-cartera .ct-p small{display:block;font:500 10.5px var(--f-body);color:var(--muted)}
+#p-cartera .ct-pw{padding-left:32px;padding-right:90px;position:relative;min-width:0}
+#p-cartera .pl{position:relative;height:18px}
+#p-cartera .pl .lb{position:absolute;top:3px;font:600 10px var(--f-num);color:var(--muted);white-space:nowrap}
+#p-cartera .pl .lb.in{color:#fff;transform:translateX(-100%);padding-right:6px;font-size:9.5px}
+#p-cartera .pl .r{position:absolute;left:-32px;width:28px;text-align:right;font:700 9.5px var(--f-num);color:var(--muted);top:2px}
+#p-cartera .pl .tr{position:absolute;left:0;right:0;top:7px;height:2px;background:#F0F3F6}
+#p-cartera .pl .f{position:absolute;top:4px;height:9px;border-radius:4px;background:var(--mint-deep)}
+#p-cartera .f.ventana{background:var(--ambar)}#p-cartera .f.vencer{background:var(--rojo)}
+#p-cartera .f.pend{background:repeating-linear-gradient(90deg,var(--rojo) 0 5px,#fff 5px 8px)}
+#p-cartera .f.canc{background:var(--gris)}#p-cartera .f.rw{background:var(--azul)}
+#p-cartera .pl .x{position:absolute;top:1px;left:0;width:13px;height:13px;border-radius:50%;background:var(--rojo);color:#fff;font:800 8px var(--f-body);display:flex;align-items:center;justify-content:center}
+#p-cartera .ct-det{display:none;grid-column:1/-1;padding:4px 0 6px}
+#p-cartera .ct-cta.open .ct-det{display:block;cursor:default}
+#p-cartera .ct-pd{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:10px;font-size:11.5px;padding:4px 0;color:var(--muted);border-top:1px dashed var(--line)}
+#p-cartera .ct-pd b{color:var(--ink);font-family:var(--f-num)}
+#p-cartera .ct-pd .num{font-family:var(--f-num);text-align:right;white-space:nowrap}
+#p-cartera .ct-flag{font-size:11.5px;color:#7a5a10;background:#FBF3DF;border-radius:8px;padding:5px 9px;margin:6px 0}
+#p-cartera .ct-ac{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+#p-cartera .ct-ac .btn{padding:5px 10px;font-size:11.5px}
+#p-cartera .ct-notas{margin-top:6px;font-size:11.5px;color:var(--txt)}
+#p-cartera .ct-notas .nm{color:var(--muted);font-size:10.5px}
+#p-cartera .ct-mas{display:block;width:100%;text-align:center;padding:11px;font:600 12px var(--f-body);color:var(--mint-deep);background:#fff;border:0;border-top:1px solid var(--line);cursor:pointer}
+#p-cartera .ct-vacio{padding:18px 14px;color:var(--muted);font-size:12.5px}
+#p-cartera .ct-h2{font:800 15px var(--f-tit);color:var(--ink);margin:22px 0 8px;display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+#p-cartera .ct-h2 small{font:500 11px var(--f-body);color:var(--muted)}
+#p-cartera .ct-ix{background:#fff;border:1px solid var(--line);border-radius:14px;padding:6px 14px}
+#p-cartera .ct-ag{display:grid;grid-template-columns:14px minmax(0,1fr) 120px 60px 56px;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);font-size:12.5px;cursor:pointer}
+#p-cartera .ct-ag b{color:var(--ink)}
+#p-cartera .ct-ag .m{position:relative;height:5px;background:var(--line);border-radius:3px}
+#p-cartera .ct-ag .m i{position:absolute;left:0;top:0;height:5px;border-radius:3px}
+#p-cartera .ct-ag .m u{position:absolute;top:-4px;width:1.5px;height:13px;background:var(--ink);opacity:.5}
+#p-cartera .ct-ag .pc{font:700 13px var(--f-num);text-align:right;color:var(--ink)}
+#p-cartera .ct-ag .fr{font:600 11px var(--f-num);color:var(--muted);text-align:right}
+#p-cartera .ct-agd{display:none;padding:2px 0 10px 24px;font-size:11.5px;color:var(--muted);border-bottom:1px solid var(--line)}
+#p-cartera .ct-agd.open{display:block}
+#p-cartera .ct-agd div{padding:2px 0}
+#p-cartera .bola{display:inline-block;width:11px;height:11px;border-radius:50%}
+#p-cartera .bola.ROJO{background:var(--rojo)}#p-cartera .bola.AMARILLO{background:var(--ambar)}#p-cartera .bola.VERDE{background:var(--verde)}#p-cartera .bola.GRIS{background:var(--gris)}
+#p-cartera .ct-nota-ix{font-size:11px;color:var(--muted);padding:8px 0 4px}
+#p-cartera .ct-aviso{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:#FAE7E5;color:#7a2d26;border-radius:10px;padding:8px 12px;margin-bottom:8px;font-size:12.5px}
+#p-cartera .ct-aviso.ambar{background:#FBF3DF;color:#6b4f0c}
+#p-cartera .ct-aviso .btn{padding:3px 9px;font-size:11px;margin-left:auto}
+#p-cartera details.ct-cambios{background:#fff;border:1px solid var(--line);border-radius:14px;margin-top:12px}
+#p-cartera details.ct-cambios summary{padding:11px 14px;cursor:pointer;font:700 13px var(--f-tit);color:var(--ink)}
+#p-cartera details.ct-cambios summary small{font:500 11px var(--f-body);color:var(--muted);margin-left:6px}
+#p-cartera .ct-ev{display:grid;grid-template-columns:120px minmax(0,1fr) auto;gap:10px;padding:6px 14px;border-top:1px solid var(--line);font-size:12px}
+#p-cartera .ct-ev .t{font:700 10.5px var(--f-num);color:var(--muted);text-transform:uppercase}
+#p-cartera .ct-ev .h{font:600 10.5px var(--f-num);color:var(--muted)}
+.xp{position:relative;display:inline-block}
+.xp-menu{display:none;position:absolute;right:0;top:calc(100% + 4px);background:#fff;border:1px solid var(--line);border-radius:10px;box-shadow:0 6px 20px rgba(27,45,58,.12);z-index:50;min-width:210px;padding:4px}
+.xp.open .xp-menu{display:block}
+.xp-menu button{display:block;width:100%;text-align:left;padding:9px 11px;border:0;background:none;font:600 12.5px var(--f-body);color:var(--txt);border-radius:7px;cursor:pointer}
+.xp-menu button:hover{background:var(--bg)}
+.xp-menu small{display:block;font-weight:500;color:var(--muted);font-size:11px}
+@media (max-width:760px){
+  #p-cartera .ct-cifras{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #p-cartera .ct-eje{display:none}
+  #p-cartera .ct-cta{grid-template-columns:minmax(0,1fr) auto;row-gap:6px}
+  #p-cartera .ct-cta .ct-pw{grid-column:1/-1;grid-row:2;padding-right:0}
+  #p-cartera .ct-ag{grid-template-columns:14px minmax(0,1fr) 52px 44px}
+  #p-cartera .ct-ag .m{display:none}
+  #p-cartera .ct-ev{grid-template-columns:minmax(0,1fr) auto}
+  #p-cartera .ct-ev .t{grid-column:1/-1}
+  #p-cartera .ct-busca{width:100%}
+  #p-cartera .ct-ctl{width:100%}
+}
+@media print{ #p-cartera{display:none!important} }
 </style>
 <!-- ProtectGo · scripts compartidos (recuperacion de clave + novedades en tiempo real) -->
 <script src="pg-novedades.js"></script>
@@ -450,9 +546,10 @@ body { margin: 0; background: var(--bg); font-family: var(--f-body); color: var(
 <div class="wrap noprint">
   <div class="top">
     <div class="brand"><span class="gabi">GABI</span><span class="sep"></span>
-      <span class="sec" id="secLabel">Renovaciones · Karen</span></div>
+      <span class="sec" id="secLabel">Renovaciones</span></div>
     <div class="acts">
       <span class="pg-stamp" id="pg-stamp" style="font-size:11px;color:var(--muted);margin-right:2px">datos al —</span>
+      <span class="xp" id="xp"><button class="btn" type="button" id="xp-btn" aria-haspopup="true">Exportar ▾</button><span class="xp-menu" role="menu"><button type="button" data-xp="vista">Lo que estoy viendo<small>con los filtros de la pestaña Cartera</small></button><button type="button" data-xp="completa">Cartera completa<small>toda la cartera viva y lo caído en 30 días</small></button></span></span>
       <button class="btn" type="button" id="pg-btn-refresh">Actualizar</button>
       <button class="btn" type="button" id="pg-btn-logout">Cerrar sesión</button>
       <button class="btn" type="button" id="btn-imprimir-mes">Imprimir el mes</button>
@@ -465,8 +562,40 @@ body { margin: 0; background: var(--bg); font-family: var(--f-body); color: var(
   <div id="pg-shell" style="display:none">
     <div class="nav" id="nav"></div>
 
+    <!-- 00 CARTERA (v36 · motor v3) -->
+    <div class="pane" id="p-cartera">
+      <div id="ct-avisos"></div>
+      <div class="ct-cifras" id="ct-cifras"></div>
+      <div class="ct-barra">
+        <div class="ct-ley">
+          <span><i style="background:var(--rojo)"></i>menos de 15 días</span>
+          <span><i style="background:var(--ambar)"></i>menos de 60</span>
+          <span><i style="background:var(--mint-deep)"></i>al día</span>
+          <span><i style="background:repeating-linear-gradient(90deg,var(--rojo) 0 5px,#fff 5px 8px)"></i>confirmar con Financiera</span>
+          <span><i style="background:#B6C2CB"></i>se cayó</span>
+          <span><i style="background:#5B6BD6"></i>reescrita</span>
+        </div>
+        <div class="ct-ctl">
+          <select class="ct-sel" id="ct-area" aria-label="Mi área">
+            <option value="">Todas</option><option value="AGENTES">Agentes</option><option value="JORGE">Jorge</option><option value="CARTERA SUELTA">Cartera suelta</option>
+          </select>
+          <input class="ct-busca" id="ct-q" type="search" placeholder="Buscar cuenta, DOT o agente" aria-label="Buscar cuenta">
+        </div>
+      </div>
+      <div class="ct-card">
+        <div class="ct-eje"><div>Cuenta</div><div class="ms" id="ct-eje"></div><div style="text-align:right">Premium vivo</div></div>
+        <div id="ct-lista"><div class="pg-skel" style="width:70%;margin:14px"></div></div>
+        <button type="button" class="ct-mas" id="ct-mas" style="display:none"></button>
+      </div>
+      <details class="ct-cambios" id="ct-cambios-box"><summary>¿Qué cambió desde ayer? <small id="ct-cambios-n"></small></summary><div id="ct-cambios"></div></details>
+      <div id="ct-ix-box" style="display:none">
+        <div class="ct-h2">Quién vende y a quién se le cancela <small>liability y paquetes · 12 meses · solo dirección y renovaciones</small></div>
+        <div class="ct-ix" id="ct-ix"></div>
+      </div>
+    </div>
+
     <!-- 01 MI COLA -->
-    <div class="pane on" id="p-cola">
+    <div class="pane" id="p-cola">
       <div class="panel">
         <div class="ph">
           <div><div class="pt">Tu año <span id="tuAnio"></span></div><div class="ps" id="rbSub"></div></div>
@@ -762,7 +891,7 @@ let BOLSA_FILAS = [];    // v_bolsa_persona_mensual, alias_bos='Karen Suaza', cu
 let ESCALERA = [];       // bono_escalera, area=renovaciones tipo=anual activo=true
 let CARTERA = [];        // v_cartera_estado_v3_visible
 let CHIP_SEL = 'todas';
-let TAB = 'cola';
+let TAB = 'cartera';   /* v36 · la pestaña inicial es 00 Cartera */
 let COLA_Q = '';        // v29 · texto del buscador de la cola
 let META_PCT = 70;      // v29 · meta del area; sale de estandar_pct, no del codigo
 const $ = id => document.getElementById(id);
@@ -826,7 +955,7 @@ async function cargarTodo(){
      meses por delante sin cerrar. */
   const hoy = new Date(); AÑO_ACTUAL = hoy.getFullYear(); MES_ACTUAL = hoy.getMonth()+1;
   if(!MES_SEL) MES_SEL = MES_ACTUAL;
-  const sec = $('secLabel'); if(sec) sec.textContent = 'Renovaciones · Karen · '+AÑO_ACTUAL;
+  const sec = $('secLabel'); if(sec) sec.textContent = 'Renovaciones';   /* v36 · solo "Renovaciones" */
   const tuAnio = $('tuAnio'); if(tuAnio) tuAnio.textContent = AÑO_ACTUAL;
 
   /* v30 · la cola y las cifras salen de la CARTERA (lo que Andres monta en HubSpot).
@@ -876,6 +1005,7 @@ async function cargarTodo(){
   if(escR.error) errBloque('escalera','la escalera'); else bloque('escalera','la escalera', bonos);
   if(cartR.error) errBloque('estados','tu cartera'); else bloque('estados','tu cartera', area);
   escribirHash();
+  cargarCartera(); ctTiempoReal();   /* v36 · 00 Cartera (motor v3) */
 
   const hhmm = new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
   if(stampEl) stampEl.textContent = 'datos al '+hhmm;
@@ -896,11 +1026,342 @@ async function cargarEstadoDato(hhmm){
   el.textContent = 'Datos en vivo · actualizado a las '+hhmm+extra;
 }
 
+
+/* =====================================================================
+   v36 · 00 CARTERA — motor v3 (mv_cartera_timeline) en tiempo real.
+   Cada barra arranca HOY y mide lo que le queda a la póliza (§9).
+   Las marcas de Karen siguen yendo a renov_trabajo (llave = DOT, vence)
+   y las notas a renov_notas: mismo candado y motivo obligatorio de siempre.
+   ===================================================================== */
+const CT = { cuentas:[], trabajo:{}, rw:{}, detalle:[], indice:[], alertas:[], eventos:[],
+  filtro:'vencer', area:'', q:'', todas:false, priv:false, abierta:null, canal:null, poll:null, ultFoto:null, tRec:null, cargando:false };
+const CT_MAXD = 365;
+const ctPos = d => Math.max(0, Math.min(100, d/CT_MAXD*100));
+function ctHoy(){ const h=new Date(); h.setHours(12,0,0,0); return h; }
+function ctD(s){ return s ? new Date(String(s).slice(0,10)+'T12:00:00') : null; }
+function ctDias(s){ const d=ctD(s); return d ? Math.round((d-ctHoy())/864e5) : null; }
+function ctISO(desplazaDias){ const d=ctHoy(); d.setDate(d.getDate()+desplazaDias); return d.toISOString().slice(0,10); }
+function ctFecha(s){ const d=ctD(s); if(!d) return '—'; return d.getDate()+' '+MESES_CORTOS[d.getMonth()]+(d.getFullYear()!==new Date().getFullYear()?' '+d.getFullYear():''); }
+function ctK(n){ if(n===null||n===undefined||isNaN(n)) return '—'; n=Number(n); return Math.abs(n)>=1e6 ? '$'+(n/1e6).toFixed(1)+'M' : Math.abs(n)>=1e3 ? '$'+Math.round(n/1e3)+'K' : '$'+Math.round(n); }
+function ctFechaCaida(p){ return p.fecha_cancelacion || p.fecha_negativo || null; }
+
+/* Clase de cada póliza: lo que la gente entiende (§6.1) */
+function ctClase(p){
+  const rw = CT.rw[p.termino_id];
+  if(rw && rw.reescrita) return 'rw';
+  if(p.fase==='CANCELADA') return 'canc';
+  if(p.fase==='PENDIENTE CANCELACION') return 'pend';
+  if(p.fase==='VENCIDA SIN RENOVAR') return 'vencida';
+  if(p.fase==='RENOVADA') return 'renov';
+  const d = ctDias(p.vence);
+  return d<=15 ? 'vencer' : d<=60 ? 'ventana' : 'ok';
+}
+const CT_TXT = { ok:'Al día', ventana:'Vence pronto', vencer:'Vence pronto', vencida:'Vencida', pend:'Confirmar con Financiera', canc:'Se cayó', rw:'Reescrita', renov:'Renovada' };
+/* Lo histórico no aparece: solo lo vivo y lo que se cayó o venció en los últimos 30 días */
+function ctVisible(p){
+  const c = ctClase(p);
+  if(p.es_viva) return true;
+  if(c==='canc' || c==='rw'){ const f=ctFechaCaida(p); return f ? ctDias(f) >= -30 : false; }
+  if(c==='vencida') return ctDias(p.vence) >= -30;
+  return false;
+}
+function ctCategorias(cta){
+  const s = new Set();
+  cta._pols.forEach(p=>{
+    const c = p._c, d = ctDias(p.vence);
+    if(c==='vencida' || (p.es_viva && c!=='pend' && d<=15)) s.add('vencer');
+    if(c==='vencida' || (p.es_viva && c!=='pend' && d<=60)) s.add('ventana');
+    if(c==='pend' || c==='canc') s.add('cayo');
+    if(p.es_viva) s.add('vivas');
+  });
+  return s;
+}
+function ctPrepara(rows){
+  return (rows||[]).map(r=>{
+    /* Un término que ya venció no puede seguir "vivo" aunque el motor lo deje como pendiente de cancelación
+       (CANC. DUDOSA / RECORTE GRANDE con vence pasado): en pantalla es Vencida y sale a los 30 días. TODO motor v3. */
+    const pols = (Array.isArray(r.polizas) ? r.polizas : []).map(p=>{
+      const q = Object.assign({}, p);
+      if(q.es_viva && ctDias(q.vence) < 0){ q.es_viva = false; q.fase = 'VENCIDA SIN RENOVAR'; q._eraPend = true; }
+      q._c = ctClase(q); return q;
+    }).filter(ctVisible);
+    const cta = Object.assign({}, r, { _pols: pols });
+    cta._cat = ctCategorias(cta);
+    cta._vivo = pols.filter(p=>p.es_viva).reduce((a,p)=>a+Number(p.premium_activo||0),0);
+    const dd = pols.filter(p=>p._c!=='canc'&&p._c!=='rw').map(p=>ctDias(p.vence)).filter(x=>x!==null);
+    cta._orden = dd.length ? Math.min.apply(null, dd) : 9999;
+    cta._buscar = [r.cuenta_nombre, r.insured, r.dot, r.agente].concat(pols.map(p=>p.agente)).join(' ').toLowerCase();
+    return cta;
+  }).filter(c=>c._pols.length);
+}
+
+async function cargarCartera(){
+  if(CT.cargando) return; CT.cargando = true;
+  try{
+    const desde36h = new Date(Date.now()-36*3600e3).toISOString();
+    const [cR, tR, aR, eR, iR, dR, gR] = await Promise.all([
+      fetchPaginado(()=> SB.from('v_cartera_cuentas_visible').select('*')),
+      fetchPaginado(()=> SB.from('renov_trabajo').select('llave,vence,estado,motivo_perdido,contactado,fecha_contacto,updated_at').gte('vence', ctISO(-150))),
+      SB.from('renov_alertas').select('*').is('visto_at', null).gte('creado_at', new Date(Date.now()-45*864e5).toISOString()).order('creado_at',{ascending:false}),
+      SB.from('v_renov_eventos_visible').select('*').gte('creado_at', desde36h).order('creado_at',{ascending:false}).limit(300),
+      SB.from('v_cartera_indice_visible').select('*'),
+      fetchPaginado(()=> SB.from('v_cartera_indice_detalle_visible').select('termino_id,agente,cuenta_nombre,paquete,premium_paquete,efectiva,fecha_cancelacion,dias_vida,cancelada,reescrita,reescrita_en,reescrita_con,medio_termino,cuenta_para_indice')),
+      SB.from('gabi_accesos').select('rol,area').eq('user_id', SESION_UID).eq('activo', true),
+    ]);
+    if(cR.error){ errBloque('ct-lista','la cartera'); return; }
+    CT.priv = ((gR && gR.data)||[]).some(g=> g.rol==='director' || g.rol==='socio' || g.area==='renovaciones');
+    CT.rw = {}; CT.detalle = (dR && dR.data) || [];
+    CT.detalle.forEach(d=>{ CT.rw[d.termino_id] = d; });
+    CT.trabajo = {};
+    ((tR && tR.data)||[]).forEach(t=>{ (CT.trabajo[t.llave] = CT.trabajo[t.llave] || []).push(t); });
+    CT.indice = (iR && iR.data) || [];
+    CT.alertas = (aR && aR.data) || [];
+    CT.eventos = ((eR && eR.data) || []).filter(e=> e.tipo!=='POLIZA_NUEVA' || e.fase_ahora!=='RENOVADA');
+    CT.cuentas = ctPrepara(cR.data);
+    bloque('ct-lista','la cartera', ctPinta);
+    bloque('ct-cambios','los cambios', ctCambios);
+    bloque('ct-ix','el índice', ctIndice);
+    bloque('ct-avisos','las alertas', ctAvisos);
+    nav();
+  } finally { CT.cargando = false; }
+}
+
+function ctCifras(base){
+  const n = k => base.filter(c=>c._cat.has(k)).length;
+  const prem = (k, f) => base.filter(c=>c._cat.has(k)).reduce((a,c)=> a + c._pols.filter(f).reduce((b,p)=>b+Number(p.premium_activo||0),0), 0);
+  const d15 = p => p._c==='vencida' || (p.es_viva && p._c!=='pend' && ctDias(p.vence)<=15);
+  const d60 = p => p._c==='vencida' || (p.es_viva && p._c!=='pend' && ctDias(p.vence)<=60);
+  const vivas = base.reduce((a,c)=>a+c._pols.filter(p=>p.es_viva).length,0);
+  const pv = base.reduce((a,c)=>a+c._vivo,0);
+  const C = [
+    ['vencer','r', n('vencer'), 'vencen en 15 días · '+ctK(prem('vencer', d15))],
+    ['ventana','a', n('ventana'), 'vencen en 60 días · '+ctK(prem('ventana', d60))],
+    ['cayo','x', n('cayo'), 'se cayeron o están por caerse'],
+    ['vivas','g', vivas, 'pólizas vivas · '+ctK(pv)],
+  ];
+  $('ct-cifras').innerHTML = C.map(c=>'<button type="button" class="ct-ci '+c[1]+(CT.filtro===c[0]?' on':'')+'" data-f="'+c[0]+'"><span class="v">'+c[2]+'</span><span class="l">'+esc(c[3])+'</span></button>').join('');
+  document.querySelectorAll('#ct-cifras .ct-ci').forEach(el=> el.onclick = ()=>{ CT.filtro = el.dataset.f; CT.todas = false; ctPinta(); });
+}
+
+function ctFiltradas(){
+  const q = (CT.q||'').trim().toLowerCase();
+  let base = CT.cuentas.filter(c=> !CT.area || c.area===CT.area);
+  if(q) base = base.filter(c=> c._buscar.indexOf(q) >= 0);
+  return base;
+}
+function ctLista(base){
+  let L = base.filter(c=> c._cat.has(CT.filtro));
+  if(CT.filtro==='cayo') L.sort((a,b)=>{
+    const pa = a._pols.some(p=>p._c==='pend') ? 0 : 1, pb = b._pols.some(p=>p._c==='pend') ? 0 : 1;
+    return pa-pb || a._orden-b._orden; });
+  else L.sort((a,b)=> a._orden-b._orden || b._vivo-a._vivo);
+  return L;
+}
+function ctEstadoKaren(c){
+  const ts = CT.trabajo[c.dot || c.llave] || [];
+  if(!ts.length) return null;
+  return ts.slice().sort((a,b)=> String(b.updated_at||'').localeCompare(String(a.updated_at||'')))[0];
+}
+function ctBarra(p){
+  const c = p._c, d = ctDias(p.vence);
+  if(c==='vencida') return '<div class="pl"><span class="r">'+esc(p.ramo)+'</span><div class="tr"></div><div class="x">!</div><span class="lb" style="left:3%">venció hace '+(-d)+' d</span></div>';
+  if(c==='canc' || c==='rw'){
+    const f = ctFechaCaida(p);
+    const lab = c==='rw' ? 'reescrita' : '✕ se cayó'+(f?' el '+ctFecha(f):'');
+    return '<div class="pl"><span class="r">'+esc(p.ramo)+'</span><div class="tr"></div><div class="f '+c+'" style="left:0;width:1.5%"></div><span class="lb" style="left:2.7%">'+esc(lab)+'</span></div>';
+  }
+  const w = ctPos(Math.max(d,0)), lab = ctFecha(p.vence)+' · '+d+' d'+(c==='pend'?' · confirmar':'');
+  const cls = c==='ok' ? '' : c;
+  return '<div class="pl"><span class="r">'+esc(p.ramo)+'</span><div class="tr"></div><div class="f '+cls+'" style="left:0;width:'+Math.max(w,1.2)+'%"></div>'+
+    (w>62 ? '<span class="lb in" style="left:'+w+'%">'+esc(lab)+'</span>' : '<span class="lb" style="left:'+(w+1.2)+'%">'+esc(lab)+'</span>')+'</div>';
+}
+function ctFicha(c){
+  const filas = c._pols.map(p=>{
+    const rw = CT.rw[p.termino_id];
+    const extra = rw && rw.reescrita ? ' · reescrita con '+esc(rw.reescrita_con||'')+' el '+ctFecha(rw.reescrita_en) : '';
+    return '<div class="ct-pd"><b>'+esc(p.ramo)+'</b><span>'+esc(p.carrier||'—')+(p.policy_num?' · #'+esc(p.policy_num):'')+
+      ' · '+ctFecha(p.efectiva)+' → '+ctFecha(p.vence)+' · <b style="font-family:var(--f-body);color:var(--txt)">'+esc(CT_TXT[p._c]||'')+'</b>'+
+      (p.motivo?' · '+esc(p.motivo):'')+extra+' <span style="opacity:.75">('+esc(p.estado||'')+')</span></span>'+
+      '<span class="num">vendido '+ctK(p.premium_vendido)+(Number(p.devuelto)>0?' · devuelto '+ctK(p.devuelto):'')+' · vivo '+ctK(p.es_viva?p.premium_activo:null)+'</span></div>';
+  }).join('');
+  const flags = [];
+  if(c.alerta_rewrite) flags.push('⚠ Se reemplazó una póliza sin fila de cancelación en el BOS (rewrite sin cancelación): confirmar con Financiera.');
+  if(c.alerta_concurrente) flags.push('⚠ Hay dos pólizas del mismo ramo vivas a la vez (rewrite temprano o DOT compartido).');
+  const t = ctEstadoKaren(c);
+  const estado = t ? 'Tu marca: <b>'+esc(estadoLabel(t.estado))+'</b>'+(t.motivo_perdido?' · '+esc(t.motivo_perdido):'')+' · '+fmtFecha(String(t.updated_at||'').slice(0,10)) : 'Sin marca todavía.';
+  const k = esc(c.llave);
+  return '<div class="ct-det" data-det="'+k+'">'+filas+flags.map(f=>'<div class="ct-flag">'+esc(f)+'</div>').join('')+
+    '<div style="font-size:11.5px;margin-top:6px">'+estado+' · <span style="color:var(--muted)">Área: '+esc(c.area||'—')+' · Agente: '+esc(c.agente||'—')+(c.dot?' · DOT '+esc(c.dot):'')+' · Contacto HubSpot: —</span></div>'+
+    '<div class="ct-ac">'+
+      '<button type="button" class="btn pri" data-ct="contactado" data-k="'+k+'">Contactado</button>'+
+      '<button type="button" class="btn" data-ct="renovado" data-k="'+k+'">Renovado</button>'+
+      '<button type="button" class="btn" data-ct="perdido" data-k="'+k+'">Perdido</button>'+
+      '<button type="button" class="btn" data-ct="nota" data-k="'+k+'">Nota</button>'+
+    '</div><div class="ct-notas" id="ct-notas-'+k.replace(/[^a-zA-Z0-9]/g,'_')+'"></div></div>';
+}
+function ctPinta(){
+  const base = ctFiltradas();
+  ctCifras(base);
+  const L = ctLista(base);
+  const tope = CT.todas ? L.length : 40;
+  const el = $('ct-lista');
+  el.innerHTML = L.length ? L.slice(0, tope).map(c=>{
+    const t = ctEstadoKaren(c);
+    const sub = (c.dot ? 'DOT '+esc(c.dot)+' · ' : '')+esc(c.agente||'—');
+    return '<div class="ct-cta'+(CT.abierta===c.llave?' open':'')+'" tabindex="0" role="button" aria-expanded="'+(CT.abierta===c.llave)+'" data-k="'+esc(c.llave)+'">'+
+      '<div class="ct-n"><b>'+esc(c.cuenta_nombre||c.insured||c.llave)+'</b><small>'+sub+'</small></div>'+
+      '<div class="ct-pw">'+c._pols.map(ctBarra).join('')+'</div>'+
+      '<div class="ct-p">'+(c._vivo?ctK(c._vivo):'—')+'<small>'+(t?esc(estadoLabel(t.estado)):'&nbsp;')+'</small></div>'+
+      ctFicha(c)+'</div>';
+  }).join('') : '<div class="ct-vacio">Nada aquí con este filtro.</div>';
+  const mas = $('ct-mas');
+  if(L.length > 40){ mas.style.display='block'; mas.textContent = CT.todas ? 'ver menos' : 'ver las '+L.length+' →'; }
+  else mas.style.display='none';
+  el.querySelectorAll('.ct-cta').forEach(row=>{
+    const abrir = ev=>{
+      if(ev.target.closest('.ct-det')) return;
+      const k = row.dataset.k;
+      CT.abierta = CT.abierta===k ? null : k;
+      el.querySelectorAll('.ct-cta').forEach(r=>{ const on = r.dataset.k===CT.abierta; r.classList.toggle('open', on); r.setAttribute('aria-expanded', on); });
+      if(CT.abierta) ctNotas(CT.abierta);
+    };
+    row.onclick = abrir;
+    row.onkeydown = ev=>{ if((ev.key==='Enter'||ev.key===' ') && ev.target===row){ ev.preventDefault(); abrir(ev); } };
+  });
+  el.querySelectorAll('[data-ct]').forEach(b=> b.onclick = ev=>{ ev.stopPropagation(); ctAccion(b.dataset.ct, b.dataset.k); });
+  if(CT.abierta) ctNotas(CT.abierta);
+  const eje = $('ct-eje'); if(eje) eje.innerHTML = [[0,'hoy'],[30,'30 d'],[60,'60 d'],[180,'6 meses'],[365,'1 año']].map(m=>'<span style="left:'+ctPos(m[0])+'%">'+m[1]+'</span>').join('');
+}
+async function ctNotas(llave){
+  const box = $('ct-notas-'+llave.replace(/[^a-zA-Z0-9]/g,'_')); if(!box) return;
+  const c = CT.cuentas.find(x=>x.llave===llave); const k = c ? (c.dot||c.llave) : llave;
+  const { data, error } = await SB.from('renov_notas').select('*').eq('llave', k).order('created_at',{ascending:false}).limit(5);
+  if(error){ box.textContent = 'No se pudieron cargar las notas.'; return; }
+  box.innerHTML = (data||[]).map(n=>'<div><span class="nm">'+esc(n.autor)+' · '+fmtFechaHora(n.created_at)+'</span><br>'+esc(n.nota)+'</div>').join('');
+}
+/* La marca va a la póliza más próxima de la cuenta (la que Karen está trabajando) */
+function ctPolizaObjetivo(c){
+  const vivas = c._pols.filter(p=>p.es_viva || p._c==='vencida').sort((a,b)=> ctDias(a.vence)-ctDias(b.vence));
+  return vivas[0] || c._pols[0];
+}
+async function ctAccion(acc, llave){
+  const c = CT.cuentas.find(x=>x.llave===llave); if(!c) return;
+  const k = c.dot || c.llave;
+  if(acc==='nota'){
+    const n = window.prompt('Nota para '+(c.cuenta_nombre||k)+':'); if(n===null || !n.trim()) return;
+    const { error } = await SB.from('renov_notas').insert({ llave: k, nota: n.trim(), autor: SESION_EMAIL||'', autor_user_id: SESION_UID||null });
+    if(error){ alert('No se pudo guardar la nota: '+error.message); return; }
+    ctNotas(llave); return;
+  }
+  const p = ctPolizaObjetivo(c); if(!p) return;
+  const row = { llave: k, vence: String(p.vence).slice(0,10) };
+  let payload;
+  if(acc==='contactado'){ const hoy = new Date().toISOString().slice(0,10); payload = { estado:'contactado', contactado:true, fecha_contacto:hoy, contacto_por:SESION_EMAIL||null }; }
+  else if(acc==='perdido'){
+    const m = window.prompt('Motivo de la pérdida (obligatorio):'); if(m===null) return;
+    if(!m.trim()){ alert('El motivo es obligatorio para marcar perdida.'); return; }
+    payload = { estado:'perdido', motivo_perdido:m.trim() };
+  } else payload = { estado:'renovado', motivo_perdido:null };
+  const ok = await escribirTrabajoDB(row, payload); if(!ok) return;
+  (CT.trabajo[k] = CT.trabajo[k] || []).push(Object.assign({}, row, payload, { updated_at: new Date().toISOString() }));
+  ctPinta();
+}
+
+function ctCambios(){
+  const T = { CANCELADA:'Se cayó', PENDIENTE_CANCELACION:'Confirmar', RENOVADA:'Renovada', VENCIDA_SIN_RENOVAR:'Venció', POR_VENCER:'Vence en 15 d',
+    ENTRO_A_VENTANA:'Entró a ventana', REACTIVADA:'Volvió', PREMIUM_CAMBIO:'Cambió premium', POLIZA_NUEVA:'Póliza nueva', FASE_CAMBIO:'Cambió' };
+  const E = CT.eventos;
+  $('ct-cambios-n').textContent = E.length ? E.length+' cambios' : 'sin cambios';
+  $('ct-cambios').innerHTML = E.length ? E.slice(0,60).map(e=>'<div class="ct-ev"><span class="t">'+esc(T[e.tipo]||e.tipo)+'</span><span><b>'+esc(e.cuenta_nombre||e.dot||'')+'</b> · '+esc(e.ramo||'')+
+      (e.tipo==='PREMIUM_CAMBIO' ? ' · '+ctK(e.premium_antes)+' → '+ctK(e.premium_ahora) : (e.vence?' · vence '+ctFecha(e.vence):''))+'</span><span class="h">'+fmtFechaHora(e.creado_at)+'</span></div>').join('')
+    : '<div class="ct-ev"><span class="t">—</span><span>Nada cambió en las últimas 36 horas.</span><span></span></div>';
+}
+
+function ctAvisos(){
+  const box = $('ct-avisos');
+  const A = CT.priv ? CT.alertas.filter(a=>a.tipo!=='D_CUENTA_REPETIDA').slice(0,3) : [];
+  box.innerHTML = A.map(a=>{
+    const quien = a.agente ? esc(a.agente)+' · ' : '';
+    const txt = a.tipo==='A_VENTA_SE_CAE' ? 'Venta que se cae: '+esc(a.cuenta_nombre||'')+' · '+esc(a.detalle||'')
+      : a.tipo==='B_PATRON' ? 'Patrón: '+esc(a.detalle||'') : 'Semáforo: '+esc(a.detalle||'');
+    return '<div class="ct-aviso'+(a.nivel==='ROJO'?'':' ambar')+'">⚠ <span><b>'+quien+'</b>'+txt+'</span><button type="button" class="btn" data-av="'+a.id+'">Visto</button></div>';
+  }).join('');
+  box.querySelectorAll('[data-av]').forEach(b=> b.onclick = async ()=>{
+    const { error } = await SB.rpc('renov_alerta_vista', { p_id: Number(b.dataset.av) });
+    if(error){ alert('No se pudo marcar: '+error.message); return; }
+    CT.alertas = CT.alertas.filter(a=>String(a.id)!==b.dataset.av); ctAvisos();
+  });
+}
+
+function ctIndice(){
+  const box = $('ct-ix-box');
+  if(!CT.priv || !CT.indice.length){ box.style.display='none'; return; }
+  box.style.display='block';
+  const ag = CT.indice.filter(i=>i.semaforo!=='GRIS').sort((a,b)=> Number(b.pct_medio_termino)-Number(a.pct_medio_termino));
+  const gris = CT.indice.filter(i=>i.semaforo==='GRIS').length;
+  const pAg = Number((CT.indice[0]||{}).pct_agencia||0)*100;
+  const col = { ROJO:'var(--rojo)', AMARILLO:'var(--ambar)', VERDE:'var(--verde)' };
+  $('ct-ix').innerHTML = ag.map((a,i)=>{
+    const pct = Number(a.pct_medio_termino||0)*100;
+    const caidas = CT.detalle.filter(d=>d.agente===a.agente && d.medio_termino && d.cuenta_para_indice)
+      .sort((x,y)=> String(y.fecha_cancelacion).localeCompare(String(x.fecha_cancelacion)));
+    return '<div class="ct-ag" data-i="'+i+'"><span class="bola '+esc(a.semaforo)+'"></span><b>'+esc(a.agente)+(a.patron?' <span style="color:var(--rojo);font-weight:600;font-size:11px">· patrón</span>':'')+'</b>'+
+      '<div class="m"><i style="width:'+Math.min(100,pct*2)+'%;background:'+col[a.semaforo]+'"></i><u style="left:'+Math.min(100,pAg*2)+'%"></u></div>'+
+      '<span class="pc">'+pct.toFixed(0)+' %</span><span class="fr">'+a.medio_termino+'/'+a.ventas+'</span></div>'+
+      '<div class="ct-agd" id="ct-agd-'+i+'">'+(caidas.length ? caidas.map(d=>'<div>✕ '+esc(d.cuenta_nombre)+' · '+esc(d.paquete)+' '+ctK(d.premium_paquete)+' · se cayó el día '+esc(d.dias_vida)+' ('+ctFecha(d.fecha_cancelacion)+')</div>').join('') : '<div>Ninguna liability caída antes de 180 días.</div>')+
+      (a.reescritas?'<div>'+a.reescritas+' cancelar-y-reescribir que no cuentan.</div>':'')+'</div>';
+  }).join('')+'<div class="ct-nota-ix">Promedio agencia '+pAg.toFixed(0)+' % (la raya). No cuentan NTL, paquetes &lt; $3,000 ni cancelar-y-reescribir.'+(gris?' '+gris+(gris===1?' persona':' personas')+' sin base (menos de 5 ventas).':'')+'</div>';
+  document.querySelectorAll('#ct-ix .ct-ag').forEach(r=> r.onclick = ()=>{ const d=$('ct-agd-'+r.dataset.i); if(d) d.classList.toggle('open'); });
+}
+
+/* tiempo real: Realtime + respaldo cada 60 s (mismo patrón de cartera-timeline) */
+function ctRecargarSuave(){ clearTimeout(CT.tRec); CT.tRec = setTimeout(()=>{ cargarCartera(); }, 1500); }
+function ctTiempoReal(){
+  if(CT.canal) return;
+  try{
+    CT.canal = SB.channel('renov-cartera-v36')
+      .on('postgres_changes',{event:'INSERT',schema:'public',table:'renov_eventos'}, ctRecargarSuave)
+      .on('postgres_changes',{event:'INSERT',schema:'public',table:'renov_alertas'}, ctRecargarSuave)
+      .on('postgres_changes',{event:'INSERT',schema:'public',table:'renov_refresh_log'}, ctRecargarSuave)
+      .subscribe();
+  }catch(e){ console.warn('realtime', e); }
+  CT.poll = setInterval(async ()=>{
+    try{
+      const { data } = await SB.from('v_renov_estado_dato').select('foto_at').maybeSingle();
+      if(data && data.foto_at && data.foto_at!==CT.ultFoto){ if(CT.ultFoto) ctRecargarSuave(); CT.ultFoto = data.foto_at; }
+    }catch(e){}
+  }, 60000);
+}
+
+/* Exportar con detalle (Edge Function exportar-cartera → .xlsx igual para todos) */
+async function ctExportar(alcance){
+  const xp = $('xp'); if(xp) xp.classList.remove('open');
+  const btn = $('xp-btn'); const txt = btn.textContent; btn.disabled = true; btn.textContent = 'Armando el Excel…';
+  try{
+    const { data, error } = await SB.functions.invoke('exportar-cartera', { body: { alcance, filtro: CT.filtro, area: CT.area, q: CT.q } });
+    if(error) throw error;
+    const blob = data instanceof Blob ? data : new Blob([data], { type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'Cartera_Renovaciones_'+(alcance==='completa'?'completa':'vista')+'_'+new Date().toISOString().slice(0,10)+'.xlsx';
+    document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+  }catch(e){ alert('No se pudo exportar: '+(e && e.message || e)); }
+  finally{ btn.disabled = false; btn.textContent = txt; }
+}
+(function ctInitControles(){
+  const q = $('ct-q'); if(q) q.addEventListener('input', ()=>{ CT.q = q.value; CT.todas = false; ctPinta(); });
+  const ar = $('ct-area'); if(ar) ar.addEventListener('change', ()=>{ CT.area = ar.value; CT.todas = false; ctPinta(); });
+  const mas = $('ct-mas'); if(mas) mas.addEventListener('click', ()=>{ CT.todas = !CT.todas; ctPinta(); });
+  const xb = $('xp-btn'); if(xb) xb.addEventListener('click', ev=>{ ev.stopPropagation(); $('xp').classList.toggle('open'); });
+  document.querySelectorAll('[data-xp]').forEach(b=> b.addEventListener('click', ()=> ctExportar(b.dataset.xp)));
+  document.addEventListener('click', ev=>{ const x=$('xp'); if(x && !ev.target.closest('#xp')) x.classList.remove('open'); });
+})();
+
 /* ---------- navegación ---------- */
-const TABS = [['cola','01','Mi cola'],['vend','02','Vendedores'],['muro','03','El muro'],
+const TABS = [['cartera','00','Cartera'],['cola','01','Mi cola'],['vend','02','Vendedores'],['muro','03','El muro'],
   ['bolsa','04','La bolsa'],['bonos','05','Bonos'],['area','06','El área']];
 function nav(){
-  const badges = { muro: ALERTA_GRANDES.length };
+  const badges = { muro: ALERTA_GRANDES.length, cartera: (CT.priv ? CT.alertas.length : 0) };
   const navEl = $('nav'); if(navEl && !navEl.getAttribute('role')) navEl.setAttribute('role','tablist');
   $('nav').innerHTML = TABS.map(([k,n,t])=>{
     const b = badges[k]||0;
@@ -1796,7 +2257,7 @@ $('btn-imprimir-ano').addEventListener('click', ()=> imprimir('ano'));
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="renovaciones.html";
-var PGV_VERSION=35; // v35 - Protect Index: las direcciones internas del sitio pasan a relativas (el sitio ya no depende de como se llame el repo). Las que viajan por correo (recuperar contrasena, fotos de firma, sello de RRHH) quedan absolutas apuntando a protect-index. // v34 (21-sep-2026) ARREGLO: el boton Cancelada / Retirada de la tarjeta fallaba con \"violates check constraint renov_trabajo_motivo_chk\" porque mandaba el estado sin motivo; ahora pide el motivo igual que Perdida (sugiere la etapa de HubSpot cuando el equipo ya la dio por perdida). --- v33 (21-sep-2026) VENDEDORES DESPLIEGA LAS CUENTAS: tocar el nombre de un vendedor abre debajo de su fila, mes por mes, el nombre de cada cuenta (DOT, fecha de vencimiento, premium y la misma etiqueta de estado de Mi cola); tocar una celda abre solo ese mes. El salto a Mi cola queda como boton \"Trabajarlas en Mi cola\" en cada mes. Mismos datos que ya cargaba la pantalla (v_renov_cartera_estado_visible), cero consultas nuevas, cero barras. --- v32 (18-sep-2026) VENDEDORES MES A MES: una tabla vendedor x mes con las cuentas y el premium que vencen en cada mes del ano (y cuantas ya renovaron), toda la lista de Karen aunque tengan cero, fila Area al pie, clic en una celda lleva a Mi cola de esa persona en ese mes. Ya no depende del mes escogido arriba. Cero barras. --- v31.1 (18-sep-2026) Vendedores muestra a TODA la lista de Karen (roster ACTIVO/KAREN), tengan o no cuentas este mes; y lo que no es de la lista (Jorge, Retencion) cae a la persona de la regla de trabajo (Karen en sep-oct), no a Cartera agencia. --- v31 (18-sep-2026) LA CARTERA ES EL EXCEL DE ANDRES y "cada gente" es LA PERSONA DEL EXCEL: Vendedores, la tarjeta y el filtro agrupan por persona (solo la lista de Karen: roster ACTIVO/KAREN; el resto se recoge como Cartera agencia). Quien vendio la poliza segun el BOS queda como dato chico. Y la marca de Karen SE VE: si el motor no ha cerrado la cuenta, la etiqueta es la de ella; Renovada sin BOS sale en ambar como "Renovada - falta el BOS" y no cuenta hasta que Jeff la registre. --- v30.2 (17-sep-2026) ARREGLO: el hero y la cinta se calculan de la MISMA cola que ve cada persona. Antes salian de la vista agregada por mes, que solo ve direccion: a Karen le aparecia \"sin cartera cargada este mes\" con su cola llena debajo. Ahora hero, cinta, vendedores y cola cuentan siempre lo mismo. --- v30 (17-sep-2026) LA CARTERA SALE DE HUBSPOT: la cola, la cinta y la franja leen v_renov_cartera_estado_visible y v_renov_cartera_graficas_visible — lo que Andres monta en HubSpot es la lista, y el motor solo marca la renovacion cuando Jeff la registra en el BOS (Sale - Renewal en la ventana -60/+150 de la fecha de HubSpot), con fecha, quien y CUANTO QUEDO. Hero en premium (que vence · que quedo · % retenido) con GUION, nunca cero, cuando a HubSpot le faltan montos: un % sobre base incompleta miente (septiembre daba 310%). La cinta deja de ser barras y pasa a dos curvas (vence punteada, quedo en menta); meses sin cartera salen "sin cartera". Filtros nuevos: En juego / Vencidas / Renovadas / Senal del equipo. Cinco avisos en ambar que NO cierran cuentas: el equipo la da por perdida, renovo y falta registrarla en el BOS, hay una venta nueva en la ventana, renovada con premium $0, esta dos veces en HubSpot. Una cuenta solo se pierde cuando Andres la marca (renov_cartera_marcar). Vendedores se calcula de la misma cola, por vendedor de la cuenta, y filtra la cola al hacer clic. La bolsa filtra cuenta_en_firme (arranca el 1-sep). --- v29 (15-sep-2026) RONDA VISUAL, cero cambios de datos: buscador en la cola (empresa/DOT/vendedor, repinta solo la lista); teclado real (casillas y meses son <button role=tab>, la tarjeta abre con Enter/Espacio, foco menta visible); movil de verdad a 1080 y 860 (la cinta desliza en su propio carril, franja/tarjeta/filas a una columna); el estado vive en la URL (#v casilla, #m mes, #f filtro, #q busqueda, #c ficha abierta) sin pisar el hash de recuperacion de clave; esqueleto de carga y error por bloque con Reintentar (un bloque caido ya no deja la pantalla en blanco); un solo tooltip delegado en vez de cuatro onmousemove; la meta del area sale de estandar_pct y no del codigo (estaba quemada en 3 sitios); svgBolsa con xMidYMid meet; clases que faltaban del estandar (.card.abierta, .u-mint, .st-n .v.ambar, .st-aviso, --rojo-claro); Arial fuera del boton Volver y JetBrains Mono 700 en el link de fuentes. --- v28: Ficha de cuenta: se abre al hacer clic en una tarjeta de la cola (acordeon, no modal). Cuatro bloques: Estado (los mismos de siempre, "retirado" ahora se lee "Cancelada / Retirada"), Por que (motivo obligatorio a renov_trabajo.motivo_perdido en Perdida/Cancelada-Retirada, opcional como nota suelta a renov_notas en cualquier otro estado, con historial de notas), Corregir fecha de renovacion (inserta en renov_ajustes con ajustado_user_id=SESION_UID -- mismo bug de uuid que se acaba de arreglar, aviso claro antes de guardar), y el aviso a Financiera que es automatico (v_ajustes_pendientes_bos). Nada se borra.
+var PGV_VERSION=36; // v36 - 00 Cartera (motor v3): cuatro cifras que filtran, la lista es el timeline (cada barra mide lo que le queda a la póliza desde hoy), ficha con pólizas + Contactado/Renovado/Perdido/Nota (renov_trabajo/renov_notas de siempre), qué cambió desde ayer, alertas e índice de cancelación (solo dirección/renovaciones), Exportar ▾ (exportar-cartera), tiempo real. Rótulo: Renovaciones. Lo demás de v35 intacto. // v35 - Protect Index: las direcciones internas del sitio pasan a relativas (el sitio ya no depende de como se llame el repo). Las que viajan por correo (recuperar contrasena, fotos de firma, sello de RRHH) quedan absolutas apuntando a protect-index. // v34 (21-sep-2026) ARREGLO: el boton Cancelada / Retirada de la tarjeta fallaba con \"violates check constraint renov_trabajo_motivo_chk\" porque mandaba el estado sin motivo; ahora pide el motivo igual que Perdida (sugiere la etapa de HubSpot cuando el equipo ya la dio por perdida). --- v33 (21-sep-2026) VENDEDORES DESPLIEGA LAS CUENTAS: tocar el nombre de un vendedor abre debajo de su fila, mes por mes, el nombre de cada cuenta (DOT, fecha de vencimiento, premium y la misma etiqueta de estado de Mi cola); tocar una celda abre solo ese mes. El salto a Mi cola queda como boton \"Trabajarlas en Mi cola\" en cada mes. Mismos datos que ya cargaba la pantalla (v_renov_cartera_estado_visible), cero consultas nuevas, cero barras. --- v32 (18-sep-2026) VENDEDORES MES A MES: una tabla vendedor x mes con las cuentas y el premium que vencen en cada mes del ano (y cuantas ya renovaron), toda la lista de Karen aunque tengan cero, fila Area al pie, clic en una celda lleva a Mi cola de esa persona en ese mes. Ya no depende del mes escogido arriba. Cero barras. --- v31.1 (18-sep-2026) Vendedores muestra a TODA la lista de Karen (roster ACTIVO/KAREN), tengan o no cuentas este mes; y lo que no es de la lista (Jorge, Retencion) cae a la persona de la regla de trabajo (Karen en sep-oct), no a Cartera agencia. --- v31 (18-sep-2026) LA CARTERA ES EL EXCEL DE ANDRES y "cada gente" es LA PERSONA DEL EXCEL: Vendedores, la tarjeta y el filtro agrupan por persona (solo la lista de Karen: roster ACTIVO/KAREN; el resto se recoge como Cartera agencia). Quien vendio la poliza segun el BOS queda como dato chico. Y la marca de Karen SE VE: si el motor no ha cerrado la cuenta, la etiqueta es la de ella; Renovada sin BOS sale en ambar como "Renovada - falta el BOS" y no cuenta hasta que Jeff la registre. --- v30.2 (17-sep-2026) ARREGLO: el hero y la cinta se calculan de la MISMA cola que ve cada persona. Antes salian de la vista agregada por mes, que solo ve direccion: a Karen le aparecia \"sin cartera cargada este mes\" con su cola llena debajo. Ahora hero, cinta, vendedores y cola cuentan siempre lo mismo. --- v30 (17-sep-2026) LA CARTERA SALE DE HUBSPOT: la cola, la cinta y la franja leen v_renov_cartera_estado_visible y v_renov_cartera_graficas_visible — lo que Andres monta en HubSpot es la lista, y el motor solo marca la renovacion cuando Jeff la registra en el BOS (Sale - Renewal en la ventana -60/+150 de la fecha de HubSpot), con fecha, quien y CUANTO QUEDO. Hero en premium (que vence · que quedo · % retenido) con GUION, nunca cero, cuando a HubSpot le faltan montos: un % sobre base incompleta miente (septiembre daba 310%). La cinta deja de ser barras y pasa a dos curvas (vence punteada, quedo en menta); meses sin cartera salen "sin cartera". Filtros nuevos: En juego / Vencidas / Renovadas / Senal del equipo. Cinco avisos en ambar que NO cierran cuentas: el equipo la da por perdida, renovo y falta registrarla en el BOS, hay una venta nueva en la ventana, renovada con premium $0, esta dos veces en HubSpot. Una cuenta solo se pierde cuando Andres la marca (renov_cartera_marcar). Vendedores se calcula de la misma cola, por vendedor de la cuenta, y filtra la cola al hacer clic. La bolsa filtra cuenta_en_firme (arranca el 1-sep). --- v29 (15-sep-2026) RONDA VISUAL, cero cambios de datos: buscador en la cola (empresa/DOT/vendedor, repinta solo la lista); teclado real (casillas y meses son <button role=tab>, la tarjeta abre con Enter/Espacio, foco menta visible); movil de verdad a 1080 y 860 (la cinta desliza en su propio carril, franja/tarjeta/filas a una columna); el estado vive en la URL (#v casilla, #m mes, #f filtro, #q busqueda, #c ficha abierta) sin pisar el hash de recuperacion de clave; esqueleto de carga y error por bloque con Reintentar (un bloque caido ya no deja la pantalla en blanco); un solo tooltip delegado en vez de cuatro onmousemove; la meta del area sale de estandar_pct y no del codigo (estaba quemada en 3 sitios); svgBolsa con xMidYMid meet; clases que faltaban del estandar (.card.abierta, .u-mint, .st-n .v.ambar, .st-aviso, --rojo-claro); Arial fuera del boton Volver y JetBrains Mono 700 en el link de fuentes. --- v28: Ficha de cuenta: se abre al hacer clic en una tarjeta de la cola (acordeon, no modal). Cuatro bloques: Estado (los mismos de siempre, "retirado" ahora se lee "Cancelada / Retirada"), Por que (motivo obligatorio a renov_trabajo.motivo_perdido en Perdida/Cancelada-Retirada, opcional como nota suelta a renov_notas en cualquier otro estado, con historial de notas), Corregir fecha de renovacion (inserta en renov_ajustes con ajustado_user_id=SESION_UID -- mismo bug de uuid que se acaba de arreglar, aviso claro antes de guardar), y el aviso a Financiera que es automatico (v_ajustes_pendientes_bos). Nada se borra.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;
