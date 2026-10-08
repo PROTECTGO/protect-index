@@ -556,6 +556,27 @@ select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;b
   .v20-tab{min-width:160px}
   .sng-nec .big{font-size:28px}
 }
+/* ===================== v22 · Mis cancelaciones (índice de liability) ===================== */
+.cx-b{display:inline-block;width:10px;height:10px;border-radius:50%;vertical-align:middle;margin-right:5px}
+.cx-b.ROJO{background:#D5594F}.cx-b.AMARILLO{background:#D9A520}.cx-b.VERDE{background:#229A82}
+.blq-mes .cx-v{background:none;border:0;padding:0;cursor:pointer;color:inherit;font:inherit;display:block;margin:0 auto}
+.blq-mes .cx-v:focus-visible{outline:2px solid var(--pg-mint);outline-offset:3px;border-radius:6px}
+.cx-mini{font:700 11px var(--pg-font-num);color:var(--pg-muted);white-space:nowrap;margin-left:6px}
+.cx-mini .cx-b{width:8px;height:8px;margin-right:3px}
+.cx-svg{width:100%;height:auto;display:block}
+.cx-frase{font-size:12.5px;color:var(--pg-muted);margin-top:10px}
+.cx-big{font:700 30px var(--pg-font-num);line-height:1.1}
+.cx-head{display:flex;gap:16px;align-items:baseline;flex-wrap:wrap;margin-bottom:6px}
+.cx-head small{font-size:12px;color:var(--pg-muted)}
+.cx-vida{display:grid;grid-template-columns:minmax(0,180px) minmax(0,1fr);gap:4px 12px;align-items:center;font-size:12px}
+.cx-vida .n{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cx-vida .tl{position:relative;height:14px}
+.cx-vida .tl .ln{position:absolute;top:6px;height:2px;border-radius:2px;background:#229A82}
+.cx-vida .tl .ln.caida{background:#D5594F}.cx-vida .tl .ln.tarde{background:#B6C2CB}.cx-vida .tl .ln.rw{background:#5B6BD6}
+.cx-vida .tl .x{position:absolute;top:0;font:800 11px var(--pg-font-body);color:#D5594F;transform:translateX(-50%)}
+.cx-vida .tl .d180{position:absolute;top:-2px;bottom:-2px;border-left:1.5px dashed rgba(27,45,58,.35)}
+.cx-eje{display:flex;justify-content:space-between;font:600 10px var(--pg-font-num);color:var(--pg-muted);margin:4px 0 0 192px}
+@media (max-width:600px){ .cx-vida{grid-template-columns:minmax(0,110px) minmax(0,1fr)} .cx-eje{margin-left:122px} }
 </style>
 </head>
 <body>
@@ -592,6 +613,7 @@ select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;b
         <div class="fr-n"><div class="l">Premium</div><div class="v" id="h-premium"></div></div>
         <div class="fr-n"><div class="l">Fee</div><div class="v mint" id="h-fee"></div><div class="s" id="h-fee-s"></div></div>
         <div class="fr-n"><div class="l">Días que quedan del mes</div><div class="v" id="h-dias"></div></div>
+        <div class="fr-n" id="h-canc" style="display:none"><div class="l">Cancelaciones</div><button class="v cx-v" type="button" id="h-canc-v" aria-label="Ver mis cancelaciones"></button><div class="s" id="h-canc-s"></div></div>
       </div>
       <div class="ritmo-linea" id="h-ritmo"></div>
       <div style="display:none"><div class="l">Me falta</div><div class="v warn" id="h-falta"></div><div class="s" id="h-falta-s"></div></div>
@@ -646,6 +668,14 @@ select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;b
     </div>
 
     <div class="pg-card"><h2>Mi combinada y mi meta, mes a mes</h2><p class="pg-purpose">Onda verde: tu combinada del mes (premium + fee × 10), del BOS. <span id="lb-meta-graf"></span></p><div class="pg-chart-wrap" style="height:320px"><canvas id="chHist"></canvas></div></div>
+    <!-- v22 · Mis cancelaciones (índice de liability · v_cartera_indice_*_visible) -->
+    <div class="pg-card" id="cx-card" style="display:none"><h2>Mis cancelaciones, mes a mes</h2>
+      <p class="pg-purpose">% de mis liabilities que se cayeron antes de 180 días, acumulado en los últimos 12 meses · línea punteada = agencia</p>
+      <div class="cx-head"><span class="cx-big" id="cx-big"></span><small id="cx-sub"></small></div>
+      <div id="cx-serie"></div><div class="cx-frase" id="cx-frase"></div></div>
+    <div class="pg-card" id="cx-vida-card" style="display:none"><h2>Mis liabilities · cuánto duró cada una</h2>
+      <p class="pg-purpose">Cada línea es una cuenta, desde el día que la vendiste. Raya punteada = 180 días. ✕ roja si se cayó antes.</p>
+      <div class="cx-vida" id="cx-vida"></div><div class="cx-eje"><span>día 0</span><span>180</span><span>365</span></div></div>
     <div class="rec" id="rec"></div>
 
     <!-- v20 · llamadas y positivos: portal.mi_actividad_hoy_mes(), lo mismo del tablero de Brahian -->
@@ -1535,6 +1565,7 @@ async function renderShell(session){
         pintado = true;
         if (SOLO_LECTURA) { bannerConNombre(d.nombre); document.title = 'GABI · Mi proceso — ' + d.nombre; }
         prepararDatos(d); pintarCabecera(); pintarTodo();
+        cxCargar(d.nombre);   /* v22 · Mis cancelaciones */
         if (ACT) { try { pintaActNum(ACT); } catch (e) {} }
         if (!SOLO_LECTURA) {
           /* Despues de pintar, sin esperar: si al robot le toca, corre en la base sin que nadie lo mire. */
@@ -1673,6 +1704,96 @@ function pintaMesAnterior(T){
                      : '<div class="vacio">Nadie cobró fee ese mes.</div>') + '</div>';
   }
 }
+
+
+/* ===================== v22 · MIS CANCELACIONES =====================
+   Fuente: v_cartera_indice_visible (todos los agentes: solo semáforo y %, nunca cuentas) y
+   v_cartera_indice_detalle_visible (sus propias cuentas). Discreto: bolita + %, sin banner,
+   sin correo, sin novedad al agente. Un agente en verde no recibe ningún mensaje. */
+const CX = { nombre:'', idx:[], det:[], mio:null, listo:false };
+const cxNorm = s => String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\(.*?\)/g,'').toLowerCase().replace(/[^a-z ]/g,' ').replace(/\s+/g,' ').trim();
+function cxEs(a, b){ const x = cxNorm(a), y = cxNorm(b); if(!x || !y) return false;
+  if(x===y) return true; const xa = x.split(' '), ya = y.split(' ');
+  return xa.length>=2 && ya.length>=2 && xa[0]===ya[0] && xa[1]===ya[1]; }
+function cxDe(nombre){ return CX.idx.find(i => cxEs(i.agente, nombre)) || null; }
+const cxPct = i => Math.round(Number(i.pct_medio_termino||0)*100);
+async function cxCargar(nombreProceso){
+  try{
+    let nombre = nombreProceso || '';
+    if(!SOLO_LECTURA){ try{ const r = await SB.rpc('mi_persona'); if(r && r.data) nombre = r.data; }catch(e){} }
+    CX.nombre = nombre;
+    const [iR, dR] = await Promise.all([
+      SB.from('v_cartera_indice_visible').select('agente,ventas,medio_termino,pct_medio_termino,pct_agencia,semaforo'),
+      SB.from('v_cartera_indice_detalle_visible').select('agente,cuenta_nombre,paquete,efectiva,fecha_cancelacion,dias_vida,cancelada,reescrita,medio_termino,cuenta_para_indice'),
+    ]);
+    CX.idx = (iR && iR.data) || [];
+    CX.det = ((dR && dR.data) || []).filter(d => d.cuenta_para_indice && cxEs(d.agente, nombre));
+    CX.mio = cxDe(nombre); CX.listo = true;
+    cxPintarCifra(); cxPintarCards(); cxDecorarTop();
+  }catch(e){ console.warn('cancelaciones v22', e); }
+}
+function cxPintarCifra(){
+  const box = $('h-canc'); if(!box) return;
+  const m = CX.mio;
+  if(!m || m.semaforo==='GRIS'){ box.style.display = 'none'; return; }   /* menos de 5 liabilities: no sale */
+  box.style.display = '';
+  $('h-canc-v').innerHTML = '<span class="cx-b '+escH(m.semaforo)+'"></span>'+cxPct(m)+' %';
+  $('h-canc-s').textContent = m.medio_termino+' de '+m.ventas+' · ver ▸';
+  $('h-canc-v').onclick = () => { const a = document.querySelector('.pg-side a[data-go="historia"]'); if(a) a.click();
+    setTimeout(() => { const c = $('cx-card'); if(c) c.scrollIntoView({ behavior:'smooth', block:'start' }); }, 60); };
+}
+function cxPintarCards(){
+  const m = CX.mio, c1 = $('cx-card'), c2 = $('cx-vida-card'); if(!c1 || !c2) return;
+  if(!m || m.semaforo==='GRIS' || !CX.det.length){ c1.style.display = c2.style.display = 'none'; return; }
+  c1.style.display = c2.style.display = '';
+  const ag = Number(m.pct_agencia||0)*100;
+  $('cx-big').innerHTML = '<span class="cx-b '+escH(m.semaforo)+'"></span>'+cxPct(m)+' %';
+  $('cx-sub').textContent = m.medio_termino+' de '+m.ventas+' liabilities · agencia '+Math.round(ag)+' %';
+  $('cx-frase').textContent = m.semaforo==='VERDE' ? 'Vas bien.' : 'Una liability que se cae antes de 180 días devuelve la comisión y la cuenta no vuelve.';
+  /* serie: acumulado por mes de venta (las ventas del mes y las que se cayeron antes de 180 días) */
+  const porMes = {};
+  CX.det.forEach(d => { const k = String(d.efectiva).slice(0,7); const o = porMes[k] || (porMes[k] = { v:0, c:0 }); o.v++; if(d.medio_termino) o.c++; });
+  const meses = Object.keys(porMes).sort(); let v = 0, c = 0;
+  const pts = meses.map(k => { v += porMes[k].v; c += porMes[k].c; return { k, p: 100*c/v }; });
+  const W = 640, H = 180, PL = 34, PR = 10, PT = 12, PB = 26, top = Math.max(40, Math.ceil(Math.max(ag, ...pts.map(x=>x.p))/10)*10+10);
+  const X = i => PL + (pts.length<=1 ? (W-PL-PR)/2 : i*(W-PL-PR)/(pts.length-1));
+  const Y = p => PT + (H-PT-PB)*(1 - p/top);
+  const MES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  let s = '<svg class="cx-svg" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Mis cancelaciones mes a mes">';
+  s += '<rect x="'+PL+'" y="'+PT+'" width="'+(W-PL-PR)+'" height="'+Math.max(0,Y(25)-PT)+'" fill="#D5594F" opacity=".07"/>';
+  [0, 25, top].forEach(t => { s += '<text x="'+(PL-6)+'" y="'+(Y(t)+3)+'" text-anchor="end" font-size="10" fill="#6B7D89">'+t+'%</text>'; });
+  s += '<line x1="'+PL+'" x2="'+(W-PR)+'" y1="'+Y(ag)+'" y2="'+Y(ag)+'" stroke="#1B2D3A" stroke-width="1.2" stroke-dasharray="5 4" opacity=".55"/>';
+  s += '<text x="'+(W-PR)+'" y="'+(Y(ag)-4)+'" text-anchor="end" font-size="10" fill="#6B7D89">agencia '+Math.round(ag)+'%</text>';
+  const col = { ROJO:'#D5594F', AMARILLO:'#D9A520', VERDE:'#229A82' }[m.semaforo] || '#229A82';
+  s += '<polyline fill="none" stroke="'+col+'" stroke-width="2.5" stroke-linejoin="round" points="'+pts.map((x,i)=>X(i)+','+Y(x.p)).join(' ')+'"/>';
+  pts.forEach((x,i) => { s += '<circle cx="'+X(i)+'" cy="'+Y(x.p)+'" r="3.5" fill="'+col+'"><title>'+x.k+' · '+Math.round(x.p)+' %</title></circle>';
+    if(pts.length<=8 || i%2===0 || i===pts.length-1) s += '<text x="'+X(i)+'" y="'+(H-8)+'" text-anchor="middle" font-size="10" fill="#6B7D89">'+MES[Number(x.k.slice(5,7))-1]+'</text>'; });
+  $('cx-serie').innerHTML = s + '</svg>';
+  /* vida de cada liability */
+  const hoy = new Date(); hoy.setHours(12,0,0,0);
+  const pos = d => Math.max(0, Math.min(100, d/365*100));
+  $('cx-vida').innerHTML = CX.det.slice().sort((a,b)=> String(b.efectiva).localeCompare(String(a.efectiva))).map(d => {
+    const vivo = Math.round((hoy - new Date(String(d.efectiva).slice(0,10)+'T12:00:00'))/864e5);
+    const dur = d.cancelada && d.dias_vida!=null ? Number(d.dias_vida) : Math.min(vivo, 365);
+    const cls = d.reescrita ? 'rw' : d.medio_termino ? 'caida' : (d.cancelada ? 'tarde' : '');
+    const tit = d.reescrita ? 'reescrita · no cuenta' : d.cancelada ? 'se cayó el día '+dur : dur+' días y sigue';
+    return '<div class="n" title="'+escH(d.cuenta_nombre)+'">'+escH(d.cuenta_nombre)+'</div><div class="tl" title="'+escH(tit)+'"><span class="d180" style="left:'+pos(180)+'%"></span>'+
+      '<span class="ln '+cls+'" style="left:0;width:'+Math.max(1,pos(dur))+'%"></span>'+(d.medio_termino ? '<span class="x" style="left:'+pos(dur)+'%">✕</span>' : '')+'</div>';
+  }).join('');
+}
+/* La bolita en "Los mejores del mes anterior" y en la línea "Tú en …" (todos ven solo semáforo y %) */
+function cxMini(i){ return i && i.semaforo!=='GRIS' ? '<span class="cx-mini" data-cx="1" title="Cancelaciones de liability antes de 180 días"><span class="cx-b '+escH(i.semaforo)+'"></span>'+cxPct(i)+' %</span>' : ''; }
+function cxDecorarTop(){
+  if(!CX.listo) return;
+  document.querySelectorAll('#top3 .t3').forEach(r => {
+    const n = r.querySelector('.n'); if(!n) return;
+    n.querySelectorAll('[data-cx]').forEach(x => x.remove());
+    const nombre = r.classList.contains('yo') ? CX.nombre : n.textContent;
+    n.insertAdjacentHTML('beforeend', cxMini(cxDe(nombre)));
+  });
+  const ty = $('top-yo'); if(ty && ty.style.display!=='none'){ ty.querySelectorAll('[data-cx]').forEach(x => x.remove()); ty.insertAdjacentHTML('beforeend', cxMini(CX.mio)); }
+}
+pintaMesAnterior = (function(f){ return function(T){ f(T); try{ cxDecorarTop(); }catch(e){} }; })(pintaMesAnterior);
 
 /* v16: bonos desde el plan vigente. bonos_cop.lista = [{nombre, monto, regla, vara, meta}],
    vara: fee | premium | combinada | ventas | constancia. Sin lista = los del mes pasado ya cerraron. */
@@ -2016,7 +2137,7 @@ document.addEventListener('DOMContentLoaded', boot);
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="gabi-asesor.html";
-var PGV_VERSION=21; // v21 - 6-oct-2026 CARGA INMEDIATA: cada bloque sale de portal.rapido() (cache por persona, ~10 ms) y se pinta apenas llega; si tiene mas de 5 min, portal.refrescar() lo recalcula detras con las mismas funciones y se repinta solo. Nada espera a nada. La columna y los bonos usan el cliente de la pantalla (window.pgSB). | v20 - 6-oct-2026 REORGANIZACION (pedido de Andres). Hoy: Mi mes, Mi actividad (llamadas, contactos y cotizados con los mismos numeros del tablero de Brahian), Mi sueño EN CUENTAS REALES (portal.mi_sueno_plan: la cuenta tipica de los ultimos 3 meses cerrados del BOS, cuantas cuentas, premium neto y fee minimos, dos palancas reales y candado de realismo; se guarda con portal.guardar_sueno_v2, la v1 nunca guardo) y los mejores del mes anterior con una linea "Tu en ..." (la franja "como quedaste" se retira). "Mi historia" pasa a "Mis numeros": bonos del mes con una pestanita por bono y sus condiciones (portal.bonos_mes_vigente), la grafica de combinada contra la meta (sin las dos lineas de comision) y llamadas y positivos hoy / mes con la tira de dias (portal.mi_actividad_hoy_mes). Se jubilan, ocultos en #v20-jub sin borrar: lo que me esta costando, Despierta (reloj, escalera, dos futuros), mi comision y escalones, plan del mes, los incentivos viejos (meta, turbo, escalas, fee prometido) y Mi meta en USD. Carga pg-sombra.js (la columna del top, que aqui no salia) y pg-bonos.js (bonos del mes arriba a la derecha). | v19 - LO PERSONAL A LA VISTA. Carga pg-destellos.js v1: las felicitaciones, consejos y mensajes de Andres que son solo para la persona y no ha leido salen en una tarjeta destacada arriba a la derecha (Leido / Despues). Nada mas cambia. | v18 - VOLVER AL INDEX. Carga pg-volver.js v1: la misma pastilla fija "← Volver al Index" de todas las herramientas, arriba a la izquierda (Mi proceso no tenia como volver). Nada mas cambia. | v17 - ARRANQUE EN PARALELO. mi_proceso, mi_diagnostico y mi_top_prev salen a la vez (antes, uno detras de otro), y detectar_logros se dispara DESPUES de pintar sin esperarlo: cuando le tocaba el turno (cada 10 min) frenaba la pantalla 20-30 s. Preconnect a la base y a las fuentes. La compuerta de version reutiliza el cliente de la pantalla. Nada de lo que se muestra cambia. Del lado de la base, en la misma entrega: indice de expresion en bos_registros (mi_proceso 5,4 s -> 0,7 s; robot de logros 26 s -> 4 s). | v16 - El mes anterior, solo y cada mes: en la barra lateral el #1 por combinada y el #1 por fee cobrado del mes que cerro; debajo de Mi mes, una franja pequena con como quedo la persona (ventas, premium, fee, combinada contra su meta, puesto en el equipo, estado de bonos); y al final de Hoy los tres mejores por combinada y los tres mejores por fee. Sale de portal.mi_top_prev() (nueva, en paralelo con mi_diagnostico; si falla, los tres bloques no aparecen y nada mas cambia). Rota sola el 1 de cada mes. Respeta portal.top_exclusiones (sep-2026: Juliana Raigosa, cuenta asignada por direccion) y no cuenta un Unsold reversado. "Los mejores del mes" en curso se jubila. Los cuatro bonos quemados de septiembre se jubilan: la tarjeta lee bonos_cop.lista del plan vigente y, sin lista, dice que los del mes pasado cerraron y los nuevos se publican pronto. El Turbo se oculta solo cuando vence. "Agosto" quemado en dos textos pasa a ser el mes anterior real. | v15 - "Mi proceso" pasa a ser una sola pantalla de tres bloques (Mi mes, Mi actividad, Mi sueño) mas los mejores del mes; el resto (historia mes a mes, comision y escalones, patrones, palanca, estrategias, plan del mes y el detalle de Despierta) se movio a la pestana "Mi historia" sin borrar nada. Nuevo: Mi sueño (guardar_sueno / simular_sueno) y la franja de curva de aprendizaje de mi_diagnostico(). | v14 - combinada vuelve a premium + fee x10, igual que el reporte financiero; el motor ya la manda asi. | v12 - ARREGLO: 'Mi historia' y 'Mi meta' se veian en blanco. Dos </div> de mas (desde v4, el 5 de septiembre) cerraban <main> antes de tiempo y el navegador sacaba esas dos secciones fuera del contenedor: se pintaban 1000px mas abajo, detras del area vacia, y la grafica de Mi historia ni siquiera se dibujaba. Ademas la meta que se le muestra al asesor pasa a ser SIEMPRE la plena (70.000): la rampa de la camada es una vara de direccion, se queda en el tablero del equipo. | v11 - Tarjeta Llamadas de hoy en Despierta: justo despues del reloj aparece cuanto lleva hoy (salientes, contestadas, minutos al telefono y mensajes si hay), cuanto llevaba ayer, cuanto en el mes, y la tira de los ultimos 10 dias. Sale de A.llamadas, el mismo dato de RingCentral que ya entraba cada 15 minutos; si el asesor no tiene usuario de RingCentral la tarjeta simplemente no aparece. La vieja llamadasHtml() de Mi actividad (oculta desde v10) queda jubilada: ya no se llama desde ningun lado. // v10 - Despierta: el primer pantallazo de Hoy. Un reloj oscuro con los dias que lleva sin mandar nada a cotizar (diciendo hasta cuando llegan los datos de HubSpot, para no acusar dias que todavia no se sincronizan), la racha de dias seguidos con un positivo y la del equipo, y la promesa del dia: 1, 2 o 3 a cotizar, que se guarda en public.asesor_promesa_dia y se ve como cinco puntos de lunes a viernes. Debajo, la escalera del equipo con meses cerrados (cuantas ventas hace un mes segun cuanto se mando a cotizar) y Dos futuros, con la misma comision() de la casa: lo que paga su ritmo de hoy contra el de su mejor mes -o el escalon de arriba de la escalera si no tiene mejor mes- de aqui a fin de ano. Mi actividad queda oculta: el reloj la reemplaza, pero la funcion sigue ahi. Nada de la meta, los incentivos, el escalon ni la comision se toco. // v9 - Una sola meta y una sola vara. La meta del mes ya no es 70.000 fijo para todos: sale de v_meta_por_agente y es la MISMA que ve el lider en el tablero del equipo, con su rampa (50% los primeros 3 meses en operacion, 75% del 4 al 6, plena despues) y diciendo a cuanto sube y cuando. Y "combinada" pasa a significar lo mismo en toda la casa: premium + fee. El x10 no se borra: se queda en el bloque de incentivos, donde es verdad, porque es la vara del ESCALON DE COMISION, no la de la meta. Ese limite de direccion sigue sin aparecer en esta pantalla, ni en el texto ni en los comentarios. // v8 - "Ver como" real: con ?ver_como=<correo> en la URL, y SOLO si la sesion que abre el link es director o socio de verdad (gabi_accesos), la pantalla pide mi_proceso(<correo>) y muestra las cifras REALES de esa persona, con franja fija y todo lo que escribe apagado (plan del mes y marcar chispazo visto). Sin el parametro, o para cualquier otra sesion, nada cambia. // v7 - Llamadas en tiempo casi real (API de RingCentral cada 15 min): hoy, ayer, mensajes y hora de actualizacion. // v6 - Bloque de llamadas (RingCentral por correo diario -> public.actividad_llamadas_dia): total del mes, salientes, contestadas, minutos, ayer y la tira de dias. // v5 - Un positivo pasa a ser el negocio que ENTRA a la etapa Audit / Quote (mandado a cotizar), no el creado; se muestra aparte cuantos negocios monto. // v4 - Bloque Mi actividad con el estandar de un positivo por dia habil: barra del mes, la marca de donde deberia ir hoy, la tira de los ultimos dias habiles y el promedio del equipo. Sale de public.actividad_hubspot_dia. // v3 - La meta del asesor pasa de 80.000 a 70.000 y ya no va quemada en el HTML: sale de la RPC (A.meta_combinada), asi un cambio de meta no obliga a republicar. // v2 - Mi proceso v2: tres pestanas (Hoy, Mi historia, Mi meta) sobre la RPC public.mi_proceso(). Meta combinada (entonces 80.000), incentivos del mes con barras, mejores del equipo con foto, chispazos y eco anonimo, simulador y plan del mes guardado en public.asesor_plan. // v1 - Lo que dejas de ganar.
+var PGV_VERSION=22; // v22 - 8-oct-2026 MIS CANCELACIONES: cuarta cifra "Cancelaciones" en ¿Cómo voy? (bolita + %, sale solo con 5+ liabilities; tocarla lleva a Mis números), en Mis números dos tarjetas nuevas (mis cancelaciones mes a mes contra la agencia y cuánto duró cada liability, raya en el día 180), y la bolita con el % al lado de cada nombre en Los mejores del mes anterior y en la línea Tú en… Fuente v_cartera_indice_visible / v_cartera_indice_detalle_visible. Sin banner, sin correo, sin mensaje al agente. Lo demás de v21 intacto. // v21 - 6-oct-2026 CARGA INMEDIATA: cada bloque sale de portal.rapido() (cache por persona, ~10 ms) y se pinta apenas llega; si tiene mas de 5 min, portal.refrescar() lo recalcula detras con las mismas funciones y se repinta solo. Nada espera a nada. La columna y los bonos usan el cliente de la pantalla (window.pgSB). | v20 - 6-oct-2026 REORGANIZACION (pedido de Andres). Hoy: Mi mes, Mi actividad (llamadas, contactos y cotizados con los mismos numeros del tablero de Brahian), Mi sueño EN CUENTAS REALES (portal.mi_sueno_plan: la cuenta tipica de los ultimos 3 meses cerrados del BOS, cuantas cuentas, premium neto y fee minimos, dos palancas reales y candado de realismo; se guarda con portal.guardar_sueno_v2, la v1 nunca guardo) y los mejores del mes anterior con una linea "Tu en ..." (la franja "como quedaste" se retira). "Mi historia" pasa a "Mis numeros": bonos del mes con una pestanita por bono y sus condiciones (portal.bonos_mes_vigente), la grafica de combinada contra la meta (sin las dos lineas de comision) y llamadas y positivos hoy / mes con la tira de dias (portal.mi_actividad_hoy_mes). Se jubilan, ocultos en #v20-jub sin borrar: lo que me esta costando, Despierta (reloj, escalera, dos futuros), mi comision y escalones, plan del mes, los incentivos viejos (meta, turbo, escalas, fee prometido) y Mi meta en USD. Carga pg-sombra.js (la columna del top, que aqui no salia) y pg-bonos.js (bonos del mes arriba a la derecha). | v19 - LO PERSONAL A LA VISTA. Carga pg-destellos.js v1: las felicitaciones, consejos y mensajes de Andres que son solo para la persona y no ha leido salen en una tarjeta destacada arriba a la derecha (Leido / Despues). Nada mas cambia. | v18 - VOLVER AL INDEX. Carga pg-volver.js v1: la misma pastilla fija "← Volver al Index" de todas las herramientas, arriba a la izquierda (Mi proceso no tenia como volver). Nada mas cambia. | v17 - ARRANQUE EN PARALELO. mi_proceso, mi_diagnostico y mi_top_prev salen a la vez (antes, uno detras de otro), y detectar_logros se dispara DESPUES de pintar sin esperarlo: cuando le tocaba el turno (cada 10 min) frenaba la pantalla 20-30 s. Preconnect a la base y a las fuentes. La compuerta de version reutiliza el cliente de la pantalla. Nada de lo que se muestra cambia. Del lado de la base, en la misma entrega: indice de expresion en bos_registros (mi_proceso 5,4 s -> 0,7 s; robot de logros 26 s -> 4 s). | v16 - El mes anterior, solo y cada mes: en la barra lateral el #1 por combinada y el #1 por fee cobrado del mes que cerro; debajo de Mi mes, una franja pequena con como quedo la persona (ventas, premium, fee, combinada contra su meta, puesto en el equipo, estado de bonos); y al final de Hoy los tres mejores por combinada y los tres mejores por fee. Sale de portal.mi_top_prev() (nueva, en paralelo con mi_diagnostico; si falla, los tres bloques no aparecen y nada mas cambia). Rota sola el 1 de cada mes. Respeta portal.top_exclusiones (sep-2026: Juliana Raigosa, cuenta asignada por direccion) y no cuenta un Unsold reversado. "Los mejores del mes" en curso se jubila. Los cuatro bonos quemados de septiembre se jubilan: la tarjeta lee bonos_cop.lista del plan vigente y, sin lista, dice que los del mes pasado cerraron y los nuevos se publican pronto. El Turbo se oculta solo cuando vence. "Agosto" quemado en dos textos pasa a ser el mes anterior real. | v15 - "Mi proceso" pasa a ser una sola pantalla de tres bloques (Mi mes, Mi actividad, Mi sueño) mas los mejores del mes; el resto (historia mes a mes, comision y escalones, patrones, palanca, estrategias, plan del mes y el detalle de Despierta) se movio a la pestana "Mi historia" sin borrar nada. Nuevo: Mi sueño (guardar_sueno / simular_sueno) y la franja de curva de aprendizaje de mi_diagnostico(). | v14 - combinada vuelve a premium + fee x10, igual que el reporte financiero; el motor ya la manda asi. | v12 - ARREGLO: 'Mi historia' y 'Mi meta' se veian en blanco. Dos </div> de mas (desde v4, el 5 de septiembre) cerraban <main> antes de tiempo y el navegador sacaba esas dos secciones fuera del contenedor: se pintaban 1000px mas abajo, detras del area vacia, y la grafica de Mi historia ni siquiera se dibujaba. Ademas la meta que se le muestra al asesor pasa a ser SIEMPRE la plena (70.000): la rampa de la camada es una vara de direccion, se queda en el tablero del equipo. | v11 - Tarjeta Llamadas de hoy en Despierta: justo despues del reloj aparece cuanto lleva hoy (salientes, contestadas, minutos al telefono y mensajes si hay), cuanto llevaba ayer, cuanto en el mes, y la tira de los ultimos 10 dias. Sale de A.llamadas, el mismo dato de RingCentral que ya entraba cada 15 minutos; si el asesor no tiene usuario de RingCentral la tarjeta simplemente no aparece. La vieja llamadasHtml() de Mi actividad (oculta desde v10) queda jubilada: ya no se llama desde ningun lado. // v10 - Despierta: el primer pantallazo de Hoy. Un reloj oscuro con los dias que lleva sin mandar nada a cotizar (diciendo hasta cuando llegan los datos de HubSpot, para no acusar dias que todavia no se sincronizan), la racha de dias seguidos con un positivo y la del equipo, y la promesa del dia: 1, 2 o 3 a cotizar, que se guarda en public.asesor_promesa_dia y se ve como cinco puntos de lunes a viernes. Debajo, la escalera del equipo con meses cerrados (cuantas ventas hace un mes segun cuanto se mando a cotizar) y Dos futuros, con la misma comision() de la casa: lo que paga su ritmo de hoy contra el de su mejor mes -o el escalon de arriba de la escalera si no tiene mejor mes- de aqui a fin de ano. Mi actividad queda oculta: el reloj la reemplaza, pero la funcion sigue ahi. Nada de la meta, los incentivos, el escalon ni la comision se toco. // v9 - Una sola meta y una sola vara. La meta del mes ya no es 70.000 fijo para todos: sale de v_meta_por_agente y es la MISMA que ve el lider en el tablero del equipo, con su rampa (50% los primeros 3 meses en operacion, 75% del 4 al 6, plena despues) y diciendo a cuanto sube y cuando. Y "combinada" pasa a significar lo mismo en toda la casa: premium + fee. El x10 no se borra: se queda en el bloque de incentivos, donde es verdad, porque es la vara del ESCALON DE COMISION, no la de la meta. Ese limite de direccion sigue sin aparecer en esta pantalla, ni en el texto ni en los comentarios. // v8 - "Ver como" real: con ?ver_como=<correo> en la URL, y SOLO si la sesion que abre el link es director o socio de verdad (gabi_accesos), la pantalla pide mi_proceso(<correo>) y muestra las cifras REALES de esa persona, con franja fija y todo lo que escribe apagado (plan del mes y marcar chispazo visto). Sin el parametro, o para cualquier otra sesion, nada cambia. // v7 - Llamadas en tiempo casi real (API de RingCentral cada 15 min): hoy, ayer, mensajes y hora de actualizacion. // v6 - Bloque de llamadas (RingCentral por correo diario -> public.actividad_llamadas_dia): total del mes, salientes, contestadas, minutos, ayer y la tira de dias. // v5 - Un positivo pasa a ser el negocio que ENTRA a la etapa Audit / Quote (mandado a cotizar), no el creado; se muestra aparte cuantos negocios monto. // v4 - Bloque Mi actividad con el estandar de un positivo por dia habil: barra del mes, la marca de donde deberia ir hoy, la tira de los ultimos dias habiles y el promedio del equipo. Sale de public.actividad_hubspot_dia. // v3 - La meta del asesor pasa de 80.000 a 70.000 y ya no va quemada en el HTML: sale de la RPC (A.meta_combinada), asi un cambio de meta no obliga a republicar. // v2 - Mi proceso v2: tres pestanas (Hoy, Mi historia, Mi meta) sobre la RPC public.mi_proceso(). Meta combinada (entonces 80.000), incentivos del mes con barras, mejores del equipo con foto, chispazos y eco anonimo, simulador y plan del mes guardado en public.asesor_plan. // v1 - Lo que dejas de ganar.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;
