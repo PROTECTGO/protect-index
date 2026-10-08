@@ -185,14 +185,15 @@ function areaDe(lista){
 
 async function cargarPanel(){
   $('panel').hidden = false;
-  const [p, a, v, xx] = await Promise.all([
+  const [p, a, v, xx, pe] = await Promise.all([
     sb.from('v_personas').select('email,nombre,area_rrhh'),
     sb.from('novedades_personas_areas').select('user_email,area'),
     sb.from('encuesta_platos_votos').select('user_email,persona_email,plato,votado_at').eq('encuesta',ENCUESTA).order('votado_at'),
-    sb.from('encuesta_platos_exclusiones').select('email,motivo').eq('encuesta',ENCUESTA)
+    sb.from('encuesta_platos_exclusiones').select('email,motivo').eq('encuesta',ENCUESTA),
+    sb.from('encuesta_platos_personas_extra').select('clave,nombre,area').eq('encuesta',ENCUESTA)
   ]);
   const ex = {}; (xx.data||[]).forEach(r=>{ ex[(r.email||'').toLowerCase()] = r.motivo; });
-  const personas = (p.data||[]).filter(x=>x.email && !/^ejemplo/i.test(x.email));
+  const personas = (p.data||[]).filter(x=>x.email && !/^ejemplo/i.test(x.email)).concat((pe.data||[]).map(r=>({email:r.clave, nombre:r.nombre, area_rrhh:r.area})));
   const areas = {}; (a.data||[]).forEach(r=>{ const k=(r.user_email||'').toLowerCase(); (areas[k]=areas[k]||[]).push(r.area); });
   const votos = {}; (v.data||[]).forEach(r=>{ const k=((r.persona_email||'')||(r.user_email||'')).toLowerCase(); votos[k] = r.plato; });
   const vistos = new Set(); const grupos = {};
@@ -241,6 +242,7 @@ async function usarSesion(session){
   if(cuentaCompartida){
     let excl = {};
     try{ const x = await sb.from('encuesta_platos_exclusiones').select('email').eq('encuesta',ENCUESTA); (x.data||[]).forEach(r=>excl[(r.email||'').toLowerCase()]=1); }catch(e){}
+    try{ const ex2 = await sb.from('encuesta_platos_personas_extra').select('clave,nombre').eq('encuesta',ENCUESTA); (ex2.data||[]).forEach(r=>personasCache.push({email:r.clave, nombre:r.nombre})); }catch(e){}
     const sel = $('selPersona'); sel.length = 1;
     const vistos = new Set();
     personasCache.filter(x=>!excl[x.email.toLowerCase()]).sort((a,b)=>(a.nombre||'').localeCompare(b.nombre||'','es')).forEach(x=>{
@@ -278,7 +280,7 @@ $('loginForm').addEventListener('submit', async ev=>{
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="encuesta-platos.html";
-var PGV_VERSION=3; // v3 - 8-oct-2026: cuentas de area (coi@, rrhh@, kam@, endorsement@...) eligen su nombre antes de votar (columna persona_email); el panel de sales@ separa 'Faltan por votar' de 'No van' (tabla encuesta_platos_exclusiones). | v2 - 7-oct-2026: el area sale tambien de area_rrhh (Ventas y Simon en KAM no tienen fila en novedades_personas_areas). | v1 - 7-oct-2026: encuesta de platos del evento Super Bowl (vie 9-oct, 2 pm, Envigado). Cada persona elige Fettuccine o Hamburguesa con su sesion del portal; sales@ ve los resultados por area. Tabla portal.encuesta_platos_votos (RLS: cada quien lo suyo, sales@ todo).
+var PGV_VERSION=4; // v4 - 8-oct-2026: personas sin perfil en el portal (Elena y Valeria de RRHH) salen en la lista de la cuenta de area y en el panel (tabla encuesta_platos_personas_extra). | v3 - 8-oct-2026: cuentas de area (coi@, rrhh@, kam@, endorsement@...) eligen su nombre antes de votar (columna persona_email); el panel de sales@ separa 'Faltan por votar' de 'No van' (tabla encuesta_platos_exclusiones). | v2 - 7-oct-2026: el area sale tambien de area_rrhh (Ventas y Simon en KAM no tienen fila en novedades_personas_areas). | v1 - 7-oct-2026: encuesta de platos del evento Super Bowl (vie 9-oct, 2 pm, Envigado). Cada persona elige Fettuccine o Hamburguesa con su sesion del portal; sales@ ve los resultados por area. Tabla portal.encuesta_platos_votos (RLS: cada quien lo suyo, sales@ todo).
 function pgvBanner(){
   if(document.getElementById('pgvBar'))return;
   var b=document.createElement('div');
