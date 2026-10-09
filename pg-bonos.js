@@ -1,10 +1,13 @@
 /* ============================================================
-   GABI · pg-bonos.js v2 — la pastilla dorada "BONOS OCT · hasta $850.000" que acompaña a la
+   GABI · pg-bonos.js v3 — la pastilla dorada "BONOS OCT · hasta $850.000" que acompaña a la
    persona por todas las herramientas del portal.  6-oct-2026.
 
    Pieza hermana de pg-sombra.js: mismo estilo (IIFE, candado global,
    cliente compartido, CSS inyectado con id, todo texto de la base con
    textContent, nunca rompe la página).
+
+   v3 (9-oct): al final carga pg-samu.js (la carita de SAMU, solo para quien
+   tiene puesto de SAMU). No cambia nada de los bonos.
 
    v2 (6-oct, carga inmediata): sale de portal.rapido('bonos') (~10 ms) y se
    repinta solo si portal.refrescar() trae algo más nuevo (más de 5 min);
@@ -557,3 +560,20 @@
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', esperar);   // v2: sin reloj
   else esperar();
 })(window);
+
+/* v3 · 9-oct-2026: carga pg-samu.js (la carita de SAMU) desde la misma carpeta que este
+   archivo. Va FUERA del IIFE: document.currentScript solo existe mientras este archivo corre.
+   pg-samu.js trae su propio candado (__pgSamuListo) y no pinta nada si la persona no tiene puesto. */
+(function () {
+  try {
+    if (window.__pgSamuListo || window.__pgSamuLoader) return;
+    window.__pgSamuLoader = true;
+    var src = (document.currentScript && document.currentScript.src) || '';
+    if (!src) { var ss = document.querySelectorAll('script[src*="pg-bonos.js"]'); if (ss.length) src = ss[ss.length - 1].src; }
+    if (!src) return;
+    var s = document.createElement('script');
+    s.src = src.replace(/pg-bonos\.js(\?.*)?$/, 'pg-samu.js');
+    s.async = true;
+    (document.head || document.documentElement).appendChild(s);
+  } catch (e) {}
+})();

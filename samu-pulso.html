@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pulso SAMU · ProtectGo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--ink:#1B2D3A;--txt:#28323B;--muted:#6B7D89;--bg:#F4F7FA;--card:#fff;--line:#E7EDF2;--mint:#2DBFA3;--mint-deep:#1B8E78;--ambar:#D9A520;--rojo:#D5594F;--gris:#7E95A4;--fondo:#0D3040;--fondo2:#0F4A52;
+  --ft:"Montserrat","Arial Black",sans-serif;--fb:"Inter",Arial,sans-serif;--fn:"JetBrains Mono","Courier New",monospace;}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--txt);font:400 14px/1.45 var(--fb);overflow-x:hidden}
+a{color:var(--mint-deep)}
+.wrap{max-width:1100px;margin:0 auto;padding:18px 16px 60px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.volver{display:inline-flex;align-items:center;gap:6px;text-decoration:none;font:700 12.5px var(--fb);color:var(--ink);background:#fff;border:1px solid var(--line);border-radius:999px;padding:7px 13px}
+.hero{display:flex;align-items:center;gap:16px;background:radial-gradient(120% 140% at 100% 0%,rgba(45,191,163,.25),rgba(45,191,163,0) 55%),linear-gradient(135deg,var(--fondo2),var(--fondo));color:#fff;border-radius:20px;padding:20px 22px;margin-bottom:18px}
+.hero img{width:64px;height:64px;border-radius:50%;box-shadow:0 0 0 3px var(--mint),0 0 0 7px rgba(45,191,163,.2);background:#E8F7F3;flex:0 0 auto}
+.hero .k{font:800 10px/1 var(--ft);letter-spacing:.16em;text-transform:uppercase;color:var(--mint)}
+.hero h1{margin:6px 0 2px;font:800 22px/1.15 var(--ft)}
+.hero p{margin:0;color:#B9CBD5;font-size:12.5px}
+.kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:18px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 13px}
+.kpi .l{font:700 10px/1.2 var(--ft);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.kpi .v{font:700 22px/1.1 var(--fn);color:var(--ink);margin-top:6px}
+.kpi .s{font-size:11px;color:var(--muted);margin-top:3px}
+.kpi.rojo .v{color:var(--rojo)} .kpi.ok .v{color:var(--mint-deep)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:18px}
+.card h2{margin:0 0 3px;font:800 15.5px var(--ft);color:var(--ink)}
+.card .sub{font-size:12px;color:var(--muted);margin-bottom:12px}
+.tabla{width:100%;border-collapse:collapse}
+.tabla th{font:700 10px/1.2 var(--ft);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-align:left;padding:8px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+.tabla td{padding:10px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+.tabla td.n{font:700 13px var(--fn);text-align:right;white-space:nowrap}
+.tabla th.n{text-align:right}
+.per{display:flex;align-items:center;gap:9px;min-width:0}
+.cara{width:34px;height:34px;border-radius:50%;background:#D7E3EA center/cover no-repeat;flex:0 0 34px;display:flex;align-items:center;justify-content:center;font:800 11px var(--fb);color:#fff}
+.per b{display:block;font:700 13px var(--fb);color:var(--ink)}
+.per small{display:block;font-size:11px;color:var(--muted)}
+.sem{display:inline-flex;align-items:center;gap:6px;font:700 11.5px var(--fb);white-space:nowrap}
+.sem i{width:9px;height:9px;border-radius:50%;display:inline-block}
+.chips{display:flex;flex-wrap:wrap;gap:4px}
+.chips span{background:#EEF4F7;border-radius:999px;padding:2px 8px;font:600 11px var(--fb);color:var(--ink)}
+.chips span b{color:var(--mint-deep);font-family:var(--fn);margin-left:3px}
+.tend{font:600 12px var(--fn);color:var(--muted);white-space:nowrap}
+.tend b{color:var(--ink)}
+.costo{font:700 12px var(--fn);white-space:nowrap}
+.costo.rojo{color:var(--rojo)}
+.mas{background:none;border:1px solid var(--line);border-radius:8px;padding:4px 8px;font:700 11px var(--fb);color:var(--ink);cursor:pointer}
+.det td{background:#F8FBFC;font-size:12px}
+.ev{display:grid;grid-template-columns:120px 130px 1fr;gap:8px;padding:4px 0;border-bottom:1px dashed var(--line)}
+.ev:last-child{border-bottom:0}
+.vacio{color:var(--muted);font-size:12.5px;padding:8px 0}
+.si{display:grid;grid-template-columns:110px 1fr auto;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.si select,.adm input,.adm select{font:600 12.5px var(--fb);border:1px solid var(--line);border-radius:8px;padding:6px 8px;background:#fff;max-width:100%}
+.btn{background:var(--mint);color:var(--fondo);border:0;border-radius:9px;padding:8px 13px;font:800 12px var(--ft);cursor:pointer}
+.btn:disabled{opacity:.5;cursor:default}
+.adm{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px 14px;margin:10px 0}
+.adm label{display:flex;justify-content:space-between;align-items:center;gap:8px;font:600 12.5px var(--fb)}
+.adm input{width:80px;text-align:right;font-family:var(--fn)}
+.msg{font-size:12.5px;margin-top:8px}
+.bloqueo{max-width:520px;margin:60px auto;text-align:center;background:#fff;border:1px solid var(--line);border-radius:16px;padding:28px}
+.scroll{overflow-x:auto}
+@media (max-width:900px){.kpis{grid-template-columns:repeat(3,1fr)}}
+@media (max-width:640px){
+  .kpis{grid-template-columns:repeat(2,1fr)}
+  .hero{padding:16px}.hero img{width:50px;height:50px}.hero h1{font-size:18px}
+  .tabla thead{display:none}
+  .tabla tr.fila{display:grid;grid-template-columns:1fr auto;gap:6px 10px;padding:10px 0;border-bottom:1px solid var(--line)}
+  .tabla tr.fila td{border:0;padding:0}
+  .tabla tr.fila td.ocm{display:none}
+  .tabla tr.fila td.full{grid-column:1 / -1}
+  .tabla tr.det{display:block}.tabla tr.det td{display:block}
+  .ev{grid-template-columns:1fr;gap:2px}
+  .si{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <a class="volver" href="index.html">← Volver al Index</a>
+    <span id="gen" style="font-size:11.5px;color:var(--muted)">—</span>
+  </div>
+  <div id="app"><div class="bloqueo">Cargando el pulso…</div></div>
+</div>
+
+<script>
+(function(){
+"use strict";
+var SB_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
+var SB_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
+var SB=window.supabase.createClient(SB_URL,SB_KEY);
+var POR=SB.schema('portal');
+var TIPOS={analisis_riesgo:'Análisis de riesgo',mercado:'Mercado',mvr:'MVR',dot_safer:'DOT / SAFER',redaccion_uw:'Redacción al UW',traduccion:'Traducción',lectura_quote:'Lectura de quote',guion_cliente:'Guion al cliente',comercial:'Comercial',aprendizaje:'Aprendizaje',captura:'Captura',consulta:'Consulta',otro:'Otro'};
+var SEM={verde:['#2DBFA3','Activa'],ambar:['#D9A520','Tibia'],rojo:['#D5594F','Sin uso 7 días'],gris:['#7E95A4','Quieta 14+ días'],nueva:['#8FD9C8','Arrancando']};
+var D=null;
+
+function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!==undefined&&x!==null)e.textContent=String(x);return e;}
+function esNum(n){return n!==null&&n!==undefined&&n!==''&&isFinite(Number(n));}
+function num(n){return esNum(n)?String(Math.round(Number(n))):'—';}
+function cop(n){if(!esNum(n))return '—';return '$'+Math.round(Number(n)).toString().replace(/\B(?=(\d{3})+(?!\d))/g,'.');}
+function fotoOk(u){return /^https:\/\/[^"'()\s]+$/.test(String(u||''));}
+function ini(n){var p=String(n||'').trim().split(/\s+/);return(((p[0]||'').charAt(0))+((p[1]||'').charAt(0))).toUpperCase()||'·';}
+function fecha(ts){if(!ts)return '—';var d=new Date(ts);if(isNaN(d))return '—';return d.toLocaleDateString('es-CO',{day:'numeric',month:'short'})+' '+d.toLocaleTimeString('es-CO',{hour:'numeric',minute:'2-digit'});}
+function lunesPasado(){var d=new Date();var w=(d.getDay()+6)%7;d.setDate(d.getDate()-w-7);return d.toISOString().slice(0,10);}
+function bloqueo(t,link){var a=document.getElementById('app');a.textContent='';var b=el('div','bloqueo');b.appendChild(el('p',null,t));if(link){var l=el('a',null,'Ir al Index');l.href='index.html';b.appendChild(l);}a.appendChild(b);}
+
+function kpi(l,v,s,cls){var k=el('div','kpi'+(cls?' '+cls:''));k.appendChild(el('div','l',l));k.appendChild(el('div','v',v));if(s)k.appendChild(el('div','s',s));return k;}
+
+function pintar(d){
+  D=d;var app=document.getElementById('app');app.textContent='';
+  document.getElementById('gen').textContent='Actualizado '+fecha(d.generado);
+  var k=d.kpis||{}, P=Array.isArray(d.personas)?d.personas:[];
+  var h=el('div','hero');var im=el('img');im.src='fotos/samu-avatar.png';im.alt='';h.appendChild(im);
+  var ht=el('div');ht.appendChild(el('div','k','Pulso SAMU · solo dirección'));ht.appendChild(el('h1',null,'¿Quién está usando SAMU y para qué?'));
+  ht.appendChild(el('p',null,'Semana desde el lunes '+(k.semana_desde?new Date(k.semana_desde).toLocaleDateString('es-CO',{day:'numeric',month:'short'}):'—')+' · se alimenta solo cada vez que alguien usa SAMU.'));
+  h.appendChild(ht);app.appendChild(h);
+
+  var ks=el('div','kpis');
+  ks.appendChild(kpi('Activos esta semana',esNum(k.activos_semana)?(num(k.activos_semana)+' de '+num(k.puestos)):'—','con al menos 1 uso',Number(k.activos_semana)>=Math.ceil(Number(k.puestos||0)/2)?'ok':''));
+  ks.appendChild(kpi('Usos esta semana',num(k.usos_semana),'sin contar consultas'));
+  ks.appendChild(kpi('Con protocolo',num(k.protocolo_semana),'análisis de riesgo completos'));
+  ks.appendChild(kpi('Usos 28 días',num(k.usos_28d),null));
+  ks.appendChild(kpi('Costo del mes',cop(k.costo_mes_cop),num(k.puestos)+' puestos'));
+  var cpu=k.costo_por_uso_cop;ks.appendChild(kpi('Costo por uso',esNum(cpu)?cop(cpu):'—','últimos 28 días',(!esNum(cpu)||Number(cpu)>20000)?'rojo':'ok'));
+  app.appendChild(ks);
+
+  var c=el('div','card');c.appendChild(el('h2',null,'Puestos'));
+  c.appendChild(el('div','sub','Ordenados por semáforo. Verde = 3+ usos en 7 días con al menos un análisis de riesgo. Rojo = 7 días sin uso. Gris = 14 días sin uso: candidato a liberar el puesto.'));
+  var sc=el('div','scroll');var t=el('table','tabla');var th=el('thead');var tr=el('tr');
+  [['Persona'],['Estado'],['Semana','n'],['Para qué'],['Últimas 4 sem.'],['Consultas','n'],['Mensajes (admin)','n'],['Último uso'],['Costo'],['']].forEach(function(x){tr.appendChild(el('th',x[1]||null,x[0]));});
+  th.appendChild(tr);t.appendChild(th);var tb=el('tbody');
+  P.forEach(function(p){
+    var f=el('tr','fila');
+    var td=el('td','full');var pe=el('div','per');var ca=el('span','cara');if(fotoOk(p.foto))ca.style.backgroundImage='url("'+p.foto+'")';else ca.textContent=ini(p.nombre);pe.appendChild(ca);
+    var nm=el('div');nm.appendChild(el('b',null,p.nombre||'—'));var vc=el('a',null,'ver su portal');vc.href='index.html?ver_como='+encodeURIComponent(p.email||'');var sm=el('small');sm.appendChild(vc);nm.appendChild(sm);pe.appendChild(nm);td.appendChild(pe);f.appendChild(td);
+    var s=SEM[p.semaforo]||['#7E95A4','—'];var ts=el('td');var sp=el('span','sem');var i=el('i');i.style.background=s[0];sp.appendChild(i);sp.appendChild(document.createTextNode(s[1]));ts.appendChild(sp);f.appendChild(ts);
+    f.appendChild(el('td','n',num(p.usos_semana)));
+    var tt=el('td','full');var ch=el('div','chips');var pt=p.por_tipo||{};var ks2=Object.keys(pt).sort(function(a,b){return pt[b]-pt[a];});
+    if(!ks2.length)ch.appendChild(el('span',null,'—'));ks2.forEach(function(x){var y=el('span',null,TIPOS[x]||x);y.appendChild(el('b',null,num(pt[x])));ch.appendChild(y);});tt.appendChild(ch);f.appendChild(tt);
+    var te=el('td','ocm');var tn=el('span','tend');(Array.isArray(p.tendencia)?p.tendencia:[]).forEach(function(v,ix,arr){var b=el(ix===arr.length-1?'b':'span',null,num(v));tn.appendChild(b);if(ix<arr.length-1)tn.appendChild(document.createTextNode(' · '));});if(!tn.firstChild)tn.textContent='—';te.appendChild(tn);f.appendChild(te);
+    f.appendChild(el('td','n ocm',num(p.consultas_semana)));
+    f.appendChild(el('td','n ocm',esNum(p.mensajes_admin)?num(p.mensajes_admin):'—'));
+    f.appendChild(el('td',null,fecha(p.ultimo_uso)));
+    var quieto=(p.semaforo==='rojo'||p.semaforo==='gris');var tc=el('td');tc.appendChild(el('span','costo'+(quieto?' rojo':''),cop(p.costo_puesto_cop)+'/mes'+(quieto?' sin uso':'')));f.appendChild(tc);
+    var tm=el('td');var bm=el('button','mas','Detalle');bm.type='button';tm.appendChild(bm);f.appendChild(tm);
+    tb.appendChild(f);
+    var dt=el('tr','det');dt.style.display='none';var dd=el('td');dd.colSpan=10;
+    var ev=Array.isArray(p.eventos)?p.eventos:[];
+    if(!ev.length)dd.appendChild(el('div','vacio','Sin usos registrados desde '+(p.medido_desde||'—')+'.'));
+    ev.forEach(function(e){var r=el('div','ev');r.appendChild(el('span',null,fecha(e.ts)));r.appendChild(el('b',null,TIPOS[e.tipo]||e.tipo||'—'));r.appendChild(el('span',null,e.resumen||'—'));dd.appendChild(r);});
+    dt.appendChild(dd);tb.appendChild(dt);
+    bm.addEventListener('click',function(){var o=dt.style.display==='none';dt.style.display=o?'':'none';bm.textContent=o?'Cerrar':'Detalle';});
+  });
+  if(!P.length){var r0=el('tr');var t0=el('td','vacio','—');t0.colSpan=10;r0.appendChild(t0);tb.appendChild(r0);}
+  t.appendChild(tb);sc.appendChild(t);c.appendChild(sc);app.appendChild(c);
+
+  var SI=Array.isArray(d.sin_identificar)?d.sin_identificar:[];
+  var c2=el('div','card');c2.appendChild(el('h2',null,'Usos sin identificar'));
+  c2.appendChild(el('div','sub','SAMU registró un nombre que no reconoce. Asígnalo una vez y ese nombre queda aprendido para siempre.'));
+  if(!SI.length)c2.appendChild(el('div','vacio','— Ninguno. Todos los usos tienen dueño.'));
+  SI.forEach(function(s){
+    var r=el('div','si');r.appendChild(el('span',null,fecha(s.ts)));
+    var tx=el('div');tx.appendChild(el('b',null,'"'+(s.agente||'—')+'" · '));tx.appendChild(document.createTextNode((TIPOS[s.tipo]||s.tipo||'')+' — '+(s.resumen||'')));r.appendChild(tx);
+    var w=el('div');var se=el('select');se.appendChild(el('option',null,'¿Quién es?'));se.options[0].value='';
+    P.forEach(function(p){var o=el('option',null,p.nombre);o.value=p.email;se.appendChild(o);});
+    var b=el('button','btn','Asignar');b.type='button';
+    b.addEventListener('click',function(){if(!se.value)return;b.disabled=true;POR.rpc('samu_asignar',{p_evento:s.id,p_email:se.value,p_guardar_alias:true}).then(function(x){if(x&&x.error){b.disabled=false;alert('No se pudo asignar: '+x.error.message);return;}cargar();});});
+    w.appendChild(se);w.appendChild(document.createTextNode(' '));w.appendChild(b);r.appendChild(w);c2.appendChild(r);
+  });
+  app.appendChild(c2);
+
+  var c3=el('div','card');c3.appendChild(el('h2',null,'Mensajes por persona (opcional, de la consola de ChatGPT)'));
+  c3.appendChild(el('div','sub','Solo si quieres el dato de ChatGPT al lado del de SAMU. Copia los mensajes de la semana de la consola de administración (Espacio de trabajo → Análisis) y guárdalos. El pulso funciona igual sin esto.'));
+  var fs=el('div');var ls=el('label',null,'Semana del lunes ');var inS=el('input');inS.type='date';inS.value=lunesPasado();ls.appendChild(inS);fs.appendChild(ls);c3.appendChild(fs);
+  var g=el('div','adm');var inputs={};
+  P.forEach(function(p){var l=el('label');l.appendChild(el('span',null,p.nombre));var ii=el('input');ii.type='number';ii.min='0';ii.inputMode='numeric';ii.placeholder='—';l.appendChild(ii);inputs[p.email]=ii;g.appendChild(l);});
+  c3.appendChild(g);var bg=el('button','btn','Guardar mensajes');bg.type='button';var mm=el('div','msg');
+  bg.addEventListener('click',function(){var o={},n=0;Object.keys(inputs).forEach(function(e){var v=inputs[e].value;if(v!==''&&isFinite(Number(v))){o[e]=Math.round(Number(v));n++;}});
+    if(!n){mm.textContent='Escribe al menos un número.';return;}bg.disabled=true;mm.textContent='Guardando…';
+    POR.rpc('samu_guardar_admin',{p_semana:inS.value,p_datos:o}).then(function(x){bg.disabled=false;if(x&&x.error){mm.textContent='No se pudo guardar: '+x.error.message;return;}mm.textContent='Guardado ✓ ('+x.data+' personas).';cargar();});});
+  c3.appendChild(bg);c3.appendChild(mm);app.appendChild(c3);
+}
+
+function cargar(){
+  POR.rpc('samu_pulso').then(function(r){
+    if(!r||r.error){bloqueo('El Pulso SAMU es solo para dirección. Si eres dirección, entra primero al Index con tu cuenta.',true);return;}
+    pintar(r.data||{});
+  },function(){bloqueo('No pude leer el pulso. Revisa tu conexión y recarga.',false);});
+}
+SB.auth.getSession().then(function(r){
+  var s=r&&r.data&&r.data.session;
+  if(!s){bloqueo('Entra primero al Index con tu cuenta y vuelve a abrir el Pulso SAMU.',true);return;}
+  cargar();
+});
+document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'&&D)cargar();});
+})();
+</script>
+<script>
+(function(){
+"use strict";
+var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
+var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
+var PGV_ARCHIVO="samu-pulso.html";
+var PGV_VERSION=1; // v1 - 9-oct-2026 PULSO SAMU (solo direccion): quien usa SAMU y para que (portal.samu_pulso), semaforo por puesto, tendencia de 4 semanas en cifras (sin barras), costo por uso, usos sin identificar con asignacion (portal.samu_asignar) y captura opcional de mensajes de la consola de ChatGPT (portal.samu_guardar_admin).
+function pgvRun(){
+  try{
+    var c=window.supabase.createClient(PGV_URL,PGV_KEY,{db:{schema:'portal'}});
+    c.from('app_versiones').select('version').eq('archivo',PGV_ARCHIVO).maybeSingle().then(function(r){
+      if(!r||r.error||!r.data)return;
+      if(Number(r.data.version)>PGV_VERSION){try{location.reload(true)}catch(e){location.reload()}}
+    });
+  }catch(e){}
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(pgvRun,400);});
+else setTimeout(pgvRun,400);
+setInterval(pgvRun,600000);
+})();
+</script>
+</body>
+</html>
