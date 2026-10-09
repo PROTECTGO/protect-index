@@ -1,5 +1,5 @@
 /* ============================================================
-   GABI · pg-samu.js v1 — la carita de SAMU que acompaña SOLO a quien
+   GABI · pg-samu.js v1.1 — la carita de SAMU que acompaña SOLO a quien
    tiene puesto de SAMU (el mentor de riesgo en ChatGPT).  9-oct-2026.
 
    Pieza hermana de pg-bonos.js (lo carga pg-bonos.js al final): mismo
@@ -25,6 +25,9 @@
    - Nada en localStorage ni sessionStorage. Sin dato: "—".
    - Cero gráficas de barras. Ámbar #D9A520.
    - API: window.pgSamuDatos y el evento 'pg-samu' en document.
+   v1.1 (9-oct): en teléfono (≤640 px) la carita sale como burbuja flotante
+   abajo a la derecha (no se mete al encabezado, que ya va lleno), y dirección
+   ve el enlace "Pulso del equipo →" (portal.samu_soy_direccion).
    ============================================================ */
 (function (global) {
   'use strict';
@@ -54,7 +57,7 @@
   };
 
   var datos = null, ultimaCarga = 0, cont = null, abierto = false, cargando = false;
-  var cliGlobal = null, verComoCorreo = '', vistoMarcado = false;
+  var cliGlobal = null, verComoCorreo = '', vistoMarcado = false, esDireccion = false;
 
   function pagina() { try { return (global.location.pathname.split('/').pop() || 'index.html').toLowerCase(); } catch (e) { return ''; } }
   function el(tag, cls, txt) {
@@ -186,6 +189,18 @@
         '.pgs2-card h3{font-size:15.5px;}' +
         '#pgSamuFab{right:12px;bottom:14px;}' +
       '}' +
+      '#pgSamu.pgs2-movil{position:fixed;right:14px;bottom:16px;top:auto;z-index:99993;margin:0;}' +
+      '#pgSamu.pgs2-movil .pgs2-pill{padding:3px;gap:0;border-width:2px;box-shadow:0 10px 26px rgba(13,48,64,.4);}' +
+      '#pgSamu.pgs2-movil .pgs2-pill .pgs2-cara{width:44px;height:44px;}' +
+      '#pgSamu.pgs2-movil .pgs2-lbl{display:none;}' +
+      '#pgSamu.pgs2-movil .pgs2-n{position:absolute;top:-4px;right:-4px;box-shadow:0 0 0 2px ' + FONDO + ';}' +
+      '#pgSamu.pgs2-movil .pgs2-n.cero{background:' + FONDO2 + ';color:#fff;}' +
+      '#pgSamu.pgs2-movil .pgs2-pill{overflow:visible;}#pgSamu.pgs2-movil .pgs2-pill::after{display:none;}' +
+      '#pgSamu.pgs2-movil .pgs2-chispa{left:2px;top:-6px;}' +
+      '#pgSamu.pgs2-movil .pgs2-panel{position:fixed;left:10px;right:10px;top:auto;bottom:78px;width:auto;max-width:none;max-height:calc(100vh - 110px);overflow-y:auto;}' +
+      '.pgs2-pulso{display:block;text-align:center;margin-top:9px;font:700 11.5px/1 ' + F + ';color:' + MINT + '!important;text-decoration:none!important;}' +
+      '.pgs2-card .pgs2-pulso{display:inline-block;margin:0 12px 0 0;}' +
+      'body.pgs2-con-burbuja #pgSamuFab{bottom:84px;}' +
       '@media (max-width:420px){#pgSamu .pgs2-lbl{display:none;}}' +
       '@media (prefers-reduced-motion:reduce){#pgSamu .pgs2-pill::after,#pgSamu .pgs2-chispa{animation:none;}#pgSamu.pgs2-nuevo .pgs2-pill{animation:none;}}' +
       '@media print{#pgSamu,#pgSamuFab,#pgSamuAviso,.pgs2-card{display:none!important;}}';
@@ -220,6 +235,12 @@
     return m;
   }
 
+  function enlacePulso() {
+    var a = el('a', 'pgs2-pulso', 'Pulso del equipo →');
+    a.href = BASE + 'samu-pulso.html';
+    return a;
+  }
+
   /* ---------- 1. la pastilla + panel ---------- */
   function construirPanel(d) {
     var p = el('div', 'pgs2-panel'); p.id = 'pgSamuPanel'; p.setAttribute('role', 'dialog'); p.setAttribute('aria-label', 'Tu semana con SAMU');
@@ -246,7 +267,7 @@
     });
     p.appendChild(ol);
     p.appendChild(el('div', 'pgs2-msg', consejo(d)));
-    var pie = el('div', 'pgs2-pie'); pie.appendChild(botonSamu(d)); p.appendChild(pie);
+    var pie = el('div', 'pgs2-pie'); pie.appendChild(botonSamu(d)); if (esDireccion && !verComoCorreo) pie.appendChild(enlacePulso()); p.appendChild(pie);
     return p;
   }
   function pintarPill(d) {
@@ -312,6 +333,22 @@
   function ubicar() {
     try {
       if (!cont) return;
+      var movil = global.innerWidth <= 640;
+      cont.classList.toggle('pgs2-movil', movil);
+      try { document.body.classList.toggle('pgs2-con-burbuja', movil); } catch (e) {}
+      if (movil) {
+        var cu = document.body || document.documentElement;
+        if (cont.parentNode !== cu) cu.appendChild(cont);
+        cont.classList.remove('pgs2-en-header', 'pgs2-fijo'); cont.style.right = '';
+        /* encima del muelle de abajo (pg-sombra) si está visible */
+        var mu = document.getElementById('pgMuelle'), abajo = 16;
+        if (mu && visible(mu)) { var rm = mu.getBoundingClientRect(); if (rm.top > global.innerHeight / 2) abajo = Math.round(global.innerHeight - rm.top) + 10; }
+        cont.style.bottom = abajo + 'px';
+        var pn = cont.querySelector('.pgs2-panel'); if (pn) pn.style.bottom = (abajo + 62) + 'px';
+        var fab = document.getElementById('pgSamuFab'); if (fab) fab.style.bottom = (abajo + 66) + 'px';
+        return;
+      }
+      cont.style.bottom = ''; { var pn2 = cont.querySelector('.pgs2-panel'); if (pn2) pn2.style.bottom = ''; }
       var a = ancla();
       if (a && a.parentNode) {
         if (cont.nextSibling !== a || cont.parentNode !== a.parentNode) a.parentNode.insertBefore(cont, a);
@@ -339,7 +376,8 @@
     c.appendChild(r1);
     c.appendChild(chips(d));
     if (cls === 'pgs2-mp') c.appendChild(el('div', 'pgs2-msg2', consejo(d)));
-    var r3 = el('div', 'pgs2-r3'); r3.appendChild(metaLinea(d)); r3.appendChild(botonSamu(d)); c.appendChild(r3);
+    var r3 = el('div', 'pgs2-r3'); r3.appendChild(metaLinea(d));
+    var acc = el('div'); if (esDireccion && !verComoCorreo) acc.appendChild(enlacePulso()); acc.appendChild(botonSamu(d)); r3.appendChild(acc); c.appendChild(r3);
     return c;
   }
   function pintarIndex(d) {
@@ -458,6 +496,7 @@
     try { pintarIndex(d); } catch (e) {}
     try { pintarMiProceso(d); } catch (e) {}
     try { pintarFab(d); } catch (e) {}
+    try { ubicar(); } catch (e) {}
     try { document.dispatchEvent(new CustomEvent('pg-samu', { detail: d })); } catch (e) {}
   }
   function pedir() {
@@ -466,7 +505,12 @@
     try {
       cliGlobal.schema('portal').rpc('samu_mio', verComoCorreo ? { p_nombre: verComoCorreo } : {}).then(function (r) {
         cargando = false;
-        if (r && !r.error && r.data && typeof r.data === 'object' && r.data.email) recibir(r.data);
+        if (r && !r.error && r.data && typeof r.data === 'object' && r.data.email) {
+          recibir(r.data);
+          if (!verComoCorreo && !esDireccion) {
+            try { cliGlobal.schema('portal').rpc('samu_soy_direccion').then(function (x) { if (x && !x.error && x.data === true) { esDireccion = true; recibir(datos); } }, function () {}); } catch (e) {}
+          }
+        }
       }, function () { cargando = false; });
     } catch (e) { cargando = false; }
   }
@@ -484,7 +528,7 @@
       if (hecho || !s || !s.user) return; hecho = true;
       if (EXTERNOS.indexOf(String(s.user.email || '').toLowerCase()) >= 0) return;
       pedir();
-      setTimeout(ubicar, 1500); setTimeout(ubicar, 4000);
+      setTimeout(ubicar, 1500); setTimeout(ubicar, 4000); setTimeout(ubicar, 8000);
       /* Mi proceso e Index pintan sus bloques tarde: se vuelve a intentar */
       setTimeout(function () { if (datos) { try { pintarMiProceso(datos); } catch (e) {} try { medirIndex(); } catch (e) {} } }, 2500);
       setTimeout(function () { if (datos && !document.getElementById('pgSamuMp')) { try { pintarMiProceso(datos); } catch (e) {} } }, 6000);
