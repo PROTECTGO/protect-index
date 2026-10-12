@@ -1,5 +1,5 @@
 /* =====================================================================
-   pg-llamadas.js · Pulso de llamadas · v2 (12-oct-2026). Las páginas lo cargan como pg-llamadas.js?v=N: al cambiar este archivo, subir N en las tres (gabi-brahian, fam, gabi-asesor) · todas las clases llevan prefijo pll- (ninguna página las pisa)
+   pg-llamadas.js · Pulso de llamadas · v3 (12-oct-2026). Las páginas lo cargan como pg-llamadas.js?v=N: al cambiar este archivo, subir N en las tres (gabi-brahian, fam, gabi-asesor) · todas las clases llevan prefijo pll- (ninguna página las pisa)
    Un solo widget para tres pantallas, con el MISMO número en las tres:
      · gabi-brahian.html (Equipo Comercial)  modo 'equipo'  → todos, con ficha
      · fam.html (pestaña Equipo)             modo 'grande'  → todos, en grande
@@ -21,7 +21,8 @@
        nombre: null,       // "ver como" (correo o nombre); solo dirección comercial
        correo: null,       // (modo 'mio') correo de la sesión: si la cuenta es de dirección, se pide su propia fila
        alAbrir: fn(agente, contenedor),   // opcional: ficha en acordeón bajo la fila
-       alVerMes: fn()      // opcional (modo 'mio'): enlace "ver mi mes →"
+       alVerMes: fn(),     // opcional (modo 'mio'): enlace "ver mi mes →"
+       alCargar: fn()      // opcional: se llama una vez cuando el primer dato pintó (o falló)
      })
      PGLlamadas.filtrar('llamadas'|'conversaciones'|'positivos'|'ventas'|'sinllamar'|null)
      PGLlamadas.abrirFicha(agente)
@@ -144,12 +145,17 @@
         : d && d.error === 'no_autorizado' ? 'Solo dirección comercial puede mirar el pulso de otra persona.'
         : 'No llegó el dato (' + esc(d && d.error) + ').');
       d.__t = Date.now();
-      S.D = d;
+      S.D = d; S.reintento = false;
       if (!S.momento) S.momento = momentoInicial(d);
       pintar();
+      if (typeof S.o.alCargar === 'function') { var f = S.o.alCargar; S.o.alCargar = null; try { f(); } catch (e) { } }
     }, function (e) { S.cargando = false; error(e && e.message ? e.message : String(e)); });
   }
   function error(m) {
+    /* La base corta en 8 s: si fue por tiempo (pasa cuando la página carga muchas cosas a la vez),
+       se reintenta UNA vez a los 2 s antes de mostrar el error. */
+    if (/timeout|tiempo/i.test(String(m)) && !S.reintento) { S.reintento = true; setTimeout(function () { cargar(true); }, 2000); return; }
+    if (typeof S.o.alCargar === 'function') { var f = S.o.alCargar; S.o.alCargar = null; try { f(); } catch (e) { } }
     if (S.D) return; // si ya había dato, se queda el último; el siguiente refresco reintenta
     S.el.innerHTML = '<div class="pll"><div class="pll-err">No pude traer las llamadas: ' + esc(m) + ' <button type="button" data-pll="reintentar">Reintentar</button></div></div>';
   }
@@ -318,11 +324,11 @@
   }
 
   window.PGLlamadas = {
-    version: 2,
+    version: 3,
     montar: function (el, o) {
       if (!el || !o || !o.sb) return;
       estilos();
-      S.el = el; S.o = o; S.D = null; S.yoEquipo = false; S.momento = o.momento || null; S.filtro = null; S.abierta = null;
+      S.el = el; S.o = o; S.D = null; S.yoEquipo = false; S.reintento = false; S.momento = o.momento || null; S.filtro = null; S.abierta = null;
       cablear(el); cargar(); vigilar();
     },
     recargar: function () { cargar(true); },

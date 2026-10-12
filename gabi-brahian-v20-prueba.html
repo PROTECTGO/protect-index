@@ -312,7 +312,7 @@ select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;b
 @media(max-width:820px){.hero-mes{font-size:38px}.fr.hero{padding:22px 20px 14px}}
 </style>
 <script src="pg-novedades.js"></script>
-<script src="pg-llamadas.js?v=2"></script>
+<script src="pg-llamadas.js?v=3"></script>
 </head>
 <body>
 <a href="index.html" id="pgVolver" aria-label="Volver" style="position:fixed;top:14px;left:14px;z-index:2147483000;display:inline-flex;align-items:center;padding:9px 15px;border-radius:999px;background:#0D3040;color:#fff;font:700 12.5px/1 Arial,Helvetica,sans-serif;text-decoration:none;box-shadow:0 3px 12px rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.18);-webkit-tap-highlight-color:transparent;">← Volver al portal</a>
@@ -1829,7 +1829,12 @@ async function detalleAgente(sb, agente, destino){
   card.innerHTML = '<div class="det-vacio">Abriendo ' + esc(agente) + '…</div>';
   if (!destino) card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
-  const { data, error } = await sb.rpc('equipo_agente_detalle', { p_agente: agente });
+  let { data, error } = await sb.rpc('equipo_agente_detalle', { p_agente: agente });
+  /* v20: si la base cortó por tiempo (otra carga pesada en curso), un reintento a los 2 s. */
+  if (error && /timeout/i.test(error.message || '')) {
+    await new Promise(r => setTimeout(r, 2000));
+    ({ data, error } = await sb.rpc('equipo_agente_detalle', { p_agente: agente }));
+  }
   if (error || !data || data.error) {
     card.innerHTML = '<div class="det-vacio">No pude abrir a ' + esc(agente) + '. '
       + esc((data && data.error) || (error && error.message) || '') + '</div>';
@@ -2087,8 +2092,14 @@ async function renderShell(session){
   YA_PINTADO = true;
   try {
     await esperarChart();
-    if (window.PGLlamadas) PGLlamadas.montar(document.getElementById('pulso'), {
-      sb: SB, modo: 'equipo', alAbrir: (ag, cont) => detalleAgente(SB, ag, cont)
+    /* v20: el Pulso (lo primero que se ve, ~0,3 s) carga ANTES que Meta (vistas pesadas, 3-4 s juntas),
+       para que no compitan por la base. Si el Pulso no responde en 4 s, Meta arranca igual. */
+    await new Promise(listo => {
+      if (!window.PGLlamadas) return listo();
+      PGLlamadas.montar(document.getElementById('pulso'), {
+        sb: SB, modo: 'equipo', alAbrir: (ag, cont) => detalleAgente(SB, ag, cont), alCargar: listo
+      });
+      setTimeout(listo, 4000);
     });
     const D = await cargarDatos(SB); render(D); bitacora(D);
     /* v20: diaEquipo()/actividadEquipo() eran de la pestaña "Equipo", jubilada (template). */
