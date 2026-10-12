@@ -1,5 +1,5 @@
 /* =====================================================================
-   pg-llamadas.js · Pulso de llamadas · v1 (12-oct-2026) · todas las clases llevan prefijo pll- (ninguna página las pisa)
+   pg-llamadas.js · Pulso de llamadas · v2 (12-oct-2026). Las páginas lo cargan como pg-llamadas.js?v=N: al cambiar este archivo, subir N en las tres (gabi-brahian, fam, gabi-asesor) · todas las clases llevan prefijo pll- (ninguna página las pisa)
    Un solo widget para tres pantallas, con el MISMO número en las tres:
      · gabi-brahian.html (Equipo Comercial)  modo 'equipo'  → todos, con ficha
      · fam.html (pestaña Equipo)             modo 'grande'  → todos, en grande
@@ -318,7 +318,7 @@
   }
 
   window.PGLlamadas = {
-    version: 1,
+    version: 2,
     montar: function (el, o) {
       if (!el || !o || !o.sb) return;
       estilos();
