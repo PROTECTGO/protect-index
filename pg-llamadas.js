@@ -1,5 +1,5 @@
 /* =====================================================================
-   pg-llamadas.js · Pulso de llamadas · v1 (12-oct-2026)
+   pg-llamadas.js · Pulso de llamadas · v1 (12-oct-2026) · todas las clases llevan prefijo pll- (ninguna página las pisa)
    Un solo widget para tres pantallas, con el MISMO número en las tres:
      · gabi-brahian.html (Equipo Comercial)  modo 'equipo'  → todos, con ficha
      · fam.html (pestaña Equipo)             modo 'grande'  → todos, en grande
@@ -64,7 +64,7 @@
       '.pll-cab{display:flex;justify-content:space-between;align-items:center;gap:10px 16px;flex-wrap:wrap;margin-bottom:6px}',
       '.pll-mom{display:flex;gap:4px;flex-wrap:wrap;background:#EEF3F6;border-radius:11px;padding:4px}',
       '.pll-mom button{font:inherit;font-family:var(--pll-tit);font-weight:700;font-size:12.5px;border:0;background:transparent;color:var(--pll-muted);padding:7px 12px;border-radius:8px;cursor:pointer;white-space:nowrap}',
-      '.pll-mom button.on{background:#fff;color:var(--pll-ink);box-shadow:0 1px 3px rgba(27,45,58,.12)}',
+      '.pll-mom button.pll-on{background:#fff;color:var(--pll-ink);box-shadow:0 1px 3px rgba(27,45,58,.12)}',
       '.pll-mom button:focus-visible,.pll-ci:focus-visible,.pll-tab tbody tr:focus-visible{outline:2px solid var(--pll-mint);outline-offset:2px}',
       '.pll-sello{font-size:11.5px;color:var(--pll-muted);white-space:nowrap}',
       '.pll-sello b{font-family:var(--pll-num);color:var(--pll-ink);font-weight:600}',
@@ -75,32 +75,32 @@
       '.pll-cifras{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:12px}',
       '.pll-ci{font:inherit;text-align:left;background:#fff;border:1px solid var(--pll-line);border-radius:13px;padding:12px 14px;cursor:pointer;min-width:0;transition:border-color .15s}',
       '.pll-ci:hover{border-color:var(--pll-mint)}',
-      '.pll-ci.on{border-color:var(--pll-deep);box-shadow:inset 0 0 0 1px var(--pll-deep)}',
-      '.pll-ci .l{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--pll-muted)}',
-      '.pll-ci .v{font-family:var(--pll-num);font-size:26px;font-weight:600;color:var(--pll-ink);margin-top:4px;line-height:1.1;font-variant-numeric:tabular-nums}',
-      '.pll-ci .v.mint{color:var(--pll-deep)}',
-      '.pll-ci .s{font-size:11.5px;color:var(--pll-muted);margin-top:3px;line-height:1.35}',
-      '.pll-ci.est{cursor:default}',
+      '.pll-ci.pll-on{border-color:var(--pll-deep);box-shadow:inset 0 0 0 1px var(--pll-deep)}',
+      '.pll-ci .pll-l{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--pll-muted)}',
+      '.pll-ci .pll-v{font-family:var(--pll-num);font-size:26px;font-weight:600;color:var(--pll-ink);margin-top:4px;line-height:1.1;font-variant-numeric:tabular-nums}',
+      '.pll-ci .pll-v.pll-mint{color:var(--pll-deep)}',
+      '.pll-ci .pll-s{font-size:11.5px;color:var(--pll-muted);margin-top:3px;line-height:1.35}',
+      '.pll-ci.pll-est{cursor:default}',
       '.pll-pills{display:flex;gap:6px;flex-wrap:wrap;margin:-2px 0 12px}',
       '.pll-pill{font:inherit;font-size:12px;font-weight:700;border:1px solid #ECD08C;background:#FBF0DC;color:#6b4e0c;border-radius:999px;padding:5px 12px;cursor:pointer}',
-      '.pll-pill.on{background:var(--pll-amb);color:var(--pll-ink);border-color:var(--pll-amb)}',
-      '.pll-pill.limpia{border-color:var(--pll-line);background:#fff;color:var(--pll-muted)}',
+      '.pll-pill.pll-on{background:var(--pll-amb);color:var(--pll-ink);border-color:var(--pll-amb)}',
+      '.pll-pill.pll-limpia{border-color:var(--pll-line);background:#fff;color:var(--pll-muted)}',
       '.pll-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}',
       '.pll-tab{width:100%;border-collapse:collapse;font-size:13.5px}',
       '.pll-tab th{font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--pll-muted);text-align:right;padding:8px 8px;border-bottom:1px solid var(--pll-line);white-space:nowrap}',
       '.pll-tab th:first-child{text-align:left}',
       '.pll-tab td{padding:9px 8px;border-bottom:1px solid #F0F4F7;text-align:right;font-family:var(--pll-num);font-variant-numeric:tabular-nums;white-space:nowrap}',
-      '.pll-tab td.per{text-align:left;font-family:inherit;font-weight:600;color:var(--pll-ink);white-space:normal}',
-      '.pll-tab td .g{color:#A9B7C1}',
-      '.pll-tab td.si{color:var(--pll-ink);font-weight:700}',
-      '.pll-tab td.ve{color:var(--pll-deep);font-weight:700}',
-      '.pll-tab tbody tr.clic{cursor:pointer}',
-      '.pll-tab tbody tr.clic:hover td{background:#F7FAFC}',
-      '.pll-tab tbody tr.sel td{background:#EEF8F5}',
+      '.pll-tab td.pll-per{text-align:left;font-family:inherit;font-weight:600;color:var(--pll-ink);white-space:normal}',
+      '.pll-tab td .pll-g{color:#A9B7C1}',
+      '.pll-tab td.pll-si{color:var(--pll-ink);font-weight:700}',
+      '.pll-tab td.pll-ve{color:var(--pll-deep);font-weight:700}',
+      '.pll-tab tbody tr.pll-clic{cursor:pointer}',
+      '.pll-tab tbody tr.pll-clic:hover td{background:#F7FAFC}',
+      '.pll-tab tbody tr.pll-sel td{background:#EEF8F5}',
       '.pll-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:8px;vertical-align:1px;flex-shrink:0}',
       '.pll-ficha td{padding:0!important;background:#FAFCFD!important;text-align:left!important;font-family:inherit!important;white-space:normal!important}',
       '.pll-ficha td{max-width:0}',
-      '.pll-ficha .in{padding:14px 16px 16px;overflow-x:auto}',
+      '.pll-ficha .pll-in{padding:14px 16px 16px;overflow-x:auto}',
       '.pll-pie{font-size:11.5px;color:var(--pll-muted);line-height:1.55;margin-top:10px}',
       '.pll-vacio,.pll-err{font-size:13px;color:var(--pll-muted);padding:16px 2px}',
       '.pll-err button{font:inherit;font-weight:700;margin-left:8px;border:1px solid var(--pll-line);background:#fff;border-radius:8px;padding:5px 11px;cursor:pointer}',
@@ -108,16 +108,16 @@
       '.pll-puesto b{font-family:var(--pll-num);color:var(--pll-ink)}',
       '.pll-link{font:inherit;font-size:12.5px;font-weight:700;color:var(--pll-deep);background:none;border:0;padding:0;cursor:pointer;margin-top:6px}',
       /* modo grande (FAM) */
-      '.pll.grande .pll-ci .v{font-size:40px}',
-      '.pll.grande .pll-ci .l{font-size:12px}',
-      '.pll.grande .pll-ci .s{font-size:13px}',
-      '.pll.grande .pll-tab{font-size:16px}',
-      '.pll.grande .pll-tab td{padding:12px 10px}',
-      '.pll.grande .pll-tit{font-size:20px}',
+      '.pll.pll-grande .pll-ci .pll-v{font-size:40px}',
+      '.pll.pll-grande .pll-ci .pll-l{font-size:12px}',
+      '.pll.pll-grande .pll-ci .pll-s{font-size:13px}',
+      '.pll.pll-grande .pll-tab{font-size:16px}',
+      '.pll.pll-grande .pll-tab td{padding:12px 10px}',
+      '.pll.pll-grande .pll-tit{font-size:20px}',
       /* modo mío: cuatro cifras grandes, sin lista */
-      '.pll.mio .pll-ci .v{font-size:34px}',
-      '@media (max-width:860px){.pll-cifras{grid-template-columns:repeat(2,minmax(0,1fr))}.pll.grande .pll-ci .v{font-size:32px}}',
-      '@media (max-width:520px){.pll-mom button{padding:6px 9px;font-size:12px}.pll-ci{padding:10px 11px}.pll-ci .v{font-size:22px}.pll.mio .pll-ci .v,.pll.grande .pll-ci .v{font-size:26px}.pll-tab{font-size:12.5px}.pll-tab td,.pll-tab th{padding:8px 5px}.pll-tab .opc{display:none}.pll.grande .pll-tab{font-size:14px}}'
+      '.pll.pll-mio .pll-ci .pll-v{font-size:34px}',
+      '@media (max-width:860px){.pll-cifras{grid-template-columns:repeat(2,minmax(0,1fr))}.pll.pll-grande .pll-ci .pll-v{font-size:32px}}',
+      '@media (max-width:520px){.pll-mom button{padding:6px 9px;font-size:12px}.pll-ci{padding:10px 11px}.pll-ci .pll-v{font-size:22px}.pll.pll-mio .pll-ci .pll-v,.pll.pll-grande .pll-ci .pll-v{font-size:26px}.pll-tab{font-size:12.5px}.pll-tab td,.pll-tab th{padding:8px 5px}.pll-tab .pll-opc{display:none}.pll.pll-grande .pll-tab{font-size:14px}}'
     ].join('\n');
     document.head.appendChild(c);
   }
@@ -205,9 +205,9 @@
     ];
     return '<div class="pll-cifras">' + C.map(function (c) {
       var on = filtrable && S.filtro === c[0];
-      return '<button type="button" class="pll-ci' + (on ? ' on' : '') + (filtrable ? '' : ' est') + '"'
+      return '<button type="button" class="pll-ci' + (on ? ' pll-on' : '') + (filtrable ? '' : ' pll-est') + '"'
         + (filtrable ? ' data-pll-f="' + c[0] + '" aria-pressed="' + on + '"' : ' tabindex="-1"') + '>'
-        + '<div class="l">' + c[1] + '</div><div class="v' + (c[0] === 'ventas' && ve ? ' mint' : '') + '">' + c[2] + '</div><div class="s">' + esc(c[3]) + '</div></button>';
+        + '<div class="pll-l">' + c[1] + '</div><div class="pll-v' + (c[0] === 'ventas' && ve ? ' pll-mint' : '') + '">' + c[2] + '</div><div class="pll-s">' + esc(c[3]) + '</div></button>';
     }).join('') + '</div>';
   }
 
@@ -224,19 +224,19 @@
     var grande = S.o.modo === 'grande', abre = typeof S.o.alAbrir === 'function';
     if (!F.length) return '<div class="pll-vacio">' + (S.filtro ? 'Nadie con esa cifra en este momento.' : 'No hay personas en la lista.') + '</div>';
     var sem = { verde: ['#229A82', 'Su mes va en el estándar'], ambar: ['#D9A520', 'Su mes va cerca del estándar'], rojo: ['#D5594F', 'Su mes va lejos del estándar'] };
-    var cel = function (v, cls) { v = n(v); return v == null ? '<td><span class="g">—</span></td>' : '<td' + (cls && v > 0 ? ' class="' + cls + '"' : '') + '>' + (v > 0 || !cls ? fmt(v) : '<span class="g">0</span>') + '</td>'; };
-    return '<div class="pll-scroll"><table class="pll-tab"><thead><tr><th>Persona</th><th>Llamadas</th><th class="opc">+2 min</th><th>Positivos</th><th>Ventas</th>'
+    var cel = function (v, cls) { v = n(v); return v == null ? '<td><span class="pll-g">—</span></td>' : '<td' + (cls && v > 0 ? ' class="' + cls + '"' : '') + '>' + (v > 0 || !cls ? fmt(v) : '<span class="pll-g">0</span>') + '</td>'; };
+    return '<div class="pll-scroll"><table class="pll-tab"><thead><tr><th>Persona</th><th>Llamadas</th><th class="pll-opc">+2 min</th><th>Positivos</th><th>Ventas</th>'
       + (grande ? '<th>Registradas</th>' : '') + '</tr></thead><tbody>'
       + F.map(function (r) {
           var s = sem[r.semaforo] || ['#C9D3DA', 'Sin semáforo'];
           var sel = S.abierta && S.abierta === r.agente;
-          return '<tr' + (abre ? ' class="clic' + (sel ? ' sel' : '') + '" tabindex="0" data-pll-ag="' + esc(r.agente) + '"' : '') + '>'
-            + '<td class="per"><span class="pll-dot" style="background:' + s[0] + '" title="' + s[1] + '"></span>' + esc(r.agente) + '</td>'
-            + cel(r.llamadas) + '<td class="opc">' + (n(r.conversaciones) == null ? '<span class="g">—</span>' : fmt(r.conversaciones)) + '</td>'
-            + cel(r.positivos, 'si') + cel(r.ventas, 've')
-            + (grande ? cel(r.polizas, 'si') : '')
+          return '<tr' + (abre ? ' class="pll-clic' + (sel ? ' pll-sel' : '') + '" tabindex="0" data-pll-ag="' + esc(r.agente) + '"' : '') + '>'
+            + '<td class="pll-per"><span class="pll-dot" style="background:' + s[0] + '" title="' + s[1] + '"></span>' + esc(r.agente) + '</td>'
+            + cel(r.llamadas) + '<td class="pll-opc">' + (n(r.conversaciones) == null ? '<span class="pll-g">—</span>' : fmt(r.conversaciones)) + '</td>'
+            + cel(r.positivos, 'pll-si') + cel(r.ventas, 'pll-ve')
+            + (grande ? cel(r.polizas, 'pll-si') : '')
             + '</tr>'
-            + (sel ? '<tr class="pll-ficha"><td colspan="' + (grande ? 6 : 5) + '"><div class="in" id="pll-ficha-in"></div></td></tr>' : '');
+            + (sel ? '<tr class="pll-ficha"><td colspan="' + (grande ? 6 : 5) + '"><div class="pll-in" id="pll-ficha-in"></div></td></tr>' : '');
         }).join('')
       + '</tbody></table></div>';
   }
@@ -252,7 +252,7 @@
   function cabecera() {
     var se = S.D.sello || {};
     return '<div class="pll-cab"><div class="pll-mom" role="tablist" aria-label="Momento">'
-      + MOMENTOS.map(function (m) { return '<button type="button" role="tab" aria-selected="' + (S.momento === m[0]) + '" class="' + (S.momento === m[0] ? 'on' : '') + '" data-pll-m="' + m[0] + '">' + m[1] + '</button>'; }).join('')
+      + MOMENTOS.map(function (m) { return '<button type="button" role="tab" aria-selected="' + (S.momento === m[0]) + '" class="' + (S.momento === m[0] ? 'pll-on' : '') + '" data-pll-m="' + m[0] + '">' + m[1] + '</button>'; }).join('')
       + '</div><div class="pll-sello">RingCentral <b>' + esc(se.rc || '—') + '</b> · HubSpot <b>' + esc(se.hubspot || '—') + '</b></div></div>'
       + '<div class="pll-logica">El último día hábil ya cerró. Hoy, la semana y el mes van corriendo: se actualizan solos cada 15 minutos.</div>';
   }
@@ -260,7 +260,7 @@
   function pintar() {
     if (!S.D) return;
     var modo = S.o.modo || 'equipo', F = filasDe(S.momento);
-    var h = '<div class="pll ' + modo + '">' + cabecera() + '<div class="pll-tit">' + esc(tituloMomento()) + '</div>' + franjaCorto();
+    var h = '<div class="pll pll-' + modo + '">' + cabecera() + '<div class="pll-tit">' + esc(tituloMomento()) + '</div>' + franjaCorto();
     if (modo === 'mio') {
       var M = S.D.mio || {}, p = M.puesto ? M.puesto[S.momento] : null;
       h += cifras(F, false)
@@ -272,9 +272,9 @@
       var pills = '';
       if (sinRonda()) {
         var nSin = F.filter(function (r) { return r.tiene_rc && (n(r.llamadas) || 0) === 0; }).length;
-        if (nSin) pills += '<button type="button" class="pll-pill' + (S.filtro === 'sinllamar' ? ' on' : '') + '" data-pll-f="sinllamar">' + nSin + (nSin === 1 ? ' persona sin llamar' : ' personas sin llamar') + '</button>';
+        if (nSin) pills += '<button type="button" class="pll-pill' + (S.filtro === 'sinllamar' ? ' pll-on' : '') + '" data-pll-f="sinllamar">' + nSin + (nSin === 1 ? ' persona sin llamar' : ' personas sin llamar') + '</button>';
       }
-      if (S.filtro) pills += '<button type="button" class="pll-pill limpia" data-pll-f="">Quitar filtro ✕</button>';
+      if (S.filtro) pills += '<button type="button" class="pll-pill pll-limpia" data-pll-f="">Quitar filtro ✕</button>';
       h += cifras(F, true) + (pills ? '<div class="pll-pills">' + pills + '</div>' : '') + tabla(aplicarFiltro(F)) + pie(F);
     }
     h += '</div>';
@@ -294,7 +294,7 @@
       if (!t || !el.contains(t)) return;
       if (t.hasAttribute('data-pll-m')) { S.momento = t.getAttribute('data-pll-m'); if (S.filtro === 'sinllamar' && S.momento !== 'hoy') S.filtro = null; return pintar(); }
       if (t.hasAttribute('data-pll-f')) { var f = t.getAttribute('data-pll-f') || null; S.filtro = (S.filtro === f) ? null : f; return pintar(); }
-      if (t.hasAttribute('data-pll-ag')) { var ag = t.getAttribute('data-pll-ag'); S.abierta = (S.abierta === ag) ? null : ag; pintar(); var r = el.querySelector('tr.sel'); if (r) r.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); return; }
+      if (t.hasAttribute('data-pll-ag')) { var ag = t.getAttribute('data-pll-ag'); S.abierta = (S.abierta === ag) ? null : ag; pintar(); var r = el.querySelector('tr.pll-sel'); if (r) r.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); return; }
       var a = t.getAttribute('data-pll');
       if (a === 'reintentar') return cargar();
       if (a === 'vermes' && typeof S.o.alVerMes === 'function') return S.o.alVerMes();
@@ -327,7 +327,7 @@
     },
     recargar: function () { cargar(true); },
     filtrar: function (f) { S.filtro = f || null; pintar(); },
-    abrirFicha: function (ag) { S.abierta = ag || null; pintar(); var r = S.el && S.el.querySelector('tr.sel'); if (r) r.scrollIntoView({ behavior: 'smooth', block: 'center' }); },
+    abrirFicha: function (ag) { S.abierta = ag || null; pintar(); var r = S.el && S.el.querySelector('tr.pll-sel'); if (r) r.scrollIntoView({ behavior: 'smooth', block: 'center' }); },
     momento: function (m) { if (m) { S.momento = m; pintar(); } return S.momento; },
     datos: function () { return S.D; }
   };
