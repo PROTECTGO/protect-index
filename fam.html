@@ -116,6 +116,7 @@
 <!-- ProtectGo · scripts compartidos (recuperacion de clave + novedades en tiempo real) -->
 <script src="pg-novedades.js"></script>
 <script src="pg-sombra.js"></script>
+<script src="pg-llamadas.js?v=3"></script>
 <script defer src="pg-auth.js"></script>
 </head>
 <body>
@@ -132,7 +133,7 @@
 
   <div class="wrap">
     <div data-pg-pend data-titulo="toda la agencia"></div>
-    <div class="famtabs" id="famTabs" style="display:none"><button type="button" data-famtab="docs" class="on">Documentos de pago</button><button type="button" data-famtab="amz">Amazon · Conciliación <span class="famn" id="famAmzN" style="display:none"></span></button></div>
+    <div class="famtabs" id="famTabs" style="display:none"><button type="button" data-famtab="docs" class="on">Documentos de pago</button><button type="button" data-famtab="equipo">Equipo · llamadas y ventas</button><button type="button" data-famtab="amz">Amazon · Conciliación <span class="famn" id="famAmzN" style="display:none"></span></button></div>
     <div id="famDocs">
     <div class="kicker">Área Financiera · Documentos de pago</div>
     <h1>Diligenciar documentos</h1>
@@ -181,6 +182,13 @@
     </div>
     </div><!-- /famDocs -->
     <div id="famAmz" style="display:none"></div>
+    <!-- v11 · pestaña Equipo: el mismo pulso de llamadas que ve Brahian (pg-llamadas.js, modo grande) -->
+    <div id="famEquipo" style="display:none">
+      <div class="kicker">Área Financiera · Equipo comercial</div>
+      <h1>Llamadas y ventas del equipo</h1>
+      <p class="sub">Lo mismo que ve Brahian, en grande. <b>Registradas</b> = pólizas que FAM registró en el BOS para esa persona en ese momento. Se actualiza solo cada 15 minutos.</p>
+      <div style="background:#fff;border:1px solid #E7EDF2;border-radius:16px;padding:18px 20px;box-shadow:0 1px 3px rgba(27,45,58,.05)"><div id="famPulso"></div></div>
+    </div>
   </div>
 </div>
 
@@ -583,7 +591,7 @@ else setTimeout(init,60);
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="fam.html";
-var PGV_VERSION=10; // v10 - 9-oct-2026 desplegable de pending cancellation (pg-pendientes-cancel.js): las pólizas que se están cayendo, con candado por rol. // v9 - Ronda 15: código de confirmación bancaria al pagar la liquidación mensual a Operyx (Registrar pago a Operyx · rpc amazon_liquidar_operyx), columna y filtro Liquidación Operyx en Pagos validados, Liquidar transacciones filtradas. Antes: v8 - Ronda 13: desglose Operyx/ProtectGo por cobro + liquidación mensual a Operyx (MS-YYYY-MM). Antes: v7 - Bandeja FAM de Amazon Relay (validar fondos + statement semanal). Antes: v5 - Protect Index: las direcciones internas del sitio pasan a relativas (el sitio ya no depende de como se llame el repo). Las que viajan por correo (recuperar contrasena, fotos de firma, sello de RRHH) quedan absolutas apuntando a protect-index.
+var PGV_VERSION=11; // v11 - 12-oct-2026 PESTAÑA EQUIPO (encima de la v10 de pending cancellation, intacta): tercera pestaña "Equipo · llamadas y ventas" (solo cuenta fam@, igual que las otras dos): pg-llamadas.js en modo grande sobre portal.equipo_llamadas_pulso() — Hoy · Último día hábil · Semana · Mes, cuatro cifras grandes que filtran, lista de todo el equipo con columna Registradas (pólizas en el BOS), franja Día corto. Mismo número que Equipo Comercial y Mi proceso. Documentos y Amazon intactos. // v10 - 9-oct-2026 desplegable de pending cancellation (pg-pendientes-cancel.js): las pólizas que se están cayendo, con candado por rol. // v9 - Ronda 15: código de confirmación bancaria al pagar la liquidación mensual a Operyx (Registrar pago a Operyx · rpc amazon_liquidar_operyx), columna y filtro Liquidación Operyx en Pagos validados, Liquidar transacciones filtradas. Antes: v8 - Ronda 13: desglose Operyx/ProtectGo por cobro + liquidación mensual a Operyx (MS-YYYY-MM). Antes: v7 - Bandeja FAM de Amazon Relay (validar fondos + statement semanal). Antes: v5 - Protect Index: las direcciones internas del sitio pasan a relativas (el sitio ya no depende de como se llame el repo). Las que viajan por correo (recuperar contrasena, fotos de firma, sello de RRHH) quedan absolutas apuntando a protect-index.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;
@@ -652,10 +660,16 @@ setInterval(pgvCheck,600000);
 
   /* ---------- montaje de pestañas ---------- */
   function mostrar(tab) {
-    var docs = $f('famDocs'), amz = $f('famAmz');
+    var docs = $f('famDocs'), amz = $f('famAmz'), eq = $f('famEquipo');
     if (!docs || !amz) return;
-    docs.style.display = tab === 'amz' ? 'none' : '';
+    docs.style.display = (tab === 'amz' || tab === 'equipo') ? 'none' : '';
     amz.style.display = tab === 'amz' ? '' : 'none';
+    if (eq) eq.style.display = tab === 'equipo' ? '' : 'none';
+    /* v11 · pestaña Equipo: se monta la primera vez que se abre */
+    if (tab === 'equipo' && window.PGLlamadas && !window.__famPulso && $f('famPulso')) {
+      window.__famPulso = 1;
+      window.PGLlamadas.montar($f('famPulso'), { sb: sbA, modo: 'grande' });
+    }
     document.querySelectorAll('#famTabs [data-famtab]').forEach(function (b) { b.classList.toggle('on', b.dataset.famtab === tab); });
     if (tab === 'amz') cargar();
   }

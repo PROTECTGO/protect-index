@@ -310,8 +310,14 @@ select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;b
 .hero-pie{display:flex;align-items:center;gap:9px;font-size:12px;color:#8da0ad;border-top:1px solid rgba(255,255,255,.1);padding-top:13px;margin-top:18px;flex-wrap:wrap;line-height:1.5}
 .hero-pie .pg-semaforo{width:9px;height:9px;box-shadow:none;margin:0;flex-shrink:0}
 @media(max-width:820px){.hero-mes{font-size:38px}.fr.hero{padding:22px 20px 14px}}
+/* v20 · Brahian puede ocultar la barra de los tops (pg-sombra.js). Se recuerda en portal.preferencias_usuario. */
+html.pg-sin-tops #pgMuelle,html.pg-sin-tops #pgSombra,html.pg-sin-tops #pgsPanel,html.pg-sin-tops #pgsTop{display:none!important}
+html.pg-sin-tops #pgVolver{display:inline-flex!important}
+.pg-tops-btn{background:none;border:1px solid rgba(255,255,255,.18);color:#b9c6d0;border-radius:999px;padding:5px 11px;font:600 11px/1.2 var(--pg-font-body,Inter,sans-serif);cursor:pointer;margin:2px 0 10px}
+.pg-tops-btn:hover{color:#fff;border-color:var(--pg-mint)}
 </style>
 <script src="pg-novedades.js"></script>
+<script src="pg-llamadas.js?v=3"></script>
 </head>
 <body>
 <a href="index.html" id="pgVolver" aria-label="Volver" style="position:fixed;top:14px;left:14px;z-index:2147483000;display:inline-flex;align-items:center;padding:9px 15px;border-radius:999px;background:#0D3040;color:#fff;font:700 12.5px/1 Arial,Helvetica,sans-serif;text-decoration:none;box-shadow:0 3px 12px rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.18);-webkit-tap-highlight-color:transparent;">← Volver al portal</a>
@@ -322,19 +328,30 @@ select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;b
  <aside class="pg-side">
   <div class="pg-brand"><div class="pg-logo">G</div><div class="pg-wordmark">gabi</div></div>
   <div class="pg-tagline">EQUIPO COMERCIAL</div>
-  <a data-go="mes" class="on"><span class="ico">◆</span> Meta</a>
-  <a data-go="hoy"><span class="ico">◔</span> Equipo</a>
+  <a data-go="pulso" class="on"><span class="ico">◉</span> Pulso</a>
+  <a data-go="mes"><span class="ico">◆</span> Meta</a>
   <a data-go="alertas"><span class="ico">▲</span> Sentarse</a>
-  <a data-go="persona"><span class="ico">●</span> Persona</a>
-  <a data-go="bitacora"><span class="ico">✎</span> Bitácora</a>
   <a data-go="ano"><span class="ico">▤</span> Año</a>
-  <a data-go="manual"><span class="ico">?</span> Manual de lectura</a>
-  <div class="pg-foot"><span id="ftuser">Brahian Toro</span><br>Líder comercial<br><span id="ftfecha"></span><br><span class="pg-logout" id="btnLogout" style="cursor:pointer;text-decoration:underline">Cerrar sesión</span></div>
+  <a data-go="manual"><span class="ico">?</span> Qué es cada cosa</a>
+  <div class="pg-foot"><button class="pg-tops-btn" type="button" id="btnTops">Ocultar la barra de tops</button><br><span id="ftuser">Brahian Toro</span><br>Líder comercial<br><span id="ftfecha"></span><br><span class="pg-logout" id="btnLogout" style="cursor:pointer;text-decoration:underline">Cerrar sesión</span></div>
  </aside>
  <main class="pg-main">
 
+  <!-- ============ 0 · PULSO (v20) ============
+       pg-llamadas.js · portal.equipo_llamadas_pulso(): Hoy · Último día hábil · Semana · Mes.
+       Mismo número que ve FAM (pestaña Equipo) y cada asesor en su Mi proceso.
+       Tocar una persona abre su ficha debajo de la fila (equipo_agente_detalle, la de siempre). -->
+  <section class="pg-section on" id="s-pulso">
+    <div class="pg-top">
+      <div class="pg-eyebrow">Actividad del equipo</div>
+      <h1>Pulso</h1>
+      <div class="pg-sub">Llamadas, positivos y ventas de todo el equipo. <b>Toca una cifra</b> para filtrar la lista y <b>toca una persona</b> para abrir su ficha.</div>
+    </div>
+    <div class="pg-card"><div id="pulso"></div></div>
+  </section>
+
   <!-- ============ 1 · EL MES ============ -->
-  <section class="pg-section on" id="s-mes">
+  <section class="pg-section" id="s-mes">
     <div class="pg-top">
       <div class="pg-eyebrow">Dirección comercial</div>
       <h1>Meta<button class="hq" type="button" data-h="lo_que_va">?</button></h1>
@@ -364,6 +381,7 @@ select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;b
 
     <div class="pg-card">
       <h2>El equipo, persona por persona<button class="hq" type="button" data-h="deberia">?</button></h2>
+      <p class="pg-purpose" style="margin:2px 0 0">Toca a una persona para ver su año completo.</p>
       <div class="pg-actions" style="margin:12px 0">
         <div class="pg-toggle" id="tg-vista">
           <button class="on" data-v="mes">Mes en curso</button>
@@ -382,76 +400,12 @@ select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;b
       <div class="leg"><span><b style="background:#D5594F"></b>Bajo la meta</span><span><b style="background:#229A82"></b>En la meta plena</span><span><b style="background:#E7EDF2"></b>Sin venta</span><span><b style="background:#1B2D3A;width:3px"></b>Debería ir hoy</span></div>
     </div>
 
-    <div class="pg-kpis">
-      <div class="pg-kpi"><div class="lbl" id="r-vol-l">Último mes cerrado</div><div class="val" id="r-vol">—</div><div class="sub" id="r-vol-s"></div></div>
-      <div class="pg-kpi"><div class="lbl">Utilidad del equipo<button class="hq" type="button" data-h="utilidad">?</button></div><div class="val pos" id="r-util">—</div><div class="sub" id="r-util-s"></div></div>
-      <div class="pg-kpi a"><div class="lbl">Tu ingreso<button class="hq" type="button" data-h="ingreso">?</button></div><div class="val" id="r-ing">—</div><div class="sub" id="r-ing-s"></div></div>
-      <div class="pg-kpi w"><div class="lbl">Fee del mes<button class="hq" type="button" data-h="fee">?</button></div><div class="val" id="r-fmes">—</div><div class="sub" id="r-fmes-s"></div></div>
-    </div>
+    <!-- v20 · antes pestaña "Persona": se abre aquí al tocar a alguien de la lista de arriba -->
+    <div id="pp-zona" hidden style="margin:6px 0 22px;padding-top:6px;border-top:2px solid var(--pg-mint)">
 
-    <div class="pg-card">
-      <h2>Cuánto falta para la meta<button class="hq" type="button" data-h="meta_plena">?</button></h2>
-      <div style="overflow-x:auto"><table class="pg-table" id="tb-falta"><thead><tr>
-        <th>Persona</th><th class="num">Lo que lleva</th><th class="num">Su meta</th><th class="num">Le falta</th>
-      </tr></thead><tbody></tbody></table></div>
-    </div>
-  </section>
-
-  <!-- ============ 2 · EQUIPO ============
-       v16 - dia-card + act-card + emb-card de la v15 se funden en una sola tabla
-       con interruptor Ayer | Este mes (menos informacion a la vez, mismo dato). -->
-  <section class="pg-section" id="s-hoy">
-    <div class="pg-top">
-      <div class="pg-eyebrow">Actividad del equipo</div>
-      <h1 id="dia-titulo">Ayer<button class="hq" type="button" data-h="positivo">?</button></h1>
-    </div>
-
-    <div class="pg-card" id="dia-card">
-      <div class="pg-actions" style="margin:0 0 16px">
-        <div class="pg-toggle" id="tg-act">
-          <button class="on" data-v="ayer">Ayer</button>
-          <button data-v="mes">Este mes</button>
-        </div>
-      </div>
-      <h2 id="dia-h2">Ayer, persona por persona</h2>
-      <p class="pg-purpose" style="margin:0 0 14px"><b>Toca una persona</b> para ver su mes y qué registró.</p>
-      <div class="act-res" id="dia-res"></div>
-      <div id="dia-lista"></div>
-      <div class="mini" style="margin-top:12px;line-height:1.5" id="dia-pie"></div>
-    </div>
-
-    <div class="pg-card" id="det-card" hidden></div>
-  </section>
-
-  <!-- ============ 3 · ALERTAS ============ -->
-  <section class="pg-section" id="s-alertas">
-    <div class="pg-top">
-      <div class="pg-eyebrow">Sentarse</div>
-      <h1>Con quién sentarse esta semana</h1>
-    </div>
-    <div class="pg-headline">
-      <div class="pg-semaforo red" id="p-titular-sem"></div>
-      <div><p class="pg-headline-text" id="p-titular">—</p></div>
-    </div>
-    <div class="pg-card">
-      <h2>La lista, en orden de prioridad</h2>
-      <p class="pg-purpose">No por plata estimada: primero quien más urge, según el patrón, no según quién mueve más dinero.</p>
-      <div id="alertas"></div>
-    </div>
-    <div class="pg-card">
-      <h2>Fee cobrado este mes contra el estándar<button class="hq" type="button" data-h="fee">?</button></h2>
-      <table class="pg-table">
-        <thead><tr><th>Persona</th><th class="num">Cuentas</th><th class="num">Con fee</th><th class="num">Fee cobrado</th><th class="num">Estándar</th><th class="num">Le falta</th></tr></thead>
-        <tbody id="tb-estandar"></tbody>
-      </table>
-    </div>
-  </section>
-
-  <!-- ============ 4 · PERSONA ============ -->
-  <section class="pg-section" id="s-persona">
     <div class="pg-top">
       <div class="pg-eyebrow">Persona</div>
-      <h1>Su año completo<button class="hq" type="button" data-h="anillo">?</button></h1>
+      <h1>Su año completo<button class="hq" type="button" data-h="anillo">?</button><button class="det-x" type="button" id="pp-cerrar" style="margin-left:14px;font-size:12px">cerrar</button></h1>
     </div>
     <div style="margin-bottom:20px"><select class="pg-sel" id="selPersona"></select></div>
 
@@ -494,13 +448,81 @@ select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;b
       <h2>Su año en números</h2>
       <div style="overflow-x:auto"><table class="pg-table"><thead><tr><th>Mes</th><th class="num">Volumen</th><th class="num">Fee</th><th class="num">Ventas</th><th class="num">Sin fee</th><th class="num">Utilidad</th><th>Estado</th></tr></thead><tbody id="tb-pers"></tbody></table></div>
     </div>
+      </div>
+
+    <div class="pg-kpis">
+      <div class="pg-kpi"><div class="lbl" id="r-vol-l">Último mes cerrado</div><div class="val" id="r-vol">—</div><div class="sub" id="r-vol-s"></div></div>
+      <div class="pg-kpi"><div class="lbl">Utilidad del equipo<button class="hq" type="button" data-h="utilidad">?</button></div><div class="val pos" id="r-util">—</div><div class="sub" id="r-util-s"></div></div>
+      <div class="pg-kpi a"><div class="lbl">Tu ingreso<button class="hq" type="button" data-h="ingreso">?</button></div><div class="val" id="r-ing">—</div><div class="sub" id="r-ing-s"></div></div>
+      <div class="pg-kpi w"><div class="lbl">Fee del mes<button class="hq" type="button" data-h="fee">?</button></div><div class="val" id="r-fmes">—</div><div class="sub" id="r-fmes-s"></div></div>
+    </div>
+
+    <div class="pg-card">
+      <h2>Cuánto falta para la meta<button class="hq" type="button" data-h="meta_plena">?</button></h2>
+      <div style="overflow-x:auto"><table class="pg-table" id="tb-falta"><thead><tr>
+        <th>Persona</th><th class="num">Lo que lleva</th><th class="num">Su meta</th><th class="num">Le falta</th>
+      </tr></thead><tbody></tbody></table></div>
+    </div>
   </section>
 
-  <!-- ============ 5 · BITÁCORA ============ -->
-  <section class="pg-section" id="s-bitacora">
+  <!-- v20 (12-oct-2026) · JUBILADO: pestaña "Equipo" (Ayer | Este mes) de la v16-v19.
+       La reemplaza "Pulso". Queda guardada en un <template> (no se pinta, no consulta). -->
+  <template id="jubilado-v19-equipo">
+  <!-- ============ 2 · EQUIPO ============
+       v16 - dia-card + act-card + emb-card de la v15 se funden en una sola tabla
+       con interruptor Ayer | Este mes (menos informacion a la vez, mismo dato). -->
+  <section class="pg-section" id="s-hoy">
     <div class="pg-top">
+      <div class="pg-eyebrow">Actividad del equipo</div>
+      <h1 id="dia-titulo">Ayer<button class="hq" type="button" data-h="positivo">?</button></h1>
+    </div>
+
+    <div class="pg-card" id="dia-card">
+      <div class="pg-actions" style="margin:0 0 16px">
+        <div class="pg-toggle" id="tg-act">
+          <button class="on" data-v="ayer">Ayer</button>
+          <button data-v="mes">Este mes</button>
+        </div>
+      </div>
+      <h2 id="dia-h2">Ayer, persona por persona</h2>
+      <p class="pg-purpose" style="margin:0 0 14px"><b>Toca una persona</b> para ver su mes y qué registró.</p>
+      <div class="act-res" id="dia-res"></div>
+      <div id="dia-lista"></div>
+      <div class="mini" style="margin-top:12px;line-height:1.5" id="dia-pie"></div>
+    </div>
+
+    <div class="pg-card" id="det-card" hidden></div>
+  </section>
+
+  </template>
+
+  <!-- ============ 3 · ALERTAS ============ -->
+  <section class="pg-section" id="s-alertas">
+    <div class="pg-top">
+      <div class="pg-eyebrow">Sentarse</div>
+      <h1>Con quién sentarse esta semana</h1>
+    </div>
+    <div class="pg-headline">
+      <div class="pg-semaforo red" id="p-titular-sem"></div>
+      <div><p class="pg-headline-text" id="p-titular">—</p></div>
+    </div>
+    <div class="pg-card">
+      <h2>La lista, en orden de prioridad</h2>
+      <p class="pg-purpose">No por plata estimada: primero quien más urge, según el patrón, no según quién mueve más dinero.</p>
+      <div id="alertas"></div>
+    </div>
+    <div class="pg-card">
+      <h2>Fee cobrado este mes contra el estándar<button class="hq" type="button" data-h="fee">?</button></h2>
+      <table class="pg-table">
+        <thead><tr><th>Persona</th><th class="num">Cuentas</th><th class="num">Con fee</th><th class="num">Fee cobrado</th><th class="num">Estándar</th><th class="num">Le falta</th></tr></thead>
+        <tbody id="tb-estandar"></tbody>
+      </table>
+    </div>
+    <!-- v20 · antes pestaña "Bitácora" -->
+
+    <div class="pg-top" id="bt-ancla" style="margin-top:26px">
       <div class="pg-eyebrow">Bitácora</div>
-      <h1>La libreta del equipo</h1>
+      <h1 style="font-size:20px">La libreta del equipo</h1>
     </div>
 
     <div class="pg-card">
@@ -517,7 +539,7 @@ select.pg-sel{font-family:var(--pg-font-body);font-size:14px;padding:10px 14px;b
     <div class="bt-head"><div><h2>Compromisos y conversaciones</h2><div class="pg-sub" id="btSub"></div></div></div>
     <div class="chips" id="btChips"></div>
     <div id="btLista"></div>
-  </section>
+    </section>
 
   <!-- ============ 6 · AÑO ============ -->
   <section class="pg-section" id="s-ano">
@@ -993,7 +1015,7 @@ function etiqueta(a){
   return '<div class="g-c cur">en curva · mes '+(a.mop||1)+' · '+pc+'%</div>';
 }
 function filaGen(a,o){
-  return '<div class="gr">'
+  return '<div class="gr" data-ag="'+String(a.n).replace(/"/g,'&quot;')+'" tabindex="0" role="button" style="cursor:pointer">'
    + '<div><div class="g-n">'+nom(a.n)+'</div>'+etiqueta(a)+'</div>'
    + '<div>'+barraZ(o.val,a.norte,a.norte,o.deb)+'</div>'
    + '<div class="g-cif">'+cif('Lleva',usd(o.val))+cif('Meta',usd(a.norte))+cif('Fee',usd(o.fee))+cif('Ventas',o.ven)+'</div>'
@@ -1288,6 +1310,25 @@ function pintaPersona(nombre){
 sel.onchange=()=>pintaPersona(sel.value);
 sel.value=ordS4[0].n;
 GRAF.persona=()=>pintaPersona(sel.value);
+/* v20 · "Persona" ya no es pestaña: se abre debajo de la lista del equipo (Meta). */
+const normP = t => String(t||'').replace(/\s*\(.*\)\s*$/,'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+window.pgAbrirPersona = function(nombre){
+  const z=document.getElementById('pp-zona'); if(!z) return;
+  const op=[...sel.options].find(o=>normP(o.value)===normP(nombre)); if(op) sel.value=op.value;
+  const link=document.querySelector('.pg-side a[data-go="mes"]'); if(link && !link.classList.contains('on')) link.click();
+  z.hidden=false;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{ try{ pintaPersona(sel.value); LISTO.persona=1; }catch(e){ console.error(e); }
+    z.scrollIntoView({behavior:'smooth',block:'start'}); }));
+};
+(function(){
+  const gl=document.getElementById('gen-lista');
+  if(gl){
+    gl.addEventListener('click', e=>{ const r=e.target.closest('.gr[data-ag]'); if(r) window.pgAbrirPersona(r.dataset.ag); });
+    gl.addEventListener('keydown', e=>{ if(e.key!=='Enter'&&e.key!==' ') return; const r=e.target.closest('.gr[data-ag]'); if(r){ e.preventDefault(); window.pgAbrirPersona(r.dataset.ag); } });
+  }
+  const x=document.getElementById('pp-cerrar');
+  if(x) x.addEventListener('click', ()=>{ const z=document.getElementById('pp-zona'); if(z){ z.hidden=true; const g=document.getElementById('gen-lista'); if(g) g.scrollIntoView({behavior:'smooth',block:'nearest'}); } });
+})();
 
 /* ===== CONSOLIDADO ===== */
 /* La columna "% del equipo" absorbe chReparto y "% fee" absorbe chFee: ya no son graficas, son columnas.
@@ -1320,6 +1361,7 @@ document.querySelectorAll('.pg-side a[data-go]').forEach(a=>a.onclick=()=>{
   document.getElementById('s-'+a.dataset.go).classList.add('on');
   window.scrollTo(0,0);
   const t=a.dataset.go;
+  if(t==='alertas' && window.pgBitacoraCargar){ try{ window.pgBitacoraCargar(); }catch(e){ console.error(e); } }
   if(GRAF[t] && !LISTO[t]){ LISTO[t]=1;
     /* dos cuadros: el primero aplica el cambio de display, el segundo ya mide bien */
     requestAnimationFrame(()=>requestAnimationFrame(()=>{ try{ GRAF[t](); }catch(e){ console.error(e); } }));
@@ -1566,6 +1608,14 @@ function bitacora(D){
 
   pinta();
   cargar();
+  window.pgBitacoraCargar = cargar;
+  window.pgAnotar = function(nombre){
+    const nn = t => String(t||'').replace(/\s*\(.*\)\s*$/,'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+    const op=[...selB.options].find(o=>nn(o.value)===nn(nombre)); if(op) selB.value=op.value;
+    const link=document.querySelector('.pg-side a[data-go="alertas"]'); if(link) link.click();
+    const anc=document.getElementById('bt-ancla');
+    setTimeout(()=>{ if(anc) anc.scrollIntoView({behavior:'smooth',block:'start'}); const t=$('btNota'); if(t) t.focus({preventScroll:true}); }, 60);
+  };
 }
 
 /* ===================== SESIÓN ===================== */
@@ -1776,14 +1826,20 @@ function pintarAyer(data){
 }
 
 /* La ficha de una persona: su día contra su mes, y qué registró con nombre propio. */
-async function detalleAgente(sb, agente){
-  const card = document.getElementById('det-card');
+async function detalleAgente(sb, agente, destino){
+  /* v20: con "destino" la ficha se pinta dentro del acordeón del Pulso (pg-llamadas.js). */
+  const card = destino || document.getElementById('det-card');
   if (!card) return;
   card.hidden = false;
   card.innerHTML = '<div class="det-vacio">Abriendo ' + esc(agente) + '…</div>';
-  card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  if (!destino) card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
-  const { data, error } = await sb.rpc('equipo_agente_detalle', { p_agente: agente });
+  let { data, error } = await sb.rpc('equipo_agente_detalle', { p_agente: agente });
+  /* v20: si la base cortó por tiempo (otra carga pesada en curso), un reintento a los 2 s. */
+  if (error && /timeout/i.test(error.message || '')) {
+    await new Promise(r => setTimeout(r, 2000));
+    ({ data, error } = await sb.rpc('equipo_agente_detalle', { p_agente: agente }));
+  }
   if (error || !data || data.error) {
     card.innerHTML = '<div class="det-vacio">No pude abrir a ' + esc(agente) + '. '
       + esc((data && data.error) || (error && error.message) || '') + '</div>';
@@ -1891,13 +1947,22 @@ async function detalleAgente(sb, agente){
       + 'y lo que lleva registrado en el mes — <b>por cuenta, no por póliza</b>.</p>'
     + cuadro
     + pulso
-    + doslistas;
+    + doslistas
+    + (destino ? '<div class="det-acc" style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px">'
+        + '<button class="pg-btn ghost" type="button" data-ir="ano">Ver su año en Meta →</button>'
+        + '<button class="pg-btn mint" type="button" data-ir="anotar">Anotar en la libreta →</button></div>' : '');
 
-  const x = document.getElementById('det-cerrar');
+  const x = card.querySelector('#det-cerrar');
   if (x) x.addEventListener('click', function(){
+    if (destino && window.PGLlamadas) { window.PGLlamadas.abrirFicha(null); return; }
     card.hidden = true; card.innerHTML = '';
     document.querySelectorAll('#dia-lista tbody tr').forEach(t => t.classList.remove('sel'));
   });
+  if (destino) {
+    const b1 = card.querySelector('[data-ir="ano"]'), b2 = card.querySelector('[data-ir="anotar"]');
+    if (b1) b1.addEventListener('click', () => window.pgAbrirPersona && window.pgAbrirPersona(data.agente || agente));
+    if (b2) b2.addEventListener('click', () => window.pgAnotar && window.pgAnotar(data.agente || agente));
+  }
 }
 
 /* ============ DÓNDE SE LE QUEDA ============
@@ -2030,11 +2095,35 @@ async function renderShell(session){
   const salir = document.getElementById('btnLogout');
   if (salir) salir.addEventListener('click', () => SB.auth.signOut());
   YA_PINTADO = true;
+  /* v20 · ocultar / mostrar la barra de los tops; se recuerda por persona en la base */
+  (function(){
+    const P = SB.schema('portal'), CLAVE = 'ocultar_tops', btn = document.getElementById('btnTops');
+    const aplicar = oculto => {
+      document.documentElement.classList.toggle('pg-sin-tops', !!oculto);
+      if (btn) btn.textContent = oculto ? 'Mostrar la barra de tops' : 'Ocultar la barra de tops';
+    };
+    P.from('preferencias_usuario').select('valor').eq('clave', CLAVE).maybeSingle()
+      .then(r => { if (r && !r.error && r.data) aplicar(r.data.valor === true); }, () => {});
+    if (btn) btn.addEventListener('click', () => {
+      const nuevo = !document.documentElement.classList.contains('pg-sin-tops');
+      aplicar(nuevo);
+      P.from('preferencias_usuario').upsert({ user_id: session.user.id, clave: CLAVE, valor: nuevo, actualizado: new Date().toISOString() }, { onConflict: 'user_id,clave' })
+        .then(r => { if (r && r.error) console.warn('preferencia tops', r.error.message); }, () => {});
+    });
+  })();
   try {
     await esperarChart();
+    /* v20: el Pulso (lo primero que se ve, ~0,3 s) carga ANTES que Meta (vistas pesadas, 3-4 s juntas),
+       para que no compitan por la base. Si el Pulso no responde en 4 s, Meta arranca igual. */
+    await new Promise(listo => {
+      if (!window.PGLlamadas) return listo();
+      PGLlamadas.montar(document.getElementById('pulso'), {
+        sb: SB, modo: 'equipo', alAbrir: (ag, cont) => detalleAgente(SB, ag, cont), alCargar: listo
+      });
+      setTimeout(listo, 4000);
+    });
     const D = await cargarDatos(SB); render(D); bitacora(D);
-    diaEquipo(SB).catch(e => console.error('dia', e));
-    actividadEquipo(SB).catch(e => console.error('actividad', e));
+    /* v20: diaEquipo()/actividadEquipo() eran de la pestaña "Equipo", jubilada (template). */
   } catch (e) {
     console.error(e);
     const main = document.querySelector('.pg-main');
@@ -2061,7 +2150,7 @@ boot();
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="gabi-brahian.html";
-var PGV_VERSION=19; // v19 - Protect Index: las direcciones internas del sitio pasan a relativas (el sitio ya no depende de como se llame el repo). Las que viajan por correo (recuperar contrasena, fotos de firma, sello de RRHH) quedan absolutas apuntando a protect-index. // v18 - Una persona, una meta: el tablero deja de leer los campos de la meta chica y el piso de direccion; el avance de cada quien y del equipo se mide solo contra la meta de rampa (una sola vara por persona) -- la meta del equipo pasa a ser la suma de las 17, $1,015,000, y se quita la suma de las metas chicas. En la ficha de Persona, al inicio, se suma la franja de curva de aprendizaje (solo si aplica) y su plan corto (1 o 2 tarjetas con que pide), leidos de una sola llamada a SB.rpc('simular_sueno_de'): el mismo numero que la persona ve en su Mi proceso, para que hable con Brahian del mismo plan. Equipo, Bitacora, Ano, Manual y el motor de patrones de Sentarse quedan igual. // v17 - combinada = premium + fee x10 (decision de Andres 14-sep, igual que el reporte de Jeff); el motor ya la manda asi; la alerta cobra-y-no-vende deriva el premium como mc - fee x10. // v16 - Pestana "Hoy" pasa a llamarse EQUIPO: dia-card + act-card + emb-card de la v15 (las tres con la misma lista de 21 nombres) se funden en UNA tabla con interruptor Ayer | Este mes, misma fila de cifras en los dos modos (Llamadas, De +2 min, Positivos, Ventas). Columna Cuentas se elimina; Dias con positivo y Donde se le queda (antes en sus propios cards) pasan a ser columnas del modo Este mes. positivos ahora sale de la columna nueva contactos/contactos_mes (contactos creados), no de positivos_mes; lo que antes se llamaba positivos (negocio mandado a cotizar) se renombra cotizados y vive en la ficha. Ventas ya es CUENTAS (clientes distintos), no polizas -- polizas queda solo para el tooltip. Pestana "El mes" se renombra Meta y se queda solo con anillos/barra/lista de meta (no tenia actividad colada). Ficha de persona (det-card): cuadro llamadas/+2min/solo timbre/minutos/positivos/cotizados/ventas con los nombres de campo correctos del RPC (solo_timbre, no soloTimbre); "Positivos dia a dia" lee pulsoContactos (antes positivosDia); lista nueva "Que positivos monto este mes" con positivosMontados, al lado de "Que registro en el BOS" (paquetes/totalMes, sin cambios, por cuenta). Pie de la tabla de EQUIPO fijo en dos lineas: que es un positivo, y quien no tiene RingCentral. TODO v16: no se re-agrego el pulso "sin una sola senal" ni el senalamiento de "quien mas marca sin cotizar" de la v15 -- se recorto a proposito para cumplir el pie de dos lineas que pidio Andres; si hace falta se puede regresar como una tercera linea opcional. // v15 - La pestana del dia se reorganiza: arriba "El dia que cerro" (public.v_equipo_dia_visible = ultimo dia HABIL antes de hoy) con las cifras del equipo y la tabla persona por persona -- llamadas, de mas de 2 min, mandados a cotizar, ventas y cuantas filas dejo en el BOS. Al tocar una persona se abre su ficha con public.equipo_agente_detalle(nombre): su dia contra su mes y QUE REGISTRO, con el nombre de cada cuenta. Debajo, separado con el rotulo "El mes", quedan los dos cards mensuales; el de "quien esta registrando" ya NO muestra llamadas de hoy (a media manana siempre eran cero) sino solo el mes. // v14 - Llamadas del equipo con el desglose de la casa: la linea de arriba de la tabla y el tooltip de la celda muestran cuantas fueron solo timbre y cuantas pasaron de 2 minutos (v_actividad_equipo ahora trae solo_timbre_mes/hoy y conversaciones_mes/hoy). Card nuevo "De la llamada a la venta" en la pestana Hoy: los cuatro pasos del mes por persona -- llamadas, de mas de 2 min, mandados a cotizar, ventas -- con la columna "Donde se le queda" en palabras y el caso mas fuerte en el pie. Mismos datos de v_actividad_equipo_visible, sin segunda consulta. Sin barras. // v13 - Llamadas por persona: en la tabla de Hoy, "Llamadas hoy" y "Llamadas mes" se vuelven una sola columna combinada (hoy destacado, mes chiquito y gris, con title al pasar el mouse), guion cuando la persona no tiene usuario de RingCentral (nunca 0 ni null); arriba de la tabla, una línea con el total de llamadas de hoy del equipo y la hora de la última sincronización; y sexta alerta "sin llamar hoy" — salta en día hábil desde las 11:00 hora Colombia (UTC-5, calculada aparte de la del navegador) cuando llamadas_hoy da 0 exacto (null no cuenta: sin RingCentral no hay alerta). v_actividad_equipo_visible ahora también se lee, aparte, dentro de cargarDatos() para alimentar esa alerta. // v12 - Quinta alerta: "cobra y no vende". Es la primera del tablero que mira el PREMIUM: salta cuando el fee del mes llega a $2.500 (la puerta de fee del 30 %) pero el premium no llega a $35.000 (la puerta de premium del mismo 30 %), o sea el mes que se ve bien de fee y deja la escala en la base. Las otras cuatro alertas miraban solo el fee. // v11 - v11 - Tablero simple: cinco pestanas de lectura (El mes, Hoy, Alertas, Persona, Ano) + Bitacora + Manual de lectura. Meta minima / Meta plena en toda la pantalla. Anillos y barras con la regla de la casa: avance real contra la meta plena, pista por zonas y tick del deberia ir hoy; el ritmo en palabra. Cero parrafos de explicacion fija fuera del manual.
+var PGV_VERSION=20; // v20 - 12-oct-2026 (+ botón 'Ocultar la barra de tops' en la barra lateral, se recuerda en portal.preferencias_usuario) PULSO + 4 PANTALLAS: el menú queda Pulso · Meta · Sentarse · Año · Qué es cada cosa. PULSO (nuevo, abre aquí) es pg-llamadas.js sobre portal.equipo_llamadas_pulso(): Hoy · Último día hábil · Semana · Mes, cuatro cifras que filtran (Llamadas, +2 min, Positivos, Ventas), "N personas sin llamar" desde las 11:00, franja Día corto (<40% del promedio de 10 días hábiles), y la ficha de equipo_agente_detalle se abre debajo de la fila con Ver su año / Anotar en la libreta. Mismo número que FAM (pestaña Equipo) y Mi proceso. PERSONA deja de ser pestaña: se abre en Meta al tocar a alguien de la lista. BITÁCORA va dentro de Sentarse. La pestaña Equipo (Ayer | Este mes) se jubila en un template (no se pinta ni consulta). Cero cambios de datos de negocio. // v19 - Protect Index: las direcciones internas del sitio pasan a relativas (el sitio ya no depende de como se llame el repo). Las que viajan por correo (recuperar contrasena, fotos de firma, sello de RRHH) quedan absolutas apuntando a protect-index. // v18 - Una persona, una meta: el tablero deja de leer los campos de la meta chica y el piso de direccion; el avance de cada quien y del equipo se mide solo contra la meta de rampa (una sola vara por persona) -- la meta del equipo pasa a ser la suma de las 17, $1,015,000, y se quita la suma de las metas chicas. En la ficha de Persona, al inicio, se suma la franja de curva de aprendizaje (solo si aplica) y su plan corto (1 o 2 tarjetas con que pide), leidos de una sola llamada a SB.rpc('simular_sueno_de'): el mismo numero que la persona ve en su Mi proceso, para que hable con Brahian del mismo plan. Equipo, Bitacora, Ano, Manual y el motor de patrones de Sentarse quedan igual. // v17 - combinada = premium + fee x10 (decision de Andres 14-sep, igual que el reporte de Jeff); el motor ya la manda asi; la alerta cobra-y-no-vende deriva el premium como mc - fee x10. // v16 - Pestana "Hoy" pasa a llamarse EQUIPO: dia-card + act-card + emb-card de la v15 (las tres con la misma lista de 21 nombres) se funden en UNA tabla con interruptor Ayer | Este mes, misma fila de cifras en los dos modos (Llamadas, De +2 min, Positivos, Ventas). Columna Cuentas se elimina; Dias con positivo y Donde se le queda (antes en sus propios cards) pasan a ser columnas del modo Este mes. positivos ahora sale de la columna nueva contactos/contactos_mes (contactos creados), no de positivos_mes; lo que antes se llamaba positivos (negocio mandado a cotizar) se renombra cotizados y vive en la ficha. Ventas ya es CUENTAS (clientes distintos), no polizas -- polizas queda solo para el tooltip. Pestana "El mes" se renombra Meta y se queda solo con anillos/barra/lista de meta (no tenia actividad colada). Ficha de persona (det-card): cuadro llamadas/+2min/solo timbre/minutos/positivos/cotizados/ventas con los nombres de campo correctos del RPC (solo_timbre, no soloTimbre); "Positivos dia a dia" lee pulsoContactos (antes positivosDia); lista nueva "Que positivos monto este mes" con positivosMontados, al lado de "Que registro en el BOS" (paquetes/totalMes, sin cambios, por cuenta). Pie de la tabla de EQUIPO fijo en dos lineas: que es un positivo, y quien no tiene RingCentral. TODO v16: no se re-agrego el pulso "sin una sola senal" ni el senalamiento de "quien mas marca sin cotizar" de la v15 -- se recorto a proposito para cumplir el pie de dos lineas que pidio Andres; si hace falta se puede regresar como una tercera linea opcional. // v15 - La pestana del dia se reorganiza: arriba "El dia que cerro" (public.v_equipo_dia_visible = ultimo dia HABIL antes de hoy) con las cifras del equipo y la tabla persona por persona -- llamadas, de mas de 2 min, mandados a cotizar, ventas y cuantas filas dejo en el BOS. Al tocar una persona se abre su ficha con public.equipo_agente_detalle(nombre): su dia contra su mes y QUE REGISTRO, con el nombre de cada cuenta. Debajo, separado con el rotulo "El mes", quedan los dos cards mensuales; el de "quien esta registrando" ya NO muestra llamadas de hoy (a media manana siempre eran cero) sino solo el mes. // v14 - Llamadas del equipo con el desglose de la casa: la linea de arriba de la tabla y el tooltip de la celda muestran cuantas fueron solo timbre y cuantas pasaron de 2 minutos (v_actividad_equipo ahora trae solo_timbre_mes/hoy y conversaciones_mes/hoy). Card nuevo "De la llamada a la venta" en la pestana Hoy: los cuatro pasos del mes por persona -- llamadas, de mas de 2 min, mandados a cotizar, ventas -- con la columna "Donde se le queda" en palabras y el caso mas fuerte en el pie. Mismos datos de v_actividad_equipo_visible, sin segunda consulta. Sin barras. // v13 - Llamadas por persona: en la tabla de Hoy, "Llamadas hoy" y "Llamadas mes" se vuelven una sola columna combinada (hoy destacado, mes chiquito y gris, con title al pasar el mouse), guion cuando la persona no tiene usuario de RingCentral (nunca 0 ni null); arriba de la tabla, una línea con el total de llamadas de hoy del equipo y la hora de la última sincronización; y sexta alerta "sin llamar hoy" — salta en día hábil desde las 11:00 hora Colombia (UTC-5, calculada aparte de la del navegador) cuando llamadas_hoy da 0 exacto (null no cuenta: sin RingCentral no hay alerta). v_actividad_equipo_visible ahora también se lee, aparte, dentro de cargarDatos() para alimentar esa alerta. // v12 - Quinta alerta: "cobra y no vende". Es la primera del tablero que mira el PREMIUM: salta cuando el fee del mes llega a $2.500 (la puerta de fee del 30 %) pero el premium no llega a $35.000 (la puerta de premium del mismo 30 %), o sea el mes que se ve bien de fee y deja la escala en la base. Las otras cuatro alertas miraban solo el fee. // v11 - v11 - Tablero simple: cinco pestanas de lectura (El mes, Hoy, Alertas, Persona, Ano) + Bitacora + Manual de lectura. Meta minima / Meta plena en toda la pantalla. Anillos y barras con la regla de la casa: avance real contra la meta plena, pista por zonas y tick del deberia ir hoy; el ritmo en palabra. Cero parrafos de explicacion fija fuera del manual.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;
