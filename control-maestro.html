@@ -125,6 +125,8 @@ body{margin:0;background:var(--pg-bg);color:var(--pg-txt);font-family:var(--f-bo
 #pg-caja-liquidez .pg-warn-box{background:#FBF3E2;border:1px solid var(--pg-warn);color:#7a5a14;border-radius:8px;padding:10px 12px;margin-bottom:12px}
 </style>
 <style>
+/* JUBILADO v13 (12-oct-2026): vive en gabi-liquidez.html — la sección #pg-cierre-semanal quedó comentada en el HTML;
+   estas reglas se conservan (nada se borra) pero ya no pintan nada. Lo que se mudó a 03 Cuentas tiene sus reglas en el bloque v13. */
 /* Cierre semanal de liquidez (Ronda 2) — scoped a #pg-cierre-semanal; reusa tokens de la página, sin :root global */
 #pg-cierre-semanal{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:14px;padding:22px 24px;margin-top:20px;box-shadow:0 1px 3px rgba(27,45,58,.04)}
 #pg-cierre-semanal h2{font-family:var(--f-title);color:var(--pg-ink);font-size:18px;font-weight:800;margin:0 0 4px}
@@ -288,6 +290,121 @@ table.matrix tr:hover td.tool{background:#F4F8FA}
 .vm-sinurl{font-size:11px;color:var(--pg-muted)}
 .vm-ver-como-banner{position:fixed;top:0;left:0;right:0;z-index:99998;background:#1B2D3A;color:#fff;font:600 13px/1.4 Arial,Helvetica,sans-serif;padding:10px 16px;display:flex;align-items:center;justify-content:center;gap:10px;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.25)}
 </style>
+<style>
+/* ===== v13 (12-oct-2026) · CUATRO BLOQUES — barra lateral numerada (patrón .pg-side de GABI Liquidez v4 / Equipo Comercial)
+   01 Personas · 02 Parámetros · 03 Cuentas · 04 Bitácora. Uno visible a la vez; el bloque activo va en el hash (#b=…).
+   Solo estructura y estilo: la lógica de lo que ya funcionaba no se toca. Cero barras. Ámbar = --pg-warn (#D9A520). ===== */
+:root{--cm-top:66px}
+.cm-shell{display:flex;align-items:flex-start;min-height:calc(100vh - var(--cm-top));background:linear-gradient(90deg,var(--pg-ink-2) 0,var(--pg-ink-2) 228px,transparent 228px)}
+.pg-side{width:228px;flex-shrink:0;background:var(--pg-ink-2);color:#fff;padding:22px 14px 24px;position:sticky;top:var(--cm-top);height:calc(100vh - var(--cm-top));overflow-y:auto;border-top:1px solid rgba(255,255,255,.08)}
+.pg-side .pg-tagline{font-size:11px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:#8da0ad;margin:0 0 12px 15px}
+.pg-side a{display:flex;align-items:center;gap:13px;padding:12px 15px;border-radius:11px;color:#b9c6d0;font-family:var(--f-body);font-size:14px;font-weight:600;text-decoration:none;margin-bottom:4px;transition:background .15s;cursor:pointer}
+.pg-side a .k{font-family:var(--f-num);font-size:12px;color:#8da0ad;width:22px}
+.pg-side a.on,.pg-side a:hover{background:rgba(45,191,163,.15);color:#fff}
+.pg-side a.on{box-shadow:inset 3px 0 0 var(--pg-mint)}
+.pg-side a.on .k{color:var(--pg-mint)}
+.pg-side .pg-foot{margin-top:20px;padding:16px 15px 0;border-top:1px solid rgba(255,255,255,.12);font-size:11.5px;color:#8da0ad;line-height:1.6}
+.cm-shell>.pg-main{flex:1;min-width:0}
+.cm-bloque{display:none}
+.cm-bloque.on{display:block}
+.cm-sin-admin .pg-side{display:none}
+.cm-tablewrap{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}
+#cm-plaid:not(:empty){margin-top:16px}
+/* --- lo que se mudó de "Cierre semanal" (jubilado) a 03 Cuentas: mismos ids, mismo JS --- */
+#pg-caja-liquidez .cs-count{font-size:11px;color:var(--pg-muted);text-transform:none;letter-spacing:0;font-family:var(--f-body)}
+#pg-caja-liquidez td.cs-acc{display:table-cell;white-space:nowrap}
+#pg-caja-liquidez .cs-mini{background:transparent;border:1px solid var(--pg-line);border-radius:6px;padding:5px 9px;margin:2px 4px 2px 0;font-size:11.5px;cursor:pointer;color:var(--pg-ink);font-family:var(--f-body)}
+#pg-caja-liquidez .cs-mini:hover{background:var(--pg-bg)}
+#pg-caja-liquidez .cs-mini.danger{color:var(--pg-neg);border-color:#F1BEB6}
+#cs-tabla-vencidos td:first-child{white-space:nowrap}
+/* --- 02 Parámetros --- */
+.cm-card{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:14px;padding:18px 20px;margin-top:18px;box-shadow:0 1px 3px rgba(27,45,58,.04)}
+.cm-card-h{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:4px}
+.cm-card-h h2{font-family:var(--f-title);font-size:16px;font-weight:800;color:var(--pg-ink);margin:0}
+.cm-tot{font-family:var(--f-num);font-size:18px;font-weight:600;color:var(--pg-ink)}
+.cm-ro{font-family:var(--f-body);font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--pg-muted);background:#EEF2F5;border-radius:999px;padding:3px 9px;margin-left:8px;vertical-align:middle}
+.cm-mini{font-size:11.5px;color:var(--pg-muted);line-height:1.5}
+.cm-link{font-size:12.5px;font-weight:700;color:var(--pg-mint-deep);text-decoration:none}
+.cm-link:hover{text-decoration:underline}
+.cm-table{width:100%;border-collapse:collapse;margin-top:10px}
+.cm-table th{text-align:left;font-size:10.5px;color:var(--pg-muted);text-transform:uppercase;letter-spacing:.04em;padding:8px 8px;border-bottom:2px solid var(--pg-ink-2);font-weight:700;white-space:nowrap}
+.cm-table th.num{text-align:right}
+.cm-table td{padding:10px 8px;font-size:13px;color:#3a4751;border-bottom:1px solid var(--pg-line);vertical-align:top}
+.cm-table td.num{font-family:var(--f-num);text-align:right;white-space:nowrap;color:var(--pg-ink);font-weight:600;padding-top:17px}
+.cm-table tr.cm-off td{background:#FAFBFC}
+.cm-table tr.cm-off .cm-plbl{color:var(--pg-muted);text-decoration:line-through}
+.cm-plbl{font-weight:700;color:var(--pg-ink);font-size:13.5px}
+.cm-pclave{font-family:var(--f-num);font-size:10.5px;color:var(--pg-muted);margin-top:2px;max-width:340px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cm-inrow{display:flex;align-items:center;gap:8px}
+.cm-in{font-family:var(--f-num);font-size:13px;border:1px solid var(--pg-line);border-radius:8px;padding:7px 9px;background:#fff;color:var(--pg-ink);width:130px;max-width:100%}
+.cm-in:focus{outline:none;border-color:var(--pg-mint);box-shadow:0 0 0 3px rgba(45,191,163,.15)}
+.cm-in:disabled{background:#F4F7FA;color:var(--pg-muted)}
+.cm-in.cm-in-dia{width:70px}
+.cm-in.cm-in-nota{width:190px;font-family:var(--f-body)}
+.cm-unit{font-size:11.5px;color:var(--pg-muted);white-space:nowrap}
+.cm-hint{font-size:11px;color:var(--pg-muted);margin-top:4px;min-height:13px}
+.cm-hint b{color:var(--pg-ink);font-family:var(--f-num);font-weight:600}
+.cm-when{font-size:11.5px;color:var(--pg-muted);white-space:nowrap;padding-top:17px!important}
+.cm-act{min-width:118px}
+.cm-btn{font-family:var(--f-body);font-weight:800;font-size:12px;border:none;border-radius:999px;padding:8px 15px;background:var(--pg-mint);color:var(--pg-ink-2);cursor:pointer;white-space:nowrap}
+.cm-btn:hover:not(:disabled){background:var(--pg-mint-dark)}
+.cm-btn:disabled{opacity:.4;cursor:default}
+.cm-btn.sec{background:#fff;color:var(--pg-ink);border:1px solid var(--pg-line)}
+.cm-btn.sec:hover:not(:disabled){background:var(--pg-bg)}
+/* confirmación en línea: franja ámbar a todo el ancho, debajo de la fila que se va a guardar */
+.cm-confirm{display:flex;align-items:center;justify-content:space-between;gap:10px 16px;flex-wrap:wrap;background:#FBF3E2;border:1px solid var(--pg-warn);border-radius:10px;padding:10px 14px;font-size:12.5px;color:#5f4a12;line-height:1.45}
+.cm-confirm-t small{display:block;color:#7a5a14;font-size:11.5px;margin-top:2px}
+.cm-confirm-b{display:flex;gap:6px;flex-wrap:wrap}
+.cm-table tr.cm-confirm-row td{padding:0 8px 12px;border-bottom:1px solid var(--pg-line)}
+.cm-table tr.confirmando td{border-bottom-color:transparent}
+tr.confirmando [data-accion="guardar"]{display:none}
+.cm-msg{font-size:11.5px;margin-top:6px;min-height:14px}
+.cm-msg.ok{color:var(--pg-pos);font-weight:700} .cm-msg.err{color:var(--pg-neg);font-weight:700}
+.cm-nums{display:flex;gap:12px;flex-wrap:wrap;margin:12px 0 8px}
+.cm-nums>div{flex:1;min-width:150px;background:var(--pg-bg);border-left:3px solid var(--pg-mint);border-radius:8px;padding:11px 13px}
+.cm-nums>div.tot{border-left-color:var(--pg-ink-2)}
+.cm-nums .l{display:block;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--pg-muted)}
+.cm-nums .v{display:block;font-family:var(--f-num);font-size:20px;font-weight:600;color:var(--pg-ink);margin-top:4px}
+.cm-foot{font-size:11.5px;color:var(--pg-muted);margin:16px 2px 0;line-height:1.6}
+@media(max-width:760px){
+  .cm-shell{display:block;min-height:0;background:none}
+  .pg-side{position:static;width:auto;height:auto;padding:12px 14px 6px;overflow:visible;border-top:1px solid rgba(255,255,255,.08)}
+  .pg-side .pg-tagline,.pg-side .pg-foot{display:none}
+  .pg-side a[data-go]{display:inline-flex;gap:7px;padding:7px 13px;border-radius:999px;margin:0 5px 6px 0;font-size:13px}
+  .pg-side a[data-go].on{box-shadow:none;background:var(--pg-mint);color:var(--pg-ink-2)}
+  .pg-side a[data-go].on .k{color:var(--pg-ink-2)}
+  .pg-viewbar{padding:12px 14px;gap:10px}
+  .pg-actions{margin-left:0;flex-wrap:wrap;gap:8px}
+  .cm-shell>.pg-main{padding:18px 14px 44px}
+  .mode-switch{flex-wrap:wrap;border-radius:14px}
+  #pg-caja-liquidez{padding:16px 14px}
+  #pg-caja-liquidez .cm-tablewrap>table{min-width:540px}
+  .fp-email,.vm-persona .vpn,.urow .un{overflow-wrap:anywhere}
+  .pg-logpanel{padding:16px 14px}
+  .logrow{flex-wrap:wrap;gap:3px 12px}
+  .logrow .lc{min-width:0}
+  .logrow .lw{margin-left:0;flex-basis:100%;overflow-wrap:anywhere}
+  .vm-persona .vpn{min-width:0}
+  .cm-card{padding:14px 13px}
+  /* Parámetros y gastos fijos: cada fila se apila como tarjetita (sin tabla ancha en el teléfono) */
+  .cm-table thead{display:none}
+  .cm-table,.cm-table tbody{display:block;width:100%}
+  .cm-table tr{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px;padding:12px 0;border-bottom:1px solid var(--pg-line)}
+  .cm-table td{display:block;border:none;padding:0!important;min-width:0}
+  .cm-table td.num{text-align:left}
+  .cm-table td[data-th]::before{content:attr(data-th);display:block;font-family:var(--f-body);font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--pg-muted);margin-bottom:3px}
+  .cm-table td.cm-full,.cm-table td.cm-act{grid-column:1/-1}
+  .cm-ptable tr{grid-template-columns:1fr}
+  .cm-table td.cm-when{white-space:normal}
+  .cm-table tr.cm-off{background:#FAFBFC}
+  .cm-table tr.cm-off td{background:transparent}
+  .cm-table tr.confirmando{border-bottom:none;padding-bottom:4px}
+  .cm-table tr.cm-confirm-row{display:block;padding:0 0 12px;border-bottom:1px solid var(--pg-line)}
+  .cm-table tr.cm-confirm-row td{display:block;border:none}
+  .cm-pclave{max-width:100%}
+  .cm-in.cm-in-nota{width:100%}
+}
+</style>
 <!-- ProtectGo · scripts compartidos (recuperacion de clave + novedades en tiempo real) -->
 <script src="pg-novedades.js"></script>
 </head>
@@ -316,9 +433,21 @@ table.matrix tr:hover td.tool{background:#F4F8FA}
       <button class="pg-btn" id="logoutBtn">Cerrar sesión</button>
     </div>
   </div>
+  <!-- v13 (12-oct-2026): cuatro bloques con barra lateral numerada. El bloque activo va en el hash (#b=personas|parametros|cuentas|bitacora). -->
+  <div class="cm-shell">
+  <aside class="pg-side" id="cmSide" aria-label="Bloques del Control Maestro">
+    <div class="pg-tagline">Bloques</div>
+    <a href="#b=personas" data-go="personas" class="on"><span class="k">01</span> Personas</a>
+    <a href="#b=parametros" data-go="parametros"><span class="k">02</span> Parámetros</a>
+    <a href="#b=cuentas" data-go="cuentas"><span class="k">03</span> Cuentas</a>
+    <a href="#b=bitacora" data-go="bitacora"><span class="k">04</span> Bitácora</a>
+    <div class="pg-foot">Control Maestro · solo <b>sales@</b><br>Qué ve cada quien, los números del motor, la caja y el registro de cambios.</div>
+  </aside>
   <main class="pg-main">
+   <!-- ================= 01 · PERSONAS — el tablero de siempre (matriz, candado, usuarios, Vista Maestra, Fotos, "Ver como"). Sin cambios de lógica. ================= -->
+   <section class="cm-bloque on" id="b-personas" aria-label="01 Personas">
     <div class="pg-top">
-      <div class="pg-eyebrow">Control Maestro v2 · Matriz de herramientas</div>
+      <div class="pg-eyebrow">01 · Personas</div>
       <h1>Qué ve cada área, en un solo tablero</h1>
       <div class="pg-sub">Filas = herramientas del ecosistema. Columnas = áreas. Marca la casilla de una fila para <b>prender/apagar</b> esa herramienta, o haz clic en otra columna para <b>reasignarla</b> de área. Cambia a "Por usuario" para revisar cuenta por cuenta. Nada se guarda hasta que presionas <b>Guardar</b>: un solo clic aplica todos los cambios pendientes y queda registrado con quién y cuándo. Si este panel se cae, el portal muestra todo (fail-open).</div>
     </div>
@@ -397,6 +526,51 @@ table.matrix tr:hover td.tool{background:#F4F8FA}
       </div>
       <div id="fotosLista"><div class="skel"></div><div class="skel"></div><div class="skel"></div></div>
     </div>
+   </section>
+
+   <!-- ================= 02 · PARÁMETROS (NUEVO v13) — números del motor + gastos fijos editables + nómina solo lectura =================
+        Lee public.parametros_financieros, public.gastos_fijos y v_nomina_costo_visible. Escribe SOLO por funciones angostas
+        existentes (parametro_guardar · gasto_fijo_guardar · gasto_fijo_dia_pago — las tres exigen es_director()). -->
+   <section class="cm-bloque" id="b-parametros" aria-label="02 Parámetros">
+    <div class="pg-top">
+      <div class="pg-eyebrow">02 · Parámetros</div>
+      <h1>Números del motor y gastos fijos</h1>
+      <div class="pg-sub">Lo que usa GABI Liquidez para calcular el retiro. Cambia un número, toca <b>Guardar</b> y confirma: queda el rastro de quién y cuándo.</div>
+    </div>
+
+    <div class="cm-card" id="cm-params-card">
+      <div class="cm-card-h"><h2>Números del motor</h2><span class="cm-mini">Los retiros se ven por semana; en la base se guardan al mes.</span></div>
+      <div id="cm-params"><div class="skel"></div><div class="skel"></div></div>
+    </div>
+
+    <div class="cm-card" id="cm-gastos-card">
+      <div class="cm-card-h"><h2>Gastos fijos · total del mes</h2><span class="cm-tot" id="cm-gastos-total">—</span></div>
+      <div class="cm-mini" id="cm-gastos-sub"></div>
+      <div id="cm-gastos"><div class="skel"></div><div class="skel"></div></div>
+      <!-- TODO: "+ Agregar gasto" queda FUERA a propósito (v13). En la base no hay función angosta para crear un gasto fijo
+           (solo gasto_fijo_guardar y gasto_fijo_dia_pago, que editan filas existentes). La RLS own_gastos_fijos dejaría
+           insertar directo con user_id = auth.uid(), pero el estándar es escribir solo por funciones con es_director() y
+           rastro. Pedir public.gasto_fijo_agregar(p_concepto, p_area, p_moneda, p_monto, p_dia_pago, p_nota) en
+           "Estructura Operativa parte 1" y entonces poner aquí el botón. -->
+      <div class="cm-mini" style="margin-top:10px">Para agregar un gasto nuevo todavía hace falta la función en la base (pendiente). Para sacar uno, apágalo.</div>
+    </div>
+
+    <div class="cm-card" id="cm-nomina-card">
+      <div class="cm-card-h"><h2>Nómina <span class="cm-ro">solo lectura</span></h2><a class="cm-link" href="rrhh-nomina.html">Ver en RRHH · Nómina →</a></div>
+      <div id="cm-nomina"><div class="skel"></div></div>
+    </div>
+
+    <p class="cm-foot">Fuentes: <code>parametros_financieros</code> (guarda <code>parametro_guardar</code>, rastro en <code>parametros_auditoria</code>) · <code>gastos_fijos</code> (<code>gasto_fijo_guardar</code>, <code>gasto_fijo_dia_pago</code>) · nómina de <code>v_nomina_costo_visible</code>. Todo en US$ a la TRM de trabajo, la misma de GABI Liquidez.</p>
+   </section>
+
+   <!-- ================= 03 · CUENTAS — "Caja y Liquidez" (Ronda 1) + lo que seguía vivo de "Cierre semanal" (Vencidos sin cerrar, + Tarjeta de crédito) ================= -->
+   <section class="cm-bloque" id="b-cuentas" aria-label="03 Cuentas">
+    <div class="pg-top">
+      <div class="pg-eyebrow">03 · Cuentas</div>
+      <h1>Caja, tarjetas y retiros</h1>
+    </div>
+    <!-- Saldo automático de Chase: lo monta pg-plaid.js (otro equipo) con pgPlaid.montar(el, SB) después del login de sales@. Si el archivo no existe, queda vacío. -->
+    <div id="cm-plaid"></div>
 
     <!-- ===== SECCIÓN CAJA Y LIQUIDEZ (solo sales@) — Ronda 1 Módulo Caja (reemplaza el panel F2) ===== -->
     <section id="pg-caja-liquidez" class="pg-card" style="display:none">
@@ -404,11 +578,13 @@ table.matrix tr:hover td.tool{background:#F4F8FA}
       <div id="cl-alerta"></div>
 
       <h3 class="cl-sub">Caja por cuenta</h3>
-      <table class="pg-table" id="cl-tabla-caja">
+      <div class="cm-tablewrap"><table class="pg-table" id="cl-tabla-caja">
         <thead><tr><th>Cuenta</th><th>Saldo</th><th>Última actualización</th><th></th></tr></thead>
         <tbody></tbody>
-      </table>
+      </table></div>
       <button class="pg-btn secondary" id="cl-btn-agregar-cuenta">+ Agregar cuenta</button>
+      <!-- v13: se mudó desde "Cierre semanal" (jubilado) — mismo id, mismo JS (caja_agregar_tarjeta) -->
+      <button class="pg-btn secondary" id="cs-btn-tarjeta">+ Tarjeta de crédito</button>
 
       <h3 class="cl-sub">Por cobrar / Por pagar (se alimentan solos)</h3>
       <div class="pg-kpis">
@@ -418,28 +594,40 @@ table.matrix tr:hover td.tool{background:#F4F8FA}
       </div>
       <button class="pg-btn secondary" id="cl-btn-mov-manual">+ Agregar movimiento manual</button>
 
+      <!-- v13: se mudó desde "Cierre semanal" (jubilado) — mismos ids, mismo JS (compromiso_cerrar) -->
+      <h3 class="cl-sub">Vencidos sin cerrar <span id="cs-venc-count" class="cs-count"></span></h3>
+      <div class="cm-tablewrap"><table class="pg-table cs-table" id="cs-tabla-vencidos">
+        <thead><tr><th>Fecha</th><th>Tipo</th><th>Descripción</th><th>Monto</th><th>Acción</th></tr></thead>
+        <tbody></tbody>
+      </table></div>
+      <button class="pg-btn secondary" id="cs-venc-mas" style="display:none">Ver más</button>
+
       <h3 class="cl-sub">Retiros de socios</h3>
-      <table class="pg-table" id="cl-tabla-retiros">
+      <div class="cm-tablewrap"><table class="pg-table" id="cl-tabla-retiros">
         <thead><tr><th>Semana (lunes)</th><th>Por socio</th><th>Total 3 socios</th><th>Nota</th><th></th></tr></thead>
         <tbody></tbody>
-      </table>
+      </table></div>
       <button class="pg-btn" id="cl-btn-registrar-retiro">Registrar retiro</button>
 
       <h3 class="cl-sub">Auditoría de caja (últimos 10)</h3>
-      <table class="pg-table" id="cl-tabla-auditoria">
+      <div class="cm-tablewrap"><table class="pg-table" id="cl-tabla-auditoria">
         <thead><tr><th>Fecha</th><th>Cuenta</th><th>Anterior</th><th>Nuevo</th><th>Quién</th><th>Nota</th></tr></thead>
         <tbody></tbody>
-      </table>
+      </table></div>
     </section>
+   </section>
 
-
-    <!-- ===== CIERRE SEMANAL DE LIQUIDEZ (solo sales@) — Ronda 2 ===== -->
+    <!-- ===== JUBILADO v13 (12-oct-2026): vive en gabi-liquidez.html =====
+         "Cierre semanal de liquidez" (Ronda 2) leía tablas que el motor jubiló el 7-sep (costos_fijos, reporte_mga_cargar,
+         v_proyeccion_caja). Se saca del diseño (queda comentada aquí, nada se borra) y su JS queda apagado con la bandera
+         CIERRE_JUBILADO. Lo que seguía vivo ("Vencidos sin cerrar" y "+ Tarjeta de crédito") se mudó, con los mismos ids,
+         a 03 Cuentas.
     <section id="pg-cierre-semanal" style="display:none">
       <h2>📆 Cierre semanal de liquidez</h2>
 
       <h3 class="cs-sub">Costos fijos mensuales</h3>
       <div class="cs-fijos" id="cs-fijos"></div>
-      <button class="cs-btn secondary" id="cs-btn-tarjeta">+ Tarjeta de crédito</button>
+      [+ Tarjeta de crédito → 03 Cuentas]
 
       <h3 class="cs-sub">Reporte de Jeff (MGA)</h3>
       <textarea id="cs-jeff-paste" class="cs-paste" placeholder="Pega aquí la tabla de Jeff (Ctrl+V desde Excel) — 3 columnas: ingreso aproximado · MGA · comisión"></textarea>
@@ -447,12 +635,7 @@ table.matrix tr:hover td.tool{background:#F4F8FA}
       <div id="cs-jeff-preguntar"></div>
       <button class="cs-btn" id="cs-jeff-confirmar" style="display:none">Confirmar y cargar la semana</button>
 
-      <h3 class="cs-sub">Vencidos sin cerrar <span id="cs-venc-count" class="cs-count"></span></h3>
-      <table class="cs-table" id="cs-tabla-vencidos">
-        <thead><tr><th>Fecha</th><th>Tipo</th><th>Descripción</th><th>Monto</th><th>Acción</th></tr></thead>
-        <tbody></tbody>
-      </table>
-      <button class="cs-btn secondary" id="cs-venc-mas" style="display:none">Ver más</button>
+      [Vencidos sin cerrar → 03 Cuentas]
 
       <h3 class="cs-sub">Proyección de caja</h3>
       <div class="cs-kpis" id="cs-cierre-kpis"></div>
@@ -461,13 +644,22 @@ table.matrix tr:hover td.tool{background:#F4F8FA}
         <tbody></tbody>
       </table>
     </section>
+    ===== fin JUBILADO v13 ===== -->
 
+   <!-- ================= 04 · BITÁCORA — últimos cambios + nota de pie ================= -->
+   <section class="cm-bloque" id="b-bitacora" aria-label="04 Bitácora">
+    <div class="pg-top">
+      <div class="pg-eyebrow">04 · Bitácora</div>
+      <h1>Qué cambió, quién y cuándo</h1>
+    </div>
     <div class="pg-logpanel" id="logPanel" style="display:none">
       <h2>Últimos cambios</h2>
       <div id="logList"></div>
     </div>
     <div class="pg-note">Datos en vivo de Supabase GABI (proyecto hivpqsepwsfmafamxkzy), schema <code>portal</code>: tablas <code>widgets_registro</code> y <code>widgets_log</code> (migradas desde el Portal en la consolidación). La escritura está restringida a <code>sales@protectgoservices.com</code> por RLS (<code>widgets_registro_escribe_sales</code>) — este panel no puede saltarse esa regla; solo la usa. "Previsualizar permisos…" reutiliza las funciones <code>ver_como()</code> / <code>ver_como_lista()</code> ya usadas en el ecosistema GABI (mismo candado a sales@, misma auditoría en <code>ver_como_auditoria</code>); la simulación que muestra usa los cambios pendientes de esta pantalla, sin llamar a <code>mis_pantallas()</code>. El botón "Abrir su portal →" (Por usuario y Vista Maestra) es otra cosa: no simula nada, abre <code>index.html?ver_como=correo</code>, el portal real de esa persona en solo lectura. El panel "Candado por área" es otra tabla (<code>portal.pantalla_acceso.areas_permitidas</code>, RLS <code>pantalla_acceso_escribe_sales</code>) y sí llega hasta <code>puede_ver()</code> — las áreas que ofrece salen de <code>gabi_accesos.area</code> (poblada desde nómina), que usa un vocabulario distinto al de las columnas de esta matriz (p. ej. "ventas"/"kam"/"retencion" en vez de "comercial"): no copies el nombre de la columna de arriba como área del candado, elige la que de verdad tiene la gente en <code>gabi_accesos.area</code>.</div>
+   </section>
   </main>
+  </div>
 </div>
 
 <div class="vc-modal" id="vcModal" style="display:none">
@@ -534,6 +726,8 @@ async function verificarAcceso(){
   document.getElementById("app").style.display="block";
   document.getElementById("who").textContent = MI_EMAIL;
   if(MI_EMAIL !== SALES){
+    // v13: fuera de sales@ solo existe el aviso de 01 Personas (la barra de bloques se esconde).
+    document.getElementById("app").classList.add("cm-sin-admin"); cmMostrarBloque("personas");
     document.getElementById("lista").innerHTML =
       '<div class="denied"><b>Este panel es solo para sales@protectgoservices.com.</b><br>Tu usuario ('+esc(MI_EMAIL)+') puede ver el ecosistema, pero no administrar el Control Maestro. La base de datos también lo impide (RLS).</div>';
     document.getElementById("logPanel").style.display="none";
@@ -554,6 +748,8 @@ async function cargar(){
   cargarLog();
   initCajaLiquidez();
   cargarCandadoArea();
+  cmCargarParametros(); // v13 · 02 Parámetros (números del motor + gastos fijos + nómina)
+  cmMontarPlaid();      // v13 · 03 Cuentas · saldo automático de Chase (pg-plaid.js, otro equipo)
 }
 
 // ---- Candado por área (Fase C): lee/escribe portal.pantalla_acceso.areas_permitidas ----
@@ -980,9 +1176,9 @@ function simularPuedeVer(clave, filasGa){
 // en cada tarjeta y el resumen al pie del panel.
 const FIDELIDAD_SIMULACION = {
   control_maestro: { nivel:'no_aplica', nota:'Es este mismo panel — solo sales@ lo usa.' },
-  gabi_360:        { nivel:'no_aplica', nota:'Vive en otro repo/dominio (gabi-liquidez.vercel.app) — no se instrumentó en esta ronda.' },
-  gabi_panel:      { nivel:'no_aplica', nota:'Vive en otro repo/dominio (gabi-liquidez.vercel.app) — no se instrumentó en esta ronda.' },
-  liquidez_semanal:{ nivel:'no_aplica', nota:'Vive en otro repo/dominio (gabi-liquidez.vercel.app) — no se instrumentó en esta ronda.' },
+  gabi_360:        { nivel:'no_aplica', nota:'Desde el 12-oct-2026 abre GABI Liquidez (gabi-liquidez.html, dentro del portal; la app de Vercel queda como histórico). No se instrumentó \"Abrir como\": la abre dirección con su propia sesión y lo que ve cada quien (renovaciones y retención solo dirección total) lo decide portal.liquidez_panel().' },
+  gabi_panel:      { nivel:'no_aplica', nota:'Desde el 12-oct-2026 abre GABI Liquidez (gabi-liquidez.html, dentro del portal; la app de Vercel queda como histórico). No se instrumentó \"Abrir como\": la abre dirección con su propia sesión y lo que ve cada quien (renovaciones y retención solo dirección total) lo decide portal.liquidez_panel().' },
+  liquidez_semanal:{ nivel:'no_aplica', nota:'Desde el 12-oct-2026 abre GABI Liquidez (gabi-liquidez.html, dentro del portal; la app de Vercel queda como histórico). No se instrumentó \"Abrir como\": la abre dirección con su propia sesión y lo que ve cada quien (renovaciones y retención solo dirección total) lo decide portal.liquidez_panel().' },
   amazon_relay:    { nivel:'no_aplica', nota:'Vive dentro del portal, en amazon-relay/index.html (ruta relativa) — pero no se instrumentó "Abrir como" en esta ronda.' },
   pendientes:      { nivel:'no_aplica', nota:'Vive en otro repo de GitHub (pendientes) — no se instrumentó en esta ronda.' },
   pendientes_kam:  { nivel:'no_aplica', nota:'Vive en otro repo de GitHub (pendientes) — no se instrumentó en esta ronda.' },
@@ -1373,7 +1569,7 @@ async function cargarCajaAuditoria(){
   const {data}=await SB.from('caja_auditoria').select('created_at,nombre_cuenta,saldo_anterior,saldo_nuevo,user_id,notas').order('created_at',{ascending:false}).limit(10);
   const tb=clById('cl-tabla-auditoria').querySelector('tbody'); tb.innerHTML='';
   (data||[]).forEach(a=>{
-    const quien = a.user_id==='f1e2d3c4-b5a6-7890-abcd-123456789abc' ? 'A. López' : 'A. Salcedo';
+    const quien = /^plaid/i.test(a.notas||'') ? 'Plaid (automático)' : (a.user_id==='f1e2d3c4-b5a6-7890-abcd-123456789abc' ? 'A. López' : 'A. Salcedo');
     const tr=document.createElement('tr');
     tr.innerHTML='<td>'+new Date(a.created_at).toLocaleString('es-CO')+'</td><td>'+esc(a.nombre_cuenta)+'</td>'+
       '<td class="num">'+(a.saldo_anterior==null?'—':clUsd(a.saldo_anterior))+'</td><td class="num">'+clUsd(a.saldo_nuevo)+'</td>'+
@@ -1407,6 +1603,395 @@ clById('cl-btn-registrar-retiro').onclick=async()=>{
   alert('✅ Retiro semana '+data.fecha+': '+clUsd(data.por_socio)+'/socio ('+clUsd(data.total_3)+' total)'); cargarCajaTodo();
 };
 
+// =====================================================================================================
+// v13 (12-oct-2026) · CUATRO BLOQUES — 01 Personas · 02 Parámetros · 03 Cuentas · 04 Bitácora
+// Uno visible a la vez. El bloque activo vive en el hash de la URL (#b=personas|parametros|cuentas|bitacora),
+// nunca en el almacenamiento del navegador (regla 4). Por defecto, 01 Personas.
+// =====================================================================================================
+const CM_BLOQUES = ["personas","parametros","cuentas","bitacora"];
+function cmBloqueDelHash(){
+  const m = /(?:^#|[#&])b=([a-z]+)/.exec(String(location.hash||""));
+  return (m && CM_BLOQUES.indexOf(m[1])>=0) ? m[1] : "personas";
+}
+function cmMostrarBloque(b){
+  if(CM_BLOQUES.indexOf(b)<0) b = "personas";
+  if(MI_EMAIL && MI_EMAIL!==SALES) b = "personas"; // fuera de sales@ solo existe el aviso de 01
+  CM_BLOQUES.forEach(x=>{ const s=document.getElementById("b-"+x); if(s) s.classList.toggle("on", x===b); });
+  document.querySelectorAll("#cmSide a[data-go]").forEach(a=>{
+    const on = a.dataset.go===b;
+    a.classList.toggle("on", on);
+    if(on) a.setAttribute("aria-current","page"); else a.removeAttribute("aria-current");
+  });
+}
+window.addEventListener("hashchange", ()=>{ cmMostrarBloque(cmBloqueDelHash()); window.scrollTo(0,0); });
+cmMostrarBloque(cmBloqueDelHash());
+// La barra lateral se pega justo debajo de la barra superior (que puede ocupar dos renglones): se mide su alto.
+(function cmAltoBarraSuperior(){
+  const vb = document.querySelector("#app .pg-viewbar"); if(!vb) return;
+  const fijar = ()=>{ const h = vb.offsetHeight; if(h) document.documentElement.style.setProperty("--cm-top", h+"px"); };
+  try{ new ResizeObserver(fijar).observe(vb); }catch(e){ window.addEventListener("resize", fijar); }
+  fijar();
+})();
+
+// ---- 03 Cuentas · saldo automático de Chase. pg-plaid.js lo entrega otro equipo y carga al final del body:
+//      se monta cuando el documento terminó de cargar. Si el archivo no existe o falla, la página sigue igual
+//      (el contenedor #cm-plaid queda vacío).
+let CM_PLAID_MONTADO = false;
+function cmMontarPlaid(){
+  const montar = ()=>{
+    if(CM_PLAID_MONTADO || MI_EMAIL!==SALES) return;
+    try{
+      if (window.pgPlaid) {
+        CM_PLAID_MONTADO = true;
+        const r = pgPlaid.montar(document.getElementById('cm-plaid'), SB, { alCambiar: ()=>{ try{ const p = cargarCajaTodo(); if(p && p.catch) p.catch(()=>{}); }catch(e){} } });
+        if(r && typeof r.catch==="function") r.catch(e=>console.warn("pg-plaid.js:", e));
+      }
+    }catch(e){ console.warn("pg-plaid.js no pudo montar el saldo de Chase:", e); }
+  };
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded", montar, { once:true });
+  else montar();
+}
+
+// =====================================================================================================
+// v13 · 02 PARÁMETROS (NUEVO)
+// Lee:    public.parametros_financieros (RLS param_read) · public.gastos_fijos (paquete liquidez_core)
+//         · nómina de public.v_nomina_costo_visible. OJO: la vista base v_nomina_costo NO tiene SELECT para
+//           "authenticated" (verificado en vivo el 12-oct-2026); v_nomina_costo_visible es la lectura estándar
+//           (filtra por tiene_paquete('liquidez_core')). v_nomina_costo queda solo como respaldo.
+// Escribe SOLO por funciones angostas existentes (las tres exigen es_director()):
+//         parametro_guardar(p_clave,p_valor,p_nota) → rastro en parametros_auditoria
+//         gasto_fijo_guardar(p_id,p_monto,p_activo,p_nota) · gasto_fijo_dia_pago(p_id,p_dia_pago 1-28)
+// Los dos retiros se guardan MENSUALES en la base y aquí se ven y se editan POR SEMANA:
+//         pantalla = round(valor × 12 / 52) · al guardar, base = round(semana × 52 / 12, 2 decimales).
+// Confirmación en línea (nunca el cuadro de confirmación del navegador). Sin dato = "—".
+// =====================================================================================================
+const CM_NOTA_PARAM = "Control Maestro v13";
+const CM_PARAMS = [
+  { clave:"trm_agencia",                lbl:"TRM de trabajo",                           tipo:"trm",    unidad:"COP por US$1" },
+  { clave:"retiro_socio_mes_min",       lbl:"Retiro mínimo por socio · semana",         tipo:"semana", unidad:"US$ por semana" },
+  { clave:"retiro_socio_mes_obj",       lbl:"Retiro objetivo por socio · semana",       tipo:"semana", unidad:"US$ por semana" },
+  { clave:"colchon_objetivo",           lbl:"Colchón de caja",                          tipo:"usd",    unidad:"US$" },
+  { clave:"num_socios",                 lbl:"Socios",                                   tipo:"entero", unidad:"socios",  min:1 },
+  { clave:"peso_especulativo",          lbl:"Lo estimado cuenta al",                    tipo:"pct",    unidad:"%" },
+  { clave:"horizonte_decision_semanas", lbl:"Semanas que mira el retiro",               tipo:"entero", unidad:"semanas", min:1 },
+  { clave:"dias_caja_stale",            lbl:"Días para dar la caja por vieja",          tipo:"entero", unidad:"días",    min:1 },
+  { clave:"dias_corte_stale",           lbl:"Días para dar el corte de Jeff por viejo", tipo:"entero", unidad:"días",    min:1 },
+];
+let CM_PF = null, CM_PF_ERR = null;                    // clave -> fila de parametros_financieros
+let CM_GF = null, CM_GF_ERR = null;                    // filas de gastos_fijos
+let CM_NOM = null, CM_NOM_ERR = null, CM_NOM_FUENTE = null;
+
+function cmVacio(v){ return v===null || v===undefined || v==="" || !isFinite(Number(v)); }
+function cmFmt(n, dec){ if(cmVacio(n)) return "—"; return Number(n).toLocaleString("es-CO",{ minimumFractionDigits:0, maximumFractionDigits:(dec==null?0:dec) }); }
+function cmUsd(n, dec){ const s = cmFmt(n, dec); return s==="—" ? "—" : "US$"+s; }
+function cmTrm(){ const f = CM_PF && CM_PF.trm_agencia; const v = f ? Number(f.valor) : NaN; return (isFinite(v) && v>0) ? v : null; }
+function cmAPantalla(def, valor){            // base → pantalla
+  if(cmVacio(valor)) return null;
+  const v = Number(valor);
+  if(def.tipo==="semana") return Math.round(v*12/52);
+  if(def.tipo==="pct") return Math.round(v*100*100)/100;
+  return v;
+}
+function cmABase(def, n){                    // pantalla → base
+  if(def.tipo==="semana") return Math.round(n*52/12*100)/100;
+  if(def.tipo==="pct") return Math.round(n/100*10000)/10000;
+  return n;
+}
+function cmValidarParam(def, txt){
+  if(String(txt).trim()==="") return "Escribe un número.";
+  const n = Number(txt);
+  if(!isFinite(n)) return "Escribe un número.";
+  if(n<0) return "No puede ser negativo.";
+  if(def.tipo==="trm" && n<=0) return "La TRM tiene que ser mayor que cero.";
+  if(def.tipo==="pct" && n>100) return "Va de 0 a 100 %.";
+  if(def.tipo==="entero" && (!Number.isInteger(n) || n<(def.min||0))) return "Tiene que ser un número entero desde "+(def.min||0)+".";
+  return null;
+}
+function cmFmtParam(def, n){
+  if(cmVacio(n)) return "—";
+  if(def.tipo==="pct") return cmFmt(n,2)+" %";
+  if(def.tipo==="semana") return cmUsd(n)+" por semana";
+  if(def.tipo==="usd") return cmUsd(n,2);
+  return cmFmt(n,2);
+}
+function cmHintParam(def, n, cambio){
+  const f = CM_PF && CM_PF[def.clave];
+  if(def.tipo==="semana"){
+    if(cambio && !cmVacio(n)) return "Se guardará como <b>"+cmUsd(cmABase(def, Number(n)),2)+"</b> al mes";
+    return (f && !cmVacio(f.valor)) ? "En la base: <b>"+cmUsd(f.valor,2)+"</b> al mes" : "Sin dato en la base";
+  }
+  if(def.tipo==="pct"){
+    if(cambio && !cmVacio(n)) return "Se guardará como <b>"+cmFmt(cmABase(def, Number(n)),4)+"</b>";
+    return (f && !cmVacio(f.valor)) ? "En la base: <b>"+cmFmt(f.valor,4)+"</b>" : "Sin dato en la base";
+  }
+  return (!f || cmVacio(f.valor)) ? "Sin dato en la base" : "";
+}
+function cmAccionHtml(){
+  return '<td class="cm-act"><button type="button" class="cm-btn" data-accion="guardar" disabled>Guardar</button><div class="cm-msg" aria-live="polite"></div></td>';
+}
+function cmFechaCorta(s){ if(!s) return "—"; const d = new Date(s); if(isNaN(d.getTime())) return "—"; return d.toLocaleDateString("es-CO",{ day:"numeric", month:"short", year:"numeric" }); }
+// Confirmación EN LÍNEA: una franja a todo el ancho, justo debajo de la fila que se va a guardar.
+function cmConfirmar(tr, html, alSi, alNo){
+  cmQuitarConfirmacion(tr);
+  const fila = document.createElement("tr");
+  fila.className = "cm-confirm-row";
+  fila.innerHTML = '<td colspan="'+tr.children.length+'"><div class="cm-confirm" role="group" aria-label="Confirmar cambio"><span class="cm-confirm-t">'+html+'</span><span class="cm-confirm-b">'+
+    '<button type="button" class="cm-btn" data-accion="si">Sí, guardar</button>'+
+    '<button type="button" class="cm-btn sec" data-accion="no">Cancelar</button></span></div></td>';
+  tr.after(fila);
+  tr.classList.add("confirmando");
+  const bSi = fila.querySelector('[data-accion="si"]'), bNo = fila.querySelector('[data-accion="no"]');
+  bNo.addEventListener("click", ()=>{ cmQuitarConfirmacion(tr); alNo(); });
+  bSi.addEventListener("click", ()=>{ bSi.disabled = bNo.disabled = true; bSi.textContent = "Guardando…"; alSi(); });
+  bSi.focus();
+}
+function cmQuitarConfirmacion(tr){
+  const sig = tr && tr.nextElementSibling;
+  if(sig && sig.classList.contains("cm-confirm-row")) sig.remove();
+  if(tr) tr.classList.remove("confirmando");
+}
+
+async function cmCargarParametros(){
+  if(!document.getElementById("cm-params")) return;
+  try{
+    const seguro = (q)=>Promise.resolve(q).then(r=>r||{ data:null, error:{ message:"sin respuesta" } }, e=>({ data:null, error:{ message:(e&&e.message)||String(e) } }));
+    const [rp, rg, rn] = await Promise.all([
+      seguro(SB.from("parametros_financieros").select("clave,valor,nota,actualizado_en").in("clave", CM_PARAMS.map(p=>p.clave))),
+      seguro(SB.from("gastos_fijos").select("id,concepto,area,moneda,monto,dia_pago,activo,nota,etiqueta,donde_se_paga,vigente_hasta")),
+      cmLeerNomina(),
+    ]);
+    CM_PF_ERR = rp.error ? (rp.error.message||String(rp.error)) : null;
+    CM_PF = {}; (rp.data||[]).forEach(f=>{ if(f && f.clave) CM_PF[f.clave] = f; });
+    CM_GF_ERR = rg.error ? (rg.error.message||String(rg.error)) : null;
+    CM_GF = (rg.data||[]).map(g=>Object.assign({}, g));
+    CM_NOM = rn.fila; CM_NOM_ERR = rn.error; CM_NOM_FUENTE = rn.fuente;
+  }catch(e){
+    CM_PF = CM_PF||{}; CM_PF_ERR = (e&&e.message)||String(e); CM_GF = CM_GF||[]; CM_GF_ERR = CM_PF_ERR;
+    console.error("02 Parámetros:", e);
+  }
+  cmRenderParametros(); cmRenderGastos(); cmRenderNomina();
+}
+
+// ---- Números del motor ----
+function cmRenderParametros(){
+  const box = document.getElementById("cm-params"); if(!box) return;
+  if(CM_PF_ERR){ box.innerHTML = '<div class="denied">No se pudieron leer los parámetros: '+esc(CM_PF_ERR)+'</div>'; return; }
+  box.innerHTML = '<div class="cm-tablewrap"><table class="cm-table cm-ptable"><thead><tr><th>Qué es</th><th>Valor</th><th>Actualizado</th><th></th></tr></thead><tbody>'+
+    CM_PARAMS.map(cmFilaParam).join("")+'</tbody></table></div>';
+  CM_PARAMS.forEach(cmCablearParam);
+}
+function cmFilaParam(def){
+  const f = CM_PF && CM_PF[def.clave];
+  const v = f ? cmAPantalla(def, f.valor) : null;
+  const nota = f && f.nota ? String(f.nota) : "";
+  return '<tr id="cmp-'+def.clave+'">'+
+    '<td class="cm-full"><div class="cm-plbl">'+esc(def.lbl)+'</div><div class="cm-pclave" title="'+esc(nota)+'">'+esc(def.clave)+(nota?' · '+esc(nota):'')+'</div></td>'+
+    '<td data-th="Valor"><div class="cm-inrow"><input type="number" class="cm-in" step="'+(def.tipo==="entero"?"1":"any")+'" min="0" value="'+(v===null?"":v)+'" placeholder="—" aria-label="'+esc(def.lbl)+'"><span class="cm-unit">'+esc(def.unidad)+'</span></div>'+
+      '<div class="cm-hint">'+cmHintParam(def, v, false)+'</div></td>'+
+    '<td class="cm-when" data-th="Actualizado" title="'+esc(f?fstamp(f.actualizado_en):"")+'">'+(f?cmFechaCorta(f.actualizado_en):"—")+'</td>'+
+    cmAccionHtml()+
+  '</tr>';
+}
+function cmCablearParam(def){
+  const tr = document.getElementById("cmp-"+def.clave); if(!tr) return;
+  const inp = tr.querySelector("input"), bG = tr.querySelector('[data-accion="guardar"]'),
+        msg = tr.querySelector(".cm-msg"), hint = tr.querySelector(".cm-hint");
+  const f = CM_PF && CM_PF[def.clave];
+  const original = f ? cmAPantalla(def, f.valor) : null;
+  const cambio = ()=> inp.value.trim()!=="" && Number(inp.value)!==original;
+  inp.addEventListener("input", ()=>{
+    bG.disabled = !cambio(); msg.textContent = ""; msg.className = "cm-msg";
+    hint.innerHTML = cmHintParam(def, inp.value, cambio());
+  });
+  inp.addEventListener("keydown", e=>{ if(e.key==="Enter" && !bG.disabled){ e.preventDefault(); bG.click(); } });
+  bG.addEventListener("click", ()=>{
+    const err = cmValidarParam(def, inp.value);
+    if(err){ msg.textContent = err; msg.className = "cm-msg err"; return; }
+    const n = Number(inp.value), base = cmABase(def, n);
+    msg.textContent = ""; msg.className = "cm-msg";
+    inp.disabled = true;
+    cmConfirmar(tr,
+      "¿Guardar <b>"+esc(def.lbl)+"</b>: "+esc(cmFmtParam(def, original))+" → <b>"+esc(cmFmtParam(def, n))+"</b>?"+
+        (def.tipo==="semana" ? " <small>En la base queda "+esc(cmUsd(base,2))+" al mes.</small>" : "")+
+        (def.tipo==="pct" ? " <small>En la base queda "+esc(cmFmt(base,4))+".</small>" : ""),
+      ()=>cmGuardarParam(def, tr, inp, msg, base),
+      ()=>{ inp.disabled = false; inp.focus(); });
+  });
+}
+async function cmGuardarParam(def, tr, inp, msg, base){
+  let r;
+  /* parametro_guardar reemplaza la nota del parámetro con la que se mande: se manda la que ya tiene
+     (p. ej. "Decisión de Andrés 26-ago") para no perder por qué existe ese número. */
+  const notaActual = (CM_PF[def.clave] && CM_PF[def.clave].nota) || CM_NOTA_PARAM;
+  try{ r = await SB.rpc("parametro_guardar", { p_clave:def.clave, p_valor:base, p_nota:notaActual }); }
+  catch(e){ r = { error:{ message:(e&&e.message)||String(e) } }; }
+  cmQuitarConfirmacion(tr);
+  if(!r || r.error){
+    inp.disabled = false;
+    msg.textContent = "No se guardó: "+((r&&r.error&&r.error.message)||"sin respuesta"); msg.className = "cm-msg err"; return;
+  }
+  CM_PF[def.clave] = Object.assign({ clave:def.clave }, CM_PF[def.clave]||{}, { valor:base, nota:notaActual, actualizado_en:new Date().toISOString() });
+  tr.outerHTML = cmFilaParam(def); cmCablearParam(def);
+  const m2 = document.querySelector("#cmp-"+def.clave+" .cm-msg"); if(m2){ m2.textContent = "Guardado ✓"; m2.className = "cm-msg ok"; }
+  if(def.clave==="trm_agencia"){ cmRenderGastos(); cmRenderNomina(); } // la TRM cambia los US$ de abajo
+}
+
+// ---- Gastos fijos (orden: US$ de mayor a menor; COP a la TRM de trabajo) ----
+function cmMoneda(g){ return String(g.moneda||"USD").toUpperCase(); }
+function cmGastoUsd(g, monto){
+  const m = (monto===undefined) ? g.monto : monto;
+  if(cmVacio(m)) return null;
+  const mon = cmMoneda(g);
+  if(mon==="COP"){ const t = cmTrm(); return t ? Number(m)/t : null; }
+  if(mon==="USD") return Number(m);
+  return null;
+}
+function cmPrimerDiaMes(){ const d = new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-01"; }
+function cmGastoCuenta(g){ return !!g.activo && (!g.vigente_hasta || String(g.vigente_hasta) >= cmPrimerDiaMes()); }
+function cmTotalGastos(){
+  if(!CM_GF || CM_GF_ERR || !CM_GF.length) return null;
+  const us = CM_GF.filter(cmGastoCuenta).map(g=>cmGastoUsd(g));
+  if(us.some(u=>u===null)) return null;
+  return us.reduce((s,u)=>s+u, 0);
+}
+// TODO: "+ Agregar gasto" — no hay función angosta para crear un gasto fijo (verificado en vivo el 12-oct-2026: solo existen
+//       gasto_fijo_guardar y gasto_fijo_dia_pago). Cuando exista public.gasto_fijo_agregar(...) con es_director() y rastro,
+//       poner aquí el botón. No se inserta directo en la tabla aunque la RLS own_gastos_fijos lo permitiría.
+function cmRenderGastos(){
+  const box = document.getElementById("cm-gastos"), tot = document.getElementById("cm-gastos-total"), sub = document.getElementById("cm-gastos-sub");
+  if(!box) return;
+  if(CM_GF_ERR){ box.innerHTML = '<div class="denied">No se pudieron leer los gastos fijos: '+esc(CM_GF_ERR)+'</div>'; tot.textContent = "—"; sub.textContent = ""; return; }
+  const filas = (CM_GF||[]).slice().sort((a,b)=>{
+    const ua = cmGastoUsd(a), ub = cmGastoUsd(b);
+    return ((ub===null?-1:ub)-(ua===null?-1:ua)) || String(a.concepto||"").localeCompare(String(b.concepto||""));
+  });
+  const trm = cmTrm(), cuentan = filas.filter(cmGastoCuenta).length;
+  tot.textContent = cmUsd(cmTotalGastos());
+  sub.textContent = filas.length ? (cuentan+" de "+filas.length+" cuentan este mes · los COP a la TRM de trabajo ("+(trm?cmFmt(trm):"—")+") · de mayor a menor") : "";
+  if(!filas.length){ box.innerHTML = '<div class="cm-mini" style="margin-top:10px">—</div>'; return; }
+  box.innerHTML = '<div class="cm-tablewrap"><table class="cm-table cm-gtable"><thead><tr><th>Concepto</th><th>Monto</th><th class="num">En US$</th><th>Día de pago</th><th>Activo</th><th>Nota</th><th></th></tr></thead><tbody>'+
+    filas.map(cmFilaGasto).join("")+'</tbody></table></div>';
+  filas.forEach(cmCablearGasto);
+}
+function cmFilaGasto(g){
+  const mon = cmMoneda(g), usd = cmGastoUsd(g), cuenta = cmGastoCuenta(g);
+  const meta = [g.area, g.etiqueta, g.donde_se_paga].filter(Boolean).map(x=>esc(x)).join(" · ");
+  const hasta = g.vigente_hasta ? " · hasta "+esc(g.vigente_hasta) : "";
+  const c = esc(g.concepto||"");
+  return '<tr id="cmg-'+esc(g.id)+'" class="'+(cuenta?"":"cm-off")+'">'+
+    '<td class="cm-full"><div class="cm-plbl">'+(c||"—")+'</div><div class="cm-pclave">'+(meta||"—")+hasta+'</div></td>'+
+    '<td data-th="Monto"><div class="cm-inrow"><input type="number" class="cm-in" data-campo="monto" min="0" step="any" value="'+(cmVacio(g.monto)?"":Number(g.monto))+'" placeholder="—" aria-label="Monto de '+c+'"><span class="cm-unit">'+esc(mon)+'</span></div>'+
+      '<div class="cm-hint" data-eco>'+esc(mon)+' '+cmFmt(g.monto,2)+'</div></td>'+
+    '<td class="num" data-th="En US$" data-usd>'+cmUsd(usd)+'</td>'+
+    '<td data-th="Día de pago"><input type="number" class="cm-in cm-in-dia" data-campo="dia_pago" min="1" max="28" step="1" value="'+(g.dia_pago==null?"":esc(g.dia_pago))+'" placeholder="—" aria-label="Día de pago de '+c+'"></td>'+
+    '<td data-th="Activo"><label class="sw" title="Activo: cuenta en el total y en la cola de pagos"><input type="checkbox" data-campo="activo"'+(g.activo?" checked":"")+' aria-label="Activo · '+c+'"><span class="sl"></span></label></td>'+
+    '<td class="cm-full" data-th="Nota"><input type="text" class="cm-in cm-in-nota" data-campo="nota" value="'+esc(g.nota||"")+'" placeholder="—" aria-label="Nota de '+c+'"></td>'+
+    cmAccionHtml()+
+  '</tr>';
+}
+function cmLeerFilaGasto(tr, g){
+  const vMonto = tr.querySelector('[data-campo="monto"]').value.trim();
+  const vDia = tr.querySelector('[data-campo="dia_pago"]').value.trim();
+  const activo = tr.querySelector('[data-campo="activo"]').checked;
+  const nota = tr.querySelector('[data-campo="nota"]').value.trim();
+  const monto = vMonto==="" ? null : Number(vMonto);
+  const dia = vDia==="" ? null : Number(vDia);
+  const cMonto = monto!==(cmVacio(g.monto) ? null : Number(g.monto));
+  const cDia = dia!==(g.dia_pago==null ? null : Number(g.dia_pago));
+  const cActivo = activo!==!!g.activo;
+  const cNota = nota!==String(g.nota==null ? "" : g.nota).trim();
+  return { vMonto, vDia, monto, dia, activo, nota, cMonto, cDia, cActivo, cNota, algo:(cMonto||cDia||cActivo||cNota) };
+}
+function cmValidarGasto(d){
+  if(d.vMonto==="" || !isFinite(d.monto)) return "Escribe el monto.";
+  if(d.monto<0) return "El monto no puede ser negativo.";
+  if(d.vDia!=="" && (!Number.isInteger(d.dia) || d.dia<1 || d.dia>28)) return "El día de pago va del 1 al 28 (o vacío).";
+  return null;
+}
+function cmCablearGasto(g){
+  const tr = document.getElementById("cmg-"+g.id); if(!tr) return;
+  const bG = tr.querySelector('[data-accion="guardar"]'), msg = tr.querySelector(".cm-msg"),
+        eco = tr.querySelector("[data-eco]"), usdCell = tr.querySelector("[data-usd]"), mon = cmMoneda(g);
+  const campos = tr.querySelectorAll("[data-campo]");
+  const alCambiar = ()=>{
+    const d = cmLeerFilaGasto(tr, g);
+    bG.disabled = !d.algo; msg.textContent = ""; msg.className = "cm-msg";
+    eco.textContent = mon+" "+(d.vMonto==="" ? "—" : cmFmt(d.monto,2));
+    usdCell.textContent = d.vMonto==="" ? "—" : cmUsd(cmGastoUsd(g, d.monto));
+  };
+  campos.forEach(el=>{ el.addEventListener("input", alCambiar); el.addEventListener("change", alCambiar); });
+  bG.addEventListener("click", ()=>{
+    const d = cmLeerFilaGasto(tr, g);
+    const err = cmValidarGasto(d);
+    if(err){ msg.textContent = err; msg.className = "cm-msg err"; return; }
+    const partes = [];
+    if(d.cMonto) partes.push("monto "+esc(mon)+" "+cmFmt(g.monto,2)+" → <b>"+cmFmt(d.monto,2)+"</b>");
+    if(d.cDia) partes.push("día "+(g.dia_pago==null?"—":esc(g.dia_pago))+" → <b>"+(d.dia===null?"—":d.dia)+"</b>");
+    if(d.cActivo) partes.push(d.activo ? "<b>se activa</b>" : "<b>se apaga</b> (deja de contar)");
+    if(d.cNota) partes.push("nota nueva");
+    msg.textContent = ""; msg.className = "cm-msg";
+    campos.forEach(el=>{ el.disabled = true; });
+    cmConfirmar(tr, "¿Guardar <b>"+esc(g.concepto||"")+"</b>: "+partes.join(" · ")+"?",
+      ()=>cmGuardarGasto(g, tr, campos, msg, d),
+      ()=>{ campos.forEach(el=>{ el.disabled = false; }); });
+  });
+}
+async function cmGuardarGasto(g, tr, campos, msg, d){
+  let err = null;
+  try{
+    if(d.cMonto || d.cActivo || d.cNota){
+      // gasto_fijo_guardar hace coalesce(p_x, x): lo que no cambió se manda tal cual y queda igual.
+      const r = await SB.rpc("gasto_fijo_guardar", { p_id:g.id, p_monto:d.monto, p_activo:d.activo, p_nota:(d.cNota ? d.nota : (g.nota==null ? null : g.nota)) });
+      if(!r || r.error) err = (r&&r.error&&r.error.message)||"sin respuesta";
+      else { g.monto = d.monto; g.activo = d.activo; if(d.cNota) g.nota = d.nota; }
+    }
+    if(!err && d.cDia){
+      const r2 = await SB.rpc("gasto_fijo_dia_pago", { p_id:g.id, p_dia_pago:d.dia });
+      if(!r2 || r2.error) err = "el día de pago no se guardó: "+((r2&&r2.error&&r2.error.message)||"sin respuesta");
+      else g.dia_pago = d.dia;
+    }
+  }catch(e){ err = (e&&e.message)||String(e); }
+  cmQuitarConfirmacion(tr);
+  if(err){
+    campos.forEach(el=>{ el.disabled = false; });
+    msg.textContent = "No se guardó: "+err; msg.className = "cm-msg err"; return;
+  }
+  cmRenderGastos(); cmRenderNomina();   // reordena y recalcula el total con lo guardado
+  const t2 = document.getElementById("cmg-"+g.id), m2 = t2 && t2.querySelector(".cm-msg");
+  if(m2){ m2.textContent = "Guardado ✓"; m2.className = "cm-msg ok"; }
+}
+
+// ---- Nómina (solo lectura) — costo del mes en US$ = costo_usd_directo + costo_cop_mes / TRM de trabajo ----
+async function cmLeerNomina(){
+  const leer = async (vista)=>{ try{ return await SB.from(vista).select("*"); }catch(e){ return { data:null, error:{ message:(e&&e.message)||String(e) } }; } };
+  const r = await leer("v_nomina_costo_visible");
+  if(r && !r.error && (r.data||[]).length) return { fila:r.data[0], fuente:"v_nomina_costo_visible", error:null };
+  const r2 = await leer("v_nomina_costo"); // respaldo: hoy no tiene SELECT para authenticated
+  if(r2 && !r2.error && (r2.data||[]).length) return { fila:r2.data[0], fuente:"v_nomina_costo", error:null };
+  const e = (r && r.error) || (r2 && r2.error);
+  return { fila:null, fuente:null, error: e ? (e.message||String(e)) : "la vista no devolvió filas" };
+}
+function cmCostoNomina(){
+  const n = CM_NOM, trm = cmTrm();
+  if(!n || (cmVacio(n.costo_usd_directo) && cmVacio(n.costo_cop_mes))) return null;
+  const cop = cmVacio(n.costo_cop_mes) ? 0 : Number(n.costo_cop_mes);
+  if(cop && !trm) return null;
+  return (cmVacio(n.costo_usd_directo) ? 0 : Number(n.costo_usd_directo)) + (cop ? cop/trm : 0);
+}
+function cmRenderNomina(){
+  const box = document.getElementById("cm-nomina"); if(!box) return;
+  const n = CM_NOM, costo = cmCostoNomina(), tg = cmTotalGastos(), trm = cmTrm();
+  const total = (costo===null || tg===null) ? null : costo+tg;
+  box.innerHTML = '<div class="cm-nums">'+
+      '<div><span class="l">Personas activas</span><span class="v">'+(n && !cmVacio(n.personas_activas) ? cmFmt(n.personas_activas) : "—")+'</span></div>'+
+      '<div><span class="l">Costo del mes</span><span class="v">'+cmUsd(costo)+'</span></div>'+
+      '<div class="tot"><span class="l">Fijos del mes · gastos + nómina</span><span class="v">'+cmUsd(total)+'</span></div>'+
+    '</div>'+
+    '<div class="cm-mini">'+(n
+      ? ('US$ '+cmFmt(n.costo_usd_directo,2)+' directo + COP '+cmFmt(n.costo_cop_mes)+' a la TRM de trabajo ('+(trm?cmFmt(trm):"—")+'). Se edita en RRHH · Nómina, no aquí.')
+      : ('No se pudo leer la nómina'+(CM_NOM_ERR ? ': '+esc(CM_NOM_ERR) : '')+'.'))+'</div>';
+}
+
 document.getElementById("loginBtn").addEventListener("click", entrar);
 document.getElementById("pass").addEventListener("keydown", e=>{ if(e.key==="Enter") entrar(); });
 document.getElementById("refreshBtn").addEventListener("click", ()=>{ if(MI_EMAIL===SALES) cargar(); });
@@ -1428,7 +2013,7 @@ document.getElementById("verComoBtn").addEventListener("click", abrirVerComo);
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="control-maestro.html";
-var PGV_VERSION=12; // v12 - Protect Index: las direcciones internas del sitio pasan a relativas (el sitio ya no depende de como se llame el repo). Las que viajan por correo (recuperar contrasena, fotos de firma, sello de RRHH) quedan absolutas apuntando a protect-index. // v11 - Amazon Relay dejo de ser otro repo: ahora vive en amazon-relay/index.html dentro del portal. Se corrige la nota de FIDELIDAD_SIMULACION (sigue en 'no_aplica': no se instrumento "Abrir como", pero ya no es por vivir afuera). // v10 - Boton "Abrir su portal ->" (Por usuario y Vista Maestra): abre index.html?ver_como=<correo>, el portal real de esa persona, no una herramienta suelta. El "Ver como..." de la barra de arriba se renombra a "Previsualizar permisos..." para no confundirlo (sigue haciendo lo mismo: simular la lista de tarjetas con los cambios sin guardar). FIDELIDAD_SIMULACION suma 'index' como fiel. // v9 - Vista Maestra: gabi_asesor (GABI - Mi proceso) pasa a FIEL. Es la unica pantalla donde "Abrir como" muestra las cifras reales de la persona simulada, no solo su diseno con los datos de quien abre el link. El resto sigue en 'parcial'. // v8 - + panel Fotos: sales@ sube la foto por persona (bucket fotos + portal.fotos_personas), filtro "sin foto todavía"
+var PGV_VERSION=13; // v13 (12-oct-2026) — cuatro bloques: Personas · Parámetros · Cuentas · Bitácora; Parámetros nuevo (números del motor + gastos fijos editables); se jubila Cierre semanal (motor v3); contenedor para el saldo automático de Chase (pg-plaid.js). | v12 - Protect Index: las direcciones internas del sitio pasan a relativas (el sitio ya no depende de como se llame el repo). Las que viajan por correo (recuperar contrasena, fotos de firma, sello de RRHH) quedan absolutas apuntando a protect-index. // v11 - Amazon Relay dejo de ser otro repo: ahora vive en amazon-relay/index.html dentro del portal. Se corrige la nota de FIDELIDAD_SIMULACION (sigue en 'no_aplica': no se instrumento "Abrir como", pero ya no es por vivir afuera). // v10 - Boton "Abrir su portal ->" (Por usuario y Vista Maestra): abre index.html?ver_como=<correo>, el portal real de esa persona, no una herramienta suelta. El "Ver como..." de la barra de arriba se renombra a "Previsualizar permisos..." para no confundirlo (sigue haciendo lo mismo: simular la lista de tarjetas con los cambios sin guardar). FIDELIDAD_SIMULACION suma 'index' como fiel. // v9 - Vista Maestra: gabi_asesor (GABI - Mi proceso) pasa a FIEL. Es la unica pantalla donde "Abrir como" muestra las cifras reales de la persona simulada, no solo su diseno con los datos de quien abre el link. El resto sigue en 'parcial'. // v8 - + panel Fotos: sales@ sube la foto por persona (bucket fotos + portal.fotos_personas), filtro "sin foto todavía"
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;
@@ -1466,6 +2051,11 @@ setInterval(pgvCheck,600000);
 (function(){
   if(typeof SB==='undefined') return;
   var SALES="sales@protectgoservices.com";
+  /* JUBILADO v13 (12-oct-2026): vive en gabi-liquidez.html.
+     Costos fijos (costos_fijos), reporte de Jeff (reporte_mga_cargar) y proyección (v_cierre_semanal / v_proyeccion_caja)
+     leen lo que el motor jubiló el 7-sep: con esta bandera en true NO se ejecutan. El código queda tal cual (nada se borra).
+     Lo único que sigue vivo —"Vencidos sin cerrar" y "+ Tarjeta de crédito"— se mudó a 03 Cuentas con los mismos ids. */
+  var CIERRE_JUBILADO = true;
   var $=function(id){return document.getElementById(id);};
   var usd=function(n){return '$'+Number(n||0).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});};
   var escH=function(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});};
@@ -1478,8 +2068,9 @@ setInterval(pgvCheck,600000);
       var user=u&&u.data&&u.data.user;
       if(!user||String(user.email||'').toLowerCase()!==SALES) return;
     }catch(e){ return; }
-    $('pg-cierre-semanal').style.display='block';
-    cargarFijos(); cargarVencidos(); cargarProyeccion();
+    // JUBILADO v13 (12-oct-2026): vive en gabi-liquidez.html — la sección ya no está en el diseño; solo corre "Vencidos" (03 Cuentas).
+    if(!CIERRE_JUBILADO){ $('pg-cierre-semanal').style.display='block'; cargarFijos(); cargarProyeccion(); }
+    cargarVencidos();
   }
 
   /* ---- Bloque 1: costos fijos + tarjetas ---- */
@@ -1515,7 +2106,7 @@ setInterval(pgvCheck,600000);
     if(res.error){alert('Error: '+res.error.message);return;}
     alert('✅ Tarjeta agregada: '+nombre);
     var rb=document.getElementById('refreshBtn'); if(rb) rb.click(); // recarga la caja por cuenta de arriba
-    cargarProyeccion();
+    if(!CIERRE_JUBILADO) cargarProyeccion(); // JUBILADO v13 (12-oct-2026): vive en gabi-liquidez.html
   };
 
   /* ---- Bloque 2: reporte de Jeff ---- */
@@ -1574,6 +2165,7 @@ setInterval(pgvCheck,600000);
       : '';
     $('cs-jeff-confirmar').style.display=parsedFilas.length?'inline-block':'none';
   }
+  if(!CIERRE_JUBILADO){ // JUBILADO v13 (12-oct-2026): vive en gabi-liquidez.html — el reporte de Jeff ya no se pega aquí
   $('cs-jeff-paste').addEventListener('input',function(){ parseJeff(this.value); });
   $('cs-jeff-confirmar').onclick=async function(){
     if(!parsedFilas.length) return;
@@ -1585,6 +2177,7 @@ setInterval(pgvCheck,600000);
     $('cs-jeff-paste').value=''; parsedFilas=[]; $('cs-jeff-preview').innerHTML=''; $('cs-jeff-preguntar').innerHTML=''; $('cs-jeff-confirmar').style.display='none';
     cargarProyeccion(); cargarVencidos();
   };
+  } // fin JUBILADO v13
 
   /* ---- Bloque 3: vencidos sin cerrar ---- */
   var vencidos=[], vencShown=0;
@@ -1619,7 +2212,7 @@ setInterval(pgvCheck,600000);
         if(accion==='mover'){ nueva=prompt('Nueva fecha (AAAA-MM-DD):'); if(!nueva) return; }
         var res=await SB.rpc('compromiso_cerrar',{p_tabla:v.tabla,p_id:v.id,p_accion:accion,p_nueva_fecha:nueva});
         if(res.error){alert('Error: '+res.error.message);return;}
-        cargarVencidos(); cargarProyeccion();
+        cargarVencidos(); if(!CIERRE_JUBILADO) cargarProyeccion(); // JUBILADO v13 (12-oct-2026): vive en gabi-liquidez.html
       };
     });
   }
@@ -1654,5 +2247,7 @@ setInterval(pgvCheck,600000);
 })();
 </script>
 <script>window.addEventListener('DOMContentLoaded',function(){ if(window.pgNovedadesAuto) pgNovedadesAuto('general'); });</script>
+<!-- v13 · saldo automático de Chase (03 Cuentas). Lo entrega otro equipo; si no existe, la página sigue igual. -->
+<script src="pg-plaid.js"></script>
 </body>
 </html>
