@@ -7,6 +7,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,1,800&family=Montserrat:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="pg-pendientes-cancel.js"></script>
 <script src="ver-como-helper.js"></script>
 <style>
 :root {
@@ -542,6 +543,48 @@ body { margin: 0; background: var(--bg); font-family: var(--f-body); color: var(
   #p-cartera .ct-pr{grid-template-columns:minmax(0,1fr) auto;row-gap:2px}#p-cartera .ct-pr .hide{display:none}
   #p-cartera .ct-cta2{grid-template-columns:minmax(0,1fr) auto;row-gap:6px}#p-cartera .ct-cta2 .ct-chips{grid-column:1/-1;grid-row:2}
 }
+/* ===== v38 · Este mes ===== */
+#p-cartera .rc-mes{display:flex;align-items:center;gap:8px;margin:10px 0 12px;flex-wrap:wrap}
+#p-cartera .rc-mes .btn{min-width:38px}
+#p-cartera .rc-mes-t{font:800 20px var(--f-tit);color:var(--ink);margin:0 6px;text-transform:capitalize}
+#p-cartera .rc-mes-t small{display:block;font:500 11.5px var(--f-body);color:var(--muted);text-transform:none}
+#p-cartera .ct-tr{display:inline-block;font:700 10.5px var(--f-body);padding:2px 8px;border-radius:999px;margin-top:3px}
+#p-cartera .ct-tr.renovado{background:#E4F5F0;color:#1b6e5c}#p-cartera .ct-tr.contactado{background:#E8EDFA;color:#3c4ea8}
+#p-cartera .ct-tr.sin{background:#FCE7E4;color:#a3362c}#p-cartera .ct-tr.perdido,#p-cartera .ct-tr.retirado{background:#EEF1F4;color:#6B7D89}
+#p-cartera .ct-tr.cayo{background:#EEF1F4;color:#6B7D89}#p-cartera .ct-tr.nota{background:#FBF1DA;color:#7a5a10}
+#p-cola .rc-cola-h{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:4px 0 10px;flex-wrap:wrap}
+#p-cola .rc-cola-h b{display:block;font:800 16px var(--f-tit);color:var(--ink)}#p-cola .rc-cola-h small{color:var(--muted);font-size:12px}
+#p-cola .rc-cola-n{font:700 26px var(--f-num);color:var(--rojo)}
+#p-cola .rc-it{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1.6fr) 110px 120px;gap:10px;padding:10px 14px;border-top:1px solid var(--line);align-items:center;font-size:12.5px;cursor:pointer}
+#p-cola .rc-it:hover{background:#FAFCFB}#p-cola .rc-it.venc{background:#FFF8F7}
+#p-cola .rc-it b{display:block;color:var(--ink);font:700 13px var(--f-tit);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#p-cola .rc-it small{color:var(--muted);font-size:11px}
+#p-cola .rc-it .num{font:700 12.5px var(--f-num);text-align:right;color:var(--ink)}
+#p-cola .rc-it .cu{font:700 11.5px var(--f-body);text-align:right}#p-cola .rc-it.venc .cu{color:var(--rojo)}
+#p-cola .ct-chip{display:inline-flex;align-items:center;gap:5px;font:600 11px var(--f-body);padding:3px 8px;border-radius:999px;margin:2px 4px 2px 0;white-space:nowrap;background:#FBF1DA;color:#7a5a10}
+#p-cola .ct-chip i{font:700 10px var(--f-num);font-style:normal}#p-cola .ct-chip.v{background:#FCE7E4;color:#a3362c}
+#p-cola .ct-cambios{background:#fff;border:1px solid var(--line);border-radius:14px;margin-top:12px}
+#p-cola .ct-cambios summary{padding:11px 14px;cursor:pointer;font:700 13px var(--f-tit);color:var(--ink)}
+#p-cola .ct-ev{display:grid;grid-template-columns:120px minmax(0,1fr) auto;gap:10px;padding:6px 14px;border-top:1px solid var(--line);font-size:12px}
+#p-cola .ct-ev .t{font:700 10.5px var(--f-num);color:var(--muted);text-transform:uppercase}#p-cola .ct-ev .h{font:600 10.5px var(--f-num);color:var(--muted)}
+#p-cola .ct-vacio{padding:18px 14px;color:var(--muted);font-size:12.5px}
+#p-vend .ct-h2{font:800 15px var(--f-tit);color:var(--ink);margin:4px 0 8px;display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+#p-vend .ct-h2 small{font:500 11px var(--f-body);color:var(--muted)}#p-vend .ct-nota{font-size:11.5px;color:var(--muted);margin:0 0 10px}
+#p-vend .ct-gente{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:10px;margin-bottom:14px}
+#p-vend .ct-per{background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px;display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:12px;align-items:center;border-left:5px solid #B6C2CB;cursor:pointer}
+#p-vend .ct-per.ROJO{border-left-color:var(--rojo)}#p-vend .ct-per.AMARILLO{border-left-color:var(--ambar)}#p-vend .ct-per.VERDE{border-left-color:var(--verde)}
+#p-vend .ct-av{width:52px;height:52px;border-radius:50%;background:#DDE6EC center/cover no-repeat;display:flex;align-items:center;justify-content:center;font:800 16px var(--f-tit);color:var(--ink)}
+#p-vend .ct-per b{display:block;font:700 13.5px var(--f-tit);color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#p-vend .ct-per small{color:var(--muted);font-size:11.5px}
+#p-vend .ct-dos{display:flex;gap:12px;text-align:right}
+#p-vend .ct-big{font:700 22px var(--f-num);line-height:1}#p-vend .ct-big small{display:block;font:600 9.5px var(--f-body);color:var(--muted);margin-top:3px}
+#p-vend .ct-big.ROJO{color:var(--rojo)}#p-vend .ct-big.AMARILLO{color:var(--ambar)}#p-vend .ct-big.VERDE{color:var(--verde)}#p-vend .ct-big.GRIS{color:#B6C2CB;font-size:17px}
+#p-vend .ct-meta{height:6px;border-radius:3px;background:var(--line);position:relative;margin-top:7px}
+#p-vend .ct-meta i{position:absolute;left:0;top:0;bottom:0;border-radius:3px}#p-vend .ct-meta u{position:absolute;left:80%;top:-4px;width:2px;height:14px;background:var(--ink);opacity:.55}
+#p-vend .ct-perd{grid-column:1/-1;display:none;font-size:11.5px;color:var(--muted);border-top:1px dashed var(--line);padding-top:6px}
+#p-vend .ct-per.open .ct-perd{display:block}
+#p-vend .bola{display:inline-block;width:11px;height:11px;border-radius:50%}
+@media (max-width:760px){ #p-cola .rc-it{grid-template-columns:minmax(0,1fr) auto} #p-cola .rc-it .h{display:none} }
 </style>
 <!-- ProtectGo · scripts compartidos (recuperacion de clave + novedades en tiempo real) -->
 <script src="pg-novedades.js"></script>
@@ -613,37 +656,38 @@ body { margin: 0; background: var(--bg); font-family: var(--f-body); color: var(
   <div id="pg-shell" style="display:none">
     <div class="nav" id="nav"></div>
 
-    <!-- 00 CARTERA (v37 · llegan a renovación) -->
+    <!-- 00 CARTERA (v38 · Este mes) -->
     <div class="pane" id="p-cartera">
-      <div id="ct-avisos"></div>
+      <div id="ct-avisos" style="display:none"></div>
+      <div data-pg-pend data-titulo="toda la agencia"></div>
+      <div class="rc-mes">
+        <button type="button" class="btn" id="rc-prev" aria-label="Mes anterior">‹</button>
+        <div class="rc-mes-t"><span id="rc-mes-n"></span><small id="rc-mes-s"></small></div>
+        <button type="button" class="btn" id="rc-next" aria-label="Mes siguiente">›</button>
+        <button type="button" class="btn" id="rc-hoy">Este mes</button>
+      </div>
       <div class="ct-cifras" id="ct-cifras"></div>
-      <div class="ct-pend" id="ct-pend-box"><div class="hd"><b>⚠ Se están cayendo · pending cancellation</b><small id="ct-pend-n"></small></div><div id="ct-pend"></div>
-        <button type="button" class="ct-mas" id="ct-pend-mas" style="display:none"></button></div>
-      <div class="ct-h2">Pólizas activas de la agencia <small>por cuenta · una pastilla por cobertura · toca la cuenta para ver el detalle</small></div>
       <div class="ct-card">
         <div class="ct-barra" style="padding:10px 14px;margin:0">
           <div class="ct-filt" id="ct-cob"></div>
           <div class="ct-ctl">
-            <select class="ct-sel" id="ct-area" aria-label="Mi área"><option value="">Todas las áreas</option><option value="AGENTES">Agentes</option><option value="JORGE">Jorge</option><option value="CARTERA SUELTA">Cartera suelta</option></select>
+            <select class="ct-sel" id="ct-area" aria-label="Área"><option value="">Todas las áreas</option><option value="AGENTES">Agentes</option><option value="JORGE">Jorge</option><option value="CARTERA SUELTA">Cartera suelta</option></select>
             <input class="ct-busca" id="ct-q" type="search" placeholder="Buscar cuenta, DOT o agente" aria-label="Buscar cuenta">
           </div>
         </div>
-        <div class="ct-ley"><span class="ct-chip c-ok">Activa</span><span class="ct-chip c-v60">Vence pronto</span><span class="ct-chip c-v15">Vence en menos de 15 días</span><span class="ct-chip c-pend">Pending cancellation</span><span class="ct-chip c-canc">Se cayó</span></div>
+        <div class="ct-ley"><span class="ct-chip c-ok">Renovada / activa</span><span class="ct-chip c-v60">Por renovar</span><span class="ct-chip c-v15">Vence en menos de 15 días o vencida</span><span class="ct-chip c-pend">Pending cancellation</span><span class="ct-chip c-canc">Se cayó</span></div>
         <div id="ct-lista"><div class="pg-skel" style="width:70%;margin:14px"></div></div>
         <button type="button" class="ct-mas" id="ct-mas" style="display:none"></button>
-        <button type="button" class="ct-mas" id="ct-todas">ver el estado de todas (incluye lo que se cayó o venció en 30 días) →</button>
-      </div>
-      <details class="ct-cambios" id="ct-cambios-box"><summary>¿Qué cambió desde ayer? <small id="ct-cambios-n"></small></summary><div id="ct-cambios"></div></details>
-      <div id="ct-ix-box" style="display:none">
-        <div class="ct-h2">Quién vende y a quién se le cae <small id="ct-ix-sub">% de las pólizas que llegan a renovación · meta 80 % · todos los ramos menos NTL</small></div>
-        <div class="ct-nota">Verde 80 % o más · ámbar 65–79 % · rojo por debajo de 65 %. Cuenta lo que debía renovar en los últimos 12 meses. No cuentan NTL ni cancelar-y-reescribir. Quien todavía no tiene pólizas que hayan llegado a su renovación sale en gris.</div>
-        <div class="ct-gente" id="ct-ix"></div>
       </div>
     </div>
 
     <!-- 01 MI COLA -->
     <div class="pane" id="p-cola">
       <div id="av-box"></div>
+      <div class="rc-cola-h"><div><b>Lo que no se ha trabajado</b><small>pólizas del mes sin ninguna marca y las vencidas que nadie cerró · al marcarlas salen de aquí</small></div><div class="rc-cola-n" id="rc-cola-n">—</div></div>
+      <div class="ct-card rc-cola-card" id="p-cola-lista"><div id="rc-cola"><div class="pg-skel" style="width:70%;margin:14px"></div></div></div>
+      <details class="ct-cambios" id="ct-cambios-box"><summary>¿Qué cambió desde ayer? <small id="ct-cambios-n"></small></summary><div id="ct-cambios"></div></details>
+      <div id="cola-vieja" style="display:none">
       <div class="panel">
         <div class="ph">
           <div><div class="pt">Tu año <span id="tuAnio"></span></div><div class="ps" id="rbSub"></div></div>
@@ -681,10 +725,16 @@ body { margin: 0; background: var(--bg); font-family: var(--f-body); color: var(
       <div class="sec-s" id="colaSub"></div>
       <div class="chips-row"><div class="chips" id="chips"></div><div class="buscar"><input id="colaQ" type="search" autocomplete="off" placeholder="Buscar por empresa, DOT o vendedor" aria-label="Buscar en la cola de renovaciones"></div></div>
       <div id="cola"></div>
+      </div><!-- /cola-vieja (v38: oculta, se jubila) -->
     </div>
 
     <!-- 02 VENDEDORES -->
     <div class="pane" id="p-vend">
+      <div id="ct-ix-box" style="display:none">
+        <div class="ct-h2">Quién renueva y a quién se le cae <small id="ct-ix-sub">meta 80 % llega a renovación · cohorte de 12 meses · todos los ramos menos NTL</small></div>
+        <div class="ct-nota">Dos números por persona. <b>Llegan</b>: de lo que vendió y debía renovar, cuánto llegó vivo (verde 80 %+, ámbar 65–79, rojo &lt;65). <b>Renuevan</b>: de lo que llegó, cuánto se renovó (comparado con la agencia).</div>
+        <div class="ct-gente" id="ct-ix"></div>
+      </div>
       <div class="panel">
         <div class="ph">
           <div><div class="pt">Lo que tiene cada vendedor para renovar, mes a mes</div>
@@ -996,9 +1046,6 @@ function mesISO(anio, mesNum){ return anio+'-'+String(mesNum).padStart(2,'0')+'-
 
 async function cargarTodo(){
   const stampEl = $('pg-stamp'); if(stampEl) stampEl.textContent = 'cargando…';
-  /* v38 · 00 Cartera es la pestaña que abre: arranca YA, a la par del resto, en vez de esperar
-     a que terminen las consultas de las otras pestañas (antes iba en fila, ~1,4 s). */
-  cargarCartera(); ctTiempoReal();
   /* v29 · esqueleto por bloque mientras llegan las consultas */
   skel('months',1,104); skel('cola',3,58); skel('vlist',4,36); skel('grandes',3,36);
   skel('vnr',3,36); skel('escalera',3,58); skel('estados',4,36); skel('bolsaKpis',1,74);
@@ -1057,7 +1104,7 @@ async function cargarTodo(){
   if(escR.error) errBloque('escalera','la escalera'); else bloque('escalera','la escalera', bonos);
   if(cartR.error) errBloque('estados','tu cartera'); else bloque('estados','tu cartera', area);
   escribirHash();
-  /* v38 · cargarCartera() y ctTiempoReal() ahora arrancan al principio de cargarTodo(). */
+  cargarCartera(); ctTiempoReal();   /* v36 · 00 Cartera (motor v3) */
 
   const hhmm = new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
   if(stampEl) stampEl.textContent = 'datos al '+hhmm;
@@ -1151,7 +1198,7 @@ async function cargarCartera(){
   if(CT.cargando) return; CT.cargando = true;
   try{
     const desde36h = new Date(Date.now()-36*3600e3).toISOString();
-    const [cR, tR, aR, eR, iR, dR, gR, pR, fR, lR] = await Promise.all([
+    const [cR, tR, aR, eR, iR, dR, gR, pR, fR, lR, nR] = await Promise.all([
       fetchPaginado(()=> SB.from('v_cartera_cuentas_visible').select('*')),
       fetchPaginado(()=> SB.from('renov_trabajo').select('llave,vence,estado,motivo_perdido,contactado,fecha_contacto,updated_at').gte('vence', ctISO(-150))),
       SB.from('renov_alertas').select('*').is('visto_at', null).gte('creado_at', new Date(Date.now()-45*864e5).toISOString()).order('creado_at',{ascending:false}),
@@ -1162,6 +1209,7 @@ async function cargarCartera(){
       fetchPaginado(()=> SB.from('v_pending_cancel_visible').select('*')),
       SB.from('v_roster_fotos_visible').select('*'),
       fetchPaginado(()=> SB.from('v_cartera_llegan_detalle_visible').select('agente,cuenta_nombre,ramo,efectiva,fc,cayo,reescrita,dias_vida')),
+      fetchPaginado(()=> SB.from('renov_notas').select('llave')),
     ]);
     if(cR.error){ errBloque('ct-lista','la cartera'); return; }
     CT.priv = ((gR && gR.data)||[]).some(g=> g.rol==='director' || g.rol==='socio' || g.area==='renovaciones');
@@ -1173,6 +1221,7 @@ async function cargarCartera(){
     CT.pend = (pR && pR.data) || []; CT.roster = (fR && fR.data) || []; CT.lleganDet = (lR && lR.data) || [];
     CT.alertas = (aR && aR.data) || [];
     CT.eventos = ((eR && eR.data) || []).filter(e=> e.tipo!=='POLIZA_NUEVA' || e.fase_ahora!=='RENOVADA');
+    CT.raw = cR.data || []; CT.notasLlaves = new Set(((nR && nR.data) || []).map(n=>n.llave));
     CT.cuentas = ctPrepara(cR.data);
     bloque('ct-lista','la cartera', ctPinta);
     bloque('ct-cambios','los cambios', ctCambios);
@@ -1471,7 +1520,7 @@ async function ctExportar(alcance){
   const xp = $('xp'); if(xp) xp.classList.remove('open');
   const btn = $('xp-btn'); const txt = btn.textContent; btn.disabled = true; btn.textContent = 'Armando el Excel…';
   try{
-    const { data, error } = await SB.functions.invoke('exportar-cartera', { body: { alcance, filtro: CT.filtro, area: CT.area, q: CT.q } });
+    const { data, error } = await SB.functions.invoke('exportar-cartera', { body: { alcance, filtro: CT.filtro, area: CT.area, q: CT.q, mes: CT.mes } });
     if(error) throw error;
     const blob = data instanceof Blob ? data : new Blob([data], { type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
     const a = document.createElement('a');
@@ -1492,11 +1541,240 @@ async function ctExportar(alcance){
   document.addEventListener('click', ev=>{ const x=$('xp'); if(x && !ev.target.closest('#xp')) x.classList.remove('open'); });
 })();
 
+
+/* =====================================================================
+   v38 · ESTE MES — 00 Cartera por mes calendario, 01 Mi cola = lo no trabajado,
+   02 Vendedores = quién renueva y a quién se le cae. Reutiliza ficha, botones,
+   renov_trabajo/renov_notas, Exportar y tiempo real de la v37.
+   (Estas declaraciones reemplazan a las de la v37 con el mismo nombre.)
+   ===================================================================== */
+const RC_MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+function rcMesHoy(){ const d=ctHoy(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
+function rcMesDe(s){ return String(s||'').slice(0,7); }
+function rcMesNom(k){ const p=k.split('-'); return RC_MESES[Number(p[1])-1]+' '+p[0]; }
+function rcMover(k, n){ const p=k.split('-'); const d=new Date(Number(p[0]), Number(p[1])-1+n, 1); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
+function rcTrab(k, vence){
+  const ts = (CT.trabajo[k]||[]).filter(t=> Math.abs((ctD(t.vence)-ctD(vence))/864e5) <= 20);
+  return ts.sort((a,b)=> String(b.updated_at||'').localeCompare(String(a.updated_at||'')))[0] || null;
+}
+function rcTieneNota(k){ return CT.notasLlaves ? CT.notasLlaves.has(k) : false; }
+/* estado de trabajo de una póliza del mes: lo marca Karen o lo dice el motor */
+function rcEstadoPol(c, p){
+  if(p._c==='canc' || p._c==='rw') return 'cayo';
+  if(p._c==='renov') return 'renovado';
+  const t = rcTrab(c.dot||c.llave, p.vence);
+  if(t) return t.estado || 'contactado';
+  return rcTieneNota(c.dot||c.llave) ? 'nota' : 'sin';
+}
+const RC_TXT = { renovado:'Renovada', contactado:'Contactada', perdido:'Perdida', retirado:'Retirada', cayo:'Se cayó', nota:'Con nota', sin:'Sin trabajar', pendiente:'Sin trabajar' };
+function rcEstadoCuenta(c){
+  const es = c._pols.map(p=>p._e);
+  if(es.every(e=>e==='renovado')) return 'renovado';
+  if(es.every(e=>e==='cayo')) return 'cayo';
+  if(es.includes('sin')) return 'sin';   /* queda algo por trabajar: la cuenta está sin trabajar */
+  for(const e of ['contactado','perdido','retirado','nota']) if(es.includes(e)) return e;
+  return 'sin';
+}
+/* las cuentas con algo que vence en el mes elegido (incluye lo renovado y lo caído) */
+function rcCuentasMes(mes){
+  const q=(CT.q||'').trim().toLowerCase(), out=[];
+  (CT.raw||[]).forEach(r=>{
+    if(CT.area && r.area!==CT.area) return;
+    const pols=(Array.isArray(r.polizas)?r.polizas:[]).filter(p=> rcMesDe(p.vence)===mes).map(p0=>{
+      const p=Object.assign({},p0); if(p.es_viva && ctDias(p.vence)<0){ p.es_viva=false; p.fase='VENCIDA SIN RENOVAR'; }
+      p._c=ctClase(p); return p; });
+    if(!pols.length) return;
+    const c=Object.assign({}, r, { _pols: pols, _mes: mes });
+    c._buscar=[r.cuenta_nombre,r.insured,r.dot,r.agente].concat(pols.map(p=>p.agente)).join(' ').toLowerCase();
+    if(q && c._buscar.indexOf(q)<0) return;
+    pols.forEach(p=>{ p._e = rcEstadoPol(c,p); });
+    c._estado = rcEstadoCuenta(c);
+    c._vivo = pols.reduce((a,p)=> a + Number((p.es_viva ? p.premium_activo : p.premium_vendido) || 0), 0);
+    c._orden = Math.min.apply(null, pols.map(p=> ctDias(p.vence)));
+    out.push(c);
+  });
+  return out;
+}
+function ctPolizaObjetivo(c){
+  const pols=(c._pols||[]).slice().sort((a,b)=> ctDias(a.vence)-ctDias(b.vence));
+  if(c._mes) return pols.find(p=>p._e && !['renovado','cayo'].includes(p._e)) || pols.find(p=>p._c!=='canc'&&p._c!=='rw') || pols[0];   /* la que falta por trabajar */
+  return pols.find(p=>p.es_viva || p._c==='vencida') || pols[0];
+}
+function ctEstadoKaren(c){ const p=ctPolizaObjetivo(c); return p ? rcTrab(c.dot||c.llave, p.vence) : null; }
+function ctChip(p){
+  const c=p._c, d=ctDias(p.vence); let cls, txt;
+  if(c==='pend'){ cls='c-pend'; txt='pending cancellation'; }
+  else if(c==='canc'){ cls='c-canc'; const f=ctFechaCaida(p); txt='se cayó'+(f?' '+ctFecha(f):''); }
+  else if(c==='rw'){ cls='c-canc'; txt='reescrita'; }
+  else if(c==='renov' || p._e==='renovado'){ cls='c-ok'; txt='renovada · '+ctFecha(p.vence); }
+  else if(c==='vencida'){ cls='c-v15'; txt='venció hace '+(-d)+' d'; }
+  else if(d<=15){ cls='c-v15'; txt='vence '+ctFecha(p.vence)+' · '+d+' d'; }
+  else { cls='c-v60'; txt='vence '+ctFecha(p.vence)+' · '+d+' d'; }
+  const dim = CT.cob && ctCobDe(p.ramo)!==CT.cob ? ' style="opacity:.45"' : '';
+  return '<span class="ct-chip '+cls+'"'+dim+'><i>'+esc(p.ramo)+'</i>'+esc(txt)+'</span>';
+}
+function ctCifras(L){
+  const pols = L.reduce((a,c)=>a.concat(c._pols),[]);
+  const n = f => pols.filter(f).length;
+  const C = [
+    ['todas','x', pols.length, 'vencen en el mes · '+L.length+' cuentas'],
+    ['renov','g', n(p=>p._e==='renovado'), 'renovadas'],
+    ['contact','a', n(p=>p._e==='contactado'), 'contactadas'],
+    ['cayo','r', n(p=>p._e==='cayo'), 'se cayeron'],
+  ];
+  $('ct-cifras').innerHTML = C.map(c=>'<button type="button" class="ct-ci '+c[1]+(CT.filtro===c[0]?' on':'')+'" data-f="'+c[0]+'"><span class="v">'+c[2]+'</span><span class="l">'+esc(c[3])+'</span></button>').join('');
+  document.querySelectorAll('#ct-cifras .ct-ci').forEach(el=> el.onclick = ()=>{ CT.filtro = CT.filtro===el.dataset.f && el.dataset.f!=='todas' ? 'todas' : el.dataset.f; CT.todas=false; ctPinta(); });
+}
+function ctCobFiltro(base){
+  const cuenta = k => base.reduce((a,c)=> a + c._pols.filter(p=> k==='' || ctCobDe(p.ramo)===k).length, 0);
+  const B = [['','Todas']].concat(CT_COBS.map(k=>[k,k])).concat([['OTRAS','Otras']]);
+  $('ct-cob').innerHTML = B.map(b=>'<button type="button" class="'+(CT.cob===b[0]?'on':'')+'" data-c="'+b[0]+'">'+b[1]+'<i>'+cuenta(b[0])+'</i></button>').join('');
+  document.querySelectorAll('#ct-cob button').forEach(b=> b.onclick = ()=>{ CT.cob = b.dataset.c; CT.todas=false; ctPinta(); });
+}
+function ctPinta(){
+  if(!CT.mes) CT.mes = rcMesHoy();
+  const base = rcCuentasMes(CT.mes);
+  CT.mesCuentas = base;
+  $('rc-mes-n').textContent = rcMesNom(CT.mes);
+  $('rc-mes-s').textContent = CT.mes===rcMesHoy() ? 'este mes' : (CT.mes < rcMesHoy() ? 'mes pasado' : 'mes que viene');
+  ctCifras(base); ctCobFiltro(base);
+  let L = base.slice();
+  if(CT.filtro==='renov') L = L.filter(c=> c._pols.some(p=>p._e==='renovado'));
+  else if(CT.filtro==='contact') L = L.filter(c=> c._pols.some(p=>p._e==='contactado'));
+  else if(CT.filtro==='cayo') L = L.filter(c=> c._pols.some(p=>p._e==='cayo'));
+  if(CT.cob) L = L.filter(c=> c._pols.some(p=> ctCobDe(p.ramo)===CT.cob));
+  const ord = { sin:0, nota:1, contactado:2, perdido:3, retirado:3, renovado:4, cayo:5 };
+  L.sort((a,b)=> (ord[a._estado]-ord[b._estado]) || a._orden-b._orden);
+  const tope = CT.todas ? L.length : 60, el = $('ct-lista');
+  el.innerHTML = L.length ? L.slice(0,tope).map(c=>{
+    const sub=(c.dot?'DOT '+esc(c.dot)+' · ':'')+esc(c.agente||'—');
+    return '<div class="ct-cta2'+(CT.abierta===c.llave?' open':'')+'" tabindex="0" role="button" aria-expanded="'+(CT.abierta===c.llave)+'" data-k="'+esc(c.llave)+'">'+
+      '<div class="ct-n"><b>'+esc(c.cuenta_nombre||c.insured||c.llave)+'</b><small>'+sub+'</small></div>'+
+      '<div class="ct-chips">'+c._pols.map(ctChip).join('')+'</div>'+
+      '<div class="ct-p">'+(c._vivo?ctK(c._vivo):'—')+'<br><span class="ct-tr '+c._estado+'">'+esc(RC_TXT[c._estado]||c._estado)+'</span></div>'+
+      ctFicha(c)+'</div>';
+  }).join('') : '<div class="ct-vacio">Nada vence en '+esc(rcMesNom(CT.mes))+' con este filtro.</div>';
+  const mas = $('ct-mas');
+  if(L.length > 60){ mas.style.display='block'; mas.textContent = CT.todas ? 'ver menos' : 'ver las '+L.length+' →'; } else mas.style.display='none';
+  el.querySelectorAll('.ct-cta2').forEach(row=>{
+    const abrir = ev=>{ if(ev.target.closest('.ct-det')) return; const k=row.dataset.k; CT.abierta = CT.abierta===k ? null : k;
+      el.querySelectorAll('.ct-cta2').forEach(r=>{ const on=r.dataset.k===CT.abierta; r.classList.toggle('open',on); r.setAttribute('aria-expanded',on); });
+      if(CT.abierta) ctNotas(CT.abierta); };
+    row.onclick = abrir;
+    row.onkeydown = ev=>{ if((ev.key==='Enter'||ev.key===' ') && ev.target===row){ ev.preventDefault(); abrir(ev); } };
+  });
+  el.querySelectorAll('[data-ct]').forEach(b=> b.onclick = ev=>{ ev.stopPropagation(); ctAccion(b.dataset.ct, b.dataset.k); });
+  if(CT.abierta) ctNotas(CT.abierta);
+  rcCola();
+}
+async function ctAccion(acc, llave){
+  const c = (CT.mesCuentas||[]).find(x=>x.llave===llave) || CT.cuentas.find(x=>x.llave===llave); if(!c) return;
+  const k = c.dot || c.llave;
+  if(acc==='nota'){
+    const n = window.prompt('Nota para '+(c.cuenta_nombre||k)+':'); if(n===null || !n.trim()) return;
+    const { error } = await SB.from('renov_notas').insert({ llave: k, nota: n.trim(), autor: SESION_EMAIL||'', autor_user_id: SESION_UID||null });
+    if(error){ alert('No se pudo guardar la nota: '+error.message); return; }
+    (CT.notasLlaves = CT.notasLlaves || new Set()).add(k); ctNotas(llave); ctPinta(); nav(); return;
+  }
+  const p = ctPolizaObjetivo(c); if(!p) return;
+  const row = { llave: k, vence: String(p.vence).slice(0,10) };
+  let payload;
+  if(acc==='contactado'){ const hoy=new Date().toISOString().slice(0,10); payload = { estado:'contactado', contactado:true, fecha_contacto:hoy, contacto_por:SESION_EMAIL||null }; }
+  else if(acc==='perdido'){ const m=window.prompt('Motivo de la pérdida (obligatorio):'); if(m===null) return; if(!m.trim()){ alert('El motivo es obligatorio para marcar perdida.'); return; } payload = { estado:'perdido', motivo_perdido:m.trim() }; }
+  else payload = { estado:'renovado', motivo_perdido:null };
+  const ok = await escribirTrabajoDB(row, payload); if(!ok) return;
+  (CT.trabajo[k] = CT.trabajo[k] || []).push(Object.assign({}, row, payload, { updated_at: new Date().toISOString() }));
+  ctPinta(); nav();
+}
+/* 01 Mi cola: lo del mes en curso sin ninguna marca + lo vencido que nadie cerró */
+function rcColaItems(){
+  const mesHoy = rcMesHoy(), ini = ctD(mesHoy+'-01'), it = [];
+  (CT.raw||[]).forEach(r=>{
+    const k = r.dot || r.llave;
+    (Array.isArray(r.polizas)?r.polizas:[]).forEach(p0=>{
+      const p=Object.assign({},p0); if(p.es_viva && ctDias(p.vence)<0){ p.es_viva=false; p.fase='VENCIDA SIN RENOVAR'; }
+      p._c = ctClase(p);
+      if(p._c==='canc' || p._c==='rw' || p._c==='renov') return;
+      const v = ctD(p.vence), t = rcTrab(k, p.vence);
+      if(rcMesDe(p.vence)===mesHoy){
+        if(t || rcTieneNota(k)) return;
+        it.push({ r, p, venc: p._c==='vencida' });
+      } else if(p._c==='vencida' && v < ini && ctDias(p.vence) >= -90){
+        if(t && ['renovado','perdido','retirado'].includes(t.estado)) return;
+        it.push({ r, p, venc: true });
+      }
+    });
+  });
+  return it;
+}
+function rcCola(){
+  const box = $('rc-cola'); if(!box) return;
+  const it = rcColaItems();
+  const porC = {};
+  it.forEach(x=>{ const k=x.r.llave+'|'+rcMesDe(x.p.vence); (porC[k]=porC[k]||{ r:x.r, mes:rcMesDe(x.p.vence), pols:[], venc:false }).pols.push(x.p); if(x.venc) porC[k].venc=true; });
+  const G = Object.values(porC).sort((a,b)=> (b.venc-a.venc) || (Math.min.apply(null,a.pols.map(p=>ctDias(p.vence))) - Math.min.apply(null,b.pols.map(p=>ctDias(p.vence)))));
+  $('rc-cola-n').textContent = it.length ? it.length+' pólizas' : '0';
+  box.innerHTML = G.length ? G.map(g=>{
+    const d = Math.min.apply(null, g.pols.map(p=>ctDias(p.vence)));
+    const prem = g.pols.reduce((a,p)=>a+Number(p.premium_activo||p.premium_vendido||0),0);
+    return '<div class="rc-it'+(g.venc?' venc':'')+'" data-k="'+esc(g.r.llave)+'" data-m="'+g.mes+'"><div><b>'+esc(g.r.cuenta_nombre||g.r.insured||g.r.llave)+'</b><small>'+(g.r.dot?'DOT '+esc(g.r.dot)+' · ':'')+esc(g.r.agente||'—')+'</small></div>'+
+      '<div>'+g.pols.map(p=>'<span class="ct-chip'+(g.venc?' v':'')+'"><i>'+esc(p.ramo)+'</i>'+ctFecha(p.vence)+'</span>').join('')+'</div>'+
+      '<div class="num h">'+ctK(prem)+'</div><div class="cu">'+(d<0?'venció hace '+(-d)+' d':'vence en '+d+' d')+'</div></div>';
+  }).join('') : '<div class="ct-vacio">✓ Todo lo del mes tiene marca. Nada vencido sin cerrar.</div>';
+  box.querySelectorAll('.rc-it').forEach(r=> r.onclick = ()=>{
+    CT.mes = r.dataset.m; CT.filtro='todas'; CT.cob=''; CT.abierta = r.dataset.k; setTab('cartera'); ctPinta();
+    setTimeout(()=>{ const e=document.querySelector('#ct-lista .ct-cta2[data-k="'+r.dataset.k+'"]'); if(e) e.scrollIntoView({behavior:'smooth',block:'center'}); },80);
+  });
+}
+/* 02 Vendedores: dos índices por persona */
+function rcRenuevan(i){ return i && Number(i.llegan)>0 ? 100*Number(i.renovadas||0)/Number(i.llegan) : null; }
+function rcAgRenuevan(){ const A=(CT.indice||[]); const l=A.reduce((a,i)=>a+Number(i.llegan||0),0), r=A.reduce((a,i)=>a+Number(i.renovadas||0),0); return l ? 100*r/l : null; }
+function rcSemRenuevan(v, ag){ if(v==null) return 'GRIS'; if(ag==null) return 'GRIS'; return v >= ag ? 'VERDE' : (v >= ag-10 ? 'AMARILLO' : 'ROJO'); }
+function ctIndice(){
+  const box = $('ct-ix-box'); if(!box) return;
+  if(!CT.priv){ box.style.display='none'; return; }
+  box.style.display='block';
+  const ag = (CT.indice[0]||{}).pct_agencia, agR = rcAgRenuevan();
+  $('ct-ix-sub').textContent = 'meta 80 % llega a renovación · agencia '+(ag!=null?Math.floor(ag)+' %':'—')+' llega · '+(agR!=null?Math.floor(agR)+' %':'—')+' renueva · 12 meses · todos los ramos menos NTL';
+  const col = { ROJO:'var(--rojo)', AMARILLO:'var(--ambar)', VERDE:'var(--verde)' };
+  $('ct-ix').innerHTML = ctGente().map((g,ix)=>{
+    const i=g.i, s=i?i.semaforo:'GRIS', medible=i&&s!=='GRIS', p=medible?Math.floor(Number(i.pct)):null;
+    const rv = medible ? rcRenuevan(i) : null, sR = medible ? rcSemRenuevan(rv, agR) : 'GRIS';
+    const caidas = medible ? (CT.lleganDet||[]).filter(d=> ctNorm(d.agente)===ctNorm(g.nombre) && d.cayo && !d.reescrita).sort((a,b)=> String(b.fc).localeCompare(String(a.fc))) : [];
+    const sub = medible ? (i.llegan+' de '+i.polizas+' llegaron · '+(i.renovadas||0)+' renovadas · '+i.cayeron+' se cayeron') : (i ? 'pocas pólizas todavía ('+i.polizas+')' : 'todavía sin pólizas que hayan llegado a renovar');
+    return '<div class="ct-per '+s+'" data-i="'+ix+'">'+ctAv(g.foto,g.nombre,'ct-av')+'<div><b>'+esc(g.nombre)+'</b><small>'+esc(sub)+'</small>'+
+      (medible?'<div class="ct-meta"><i style="width:'+Math.min(100,p)+'%;background:'+col[s]+'"></i><u></u></div>':'')+'</div>'+
+      '<div class="ct-dos"><div class="ct-big '+s+'">'+(medible?p+'%':'—')+'<small>llegan</small></div><div class="ct-big '+sR+'">'+(rv!=null?Math.floor(rv)+'%':'—')+'<small>renuevan</small></div></div>'+
+      (caidas.length?'<div class="ct-perd">'+caidas.slice(0,12).map(d=>'✕ '+esc(d.cuenta_nombre)+' · '+esc(d.ramo)+' · se cayó el día '+esc(d.dias_vida)+' ('+ctFecha(d.fc)+')').join('<br>')+'</div>':'')+'</div>';
+  }).join('');
+  document.querySelectorAll('#ct-ix .ct-per').forEach(r=> r.onclick = ()=> r.classList.toggle('open'));
+}
+function ctVendRenov(){
+  const box = $('vr-box'); if(!box) return;
+  const porAg = {}; (CT.raw||[]).forEach(c=> (c.polizas||[]).filter(p=>p.es_viva && ctDias(p.vence)>=0).forEach(p=>{ const k=ctNorm(p.agente||c.agente); (porAg[k]=porAg[k]||new Set()).add(c.llave); }));
+  const agR = rcAgRenuevan();
+  box.innerHTML = '<div class="panel" style="margin-top:14px"><div class="ph"><div><div class="pt">Renovación por vendedor</div>'+
+    '<div class="ps">Lo que debía renovar en los últimos 12 meses: cuánto llegó vivo, cuánto se renovó y cuánto se cayó antes.</div></div></div>'+
+    '<div style="overflow-x:auto;padding:0 6px 8px"><table class="vr-tab"><thead><tr><th>Vendedor</th><th>Cuentas activas</th><th>Debían renovar</th><th>Llegaron</th><th>Renovaron</th><th>Se cayeron</th><th>% llegan</th><th>% renuevan</th></tr></thead><tbody>'+
+    ctGente().map(g=>{ const i=g.i, medible=i&&i.semaforo!=='GRIS', act=(porAg[ctNorm(g.nombre)]||new Set()).size, rv=medible?rcRenuevan(i):null;
+      return '<tr><td>'+ctAv(g.foto,g.nombre,'vr-av')+esc(g.nombre)+'</td><td class="num">'+(act||'—')+'</td><td class="num">'+(i?i.polizas:'—')+'</td><td class="num">'+(i?i.llegan:'—')+'</td><td class="num">'+(i?(i.renovadas||0):'—')+'</td><td class="num">'+(i?i.cayeron:'—')+'</td>'+
+        '<td><span class="vr-pill '+(medible?i.semaforo:'')+'">'+(medible?Math.floor(Number(i.pct))+' %':'—')+'</span></td>'+
+        '<td><span class="vr-pill '+(rv!=null?rcSemRenuevan(rv,agR):'')+'">'+(rv!=null?Math.floor(rv)+' %':'—')+'</span></td></tr>'; }).join('')+
+    '</tbody></table></div></div>';
+}
+(function rcInit(){
+  CT.filtro = 'todas'; CT.mes = rcMesHoy();
+  const pv=$('rc-prev'), nx=$('rc-next'), hy=$('rc-hoy');
+  if(pv) pv.addEventListener('click', ()=>{ CT.mes = rcMover(CT.mes,-1); CT.todas=false; CT.abierta=null; ctPinta(); });
+  if(nx) nx.addEventListener('click', ()=>{ CT.mes = rcMover(CT.mes, 1); CT.todas=false; CT.abierta=null; ctPinta(); });
+  if(hy) hy.addEventListener('click', ()=>{ CT.mes = rcMesHoy(); CT.todas=false; ctPinta(); });
+})();
+
 /* ---------- navegación ---------- */
 const TABS = [['cartera','00','Cartera'],['cola','01','Mi cola'],['vend','02','Vendedores'],   /* v37 · El muro se quita */
   ['bolsa','04','La bolsa'],['bonos','05','Bonos'],['area','06','El área']];
 function nav(){
-  const badges = { cartera: (CT.pend||[]).length, cola: (typeof ctAvisosItems==='function' ? ctAvisosItems().length : 0) };
+  const badges = { cartera: (CT.pend||[]).length, cola: (typeof rcColaItems==='function' && CT.raw ? rcColaItems().length : 0) };
   const navEl = $('nav'); if(navEl && !navEl.getAttribute('role')) navEl.setAttribute('role','tablist');
   $('nav').innerHTML = TABS.map(([k,n,t])=>{
     const b = badges[k]||0;
@@ -2392,7 +2670,7 @@ $('btn-imprimir-ano').addEventListener('click', ()=> imprimir('ano'));
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="renovaciones.html";
-var PGV_VERSION=38; // v38 - 12-oct-2026 RENDIMIENTO: 00 Cartera (la pestaña que abre) se pide a la par de las demás consultas en vez de esperar a que terminen (~1,4 s menos). Cero cambios de datos. // v37 - 9-oct-2026 LLEGAN A RENOVACIÓN: 00 Cartera sin timeline (pending cancellation arriba, pólizas activas por cuenta con una pastilla por cobertura y filtro por cobertura, ver el estado de todas), Quién vende con foto y % de pólizas que llegan a renovación (meta 80 %, todos los activos), Avisos en Mi cola, Vendedores con su renovación, El muro fuera. // v36 - 00 Cartera (motor v3): cuatro cifras que filtran, la lista es el timeline (cada barra mide lo que le queda a la póliza desde hoy), ficha con pólizas + Contactado/Renovado/Perdido/Nota (renov_trabajo/renov_notas de siempre), qué cambió desde ayer, alertas e índice de cancelación (solo dirección/renovaciones), Exportar ▾ (exportar-cartera), tiempo real. Rótulo: Renovaciones. Lo demás de v35 intacto. // v35 - Protect Index: las direcciones internas del sitio pasan a relativas (el sitio ya no depende de como se llame el repo). Las que viajan por correo (recuperar contrasena, fotos de firma, sello de RRHH) quedan absolutas apuntando a protect-index. // v34 (21-sep-2026) ARREGLO: el boton Cancelada / Retirada de la tarjeta fallaba con \"violates check constraint renov_trabajo_motivo_chk\" porque mandaba el estado sin motivo; ahora pide el motivo igual que Perdida (sugiere la etapa de HubSpot cuando el equipo ya la dio por perdida). --- v33 (21-sep-2026) VENDEDORES DESPLIEGA LAS CUENTAS: tocar el nombre de un vendedor abre debajo de su fila, mes por mes, el nombre de cada cuenta (DOT, fecha de vencimiento, premium y la misma etiqueta de estado de Mi cola); tocar una celda abre solo ese mes. El salto a Mi cola queda como boton \"Trabajarlas en Mi cola\" en cada mes. Mismos datos que ya cargaba la pantalla (v_renov_cartera_estado_visible), cero consultas nuevas, cero barras. --- v32 (18-sep-2026) VENDEDORES MES A MES: una tabla vendedor x mes con las cuentas y el premium que vencen en cada mes del ano (y cuantas ya renovaron), toda la lista de Karen aunque tengan cero, fila Area al pie, clic en una celda lleva a Mi cola de esa persona en ese mes. Ya no depende del mes escogido arriba. Cero barras. --- v31.1 (18-sep-2026) Vendedores muestra a TODA la lista de Karen (roster ACTIVO/KAREN), tengan o no cuentas este mes; y lo que no es de la lista (Jorge, Retencion) cae a la persona de la regla de trabajo (Karen en sep-oct), no a Cartera agencia. --- v31 (18-sep-2026) LA CARTERA ES EL EXCEL DE ANDRES y "cada gente" es LA PERSONA DEL EXCEL: Vendedores, la tarjeta y el filtro agrupan por persona (solo la lista de Karen: roster ACTIVO/KAREN; el resto se recoge como Cartera agencia). Quien vendio la poliza segun el BOS queda como dato chico. Y la marca de Karen SE VE: si el motor no ha cerrado la cuenta, la etiqueta es la de ella; Renovada sin BOS sale en ambar como "Renovada - falta el BOS" y no cuenta hasta que Jeff la registre. --- v30.2 (17-sep-2026) ARREGLO: el hero y la cinta se calculan de la MISMA cola que ve cada persona. Antes salian de la vista agregada por mes, que solo ve direccion: a Karen le aparecia \"sin cartera cargada este mes\" con su cola llena debajo. Ahora hero, cinta, vendedores y cola cuentan siempre lo mismo. --- v30 (17-sep-2026) LA CARTERA SALE DE HUBSPOT: la cola, la cinta y la franja leen v_renov_cartera_estado_visible y v_renov_cartera_graficas_visible — lo que Andres monta en HubSpot es la lista, y el motor solo marca la renovacion cuando Jeff la registra en el BOS (Sale - Renewal en la ventana -60/+150 de la fecha de HubSpot), con fecha, quien y CUANTO QUEDO. Hero en premium (que vence · que quedo · % retenido) con GUION, nunca cero, cuando a HubSpot le faltan montos: un % sobre base incompleta miente (septiembre daba 310%). La cinta deja de ser barras y pasa a dos curvas (vence punteada, quedo en menta); meses sin cartera salen "sin cartera". Filtros nuevos: En juego / Vencidas / Renovadas / Senal del equipo. Cinco avisos en ambar que NO cierran cuentas: el equipo la da por perdida, renovo y falta registrarla en el BOS, hay una venta nueva en la ventana, renovada con premium $0, esta dos veces en HubSpot. Una cuenta solo se pierde cuando Andres la marca (renov_cartera_marcar). Vendedores se calcula de la misma cola, por vendedor de la cuenta, y filtra la cola al hacer clic. La bolsa filtra cuenta_en_firme (arranca el 1-sep). --- v29 (15-sep-2026) RONDA VISUAL, cero cambios de datos: buscador en la cola (empresa/DOT/vendedor, repinta solo la lista); teclado real (casillas y meses son <button role=tab>, la tarjeta abre con Enter/Espacio, foco menta visible); movil de verdad a 1080 y 860 (la cinta desliza en su propio carril, franja/tarjeta/filas a una columna); el estado vive en la URL (#v casilla, #m mes, #f filtro, #q busqueda, #c ficha abierta) sin pisar el hash de recuperacion de clave; esqueleto de carga y error por bloque con Reintentar (un bloque caido ya no deja la pantalla en blanco); un solo tooltip delegado en vez de cuatro onmousemove; la meta del area sale de estandar_pct y no del codigo (estaba quemada en 3 sitios); svgBolsa con xMidYMid meet; clases que faltaban del estandar (.card.abierta, .u-mint, .st-n .v.ambar, .st-aviso, --rojo-claro); Arial fuera del boton Volver y JetBrains Mono 700 en el link de fuentes. --- v28: Ficha de cuenta: se abre al hacer clic en una tarjeta de la cola (acordeon, no modal). Cuatro bloques: Estado (los mismos de siempre, "retirado" ahora se lee "Cancelada / Retirada"), Por que (motivo obligatorio a renov_trabajo.motivo_perdido en Perdida/Cancelada-Retirada, opcional como nota suelta a renov_notas en cualquier otro estado, con historial de notas), Corregir fecha de renovacion (inserta en renov_ajustes con ajustado_user_id=SESION_UID -- mismo bug de uuid que se acaba de arreglar, aviso claro antes de guardar), y el aviso a Financiera que es automatico (v_ajustes_pendientes_bos). Nada se borra.
+var PGV_VERSION=38; // v38 - 12-oct-2026 ESTE MES: 00 Cartera por mes calendario con flechas (cifras del mes, lista por cuenta con estado de trabajo, pending en una línea roja cerrada), 01 Mi cola = lo no trabajado (sin marca del mes + vencidas sin cerrar), 02 Vendedores = quién renueva (fotos, % llegan y % renuevan). Bolsa, bonos y área intactos. // v37 - 9-oct-2026 LLEGAN A RENOVACIÓN: 00 Cartera sin timeline (pending cancellation arriba, pólizas activas por cuenta con una pastilla por cobertura y filtro por cobertura, ver el estado de todas), Quién vende con foto y % de pólizas que llegan a renovación (meta 80 %, todos los activos), Avisos en Mi cola, Vendedores con su renovación, El muro fuera. // v36 - 00 Cartera (motor v3): cuatro cifras que filtran, la lista es el timeline (cada barra mide lo que le queda a la póliza desde hoy), ficha con pólizas + Contactado/Renovado/Perdido/Nota (renov_trabajo/renov_notas de siempre), qué cambió desde ayer, alertas e índice de cancelación (solo dirección/renovaciones), Exportar ▾ (exportar-cartera), tiempo real. Rótulo: Renovaciones. Lo demás de v35 intacto. // v35 - Protect Index: las direcciones internas del sitio pasan a relativas (el sitio ya no depende de como se llame el repo). Las que viajan por correo (recuperar contrasena, fotos de firma, sello de RRHH) quedan absolutas apuntando a protect-index. // v34 (21-sep-2026) ARREGLO: el boton Cancelada / Retirada de la tarjeta fallaba con \"violates check constraint renov_trabajo_motivo_chk\" porque mandaba el estado sin motivo; ahora pide el motivo igual que Perdida (sugiere la etapa de HubSpot cuando el equipo ya la dio por perdida). --- v33 (21-sep-2026) VENDEDORES DESPLIEGA LAS CUENTAS: tocar el nombre de un vendedor abre debajo de su fila, mes por mes, el nombre de cada cuenta (DOT, fecha de vencimiento, premium y la misma etiqueta de estado de Mi cola); tocar una celda abre solo ese mes. El salto a Mi cola queda como boton \"Trabajarlas en Mi cola\" en cada mes. Mismos datos que ya cargaba la pantalla (v_renov_cartera_estado_visible), cero consultas nuevas, cero barras. --- v32 (18-sep-2026) VENDEDORES MES A MES: una tabla vendedor x mes con las cuentas y el premium que vencen en cada mes del ano (y cuantas ya renovaron), toda la lista de Karen aunque tengan cero, fila Area al pie, clic en una celda lleva a Mi cola de esa persona en ese mes. Ya no depende del mes escogido arriba. Cero barras. --- v31.1 (18-sep-2026) Vendedores muestra a TODA la lista de Karen (roster ACTIVO/KAREN), tengan o no cuentas este mes; y lo que no es de la lista (Jorge, Retencion) cae a la persona de la regla de trabajo (Karen en sep-oct), no a Cartera agencia. --- v31 (18-sep-2026) LA CARTERA ES EL EXCEL DE ANDRES y "cada gente" es LA PERSONA DEL EXCEL: Vendedores, la tarjeta y el filtro agrupan por persona (solo la lista de Karen: roster ACTIVO/KAREN; el resto se recoge como Cartera agencia). Quien vendio la poliza segun el BOS queda como dato chico. Y la marca de Karen SE VE: si el motor no ha cerrado la cuenta, la etiqueta es la de ella; Renovada sin BOS sale en ambar como "Renovada - falta el BOS" y no cuenta hasta que Jeff la registre. --- v30.2 (17-sep-2026) ARREGLO: el hero y la cinta se calculan de la MISMA cola que ve cada persona. Antes salian de la vista agregada por mes, que solo ve direccion: a Karen le aparecia \"sin cartera cargada este mes\" con su cola llena debajo. Ahora hero, cinta, vendedores y cola cuentan siempre lo mismo. --- v30 (17-sep-2026) LA CARTERA SALE DE HUBSPOT: la cola, la cinta y la franja leen v_renov_cartera_estado_visible y v_renov_cartera_graficas_visible — lo que Andres monta en HubSpot es la lista, y el motor solo marca la renovacion cuando Jeff la registra en el BOS (Sale - Renewal en la ventana -60/+150 de la fecha de HubSpot), con fecha, quien y CUANTO QUEDO. Hero en premium (que vence · que quedo · % retenido) con GUION, nunca cero, cuando a HubSpot le faltan montos: un % sobre base incompleta miente (septiembre daba 310%). La cinta deja de ser barras y pasa a dos curvas (vence punteada, quedo en menta); meses sin cartera salen "sin cartera". Filtros nuevos: En juego / Vencidas / Renovadas / Senal del equipo. Cinco avisos en ambar que NO cierran cuentas: el equipo la da por perdida, renovo y falta registrarla en el BOS, hay una venta nueva en la ventana, renovada con premium $0, esta dos veces en HubSpot. Una cuenta solo se pierde cuando Andres la marca (renov_cartera_marcar). Vendedores se calcula de la misma cola, por vendedor de la cuenta, y filtra la cola al hacer clic. La bolsa filtra cuenta_en_firme (arranca el 1-sep). --- v29 (15-sep-2026) RONDA VISUAL, cero cambios de datos: buscador en la cola (empresa/DOT/vendedor, repinta solo la lista); teclado real (casillas y meses son <button role=tab>, la tarjeta abre con Enter/Espacio, foco menta visible); movil de verdad a 1080 y 860 (la cinta desliza en su propio carril, franja/tarjeta/filas a una columna); el estado vive en la URL (#v casilla, #m mes, #f filtro, #q busqueda, #c ficha abierta) sin pisar el hash de recuperacion de clave; esqueleto de carga y error por bloque con Reintentar (un bloque caido ya no deja la pantalla en blanco); un solo tooltip delegado en vez de cuatro onmousemove; la meta del area sale de estandar_pct y no del codigo (estaba quemada en 3 sitios); svgBolsa con xMidYMid meet; clases que faltaban del estandar (.card.abierta, .u-mint, .st-n .v.ambar, .st-aviso, --rojo-claro); Arial fuera del boton Volver y JetBrains Mono 700 en el link de fuentes. --- v28: Ficha de cuenta: se abre al hacer clic en una tarjeta de la cola (acordeon, no modal). Cuatro bloques: Estado (los mismos de siempre, "retirado" ahora se lee "Cancelada / Retirada"), Por que (motivo obligatorio a renov_trabajo.motivo_perdido en Perdida/Cancelada-Retirada, opcional como nota suelta a renov_notas en cualquier otro estado, con historial de notas), Corregir fecha de renovacion (inserta en renov_ajustes con ajustado_user_id=SESION_UID -- mismo bug de uuid que se acaba de arreglar, aviso claro antes de guardar), y el aviso a Financiera que es automatico (v_ajustes_pendientes_bos). Nada se borra.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;
