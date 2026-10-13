@@ -315,6 +315,25 @@ html.pg-sin-tops #pgMuelle,html.pg-sin-tops #pgSombra,html.pg-sin-tops #pgsPanel
 html.pg-sin-tops #pgVolver{display:inline-flex!important}
 .pg-tops-btn{background:none;border:1px solid rgba(255,255,255,.18);color:#b9c6d0;border-radius:999px;padding:5px 11px;font:600 11px/1.2 var(--pg-font-body,Inter,sans-serif);cursor:pointer;margin:2px 0 10px}
 .pg-tops-btn:hover{color:#fff;border-color:var(--pg-mint)}
+/* v24 · Agentes y cancelaciones */
+.cxb{display:inline-block;width:9px;height:9px;border-radius:50%;margin:0 4px 0 8px;vertical-align:middle;flex:none}
+.cxb.ROJO{background:#D5594F}.cxb.AMARILLO{background:#D9A520}.cxb.VERDE{background:#229A82}.cxb.GRIS{background:#C9D3DA}
+.cxp{font-size:11.5px;color:var(--pg-muted);font-weight:600;font-family:var(--pg-font-body);letter-spacing:0}
+#ag-tira .chip .cxb{margin:0 6px 0 0}
+#alertas .a-l{cursor:pointer}
+.ag-big{display:flex;gap:14px;align-items:baseline;flex-wrap:wrap;margin:2px 0 4px}
+.ag-big-n{font-family:var(--pg-font-num);font-weight:700;font-size:34px;color:var(--pg-ink);letter-spacing:-.8px}
+.ag-big-n .cxb{width:13px;height:13px;margin:0 8px 0 0}
+.ag-vida{display:grid;grid-template-columns:230px 1fr;gap:6px 10px;align-items:center;font-size:12px;margin-top:8px}
+.ag-vida .n{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:pointer}
+.ag-vida .tl{position:relative;height:10px;background:#F0F3F6;border-radius:5px;cursor:pointer}
+.ag-vida .ln{position:absolute;left:0;top:0;height:10px;border-radius:5px;background:#CFE9E2}
+.ag-vida .ln.caida{background:#D5594F}.ag-vida .ln.tarde{background:#D9A520}.ag-vida .ln.reesc{background:#B8C4CC}
+.ag-vida .d180{position:absolute;top:-3px;width:2px;height:16px;background:var(--pg-ink);opacity:.35}
+.ag-vida .x{position:absolute;top:-3px;font-size:10.5px;line-height:1;color:#D5594F;font-weight:800;transform:translateX(5px);white-space:nowrap}
+.ag-svg{width:100%;height:auto;display:block}
+.ag-vacio{padding:26px 0;text-align:center;color:var(--pg-muted);font-size:13px}
+@media(max-width:600px){.ag-vida{grid-template-columns:118px 1fr}.ag-big-n{font-size:28px}}
 </style>
 <script src="pg-novedades.js"></script>
 <script src="pg-llamadas.js?v=3"></script>
@@ -329,8 +348,8 @@ html.pg-sin-tops #pgVolver{display:inline-flex!important}
   <div class="pg-brand"><div class="pg-logo">G</div><div class="pg-wordmark">gabi</div></div>
   <div class="pg-tagline">EQUIPO COMERCIAL</div>
   <a data-go="mes" class="on"><span class="ico">◆</span> Meta</a>
-  <a data-go="pulso"><span class="ico">◉</span> Pulso</a>
-  <a data-go="alertas"><span class="ico">▲</span> Sentarse</a>
+  <a data-go="pulso"><span class="ico">◉</span> Llamadas</a>
+  <a data-go="alertas"><span class="ico">▲</span> Agentes</a>
   <a data-go="ano"><span class="ico">▤</span> Año</a>
   <a data-go="manual"><span class="ico">?</span> Qué es cada cosa</a>
   <div class="pg-foot"><button class="pg-tops-btn" type="button" id="btnTops">Ocultar la barra de tops</button><br><span id="ftuser">Brahian Toro</span><br>Líder comercial<br><span id="ftfecha"></span><br><span class="pg-logout" id="btnLogout" style="cursor:pointer;text-decoration:underline">Cerrar sesión</span></div>
@@ -344,7 +363,7 @@ html.pg-sin-tops #pgVolver{display:inline-flex!important}
   <section class="pg-section" id="s-pulso">
     <div class="pg-top">
       <div class="pg-eyebrow">Actividad del equipo</div>
-      <h1>Pulso</h1>
+      <h1>Llamadas</h1>
       <div class="pg-sub">Llamadas, positivos y ventas de todo el equipo. <b>Toca una cifra</b> para filtrar la lista y <b>toca una persona</b> para abrir su ficha.</div>
     </div>
     <div class="pg-card"><div id="pulso"></div></div>
@@ -373,6 +392,13 @@ html.pg-sin-tops #pgVolver{display:inline-flex!important}
           <div class="hc-ring"><canvas id="ringPlena"></canvas>
             <div class="hc-in"><div class="hc-v" id="h-plena">—</div><div class="hc-s" id="h-plena-s"></div></div></div>
           <div class="hc-pie" id="h-plena-pie"></div>
+        </div>
+        <!-- v24 · tercer anillo: índice de cancelaciones del equipo (portal.equipo_indice_detalle) -->
+        <div class="hc" id="hc-canc" style="cursor:pointer" title="Ver por persona en Agentes">
+          <div class="hc-lbl">Cancelaciones del equipo<button class="hq d" type="button" data-h="cancelaciones">?</button></div>
+          <div class="hc-ring"><canvas id="ringCanc"></canvas>
+            <div class="hc-in"><div class="hc-v" id="h-canc">—</div><div class="hc-s" id="h-canc-s">se cayeron antes de 6 meses</div></div></div>
+          <div class="hc-pie" id="h-canc-pie"></div>
         </div>
       </div>
 
@@ -499,7 +525,7 @@ html.pg-sin-tops #pgVolver{display:inline-flex!important}
   <!-- ============ 3 · ALERTAS ============ -->
   <section class="pg-section" id="s-alertas">
     <div class="pg-top">
-      <div class="pg-eyebrow">Sentarse</div>
+      <div class="pg-eyebrow">Agentes</div>
       <h1>Con quién sentarse esta semana</h1>
     </div>
     <div class="pg-headline">
@@ -511,6 +537,9 @@ html.pg-sin-tops #pgVolver{display:inline-flex!important}
       <p class="pg-purpose">No por plata estimada: primero quien más urge, según el patrón, no según quién mueve más dinero.</p>
       <div id="alertas"></div>
     </div>
+    <!-- v24 · JUBILADO: "Fee cobrado este mes contra el estándar" (decisión de Andrés: pasa a columna del Año
+         y a cifra de la cabecera de cada persona). Guardado en un template: no se pinta. -->
+    <template id="jubilado-v23-estandar">
     <div class="pg-card">
       <h2>Fee cobrado este mes contra el estándar<button class="hq" type="button" data-h="fee">?</button></h2>
       <table class="pg-table">
@@ -518,11 +547,42 @@ html.pg-sin-tops #pgVolver{display:inline-flex!important}
         <tbody id="tb-estandar"></tbody>
       </table>
     </div>
+    </template>
+
+    <!-- v24 · CADA AGENTE: tres cifras + la silla + sus cancelaciones. Poco texto: lo explica el manual. -->
+    <div class="pg-top" id="ag-ancla" style="margin-top:26px">
+      <div class="pg-eyebrow">Por persona</div>
+      <h1 style="font-size:20px">Cada agente</h1>
+    </div>
+    <div class="chips" id="ag-tira"></div>
+    <div class="fr" id="ag-cifras">
+      <div class="fr-nums">
+        <div class="fr-n"><div class="l">Rentable · <span id="ag-mes-l">este mes</span></div><div class="v" id="ag-rent">—</div><div class="s" id="ag-rent-s"></div></div>
+        <div class="fr-n"><div class="l">Cancelaciones</div><div class="v" id="ag-canc">—</div><div class="s" id="ag-canc-s"></div></div>
+        <div class="fr-n"><div class="l">Fee del mes</div><div class="v" id="ag-fee">—</div><div class="s" id="ag-fee-s"></div></div>
+        <div class="fr-n"><div class="l">Este mes</div><div class="v" id="ag-mes">—</div><div class="s" id="ag-mes-s"></div></div>
+      </div>
+    </div>
+    <div class="pg-card">
+      <h2>Por encima de su silla<button class="hq" type="button" data-h="silla">?</button></h2>
+      <div id="ag-silla"></div>
+      <div class="leg" id="ag-silla-leg"><span><b style="background:#2DBFA3"></b>Lo que deja</span><span><b style="background:#1B2D3A;height:2px"></b>Su silla</span><span>○ mes en curso</span></div>
+      <p class="pg-headline-text" id="ag-silla-f" style="margin:10px 0 0;font-size:14px"></p>
+    </div>
+    <div class="pg-card">
+      <h2>Sus cancelaciones<button class="hq" type="button" data-h="cancelaciones">?</button></h2>
+      <div class="ag-big"><div class="ag-big-n" id="ag-canc-big">—</div><div class="pg-sub" id="ag-canc-sub"></div></div>
+      <div id="ag-curva"></div>
+      <div class="leg" id="ag-curva-leg"><span><b style="background:#D5594F"></b>Se cayeron antes de 6 meses, por mes de venta</span><span><b style="background:#1B2D3A;height:2px"></b>Agencia</span></div>
+      <h2 style="margin-top:18px;font-size:14px">Cada póliza <span style="font-weight:400;color:var(--pg-muted);font-size:12px">· la raya es el día 180</span></h2>
+      <div class="ag-vida" id="ag-vida"></div>
+      <div class="pg-sub" id="ag-vida-det" style="margin-top:8px;min-height:18px"></div>
+    </div>
     <!-- v20 · antes pestaña "Bitácora" -->
 
     <div class="pg-top" id="bt-ancla" style="margin-top:26px">
       <div class="pg-eyebrow">Bitácora</div>
-      <h1 style="font-size:20px">La libreta del equipo</h1>
+      <h1 style="font-size:20px" id="bt-h1">La libreta del equipo</h1>
     </div>
 
     <div class="pg-card">
@@ -555,7 +615,7 @@ html.pg-sin-tops #pgVolver{display:inline-flex!important}
     </div>
     <div class="pg-card">
       <h2>Consolidado por persona</h2>
-      <table class="pg-table"><thead><tr><th>Persona</th><th class="num">Volumen</th><th class="num">% del equipo</th><th class="num">Fee</th><th class="num">% fee</th><th class="num">Cuentas</th><th class="num">Utilidad</th></tr></thead><tbody id="tb-cons"></tbody><tfoot id="tf-cons"></tfoot></table>
+      <div style="overflow-x:auto"><table class="pg-table"><thead><tr><th>Persona</th><th class="num">Volumen</th><th class="num">% del equipo</th><th class="num">Fee</th><th class="num">% fee</th><th class="num">Cuentas</th><th class="num">Utilidad</th><th class="num">Sobre su silla</th><th>Índice canc.</th><th class="num">Fee del mes</th></tr></thead><tbody id="tb-cons"></tbody><tfoot id="tf-cons"></tfoot></table></div>
     </div>
     <div class="pg-card">
       <h2>Volumen del equipo, mes a mes</h2>
@@ -637,10 +697,17 @@ async function cargarDatos(sb){
 
   // utilidad por persona-mes (vista contable, abierta a authenticated)
   const nombres = meta.map(a=>a.nombre_nomina).filter(Boolean);
-  const rU = await sb.from('v_utilidad_por_persona_v2').select('nombre,mes,utilidad_360_total')
+  /* v24 · la misma consulta trae también lo que deja cada quien y lo que cuesta su silla (para Agentes). */
+  const rU = await sb.from('v_utilidad_por_persona_v2').select('nombre,mes,utilidad_360_total,generacion_personal,comision_personal_derivada,costo_persona')
                      .in('nombre', nombres).gte('mes', cerrados[0]+'-01');
-  const utilPP = {};
-  (rU.data||[]).forEach(u=>{ const k=ym(u.mes); if(k in idx){ (utilPP[u.nombre] ||= Array(8).fill(0))[idx[k]] += N(u.utilidad_360_total); } });
+  const utilPP = {}, sillaPP = {};
+  const kCurso = ym(M0.mes_en_curso);
+  (rU.data||[]).forEach(u=>{ const k=ym(u.mes);
+    if(k in idx){ (utilPP[u.nombre] ||= Array(8).fill(0))[idx[k]] += N(u.utilidad_360_total); }
+    const j = (k in idx) ? idx[k] : (k===kCurso ? 8 : -1);
+    if(j>=0){ const o = (sillaPP[u.nombre] ||= { deja:Array(9).fill(null), silla:Array(9).fill(null) });
+      o.deja[j] = (o.deja[j]||0) + N(u.generacion_personal) - N(u.comision_personal_derivada);
+      o.silla[j] = Math.max(o.silla[j]||0, N(u.costo_persona)); } });
 
   /* Llamadas de hoy/mes, conversaciones del mes y ventas del mes (v_actividad_equipo_visible,
      RingCentral cada 15 min), para las alertas SIN_LLAMAR y MARCA_NO_CONVERSA y para contar
@@ -678,6 +745,7 @@ async function cargarDatos(sb){
       cuentas_sin_fee_mes: (llamByAgente[claveAg(a.agente)]||{}).cuentas_sin_fee_mes ?? null,
       ventas_mes: (llamByAgente[claveAg(a.agente)]||{}).ventas_mes ?? null,
       mc, fees, ven, sf, cuentas:cu, util: utilPP[a.nombre_nomina] || arr(),
+      rent: sillaPP[a.nombre_nomina] || null,   /* v24 · 8 cerrados + el que corre (índice 8) */
       m:{ mc:N(a.mc_mes_actual), fees:N(a.fees_mes_actual), ven:N(a.ventas_mes_actual), sf:N(a.ventas_sin_fee_mes_actual),
           pct:N(a.pct_del_minimo_mes), sem: a.semaforo_mes==='arranque del mes' ? 'sin' : semMap(a.semaforo_mes),
           deberia:N(a.ritmo_piso_a_la_fecha), proy:N(a.proyeccion_cierre_mes) }
@@ -1169,7 +1237,8 @@ const tEstandar=A.map(a=>{
   const falta=Math.max(0,EST-a.m.fees);
   return {n:nom(a.n),cu,conFee,fee:a.m.fees,falta};
 }).sort((x,y)=>y.falta-x.falta || y.fee-x.fee);
-document.getElementById('tb-estandar').innerHTML=tEstandar.map(r=>
+/* v24 · la tabla vive en un template jubilado: si no está en la pantalla, no se pinta */
+if(document.getElementById('tb-estandar')) document.getElementById('tb-estandar').innerHTML=tEstandar.map(r=>
   '<tr><td><b>'+r.n+'</b></td><td class="num">'+r.cu+'</td><td class="num">'+(r.conFee==null?'—':r.conFee)+'</td>'
   +'<td class="num">'+usd(r.fee)+'</td><td class="num">'+usd(EST)+'</td>'
   /* Si no vendio ni una cuenta no le "falta" fee: no hay de donde cobrarlo. Guion,
@@ -1339,7 +1408,7 @@ window.pgAbrirPersona = function(nombre){
    Las cuentas salen de v_brahian_serie_agente_visible y v_brahian_equipo_mes_visible;
    mientras no llegue, cuTot()/cuentasAno dan null y se pinta guion, nunca cero. */
 const cuTot = a => a.cuentas.some(v=>v!=null) ? sum(a.cuentas.map(v=>v||0)) : null;
-const cons=A.map(a=>({n:nom(a.n),v:sum(a.mc),f:sum(a.fees),u:sum(a.util),cu:cuTot(a)}))
+const cons=A.map(a=>({n:nom(a.n),k:normP(a.n),fm:a.m.fees,v:sum(a.mc),f:sum(a.fees),u:sum(a.util),cu:cuTot(a)}))
   .map(c=>({...c,pct:c.v>0?c.f/c.v*100:0,pv:volAno>0?c.v/volAno*100:0})).sort((x,y)=>y.v-x.v);
 const cuentasAno = E.some(m=>m.cuentas!=null) ? sum(E.map(m=>m.cuentas||0)) : null;
 document.getElementById('c-vol').textContent=usd(volAno);
@@ -1351,11 +1420,198 @@ document.getElementById('c-pol-s').textContent=sfAno+" salieron sin fee";
 document.getElementById('c-util').textContent=usd(utilAno);
 document.getElementById('c-util-s').textContent="Tu ingreso del año: "+usd(ingAno);
 document.getElementById('tb-cons').innerHTML=cons.map(c=>
- '<tr><td><b>'+c.n+'</b></td><td class="num">'+usd(c.v)+'</td><td class="num">'+c.pv.toFixed(1)+'%</td><td class="num">'+usd(c.f)+'</td><td class="num">'+c.pct.toFixed(1)+'%</td><td class="num">'+(c.cu==null?'—':c.cu)+'</td><td class="num '+(c.u<0?'neg':'pos')+'">'+usdS(c.u)+'</td></tr>').join('');
+ '<tr><td><b>'+c.n+'</b></td><td class="num">'+usd(c.v)+'</td><td class="num">'+c.pv.toFixed(1)+'%</td><td class="num">'+usd(c.f)+'</td><td class="num">'+c.pct.toFixed(1)+'%</td><td class="num">'+(c.cu==null?'—':c.cu)+'</td><td class="num '+(c.u<0?'neg':'pos')+'">'+usdS(c.u)+'</td>'
+ /* v24 · tres columnas: meses sobre su silla e índice (los llena pgV24 al llegar) y fee del mes contra el estándar */
+ +'<td class="num" data-v24s="'+c.k+'">—</td><td data-v24i="'+c.k+'">—</td>'
+ +'<td class="num'+(c.fm>0&&c.fm<EST?' neg':'')+'">'+usd(c.fm)+' <span class="mini">/ '+usd(EST)+'</span></td></tr>').join('');
 document.getElementById('tf-cons').innerHTML=
- '<tr style="background:#F7FAFB"><td><b>Equipo</b> <span class="mini">'+M.personas+' personas</span></td><td class="num">'+usd(volAno)+'</td><td class="num">100%</td><td class="num">'+usd(feeAno)+'</td><td class="num">'+(feeAno/volAno*100).toFixed(1)+'%</td><td class="num">'+(cuentasAno==null?'—':cuentasAno)+'</td><td class="num pos">'+usdS(utilAno)+'</td></tr>'
- +(D.enCurso?'<tr style="background:#F7FAFB"><td><b>'+lbl(D.enCurso.mes)+'</b> <span class="pg-pill muted">en curso</span></td><td class="num">'+usd(D.enCurso.mc)+'</td><td class="num">—</td><td class="num">'+usd(D.enCurso.fees)+'</td><td class="num">'+(D.enCurso.mc>0?(D.enCurso.fees/D.enCurso.mc*100).toFixed(1)+'%':'—')+'</td><td class="num">'+(D.enCurso.cuentas==null?'—':D.enCurso.cuentas)+'</td><td class="num">—</td></tr>':'');
+ '<tr style="background:#F7FAFB"><td><b>Equipo</b> <span class="mini">'+M.personas+' personas</span></td><td class="num">'+usd(volAno)+'</td><td class="num">100%</td><td class="num">'+usd(feeAno)+'</td><td class="num">'+(feeAno/volAno*100).toFixed(1)+'%</td><td class="num">'+(cuentasAno==null?'—':cuentasAno)+'</td><td class="num pos">'+usdS(utilAno)+'</td><td class="num">—</td><td id="v24-eq-idx">—</td><td class="num">'+usd(MES.fees)+' <span class="mini">/ '+usd(EST*M.personas)+'</span></td></tr>'
+ +(D.enCurso?'<tr style="background:#F7FAFB"><td><b>'+lbl(D.enCurso.mes)+'</b> <span class="pg-pill muted">en curso</span></td><td class="num">'+usd(D.enCurso.mc)+'</td><td class="num">—</td><td class="num">'+usd(D.enCurso.fees)+'</td><td class="num">'+(D.enCurso.mc>0?(D.enCurso.fees/D.enCurso.mc*100).toFixed(1)+'%':'—')+'</td><td class="num">'+(D.enCurso.cuentas==null?'—':D.enCurso.cuentas)+'</td><td class="num">—</td><td class="num">—</td><td>—</td><td class="num">—</td></tr>':'');
 GRAF.ano=()=>{ chartsAno(); };
+
+/* ============================================================
+   v24 · CANCELACIONES Y AGENTES (13-oct-2026)
+   - Índice de cancelaciones = lo que se cayó ANTES DE 6 MESES de lo vendido en 12 meses
+     (public.v_cartera_indice_cancelacion_al, vía v_cartera_indice_visible). El del equipo se
+     cuenta sobre portal.equipo_indice_detalle() (mismo alcance del Pulso).
+   - Rentable = lo que deja (fee + comisión de lo vendido − comisión pagada) contra su silla
+     (costo_persona), de v_utilidad_por_persona_v2. Por debajo de la silla = ese mes no fue rentable.
+   Se carga DESPUÉS de Meta y del Pulso (no compite) y con un reintento si la base corta por tiempo.
+   ============================================================ */
+window.pgV24 = async function(sb){
+  const $ = id => document.getElementById(id);
+  const P1 = x => (Math.round(x*1000)/10).toFixed(1).replace('.',',')+' %';
+  const SEM_OSC = {ROJO:Z_OSC.rojo, AMARILLO:Z_OSC.ambar, VERDE:Z_OSC.verde, GRIS:'#8da0ad'};
+  const SEM_CLA = {ROJO:ROJO, AMARILLO:AMBAR, VERDE:MINTD, GRIS:'#AEBBC4'};
+  const esc = t => String(t==null?'':t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const MESC = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+  let IDX=[], DET=[];
+  async function traer(){
+    const [rI, rD] = await Promise.all([
+      sb.from('v_cartera_indice_visible').select('agente,ventas,medio_termino,reescritas,pct_medio_termino,pct_agencia,semaforo,patron'),
+      sb.schema('portal').rpc('equipo_indice_detalle')
+    ]);
+    if(rI.error) throw rI.error; if(rD.error) throw rD.error;
+    IDX = rI.data||[]; DET = rD.data||[];
+  }
+  try{ await traer(); }
+  catch(e){ if(!/timeout/i.test(String(e&&e.message))){ console.warn('v24 índice', e); return; }
+    await new Promise(r=>setTimeout(r,2500)); try{ await traer(); }catch(e2){ console.warn('v24 índice', e2); return; } }
+  const idxDe = n => IDX.find(i => normP(i.agente)===normP(n)) || null;
+  const detDe = n => DET.filter(d => normP(d.agente)===normP(n));
+  const medible = i => i && i.semaforo && i.semaforo!=='GRIS';
+  const PCT_AG = IDX.length ? Number(IDX[0].pct_agencia)||0 : 0;
+  const bolita = n => { const i = idxDe(n);
+    return medible(i) ? '<span class="cxb '+i.semaforo+'"></span><span class="cxp">'+P1(Number(i.pct_medio_termino))+'</span>'
+                      : '<span class="cxb GRIS"></span><span class="cxp">—</span>'; };
+
+  /* ---- 1 · el anillo del equipo (Meta) ---- */
+  const nEq = DET.length, cEq = DET.filter(d=>d.medio_termino && !d.reescrita).length;
+  const dev = DET.filter(d=>d.cancelada && !d.reescrita).reduce((s,d)=>s+Number(d.devuelto||0),0);
+  const pEq = nEq ? cEq/nEq : null;
+  const semEq = pEq==null ? 'GRIS' : (pEq>=0.25 || pEq>=2*PCT_AG ? 'ROJO' : (pEq>PCT_AG ? 'AMARILLO' : 'VERDE'));
+  (function(){
+    const el = $('ringCanc'); if(!el) return; const dpr = window.devicePixelRatio||1;
+    function pinta(){
+      const box = el.parentNode.getBoundingClientRect(); const w=Math.max(70,box.width||216), h=Math.max(70,box.height||216);
+      el.style.width=w+'px'; el.style.height=h+'px'; el.width=Math.round(w*dpr); el.height=Math.round(h*dpr);
+      const g=el.getContext('2d'); if(!g) return;
+      const x=el.width/2, y=el.height/2, R=Math.min(el.width,el.height)/2-3*dpr, LW=Math.max(7*dpr,R*.26), r=R-LW/2;
+      const A=p=>(-Math.PI/2)+(Math.PI*2)*(p/100);
+      const arco=(p0,p1,col)=>{ if(!(p1>p0))return; g.beginPath(); g.arc(x,y,r,A(p0),A(p1)); g.strokeStyle=col; g.lineWidth=LW; g.lineCap='butt'; g.stroke(); };
+      g.clearRect(0,0,el.width,el.height);
+      arco(0,100,'rgba(255,255,255,.16)');
+      /* la vuelta completa es 50 %: así un 13 % se ve, y el rojo (25 %) queda en la mitad */
+      if(pEq!=null) arco(0, Math.min(100, pEq*200), SEM_OSC[semEq]);
+      if(PCT_AG>0){ const ang=A(Math.min(100,PCT_AG*200)); g.beginPath();
+        g.moveTo(x+Math.cos(ang)*(r-LW/2-1.5*dpr), y+Math.sin(ang)*(r-LW/2-1.5*dpr));
+        g.lineTo(x+Math.cos(ang)*(r+LW/2+1.5*dpr), y+Math.sin(ang)*(r+LW/2+1.5*dpr));
+        g.strokeStyle='#FFFFFF'; g.lineWidth=2.4*dpr; g.stroke(); }
+    }
+    pinta(); requestAnimationFrame(pinta); window.addEventListener('resize', ()=>{ try{pinta();}catch(e){} });
+  })();
+  if($('h-canc')){ $('h-canc').textContent = pEq==null ? '—' : P1(pEq); $('h-canc').style.color = SEM_OSC[semEq]; }
+  if($('h-canc-pie')) $('h-canc-pie').textContent = nEq ? cEq+' de '+nEq+' · agencia '+P1(PCT_AG)+' · '+k(dev)+' devueltos' : '—';
+  const hc = $('hc-canc'); if(hc) hc.addEventListener('click', e=>{ if(e.target.closest('.hq')) return; const l=document.querySelector('.pg-side a[data-go="alertas"]'); if(l) l.click();
+    setTimeout(()=>{ const a=$('ag-ancla'); if(a) a.scrollIntoView({behavior:'smooth',block:'start'}); }, 60); });
+  /* Año: fila del equipo */
+  if($('v24-eq-idx')) $('v24-eq-idx').innerHTML = pEq==null ? '—' : '<span class="cxb '+semEq+'" style="margin-left:0"></span><span class="cxp">'+P1(pEq)+'</span>';
+
+  /* ---- 2 · bolitas en la lista de Meta (se repinta con los filtros: se vuelve a decorar) ---- */
+  function decorar(){ document.querySelectorAll('#gen-lista .gr[data-ag]').forEach(r=>{ const n=r.querySelector('.g-n');
+    if(n && !n.querySelector('.cxb')) n.insertAdjacentHTML('beforeend', bolita(r.dataset.ag)); }); }
+  decorar();
+  const gl = $('gen-lista'); if(gl) new MutationObserver(()=>decorar()).observe(gl, {childList:true});
+
+  /* ---- 3 · Agentes ---- */
+  const ORD = {ROJO:0, AMARILLO:1, VERDE:2, GRIS:3};
+  const semDe = a => { const i=idxDe(a.n); return medible(i) ? i.semaforo : 'GRIS'; };
+  const lista = [...A].sort((x,y)=> ORD[semDe(x)]-ORD[semDe(y)] || nom(x.n).localeCompare(nom(y.n)));
+  const LBLM = [...ML, MES.nombre.slice(0,3)];
+  const sobre = a => { if(!a.rent) return null; let s=0,t=0;
+    for(let j=0;j<8;j++){ const d=a.rent.deja[j], c=a.rent.silla[j]; if(d==null || !(c>0)) continue; t++; if(d>=c) s++; }
+    return t ? {s,t} : null; };
+  /* Año: meses sobre su silla + índice por persona */
+  A.forEach(a=>{ const kk=normP(a.n), so=sobre(a);
+    const cs=document.querySelector('[data-v24s="'+kk+'"]'); if(cs) cs.textContent = so ? so.s+' de '+so.t : '—';
+    const ci=document.querySelector('[data-v24i="'+kk+'"]'); if(ci) ci.innerHTML = bolita(a.n).replace('margin:0 4px 0 8px',''); });
+
+  function svgSilla(a){
+    const r=a.rent; if(!r || !r.silla.some(c=>c>0)) return '<div class="ag-vacio">Sin silla registrada en nómina: no se puede medir.</div>';
+    const deja=r.deja, S=Math.max(...r.silla.filter(c=>c>0));
+    const vals=deja.filter(v=>v!=null).concat([S,0]);
+    const mx=Math.max(...vals), mn=Math.min(...vals), pad=(mx-mn)*0.12||500, top=mx+pad, bot=Math.min(0,mn)-pad*0.6;
+    const W=720,H=230,PL=54,PR=14,PT=14,PB=26, n=deja.length;
+    const X=i=>PL+i*(W-PL-PR)/(n-1), Y=v=>PT+(H-PT-PB)*(1-(v-bot)/(top-bot));
+    const kf=v=>(v<0?'-':'')+'$'+(Math.abs(v)>=1000?(Math.round(Math.abs(v)/100)/10)+'K':Math.round(Math.abs(v)));
+    let s='<svg class="ag-svg" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Lo que deja cada mes contra su silla">';
+    const paso = pasoBonito((top-bot)/4);
+    for(let t=Math.ceil(bot/paso)*paso; t<=top; t+=paso) s+='<line x1="'+PL+'" x2="'+(W-PR)+'" y1="'+Y(t)+'" y2="'+Y(t)+'" stroke="#E7EDF2"/><text x="'+(PL-6)+'" y="'+(Y(t)+4)+'" text-anchor="end" font-size="10" fill="#6B7D89">'+kf(t)+'</text>';
+    for(let i=0;i<n-1;i++){ const b0=deja[i]!=null&&deja[i]<S, b1=deja[i+1]!=null&&deja[i+1]<S;
+      if(b0||b1) s+='<rect x="'+X(i)+'" y="'+PT+'" width="'+(X(i+1)-X(i))+'" height="'+(H-PT-PB)+'" fill="#D5594F" opacity="'+(b0&&b1?.10:.05)+'"/>'; }
+    s+='<line x1="'+PL+'" x2="'+(W-PR)+'" y1="'+Y(S)+'" y2="'+Y(S)+'" stroke="#1B2D3A" stroke-width="1.6" stroke-dasharray="6 5" opacity=".65"/>';
+    s+='<text x="'+(PL+6)+'" y="'+(Y(S)-6)+'" text-anchor="start" font-size="11" fill="#1B2D3A" font-weight="700">su silla '+usd(S)+'</text>';
+    LBLM.forEach((m,i)=>{ s+='<text x="'+X(i)+'" y="'+(H-8)+'" text-anchor="middle" font-size="11" fill="#6B7D89">'+m+'</text>'; });
+    let seg=[]; const tramos=[]; deja.forEach((v,i)=>{ if(v==null){ if(seg.length) tramos.push(seg); seg=[]; } else seg.push(X(i)+','+Y(v)); }); if(seg.length) tramos.push(seg);
+    tramos.forEach(t=>{ s+='<polyline fill="none" stroke="#2DBFA3" stroke-width="3" stroke-linejoin="round" points="'+t.join(' ')+'"/>'; });
+    deja.forEach((v,i)=>{ if(v==null) return; const b=v<S, cur=i===n-1;
+      s+='<circle cx="'+X(i)+'" cy="'+Y(v)+'" r="'+(b&&!cur?6:4.5)+'" fill="'+(cur?'#fff':(b?'#D5594F':MINTD))+'" stroke="'+(cur?MINTD:(b?'#D5594F':MINTD))+'" stroke-width="2.5"><title>'+LBLM[i]+' · dejó '+usdS(v)+'</title></circle>';
+      if(b&&!cur) s+='<text x="'+X(i)+'" y="'+(Y(v)+20)+'" text-anchor="middle" font-size="10" fill="#D5594F" font-weight="700">'+usdS(v)+'</text>'; });
+    return s+'</svg>';
+  }
+  function svgCurva(dets){
+    const vs=dets.filter(d=>!d.reescrita).sort((x,y)=>String(x.efectiva).localeCompare(String(y.efectiva)));
+    const porMes={}; vs.forEach(d=>{ const kk=String(d.efectiva).slice(0,7); const o=porMes[kk]||(porMes[kk]={v:0,c:0}); o.v++; if(d.medio_termino) o.c++; });
+    let v=0,c=0; const pts=[]; Object.keys(porMes).sort().forEach(kk=>{ v+=porMes[kk].v; c+=porMes[kk].c; if(v>=5) pts.push({kk,p:100*c/v,c:porMes[kk].c}); });
+    if(pts.length<2) return '<div class="ag-vacio">Todavía no hay suficientes ventas para dibujar la curva.</div>';
+    const W=720,H=180,PL=40,PR=14,PT=14,PB=26, top=Math.max(50, Math.ceil(Math.max(...pts.map(x=>x.p))/10)*10+10);
+    const X=i=>PL+i*(W-PL-PR)/(pts.length-1), Y=t=>PT+(H-PT-PB)*(1-t/top), ag=PCT_AG*100;
+    let s='<svg class="ag-svg" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Se cayeron antes de 6 meses, por mes de venta">';
+    s+='<rect x="'+PL+'" y="'+Y(top)+'" width="'+(W-PL-PR)+'" height="'+(Y(25)-Y(top))+'" fill="#D5594F" opacity=".05"/>';
+    [0,25,50].filter(t=>t<=top).forEach(t=>{ s+='<line x1="'+PL+'" x2="'+(W-PR)+'" y1="'+Y(t)+'" y2="'+Y(t)+'" stroke="#E7EDF2"/><text x="'+(PL-6)+'" y="'+(Y(t)+4)+'" text-anchor="end" font-size="10" fill="#6B7D89">'+t+'%</text>'; });
+    s+='<line x1="'+PL+'" x2="'+(W-PR)+'" y1="'+Y(ag)+'" y2="'+Y(ag)+'" stroke="#1B2D3A" stroke-width="1" stroke-dasharray="2 3" opacity=".5"/><text x="'+(W-PR)+'" y="'+(Y(ag)-4)+'" text-anchor="end" font-size="10" fill="#1B2D3A" opacity=".7">agencia '+P1(PCT_AG)+'</text>';
+    pts.forEach((x,i)=>{ if(pts.length<=12 || i%2===0 || i===pts.length-1) s+='<text x="'+X(i)+'" y="'+(H-8)+'" text-anchor="middle" font-size="10" fill="#6B7D89">'+MESC[Number(x.kk.slice(5,7))-1]+'</text>'; });
+    s+='<polyline fill="none" stroke="#D5594F" stroke-width="2.5" stroke-linejoin="round" points="'+pts.map((x,i)=>X(i)+','+Y(x.p)).join(' ')+'"/>';
+    pts.forEach((x,i)=>{ s+='<circle cx="'+X(i)+'" cy="'+Y(x.p)+'" r="3.5" fill="#D5594F"><title>'+x.kk+' · '+Math.round(x.p)+' %</title></circle>';
+      if(x.c) s+='<text x="'+X(i)+'" y="'+(Y(x.p)-9)+'" text-anchor="middle" font-size="10" fill="#D5594F" font-weight="700">✕'+x.c+'</text>'; });
+    return s+'</svg>';
+  }
+  function vida(dets){
+    const pos=d=>Math.max(0,Math.min(100,d/365*100));
+    const orden=dets.slice().sort((x,y)=> (y.cancelada?1:0)-(x.cancelada?1:0) || (x.cancelada ? (x.dias_vida||0)-(y.dias_vida||0) : String(y.efectiva).localeCompare(String(x.efectiva))));
+    $('ag-vida').innerHTML = orden.map((d,i)=>{ const cayo=!!d.cancelada, dur=cayo&&d.dias_vida!=null?Number(d.dias_vida):365;
+      const cls=cayo?(d.reescrita?'reesc':(d.medio_termino?'caida':'tarde')):'';
+      return '<div class="n" data-i="'+i+'">'+esc(d.cuenta_nombre)+'</div><div class="tl" data-i="'+i+'"><span class="d180" style="left:'+pos(180)+'%"></span><span class="ln '+cls+'" style="width:'+Math.max(1,pos(dur))+'%"></span>'+(cayo?'<span class="x" style="left:'+pos(dur)+'%">✕ día '+dur+'</span>':'')+'</div>'; }).join('')
+      || '<div class="ag-vacio" style="grid-column:1/-1">Sin pólizas que cuenten todavía.</div>';
+    $('ag-vida-det').textContent='';
+    $('ag-vida').onclick = e => { const t=e.target.closest('[data-i]'); if(!t) return; const d=orden[Number(t.dataset.i)];
+      $('ag-vida-det').textContent = d.cuenta_nombre+' · '+(d.carrier||'—')+' · '+usd(d.premium_al||0)+' · desde el '+String(d.efectiva).slice(0,10)
+        +(d.cancelada ? ' · se cayó el '+String(d.fecha_cancelacion||'').slice(0,10)+(d.reescrita?' (la reescribió, no cuenta)':'')+(Number(d.devuelto)>0?' · devolvió '+usd(d.devuelto):'') : ' · viva'); };
+  }
+  let ACT = null;
+  function verAgente(a){
+    ACT = a;
+    document.querySelectorAll('#ag-tira .chip').forEach(b=>b.classList.toggle('on', b.dataset.ag===a.n));
+    const i=idxDe(a.n), dets=detDe(a.n), so=sobre(a), r=a.rent;
+    /* cifra 1 · rentable este mes */
+    const dCur = r ? r.deja[8] : null, sCur = r ? r.silla[8] : null;
+    $('ag-mes-l').textContent = MES.nombre.toLowerCase();
+    if(dCur!=null && sCur>0){ const mu=dCur/sCur, col=mu>=1.5?Z_OSC.verde:(mu>=1?Z_OSC.ambar:Z_OSC.rojo);
+      $('ag-rent').innerHTML='va en <span style="color:'+col+'">'+mu.toFixed(2).replace('.',',')+'×</span>';
+      $('ag-rent-s').textContent='dejó '+usdS(dCur)+' · su silla '+usd(sCur); }
+    else { $('ag-rent').textContent='—'; $('ag-rent-s').textContent= sCur>0 ? 'sin movimiento este mes' : 'sin silla registrada'; }
+    /* cifra 2 · cancelaciones */
+    if(medible(i)){ $('ag-canc').innerHTML='<span style="color:'+SEM_OSC[i.semaforo]+'">'+P1(Number(i.pct_medio_termino))+'</span>';
+      $('ag-canc-s').textContent=i.medio_termino+' de '+i.ventas+(i.patron?' · patrón':'')+' · agencia '+P1(PCT_AG); }
+    else { $('ag-canc').textContent='—'; $('ag-canc-s').textContent='no se mide aún (5 ventas con 60 días)'; }
+    /* cifra 3 · fee del mes contra el estándar */
+    $('ag-fee').textContent=usd(a.m.fees); $('ag-fee-s').textContent='de '+usd(EST)+(a.m.fees<EST ? ' · le faltan '+usd(EST-a.m.fees) : ' · cumple');
+    /* cifra 4 · este mes contra su meta */
+    $('ag-mes').textContent=usd(a.m.mc); $('ag-mes-s').textContent='de '+usd(a.norte)+' · '+ritmoFrase(a.m.mc,a.m.deberia);
+    /* la silla */
+    $('ag-silla').innerHTML = svgSilla(a);
+    $('ag-silla-leg').style.display = (a.rent && a.rent.silla.some(c=>c>0)) ? '' : 'none';
+    $('ag-silla-f').innerHTML = so ? '<b>Por encima de su silla '+so.s+' de '+so.t+' meses.</b>' : '';
+    /* sus cancelaciones */
+    if(medible(i)){ $('ag-canc-big').innerHTML='<span class="cxb '+i.semaforo+'"></span>'+P1(Number(i.pct_medio_termino));
+      $('ag-canc-sub').innerHTML=i.medio_termino+' de '+i.ventas+' · agencia '+P1(PCT_AG)+(i.patron?' · <b style="color:#D5594F">patrón</b>':''); }
+    else { $('ag-canc-big').innerHTML='—'; $('ag-canc-sub').textContent='No se mide aún (5 ventas con 60 días)'; }
+    $('ag-curva').innerHTML = medible(i) ? svgCurva(dets) : '';
+    $('ag-curva-leg').style.display = medible(i) ? '' : 'none';
+    vida(dets);
+    /* la libreta, solo de esta persona */
+    if(window.pgBitacoraPersona) window.pgBitacoraPersona(a.n);
+  }
+  $('ag-tira').innerHTML = lista.map(a=>'<button type="button" class="chip" data-ag="'+esc(a.n)+'"><span class="cxb '+semDe(a)+'"></span>'+esc(nom(a.n))+'</button>').join('');
+  $('ag-tira').onclick = e => { const b=e.target.closest('.chip[data-ag]'); if(!b) return; const a=A.find(x=>x.n===b.dataset.ag); if(a) verAgente(a); };
+  /* tocar un nombre de la lista de prioridad lo abre abajo */
+  const al=$('alertas'); if(al) al.addEventListener('click', e=>{ const t=e.target.closest('.a-l'); if(!t) return;
+    const a=A.find(x=>nom(x.n)===t.textContent.trim()); if(a){ verAgente(a); const g=$('ag-ancla'); if(g) g.scrollIntoView({behavior:'smooth',block:'start'}); } });
+  /* abre en la primera persona de la lista de prioridad (si hay) o en la primera de la tira */
+  const conDatos = a => a && (medible(idxDe(a.n)) || (a.rent && a.rent.silla.some(c=>c>0)));
+  const primera = (typeof SENTARSE!=='undefined') ? SENTARSE.map(x=>A.find(y=>y.n===x.n)).find(conDatos) : null;
+  verAgente(primera || lista.find(conDatos) || lista[0]);
+};
 
 /* ===== NAV ===== */
 document.querySelectorAll('.pg-side a[data-go]').forEach(a=>a.onclick=()=>{
@@ -1434,6 +1690,16 @@ const MANUAL=[
  'De lideres_config multiplicado por la generación del equipo.',
  'Sube cuando sube el equipo.',
  'Es la misma onda de la utilidad, con otra escala.'],
+['cancelaciones','Cancelaciones (el anillo y la curva)',
+ 'De lo que vendió en los últimos 12 meses, qué parte se cayó antes de cumplir 6 meses. El del equipo suma a todos los que ya se miden.',
+ 'Del BOS, ramo AL: pólizas con al menos 60 días de vida posible. Si la cuenta se reescribió dentro de los 45 días, no cuenta como caída. Es el mismo índice de Renovaciones.',
+ 'Rojo desde 25 % o el doble de la agencia; ámbar desde 15 % o vez y media. El anillo da la vuelta completa en 50 % y la marca blanca es la agencia. "Patrón": 2 caídas en 90 días o 3 en 180. Quien tiene menos de 5 ventas todavía no se mide (guion).',
+ 'Una póliza que se cae antes de 6 meses devuelve la comisión y la cuenta no vuelve. Mirar qué está vendiendo y a quién.'],
+['silla','Su silla (rentable)',
+ 'Lo que cuesta tener a la persona sentada un mes: su básico en dólares.',
+ 'De la nómina y de la vista contable de utilidad por persona. "Lo que deja" es el fee de la agencia más la comisión de lo que vendió, menos lo que se le pagó de comisión.',
+ 'Si lo que deja queda por debajo de su silla, ese mes no fue rentable, aunque haya cobrado fee. El mes en curso va con punto hueco y no cuenta hasta que cierre.',
+ 'Cuando cae bajo la silla por pólizas que se le cayeron, la conversación es de cancelaciones, no de vender más.'],
 ['positivo','Positivo',
  'Un contacto que la persona creó ese día en HubSpot. Crear el contacto, o el contacto y el negocio, cuenta igual: uno.',
  'De HubSpot: la fecha de creación del contacto, atribuida a quien lo creó.',
@@ -1530,7 +1796,8 @@ function bitacora(D){
   const fmt = f => { if(!f) return ''; const p = String(f).slice(0,10).split('-'); return Number(p[2]) + ' ' + ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'][Number(p[1])-1]; };
   const esc = t => String(t==null?'':t).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
-  let ENT = [], CHIP = 'abiertos', CARGANDO = true;
+  let ENT = [], CHIP = 'abiertos', CARGANDO = true, QUIEN = null;   /* v24 · QUIEN = persona escogida en Agentes */
+  const nnB = t => String(t||'').replace(/\s*\(.*\)\s*$/,'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
 
   const selB = $('btPersona');
   selB.innerHTML = D.agentes.map(a => '<option value="' + esc(a.n) + '">' + esc(nom(a.n)) + '</option>').join('');
@@ -1560,16 +1827,18 @@ function bitacora(D){
 
   function pinta(){
     if (CARGANDO) { $('btLista').innerHTML = '<div class="bt-vacio">Cargando…</div>'; return; }
-    const abiertos = ENT.filter(e => e.compromiso && !e.hecho);
+    const BASE = QUIEN ? ENT.filter(e => nnB(e.persona) === nnB(QUIEN)) : ENT;
+    if ($('bt-h1')) $('bt-h1').textContent = QUIEN ? 'La libreta · ' + nom(QUIEN) : 'La libreta del equipo';
+    const abiertos = BASE.filter(e => e.compromiso && !e.hecho);
     const venc = abiertos.filter(e => String(e.fecha_revision).slice(0,10) < hoyISO());
-    const cuenta = { abiertos: abiertos.length, vencidos: venc.length, todo: ENT.length };
+    const cuenta = { abiertos: abiertos.length, vencidos: venc.length, todo: BASE.length };
     $('btSub').textContent = abiertos.length
       ? abiertos.length + ' compromiso' + (abiertos.length===1?'':'s') + ' abierto' + (abiertos.length===1?'':'s') + (venc.length ? ' · ' + venc.length + ' vencido' + (venc.length===1?'':'s') + ' sin marcar' : '') + '.'
-      : (ENT.length ? 'Sin compromisos abiertos.' : 'Todavía no hay nada anotado.');
+      : (BASE.length ? 'Sin compromisos abiertos.' : 'Todavía no hay nada anotado' + (QUIEN ? ' con ' + nom(QUIEN) : '') + '.');
     $('btChips').innerHTML = [['abiertos','Abiertos'],['vencidos','Vencidos'],['todo','Todo']]
       .map(([k,t]) => '<button type="button" class="chip' + (CHIP===k?' on':'') + '" data-chip="' + k + '">' + t + ' <span style="opacity:.75">' + cuenta[k] + '</span></button>').join('');
     document.querySelectorAll('#btChips .chip').forEach(b => b.onclick = () => { CHIP = b.dataset.chip; pinta(); });
-    let f = ENT.slice();
+    let f = BASE.slice();
     if (CHIP === 'abiertos') f = abiertos; else if (CHIP === 'vencidos') f = venc;
     f.sort((a,b) => (ORD[estado(a)] - ORD[estado(b)]) || (String(a.fecha_revision||a.creado_en) < String(b.fecha_revision||b.creado_en) ? -1 : 1));
     $('btLista').innerHTML = f.length ? f.map(e => {
@@ -1584,7 +1853,7 @@ function bitacora(D){
         + '<span class="bt-pill ' + p[0] + '">' + p[1] + '</span>'
         + (e.compromiso ? '<label class="bt-chk"><input type="checkbox" data-hecho="' + e.id + '"' + (e.hecho?' checked':'') + '> Cumplido</label>' : '')
         + '</div></div>';
-    }).join('') : '<div class="bt-vacio">' + (!ENT.length ? 'Todavía no hay nada anotado. La primera conversación de la semana va arriba.'
+    }).join('') : '<div class="bt-vacio">' + (!BASE.length ? 'Todavía no hay nada anotado. La primera conversación de la semana va arriba.'
         : (CHIP==='vencidos' ? 'Nada vencido. Así debería verse siempre.'
         : 'Sin compromisos abiertos. Anota el próximo arriba.')) + '</div>';
     document.querySelectorAll('#btLista input[data-hecho]').forEach(c => c.onchange = async () => {
@@ -1618,6 +1887,8 @@ function bitacora(D){
   pinta();
   cargar();
   window.pgBitacoraCargar = cargar;
+  window.pgBitacoraPersona = function(n){ QUIEN = n || null;
+    const op=[...selB.options].find(o=>nnB(o.value)===nnB(n)); if(op) selB.value=op.value; pinta(); };
   window.pgAnotar = function(nombre){
     const nn = t => String(t||'').replace(/\s*\(.*\)\s*$/,'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
     const op=[...selB.options].find(o=>nn(o.value)===nn(nombre)); if(op) selB.value=op.value;
@@ -2145,6 +2416,8 @@ async function renderShell(session){
     if (window.PGLlamadas) PGLlamadas.montar(document.getElementById('pulso'), {
       sb: SB, modo: 'equipo', alAbrir: (ag, cont) => detalleAgente(SB, ag, cont)
     });
+    /* v24 · cancelaciones y Agentes: después del Pulso, sin competir con Meta. */
+    setTimeout(() => { if (window.pgV24) window.pgV24(SB).catch(e => console.warn('v24', e)); }, 400);
     /* v20: diaEquipo()/actividadEquipo() eran de la pestaña "Equipo", jubilada (template). */
   } catch (e) {
     console.error(e);
@@ -2172,7 +2445,7 @@ boot();
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="gabi-brahian.html";
-var PGV_VERSION=23; // v23 - 12-oct-2026 RENDIMIENTO: la actividad del equipo (v_actividad_equipo_visible) se pide a la par de Meta en vez de en fila (~1,4 s menos). Mismo orden de pintado: Meta primero, Pulso después. // v22 - 12-oct-2026 pedido de Andrés: Meta vuelve a ser lo primero (primera en el menú y abierta al entrar); carga Meta primero y el Pulso cuando Meta ya pintó. Pulso pasa a segunda. // v21 - 12-oct-2026 ARREGLO de la v20: (0) si Meta se corta por tiempo, un reintento a los 2,5 s; (1) los anillos de Meta se volvían a dibujar a tamaño de reserva porque Meta dejó de ser la pantalla inicial; ahora se re-miden al abrir Meta; (2) el menú responde desde el primer segundo (antes esperaba a que Meta cargara); si ya se abrió otra pestaña, se arma al llegar los datos. // v20 - 12-oct-2026 (+ botón 'Ocultar la barra de tops' en la barra lateral, se recuerda en portal.preferencias_usuario) PULSO + 4 PANTALLAS: el menú queda Pulso · Meta · Sentarse · Año · Qué es cada cosa. PULSO (nuevo, abre aquí) es pg-llamadas.js sobre portal.equipo_llamadas_pulso(): Hoy · Último día hábil · Semana · Mes, cuatro cifras que filtran (Llamadas, +2 min, Positivos, Ventas), "N personas sin llamar" desde las 11:00, franja Día corto (<40% del promedio de 10 días hábiles), y la ficha de equipo_agente_detalle se abre debajo de la fila con Ver su año / Anotar en la libreta. Mismo número que FAM (pestaña Equipo) y Mi proceso. PERSONA deja de ser pestaña: se abre en Meta al tocar a alguien de la lista. BITÁCORA va dentro de Sentarse. La pestaña Equipo (Ayer | Este mes) se jubila en un template (no se pinta ni consulta). Cero cambios de datos de negocio. // v19 - Protect Index: las direcciones internas del sitio pasan a relativas (el sitio ya no depende de como se llame el repo). Las que viajan por correo (recuperar contrasena, fotos de firma, sello de RRHH) quedan absolutas apuntando a protect-index. // v18 - Una persona, una meta: el tablero deja de leer los campos de la meta chica y el piso de direccion; el avance de cada quien y del equipo se mide solo contra la meta de rampa (una sola vara por persona) -- la meta del equipo pasa a ser la suma de las 17, $1,015,000, y se quita la suma de las metas chicas. En la ficha de Persona, al inicio, se suma la franja de curva de aprendizaje (solo si aplica) y su plan corto (1 o 2 tarjetas con que pide), leidos de una sola llamada a SB.rpc('simular_sueno_de'): el mismo numero que la persona ve en su Mi proceso, para que hable con Brahian del mismo plan. Equipo, Bitacora, Ano, Manual y el motor de patrones de Sentarse quedan igual. // v17 - combinada = premium + fee x10 (decision de Andres 14-sep, igual que el reporte de Jeff); el motor ya la manda asi; la alerta cobra-y-no-vende deriva el premium como mc - fee x10. // v16 - Pestana "Hoy" pasa a llamarse EQUIPO: dia-card + act-card + emb-card de la v15 (las tres con la misma lista de 21 nombres) se funden en UNA tabla con interruptor Ayer | Este mes, misma fila de cifras en los dos modos (Llamadas, De +2 min, Positivos, Ventas). Columna Cuentas se elimina; Dias con positivo y Donde se le queda (antes en sus propios cards) pasan a ser columnas del modo Este mes. positivos ahora sale de la columna nueva contactos/contactos_mes (contactos creados), no de positivos_mes; lo que antes se llamaba positivos (negocio mandado a cotizar) se renombra cotizados y vive en la ficha. Ventas ya es CUENTAS (clientes distintos), no polizas -- polizas queda solo para el tooltip. Pestana "El mes" se renombra Meta y se queda solo con anillos/barra/lista de meta (no tenia actividad colada). Ficha de persona (det-card): cuadro llamadas/+2min/solo timbre/minutos/positivos/cotizados/ventas con los nombres de campo correctos del RPC (solo_timbre, no soloTimbre); "Positivos dia a dia" lee pulsoContactos (antes positivosDia); lista nueva "Que positivos monto este mes" con positivosMontados, al lado de "Que registro en el BOS" (paquetes/totalMes, sin cambios, por cuenta). Pie de la tabla de EQUIPO fijo en dos lineas: que es un positivo, y quien no tiene RingCentral. TODO v16: no se re-agrego el pulso "sin una sola senal" ni el senalamiento de "quien mas marca sin cotizar" de la v15 -- se recorto a proposito para cumplir el pie de dos lineas que pidio Andres; si hace falta se puede regresar como una tercera linea opcional. // v15 - La pestana del dia se reorganiza: arriba "El dia que cerro" (public.v_equipo_dia_visible = ultimo dia HABIL antes de hoy) con las cifras del equipo y la tabla persona por persona -- llamadas, de mas de 2 min, mandados a cotizar, ventas y cuantas filas dejo en el BOS. Al tocar una persona se abre su ficha con public.equipo_agente_detalle(nombre): su dia contra su mes y QUE REGISTRO, con el nombre de cada cuenta. Debajo, separado con el rotulo "El mes", quedan los dos cards mensuales; el de "quien esta registrando" ya NO muestra llamadas de hoy (a media manana siempre eran cero) sino solo el mes. // v14 - Llamadas del equipo con el desglose de la casa: la linea de arriba de la tabla y el tooltip de la celda muestran cuantas fueron solo timbre y cuantas pasaron de 2 minutos (v_actividad_equipo ahora trae solo_timbre_mes/hoy y conversaciones_mes/hoy). Card nuevo "De la llamada a la venta" en la pestana Hoy: los cuatro pasos del mes por persona -- llamadas, de mas de 2 min, mandados a cotizar, ventas -- con la columna "Donde se le queda" en palabras y el caso mas fuerte en el pie. Mismos datos de v_actividad_equipo_visible, sin segunda consulta. Sin barras. // v13 - Llamadas por persona: en la tabla de Hoy, "Llamadas hoy" y "Llamadas mes" se vuelven una sola columna combinada (hoy destacado, mes chiquito y gris, con title al pasar el mouse), guion cuando la persona no tiene usuario de RingCentral (nunca 0 ni null); arriba de la tabla, una línea con el total de llamadas de hoy del equipo y la hora de la última sincronización; y sexta alerta "sin llamar hoy" — salta en día hábil desde las 11:00 hora Colombia (UTC-5, calculada aparte de la del navegador) cuando llamadas_hoy da 0 exacto (null no cuenta: sin RingCentral no hay alerta). v_actividad_equipo_visible ahora también se lee, aparte, dentro de cargarDatos() para alimentar esa alerta. // v12 - Quinta alerta: "cobra y no vende". Es la primera del tablero que mira el PREMIUM: salta cuando el fee del mes llega a $2.500 (la puerta de fee del 30 %) pero el premium no llega a $35.000 (la puerta de premium del mismo 30 %), o sea el mes que se ve bien de fee y deja la escala en la base. Las otras cuatro alertas miraban solo el fee. // v11 - v11 - Tablero simple: cinco pestanas de lectura (El mes, Hoy, Alertas, Persona, Ano) + Bitacora + Manual de lectura. Meta minima / Meta plena en toda la pantalla. Anillos y barras con la regla de la casa: avance real contra la meta plena, pista por zonas y tick del deberia ir hoy; el ritmo en palabra. Cero parrafos de explicacion fija fuera del manual.
+var PGV_VERSION=24; // v24 - 13-oct-2026 (estructura ESTRUCTURA_EQUIPO_COMERCIAL_V23_META_LLAMADAS_AGENTES_13OCT, montada como v24 porque la v23 fue un ajuste de rendimiento): Pulso pasa a llamarse Llamadas y Sentarse pasa a Agentes. META: tercer anillo 'Cancelaciones del equipo' (se cayeron antes de 6 meses, portal.equipo_indice_detalle) y bolita del índice al lado de cada nombre. AGENTES: lista de prioridad de siempre + por persona: rentable este mes (lo que deja contra su silla, v_utilidad_por_persona_v2), cancelaciones, fee del mes contra $1.500 y meta; gráfica 'Por encima de su silla' y sus cancelaciones (curva por mes de venta desde 5 ventas + cada póliza con la raya del día 180); la libreta filtrada por la persona. La tabla 'Fee contra el estándar' se jubila en un template y pasa a columna del AÑO, que gana además 'Sobre su silla' e 'Índice canc.'. Manual: Cancelaciones y Su silla. // v23 - 12-oct-2026 RENDIMIENTO: la actividad del equipo (v_actividad_equipo_visible) se pide a la par de Meta en vez de en fila (~1,4 s menos). Mismo orden de pintado: Meta primero, Pulso después. // v22 - 12-oct-2026 pedido de Andrés: Meta vuelve a ser lo primero (primera en el menú y abierta al entrar); carga Meta primero y el Pulso cuando Meta ya pintó. Pulso pasa a segunda. // v21 - 12-oct-2026 ARREGLO de la v20: (0) si Meta se corta por tiempo, un reintento a los 2,5 s; (1) los anillos de Meta se volvían a dibujar a tamaño de reserva porque Meta dejó de ser la pantalla inicial; ahora se re-miden al abrir Meta; (2) el menú responde desde el primer segundo (antes esperaba a que Meta cargara); si ya se abrió otra pestaña, se arma al llegar los datos. // v20 - 12-oct-2026 (+ botón 'Ocultar la barra de tops' en la barra lateral, se recuerda en portal.preferencias_usuario) PULSO + 4 PANTALLAS: el menú queda Pulso · Meta · Sentarse · Año · Qué es cada cosa. PULSO (nuevo, abre aquí) es pg-llamadas.js sobre portal.equipo_llamadas_pulso(): Hoy · Último día hábil · Semana · Mes, cuatro cifras que filtran (Llamadas, +2 min, Positivos, Ventas), "N personas sin llamar" desde las 11:00, franja Día corto (<40% del promedio de 10 días hábiles), y la ficha de equipo_agente_detalle se abre debajo de la fila con Ver su año / Anotar en la libreta. Mismo número que FAM (pestaña Equipo) y Mi proceso. PERSONA deja de ser pestaña: se abre en Meta al tocar a alguien de la lista. BITÁCORA va dentro de Sentarse. La pestaña Equipo (Ayer | Este mes) se jubila en un template (no se pinta ni consulta). Cero cambios de datos de negocio. // v19 - Protect Index: las direcciones internas del sitio pasan a relativas (el sitio ya no depende de como se llame el repo). Las que viajan por correo (recuperar contrasena, fotos de firma, sello de RRHH) quedan absolutas apuntando a protect-index. // v18 - Una persona, una meta: el tablero deja de leer los campos de la meta chica y el piso de direccion; el avance de cada quien y del equipo se mide solo contra la meta de rampa (una sola vara por persona) -- la meta del equipo pasa a ser la suma de las 17, $1,015,000, y se quita la suma de las metas chicas. En la ficha de Persona, al inicio, se suma la franja de curva de aprendizaje (solo si aplica) y su plan corto (1 o 2 tarjetas con que pide), leidos de una sola llamada a SB.rpc('simular_sueno_de'): el mismo numero que la persona ve en su Mi proceso, para que hable con Brahian del mismo plan. Equipo, Bitacora, Ano, Manual y el motor de patrones de Sentarse quedan igual. // v17 - combinada = premium + fee x10 (decision de Andres 14-sep, igual que el reporte de Jeff); el motor ya la manda asi; la alerta cobra-y-no-vende deriva el premium como mc - fee x10. // v16 - Pestana "Hoy" pasa a llamarse EQUIPO: dia-card + act-card + emb-card de la v15 (las tres con la misma lista de 21 nombres) se funden en UNA tabla con interruptor Ayer | Este mes, misma fila de cifras en los dos modos (Llamadas, De +2 min, Positivos, Ventas). Columna Cuentas se elimina; Dias con positivo y Donde se le queda (antes en sus propios cards) pasan a ser columnas del modo Este mes. positivos ahora sale de la columna nueva contactos/contactos_mes (contactos creados), no de positivos_mes; lo que antes se llamaba positivos (negocio mandado a cotizar) se renombra cotizados y vive en la ficha. Ventas ya es CUENTAS (clientes distintos), no polizas -- polizas queda solo para el tooltip. Pestana "El mes" se renombra Meta y se queda solo con anillos/barra/lista de meta (no tenia actividad colada). Ficha de persona (det-card): cuadro llamadas/+2min/solo timbre/minutos/positivos/cotizados/ventas con los nombres de campo correctos del RPC (solo_timbre, no soloTimbre); "Positivos dia a dia" lee pulsoContactos (antes positivosDia); lista nueva "Que positivos monto este mes" con positivosMontados, al lado de "Que registro en el BOS" (paquetes/totalMes, sin cambios, por cuenta). Pie de la tabla de EQUIPO fijo en dos lineas: que es un positivo, y quien no tiene RingCentral. TODO v16: no se re-agrego el pulso "sin una sola senal" ni el senalamiento de "quien mas marca sin cotizar" de la v15 -- se recorto a proposito para cumplir el pie de dos lineas que pidio Andres; si hace falta se puede regresar como una tercera linea opcional. // v15 - La pestana del dia se reorganiza: arriba "El dia que cerro" (public.v_equipo_dia_visible = ultimo dia HABIL antes de hoy) con las cifras del equipo y la tabla persona por persona -- llamadas, de mas de 2 min, mandados a cotizar, ventas y cuantas filas dejo en el BOS. Al tocar una persona se abre su ficha con public.equipo_agente_detalle(nombre): su dia contra su mes y QUE REGISTRO, con el nombre de cada cuenta. Debajo, separado con el rotulo "El mes", quedan los dos cards mensuales; el de "quien esta registrando" ya NO muestra llamadas de hoy (a media manana siempre eran cero) sino solo el mes. // v14 - Llamadas del equipo con el desglose de la casa: la linea de arriba de la tabla y el tooltip de la celda muestran cuantas fueron solo timbre y cuantas pasaron de 2 minutos (v_actividad_equipo ahora trae solo_timbre_mes/hoy y conversaciones_mes/hoy). Card nuevo "De la llamada a la venta" en la pestana Hoy: los cuatro pasos del mes por persona -- llamadas, de mas de 2 min, mandados a cotizar, ventas -- con la columna "Donde se le queda" en palabras y el caso mas fuerte en el pie. Mismos datos de v_actividad_equipo_visible, sin segunda consulta. Sin barras. // v13 - Llamadas por persona: en la tabla de Hoy, "Llamadas hoy" y "Llamadas mes" se vuelven una sola columna combinada (hoy destacado, mes chiquito y gris, con title al pasar el mouse), guion cuando la persona no tiene usuario de RingCentral (nunca 0 ni null); arriba de la tabla, una línea con el total de llamadas de hoy del equipo y la hora de la última sincronización; y sexta alerta "sin llamar hoy" — salta en día hábil desde las 11:00 hora Colombia (UTC-5, calculada aparte de la del navegador) cuando llamadas_hoy da 0 exacto (null no cuenta: sin RingCentral no hay alerta). v_actividad_equipo_visible ahora también se lee, aparte, dentro de cargarDatos() para alimentar esa alerta. // v12 - Quinta alerta: "cobra y no vende". Es la primera del tablero que mira el PREMIUM: salta cuando el fee del mes llega a $2.500 (la puerta de fee del 30 %) pero el premium no llega a $35.000 (la puerta de premium del mismo 30 %), o sea el mes que se ve bien de fee y deja la escala en la base. Las otras cuatro alertas miraban solo el fee. // v11 - v11 - Tablero simple: cinco pestanas de lectura (El mes, Hoy, Alertas, Persona, Ano) + Bitacora + Manual de lectura. Meta minima / Meta plena en toda la pantalla. Anillos y barras con la regla de la casa: avance real contra la meta plena, pista por zonas y tick del deberia ir hoy; el ritmo en palabra. Cero parrafos de explicacion fija fuera del manual.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;
