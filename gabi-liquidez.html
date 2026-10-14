@@ -314,7 +314,7 @@ body[data-ocupado]{cursor:progress}
    <div class="pg-card" id="cRet"><div class="skel"></div><div class="skel"></div><div class="skel" style="width:70%"></div></div>
   </section>
 
-  <div class="pg-footnote">GABI · Liquidez v1 · ProtectGo Services LLC</div>
+  <div class="pg-footnote">GABI · Liquidez v2 · ProtectGo Services LLC</div>
  </main>
 </div>
 
@@ -473,20 +473,23 @@ function anillo(val, obj, color, pista){
   return '<svg viewBox="0 0 130 130"><circle cx="65" cy="65" r="54" fill="none" stroke="' + (pista || 'rgba(255,255,255,.12)') + '" stroke-width="11"/>' + arco + '</svg>';
 }
 function lineaLectura(){
-  const r = D.retiro || {}, c = D.caja || {}, p = D.params || {};
-  if (r.registrado != null) return 'Retiro de esta semana registrado: <b>' + usd(r.registrado) + '</b> por socio.';
+  /* v2 (13-oct): el retiro se lee con la semana contra sí misma (Caja + Entra − Sale de esta semana − colchón).
+     Las semanas que vienen no lo recortan: si más adelante la caja baja del colchón, se avisa al final. */
+  const r = D.retiro || {}, c = D.caja || {}, p = D.params || {}, s = D.semana || {};
+  const colchon = num(r.colchon) != null ? num(r.colchon) : num(p.colchon);
+  const pb = num(r.punto_bajo);
+  const ojo = (pb != null && colchon != null && pb < colchon && r.punto_bajo_lunes)
+    ? ' Ojo: la semana del <b>' + fCorta(r.punto_bajo_lunes) + '</b> la caja baja a <b>' + usd(pb) + '</b>.' : '';
+  if (r.registrado != null) return 'Retiro de esta semana registrado: <b>' + usd(r.registrado) + '</b> por socio.' + ojo;
   if (r.semaforo === 'gris') { const d = num(c.dias); return 'Chase lleva <b>' + (d == null ? '—' : Math.floor(d)) + ' días</b> sin actualizar: el retiro se apaga hasta poner el saldo.'; }
   if (r.semaforo === 'rojo') {
     const n = vencidos().length;
-    return 'No cabe el mínimo: la semana del <b>' + fCorta(r.punto_bajo_lunes) + '</b> la caja baja a <b>' + usd(r.punto_bajo) + '</b>.'
+    const q = num(r.queda_semana) != null ? num(r.queda_semana) : num(s.queda);
+    return 'Esta semana no cabe el mínimo: quedan <b>' + usd(q) + '</b> y el colchón es <b>' + usd(colchon) + '</b>.' + ojo
       + (n ? ' Hay <b>' + n + '</b> pagos vencidos sin marcar.' : '');
   }
-  if (r.semaforo === 'ambar') return 'Cabe el mínimo; el punto más bajo es la semana del <b>' + fCorta(r.punto_bajo_lunes) + '</b> (' + usd(r.punto_bajo) + ').';
-  if (r.semaforo === 'verde') {
-    const socios = num(r.socios) || num(p.socios) || 3;
-    const m = num(r.punto_bajo) == null ? null : num(r.punto_bajo) - (num(r.colchon) || 0) - (num(r.obj) || 0) * socios;
-    return 'Cabe el objetivo con <b>' + usd(m) + '</b> de margen.';
-  }
+  if (r.semaforo === 'ambar') return 'Esta semana cabe el mínimo, no el objetivo.' + ojo;
+  if (r.semaforo === 'verde') return 'Esta semana cabe el objetivo.' + ojo;
   return '—';
 }
 function pintarFranja(){
@@ -710,7 +713,14 @@ function pintarSale(){
     + '<button type="button" data-act="vista" data-v="4" class="' + (UI.vista === '4' ? 'on' : '') + '">4 semanas</button></div>'
     + (UI.confirmar === 'venc' ? '' : barra) + '</div>'
     + (UI.confirmar === 'venc' ? barra : '')
-    + (cuerpo || '<div class="vacio">—</div>');
+    + (cuerpo || '<div class="vacio">—</div>')
+    + pieDadosPorPagados();
+}
+function pieDadosPorPagados(){
+  const d = D.dados_por_pagados || {}, n = num(d.n);
+  if (!n) return '';
+  return '<div class="mini" style="margin-top:12px">Lo anterior al saldo del ' + esc(fCorta(d.hasta)) + ' se da por pagado: '
+    + plural(n, 'pago', 'pagos') + ' · ' + usd(d.monto) + '.</div>';
 }
 
 /* ---------- 6 · cuatro semanas (onda, cero barras) ---------- */
@@ -961,7 +971,8 @@ function abrirAyuda(){
     + '<p><b>Caja</b> es el saldo de Chase. <b>Entra</b> y <b>Sale</b> son lo de esta semana según el motor: el BOS, los compromisos, los down payments y el corte de Jeff. <b>Queda</b> = Caja + Entra − Sale.</p>'
     + '<p>Todo lo que está en pesos se pasa a dólares con la TRM de trabajo: <b>' + n0(p.trm) + '</b>.</p>'
     + '<p>Lo estimado cuenta a <b>' + peso + '</b> para el retiro.</p>'
-    + '<p>El retiro = lo que aguanta el punto más bajo de <b>' + esc(p.horizonte == null ? '—' : p.horizonte) + ' semanas</b> menos el colchón de <b>' + usd(p.colchon) + '</b>, entre <b>' + esc(p.socios == null ? '—' : p.socios) + '</b>, nunca por encima del objetivo (' + usd(p.obj) + ').</p>';
+    + '<p>El retiro de la semana = lo que <b>Queda</b> esta semana menos el colchón de <b>' + usd(p.colchon) + '</b>, entre <b>' + esc(p.socios == null ? '—' : p.socios) + '</b>, nunca por encima del objetivo (' + usd(p.obj) + '). Las <b>' + esc(p.horizonte == null ? '—' : p.horizonte) + ' semanas</b> no lo recortan: si más adelante la caja baja del colchón, la línea de abajo avisa.</p>'
+    + '<p>Lo que vencía antes del último saldo de Chase se da por pagado: ya está reflejado en el banco. La deuda con las MGAs se marca a mano.</p>';
   abrirModal();
 }
 function abrirModal(){ $('modal').hidden = false; }
@@ -1087,7 +1098,7 @@ arrancar();
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="gabi-liquidez.html";
-var PGV_VERSION=1; // v1 - 12-oct-2026 GABI LIQUIDEZ EN EL PORTAL: una pantalla de dirección que sale entera de portal.liquidez_panel() — franja (caja, entra, sale, queda y anillo del retiro por socio), ingresos semana/mes, por entrar, la cola de pagos con un clic (liquidez_decidir), cuatro semanas y fijos del mes; pestaña Retiros (registrar, corregir, cerrar la semana) y carga del corte de Jeff. Cero barras, guion cuando no hay dato, sin almacenamiento del navegador.
+var PGV_VERSION=2; // v2 - 13-oct-2026 el retiro se lee con la semana contra sí misma (Caja + Entra − Sale de esta semana − colchón, entre los socios, hasta el objetivo); las 4 semanas solo avisan. Lo que vencía antes del último saldo de Chase se da por pagado (pie en Sale). | v1 - 12-oct-2026 GABI LIQUIDEZ EN EL PORTAL: una pantalla de dirección que sale entera de portal.liquidez_panel() — franja (caja, entra, sale, queda y anillo del retiro por socio), ingresos semana/mes, por entrar, la cola de pagos con un clic (liquidez_decidir), cuatro semanas y fijos del mes; pestaña Retiros (registrar, corregir, cerrar la semana) y carga del corte de Jeff. Cero barras, guion cuando no hay dato, sin almacenamiento del navegador.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;
