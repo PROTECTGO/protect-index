@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <!-- ===================================================================
-     Propuesta Amazon Relay · v1 (14-oct-2026)
+     Propuesta Amazon Relay · v2 (14-oct-2026) · v2: guion y no cero cuando falta un parámetro
      Una sola hoja: el cliente, el programa (el porcentaje es lo único de
      precio que se escoge), unidades y conductores opcionales, Guardar
      (la base pone el número PR-AAAA-###) e Imprimir en español / inglés
@@ -243,9 +243,10 @@ function toast(m){var t=$("toast");t.textContent=m;t.classList.add("show");clear
 function bloquear(html){$("bloqueo").innerHTML=html;$("bloqueo").style.display="block";$("app").style.display="none";}
 function digitos(s){return (s||"").replace(/\D/g,"");}
 function fmtTel(s){var d=digitos(s); if(d.length===11&&d[0]==="1")d=d.slice(1); if(d.length===10)return "("+d.slice(0,3)+") "+d.slice(3,6)+"-"+d.slice(6); return d?("+"+d):"";}
-function num(v){var n=Number(v); return isFinite(n)?n:null;}
-function usd(n){ n=Number(n); if(!isFinite(n)) return "—"; var dec=Math.abs(n-Math.round(n))>0.004?2:0; return n.toLocaleString("en-US",{minimumFractionDigits:dec,maximumFractionDigits:2}); }
-function pctTxt(n){ n=Number(n); if(!isFinite(n)) return "—"; return (Math.round(n*100)/100).toString(); }
+function vacio(v){return v===null||v===undefined||v==="";}
+function num(v){ if(vacio(v)) return null; var n=Number(v); return isFinite(n)?n:null; }
+function usd(n){ if(vacio(n)) return "—"; n=Number(n); if(!isFinite(n)) return "—"; var dec=Math.abs(n-Math.round(n))>0.004?2:0; return n.toLocaleString("en-US",{minimumFractionDigits:dec,maximumFractionDigits:2}); }
+function pctTxt(n){ if(vacio(n)) return "—"; n=Number(n); if(!isFinite(n)) return "—"; return (Math.round(n*100)/100).toString(); }
 var MES_ES=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
 var MES_EN=["January","February","March","April","May","June","July","August","September","October","November","December"];
 function hoyTexas(){ var p=new Intl.DateTimeFormat("en-US",{timeZone:"America/Chicago",year:"numeric",month:"numeric",day:"numeric"}).formatToParts(new Date()); var o={}; p.forEach(function(x){o[x.type]=x.value;}); return {y:+o.year,m:+o.month,d:+o.day}; }
@@ -576,7 +577,7 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="amazon-propuesta.html";
-var PGV_VERSION=1; // v1 (14-oct-2026) - Propuesta Amazon Relay: una hoja (cliente, programa, unidades/conductores opcionales), número desde la base (PR-AAAA-###), dossier estándar ES/EN con membrete, lista compartida del piloto (Valentina, Karen Dayanna, Amazon Relay, sales@) y panel de parámetros para sales@.
+var PGV_VERSION=2; // v2 (14-oct-2026) - sin parámetros, la línea de la agencia dice "USD —" y no "USD 0" (guion, no cero). | v1 (14-oct-2026) - Propuesta Amazon Relay: una hoja (cliente, programa, unidades/conductores opcionales), número desde la base (PR-AAAA-###), dossier estándar ES/EN con membrete, lista compartida del piloto (Valentina, Karen Dayanna, Amazon Relay, sales@) y panel de parámetros para sales@.
 if(/[?&]demo=1\b/.test(location.search)||window.AP_DEMO===true)return;
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
