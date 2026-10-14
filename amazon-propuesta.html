@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ProtectGo · Propuesta Amazon Relay</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- ===================================================================
+     Propuesta Amazon Relay · v1 (14-oct-2026)
+     Una sola hoja: el cliente, el programa (el porcentaje es lo único de
+     precio que se escoge), unidades y conductores opcionales, Guardar
+     (la base pone el número PR-AAAA-###) e Imprimir en español / inglés
+     con el dossier estándar (amazon-propuesta/plantilla_es.html y _en.html
+     + membrete.png). Lista compartida entre las cuatro cuentas del piloto.
+     - Acceso: portal.mis_pantallas() clave 'amazon_propuesta' (paquete).
+     - Datos: portal.amazon_propuestas · parámetros: portal.amazon_propuesta_param
+       (los edita solo sales@ desde el panel de abajo).
+     - Nombre de quien emite: portal.v_personas (amazonaud@ → "Equipo Amazon Relay").
+     - ?demo=1 corre sin sesión ni base, con datos de ejemplo.
+     - Nada se guarda en el navegador. Responsive a 400 px.
+     =================================================================== -->
+<style>
+:root{--ink:#1B2D3A;--mint:#2DBFA3;--mint-deep:#229A82;--bg:#F4F7FA;--card:#fff;--line:#E7EDF2;--txt:#28323B;--muted:#6B7D89;--ambar:#D9A520;--rojo:#C0392B}
+*{box-sizing:border-box}
+html,body{max-width:100%;overflow-x:hidden}
+[hidden]{display:none!important}
+body{margin:0;font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--txt);-webkit-font-smoothing:antialiased}
+.wrap{max-width:1040px;margin:0 auto;padding:24px 20px 90px}
+.eyebrow{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--mint-deep);font-weight:700}
+h1{font-family:'Montserrat',sans-serif;font-weight:800;font-size:24px;color:var(--ink);margin:4px 0 4px}
+.sub{color:var(--muted);font-size:14px;margin:0 0 18px;line-height:1.5}
+.head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;flex-wrap:wrap}
+.firma{display:flex;gap:12px;align-items:center;margin-top:6px}
+.av{width:46px;height:46px;border-radius:50%;flex:none;background:linear-gradient(135deg,#0B3142,#1F9E8F);color:#fff;font-family:'Montserrat',sans-serif;font-weight:800;font-size:16px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.av img{width:100%;height:100%;object-fit:cover}
+.firma b{display:block;font-family:'Montserrat',sans-serif;font-size:14px;color:var(--ink)}
+.firma span{font-size:12px;color:var(--muted);word-break:break-all}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:14px}
+.card h2{font-family:'Montserrat',sans-serif;font-weight:700;font-size:14px;color:var(--ink);margin:0 0 14px;display:flex;align-items:center;gap:8px}
+.num{background:var(--mint);color:#063b32;width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex:none}
+label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin:0 0 5px}
+label i{font-style:normal;color:var(--rojo)}
+.field{margin-bottom:12px;min-width:0}
+input,select,textarea{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:9px;font-family:inherit;font-size:14px;color:var(--txt);background:#fff}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--mint)}
+input.bad,select.bad{border-color:var(--rojo);background:#FFF6F5}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.hint{font-size:12.5px;color:var(--muted);margin:-6px 0 12px;line-height:1.5}
+.hint b{color:var(--ink)}
+.hint a{color:var(--mint-deep);font-weight:600;cursor:pointer}
+.ejemplo{background:#F1FAF8;border:1px solid #CFEDE6;border-radius:10px;padding:10px 12px;font-size:13px;color:#23584D;line-height:1.5;margin-top:2px}
+.ejemplo b{color:#0f5a4d}
+.fijo{font-size:12.5px;color:var(--muted);line-height:1.55;margin:10px 0 0;padding-top:10px;border-top:1px dashed var(--line)}
+.fijo b{color:var(--ink);font-weight:600}
+details{border:1px dashed var(--line);border-radius:12px;padding:0 14px;margin-bottom:14px;background:var(--card)}
+details summary{cursor:pointer;padding:14px 0;font-family:'Montserrat',sans-serif;font-weight:700;font-size:13.5px;color:var(--ink);list-style:none;display:flex;align-items:center;gap:8px}
+details summary::-webkit-details-marker{display:none}
+details summary:before{content:"+";display:inline-flex;width:20px;height:20px;border-radius:50%;background:#EEF2F5;color:var(--ink);align-items:center;justify-content:center;font-size:14px;flex:none}
+details[open] summary:before{content:"–"}
+details .in{padding:0 0 14px}
+.fila{display:grid;grid-template-columns:70px 1fr 1.2fr 1fr 1.3fr .8fr 32px;gap:8px;margin-bottom:8px;align-items:center}
+.fila.cond{grid-template-columns:1.4fr 1fr .6fr 1fr 32px}
+.fila input,.fila select{padding:8px 10px;font-size:13px}
+.x{border:none;background:#F1F4F7;color:var(--muted);width:32px;height:36px;border-radius:8px;cursor:pointer;font-size:16px}
+.x:hover{background:#FDE8E6;color:var(--rojo)}
+.btn{background:var(--mint-deep);color:#fff;border:none;padding:12px 18px;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;font-family:'Montserrat',sans-serif}
+.btn:hover{background:var(--mint)}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.btn2{background:#fff;color:var(--ink);border:1px solid var(--line);padding:10px 14px;border-radius:9px;font-weight:600;font-size:13px;cursor:pointer;font-family:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:6px}
+.btn2:hover{border-color:var(--mint)}
+.btn2:disabled{opacity:.5;cursor:not-allowed}
+.btn.dark{background:var(--ink)}
+.acciones{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.estado{font-size:13px;color:var(--muted);margin-top:10px;line-height:1.5}
+.estado b{font-family:'Montserrat',sans-serif;color:var(--ink);font-size:15px}
+.aviso{border-radius:12px;padding:16px 18px;font-size:14px;line-height:1.55;background:#FFF8E8;border:1px solid #F0E2BC;color:#6b5718}
+.aviso a{color:#0D3040}
+.falta{background:#FFF8E8;border:1px solid #F0E2BC;color:#6b5718;border-radius:10px;padding:10px 12px;font-size:13px;line-height:1.5;margin-top:10px}
+.err{color:var(--rojo);font-size:13px;margin-top:8px;min-height:18px}
+table.lista{width:100%;border-collapse:collapse;font-size:13px}
+table.lista th{text-align:left;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);padding:6px 8px;border-bottom:1px solid var(--line);font-weight:700}
+table.lista td{padding:9px 8px;border-bottom:1px solid var(--line);vertical-align:middle;font-variant-numeric:tabular-nums}
+table.lista tbody tr{cursor:pointer}
+table.lista tr:hover td{background:#F7FAF9}
+table.lista td.n{font-family:'Montserrat',sans-serif;font-weight:700;color:var(--ink);white-space:nowrap}
+.chip{font-size:11.5px;border-radius:20px;padding:3px 9px;background:#EEF1F4;color:var(--muted);white-space:nowrap}
+.chip.ok{background:#E3F6F1;color:#1d6f5f}
+.chip.warn{background:#FBF1D6;color:#7a5a06}
+.vacio{color:var(--muted);font-size:13.5px;padding:18px;text-align:center;border:1px dashed var(--line);border-radius:12px}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.pm{display:grid;grid-template-columns:repeat(3,1fr);gap:10px 14px}
+.pm .field label{font-size:11.5px}
+.pm .field small{display:block;color:var(--muted);font-size:11px;margin-top:3px;line-height:1.4}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:12px 20px;border-radius:10px;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:9999;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media(max-width:820px){.g4{grid-template-columns:1fr 1fr}.g3{grid-template-columns:1fr 1fr}.pm{grid-template-columns:1fr 1fr}.fila{grid-template-columns:1fr 1fr 1fr}.fila.cond{grid-template-columns:1fr 1fr}.fila .x{grid-column:1/-1;width:100%;height:30px}}
+@media(max-width:560px){table.lista .mh,table.lista .ab,.chip .idi{display:none}table.lista{font-size:12px}table.lista td,table.lista th{padding:8px 5px}table.lista td{overflow-wrap:anywhere}.g3,.g2,.g4,.pm{grid-template-columns:1fr}.g3>.field,.g4>.field{grid-column:auto!important}.fila,.fila.cond{grid-template-columns:1fr 1fr}.btn{width:100%}.acciones .btn2{flex:1;justify-content:center}}
+@media(max-width:400px){.wrap{padding:16px 12px 90px}h1{font-size:21px}.card{padding:16px}.fila,.fila.cond{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <div>
+      <div class="eyebrow">ProtectGo · Amazon Relay</div>
+      <h1>Propuesta Amazon Relay</h1>
+      <p class="sub">Escribe los datos del transportista, escoge el porcentaje y cómo va a operar, guarda y te imprime la propuesta completa en español o en inglés con su número.</p>
+    </div>
+    <div class="firma" id="firma" hidden><div class="av" id="av"></div><div><b id="fNombre"></b><span id="fCorreo"></span></div></div>
+  </div>
+
+  <div id="bloqueo" class="aviso" style="display:none"></div>
+
+  <div id="app" style="display:none">
+    <form id="form" autocomplete="off" onsubmit="return false">
+    <div class="card">
+      <h2><span class="num">A</span> El cliente</h2>
+      <div class="g3">
+        <div class="field" style="grid-column:span 2"><label for="f_empresa">Empresa (razón social) <i>*</i></label><input id="f_empresa" maxlength="120" placeholder="RUTA LIBRE TRANSPORT LLC" style="text-transform:uppercase"></div>
+        <div class="field"><label for="f_contacto">Persona de contacto <i>*</i></label><input id="f_contacto" maxlength="80" placeholder="Nombre y apellido"></div>
+      </div>
+      <div class="g4">
+        <div class="field"><label for="f_telefono">Teléfono / WhatsApp <i>*</i></label><input id="f_telefono" inputmode="tel" placeholder="(210) 555-0134"></div>
+        <div class="field"><label for="f_dot">USDOT <i>*</i></label><input id="f_dot" inputmode="numeric" maxlength="8" placeholder="4123456"></div>
+        <div class="field"><label for="f_mc">MC</label><input id="f_mc" maxlength="20" placeholder="MC1598877"></div>
+        <div class="field"><label for="f_estado">Estado <i>*</i></label><select id="f_estado"></select></div>
+      </div>
+      <div class="g4">
+        <div class="field"><label for="f_unidades">Cuántos camiones <i>*</i></label><input id="f_unidades" type="number" min="1" max="99" step="1" value="1"></div>
+      </div>
+      <div class="hint" id="dotHint" hidden></div>
+    </div>
+
+    <div class="card">
+      <h2><span class="num">B</span> El programa</h2>
+      <div class="g3">
+        <div class="field"><label for="f_pct">Porcentaje que ofreces <i>*</i></label><select id="f_pct"></select></div>
+        <div class="field"><label for="f_horario">Horario</label><select id="f_horario"><option value="oficina">Oficina · Lun–Vie 8–5 Central</option><option value="nocturno">Nocturno y fines de semana</option></select></div>
+        <div class="field"><label for="f_rutas">Rutas</label><select id="f_rutas"><option value="local">Locales</option><option value="interestatal" selected>Interestatales</option><option value="ambas">Locales e interestatales</option></select></div>
+      </div>
+      <div class="g3">
+        <div class="field"><label for="f_modalidad">Modalidad</label><select id="f_modalidad"><option value="contratos">Contratos</option><option value="load_board">Load board</option><option value="ambos" selected>Contratos y load board</option></select></div>
+        <div class="field"><label for="f_vehiculo">Tipo de vehículo (el de la flota)</label><select id="f_vehiculo"></select></div>
+        <div class="field"><label for="f_medidas">Medidas</label><input id="f_medidas" maxlength="60" placeholder="26 ft · 102 in · lift gate"></div>
+      </div>
+      <div class="ejemplo" id="ejemplo">—</div>
+      <p class="fijo" id="fijos">Lo que no se escoge sale de los parámetros de la agencia: <span id="fijosTxt">—</span></p>
+    </div>
+
+    <details>
+      <summary>Unidades y conductores (opcional)</summary>
+      <div class="in">
+        <label style="margin-top:4px">Unidades</label>
+        <div id="unidades"></div>
+        <button type="button" class="btn2" id="addUnidad">+ unidad</button>
+        <label style="margin-top:16px">Conductores</label>
+        <div id="conductores"></div>
+        <button type="button" class="btn2" id="addConductor">+ conductor</button>
+        <p class="hint" style="margin:12px 0 0">Si no escribes nada, el dossier dice «Por confirmar antes de iniciar» en esas tablas.</p>
+      </div>
+    </details>
+
+    <details>
+      <summary>Fecha de inicio (opcional)</summary>
+      <div class="in"><div class="g3"><div class="field"><label for="f_fecha_inicio">Inicio propuesto de los días de compromiso</label><input type="date" id="f_fecha_inicio"></div></div><p class="hint" style="margin:0">Vacía, el dossier dice «Por confirmar».</p></div>
+    </details>
+
+    <div class="card">
+      <div class="acciones">
+        <button type="button" class="btn" id="btnGuardar">Guardar</button>
+        <button type="button" class="btn2" id="btnEs" disabled>📄 Imprimir en español</button>
+        <button type="button" class="btn2" id="btnEn" disabled>📄 Print in English</button>
+        <button type="button" class="btn2" id="btnNueva" hidden>Nueva propuesta</button>
+      </div>
+      <div class="err" id="err"></div>
+      <div class="estado" id="estado">Propuesta nueva · al guardar, la base le pone el número.</div>
+      <div class="falta" id="falta" hidden></div>
+    </div>
+    </form>
+
+    <div class="card">
+      <h2><span class="num">C</span> Propuestas <span id="cnt" style="font-weight:500;color:var(--muted);font-size:13px"></span></h2>
+      <div class="field"><input id="buscar" placeholder="Buscar por empresa, DOT o número"></div>
+      <div class="scroll" id="lista"></div>
+    </div>
+
+    <div class="card" id="paramCard" hidden>
+      <h2><span class="num">P</span> Parámetros del dossier <span style="font-weight:500;color:var(--muted);font-size:13px">solo lo ve sales@</span></h2>
+      <p class="hint" style="margin-top:-6px">Lo que sale en todas las propuestas. Vacío = falta; sin los marcados con * nadie puede imprimir.</p>
+      <div class="pm" id="pm"></div>
+      <div class="acciones" style="margin-top:6px"><button type="button" class="btn dark" id="btnParams">Guardar parámetros</button><span class="estado" id="pmEstado" style="margin:0"></span></div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="pg-novedades.js"></script>
+<script>
+(function(){
+"use strict";
+var SB_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
+var SB_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
+var CLAVE="amazon_propuesta";
+var DEMO=/[?&]demo=1\b/.test(location.search)||window.AP_DEMO===true;
+var ASSETS={es:"amazon-propuesta/plantilla_es.html",en:"amazon-propuesta/plantilla_en.html",mem:"amazon-propuesta/membrete.png"};
+var SALES="sales@protectgoservices.com";
+var ESTADOS=["AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY","DC"];
+var VEH={tractor_dry53:{es:"Tractor + dry van 53'",en:"Tractor + 53' dry van"},tractor_reefer53:{es:"Tractor + reefer 53'",en:"Tractor + 53' reefer"},box_26:{es:"Box truck 26'",en:"26' box truck"},box_24:{es:"Box truck 24'",en:"24' box truck"},sprinter:{es:"Sprinter / cargo van",en:"Sprinter / cargo van"},otro:{es:"Otro",en:"Other"}};
+var TX={
+  horario:{oficina:{es:"Lun – Vie · 8 a.m. – 5 p.m. Central",en:"Mon – Fri · 8 a.m. – 5 p.m. Central"},nocturno:{es:"Noches y fines de semana incluidos",en:"Nights and weekends included"}},
+  rutas:{local:{es:"Locales",en:"Local",pes:"Rutas locales",pen:"Local routes"},interestatal:{es:"Interestatales",en:"Interstate",pes:"Rutas interestatales",pen:"Interstate routes"},ambas:{es:"Locales e interestatales",en:"Local and interstate",pes:"Rutas locales e interestatales",pen:"Local and interstate routes"}},
+  modalidad:{contratos:{es:"Contratos",en:"Contracts"},load_board:{es:"Load board",en:"Load board"},ambos:{es:"Contratos y load board",en:"Contracts and load board"}}
+};
+/* parámetros: clave → etiqueta, tipo, obligatorio para imprimir */
+var PARAMS=[
+  ["setup_precio","Creación de cuenta · precio de esta promoción (USD)","num",1],
+  ["setup_precio_regular","Creación de cuenta · precio regular (USD)","num",1],
+  ["comision_piso","Piso semanal por camión (USD)","num",1],
+  ["compromiso_dias","Compromiso mínimo (días)","num",1],
+  ["beneficio_cargas","Beneficio inicial · sin mínimo hasta N cargas","num",1],
+  ["beneficio_dias","Beneficio inicial · o N días activos","num",1],
+  ["pct_min","Porcentaje mínimo que se puede ofrecer","num",1],
+  ["pct_max","Porcentaje máximo","num",1],
+  ["pct_default","Porcentaje que sale seleccionado","num",1],
+  ["ejemplo_base_1","Ejemplo 1 · base semanal (USD)","num",1],
+  ["ejemplo_base_2","Ejemplo 2 · base semanal (USD)","num",1],
+  ["recargo_nocturno","Recargo nocturno y fines de semana (USD/sem por camión)","num",0],
+  ["testimonio_texto_es","Testimonio (español)","txt",0],
+  ["testimonio_texto_en","Testimonio (inglés)","txt",0],
+  ["testimonio_autor","Testimonio · autor","txt",0],
+  ["testimonio_operacion","Testimonio · operación (ej. 2 camiones · Relay desde 2024)","txt",0],
+  ["testimonio_estado","Testimonio · estado","txt",0]
+];
+
+function $(id){return document.getElementById(id);}
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+function toast(m){var t=$("toast");t.textContent=m;t.classList.add("show");clearTimeout(t._h);t._h=setTimeout(function(){t.classList.remove("show");},2600);}
+function bloquear(html){$("bloqueo").innerHTML=html;$("bloqueo").style.display="block";$("app").style.display="none";}
+function digitos(s){return (s||"").replace(/\D/g,"");}
+function fmtTel(s){var d=digitos(s); if(d.length===11&&d[0]==="1")d=d.slice(1); if(d.length===10)return "("+d.slice(0,3)+") "+d.slice(3,6)+"-"+d.slice(6); return d?("+"+d):"";}
+function num(v){var n=Number(v); return isFinite(n)?n:null;}
+function usd(n){ n=Number(n); if(!isFinite(n)) return "—"; var dec=Math.abs(n-Math.round(n))>0.004?2:0; return n.toLocaleString("en-US",{minimumFractionDigits:dec,maximumFractionDigits:2}); }
+function pctTxt(n){ n=Number(n); if(!isFinite(n)) return "—"; return (Math.round(n*100)/100).toString(); }
+var MES_ES=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+var MES_EN=["January","February","March","April","May","June","July","August","September","October","November","December"];
+function hoyTexas(){ var p=new Intl.DateTimeFormat("en-US",{timeZone:"America/Chicago",year:"numeric",month:"numeric",day:"numeric"}).formatToParts(new Date()); var o={}; p.forEach(function(x){o[x.type]=x.value;}); return {y:+o.year,m:+o.month,d:+o.day}; }
+function fmtYMD(ymd,lang){ if(!ymd) return ""; var p=String(ymd).split("-"); if(p.length<3) return ymd; var y=+p[0],m=+p[1],d=+p[2]; return lang==="en"?(MES_EN[m-1]+" "+d+", "+y):(d+" de "+MES_ES[m-1]+" de "+y); }
+function fmtHoy(lang){ var t=hoyTexas(); return lang==="en"?(MES_EN[t.m-1]+" "+t.d+", "+t.y):(t.d+" de "+MES_ES[t.m-1]+" de "+t.y); }
+function fmtFechaHora(iso){ if(!iso) return ""; try{ return new Date(iso).toLocaleString("es-CO",{timeZone:"America/Bogota",day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"}); }catch(e){ return iso; } }
+function nombreCorto(full){ var p=(full||"").trim().split(/\s+/).filter(function(w){return !/^(de|del|la|las|los|y)$/i.test(w);}); if(p.length<=2) return p.join(" "); if(p.length===3) return p[0]+" "+p[1]; return p[0]+" "+p[p.length-2]; }
+function iniciales(n){var p=(n||"").trim().split(/\s+/);return (((p[0]||"")[0]||"")+((p[1]||"")[0]||"")).toUpperCase();}
+function quien(mail){ var u=String(mail||"").toLowerCase().split("@")[0]; if(!u) return "—"; if(u.indexOf("amazonaud")===0) return "Amazon Relay"; if(u==="sales") return "Andrés"; return u.split(/[._-]+/).filter(Boolean).map(function(w){return w.charAt(0).toUpperCase()+w.slice(1);}).join(" "); }
+
+/* ---------------- plantilla: mustache mínimo ---------------- */
+function render(tpl,data){
+  tpl=tpl.replace(/\{\{([#^])(\w+)\}\}([\s\S]*?)\{\{\/\2\}\}/g,function(m,type,key,inner){
+    var val=data[key];
+    if(type==="#"){ if(Array.isArray(val)) return val.map(function(item){return render(inner,Object.assign({},data,item));}).join(""); return val?render(inner,data):""; }
+    var empty=val===undefined||val===null||val===""||val===false||(Array.isArray(val)&&val.length===0);
+    return empty?render(inner,data):"";
+  });
+  return tpl.replace(/\{\{(\w+)\}\}/g,function(m,key){var v=data[key];return (v===undefined||v===null||v==="")?"—":esc(v);});
+}
+
+/* ---------------- estado ---------------- */
+var sb=null, email="", persona=null, P={}, LISTA=[], ACTUAL=null, TPL={es:null,en:null}, MEM=null;
+
+function param(k){ var r=P[k]; if(!r) return null; if(r.valor!==null&&r.valor!==undefined&&r.valor!=="") return Number(r.valor); if(r.texto!==null&&r.texto!==undefined&&r.texto!=="") return r.texto; return null; }
+function faltanParams(){ return PARAMS.filter(function(p){return p[3]&&(param(p[0])===null);}).map(function(p){return p[1];}); }
+
+async function arrancar(){
+  $("f_estado").innerHTML=ESTADOS.map(function(s){return '<option value="'+s+'"'+(s==="TX"?" selected":"")+'>'+s+'</option>';}).join("");
+  $("f_vehiculo").innerHTML=Object.keys(VEH).map(function(k){return '<option value="'+k+'"'+(k==="box_26"?" selected":"")+'>'+VEH[k].es+'</option>';}).join("");
+  if(DEMO){
+    email=window.AP_DEMO_EMAIL||"valentina.londono@protectgoservices.com";
+    persona={email:email,nombre:"Valentina Londoño Montoya",foto_url:""};
+    P={setup_precio:{valor:350},setup_precio_regular:{valor:1000},comision_piso:{valor:100},compromiso_dias:{valor:90},beneficio_cargas:{valor:20},beneficio_dias:{valor:30},pct_min:{valor:4},pct_max:{valor:10},pct_default:{valor:6},ejemplo_base_1:{valor:2500},ejemplo_base_2:{valor:4000},recargo_nocturno:{valor:null},testimonio_texto_es:{texto:null},testimonio_texto_en:{texto:null},testimonio_autor:{texto:null},testimonio_operacion:{texto:null},testimonio_estado:{texto:null}};
+    if(window.AP_DEMO_SIN_PARAMS){P.setup_precio={valor:null};P.comision_piso={valor:null};}
+    LISTA=window.AP_DEMO_LISTA||[{id:"demo-1",numero:"PR-2026-001",empresa:"EL POTRILLO TRANSPORTATION LLC",representante:"Juan Cruz",telefono:"2105550101",dot:"4357113",mc:"",estado_us:"TX",unidades_activas:1,esquema_pct:6,esquema_piso:100,setup_precio:350,setup_precio_regular:1000,compromiso_dias:90,beneficio_cargas:20,beneficio_dias:30,horario:"oficina",rutas:"interestatal",modalidad:"ambos",vehiculo_tipo:"box_26",vehiculo_medidas:"",fecha_inicio:null,unidades:[],conductores:[],estado:"emitida",idiomas_emitidos:["es"],emitida_at:"2026-10-13T15:00:00Z",emitida_por:"dayanna.jaramillo@protectgoservices.com",veces_impresa:1,creado_por:"dayanna.jaramillo@protectgoservices.com",created_at:"2026-10-13T14:30:00Z"}];
+    listo(); return;
+  }
+  if(!(window.supabase&&window.supabase.createClient)){bloquear("No se pudo cargar la conexión. Revisa tu internet y recarga.");return;}
+  sb=window.supabase.createClient(SB_URL,SB_KEY,{db:{schema:"portal"}});
+  var ses=await sb.auth.getSession(); var user=ses&&ses.data&&ses.data.session&&ses.data.session.user;
+  if(!user){bloquear('Entra primero a <a href="./">Protect Index</a> y abre Propuesta Amazon Relay desde ahí.');return;}
+  email=(user.email||"").toLowerCase();
+  var pv=await sb.rpc("mis_pantallas");
+  var ok=pv&&pv.data&&pv.data.some(function(r){return r.clave===CLAVE&&r.puede;});
+  if(!ok){bloquear("Tu cuenta no tiene acceso a Propuesta Amazon Relay. Es un piloto de cuatro cuentas; si crees que deberías entrar, dile a Andrés.");return;}
+  var rs=await Promise.all([
+    sb.from("v_personas").select("email,nombre,foto_url").eq("email",email).maybeSingle(),
+    sb.from("amazon_propuesta_param").select("clave,valor,texto,nota"),
+    cargarLista()
+  ]);
+  persona=(rs[0]&&rs[0].data)||{email:email,nombre:(email===SALES?"Andrés Salcedo":(email.indexOf("amazonaud")===0?"Equipo Amazon Relay":email.split("@")[0])),foto_url:""};
+  if(rs[1].error){bloquear("No se pudieron leer los parámetros del dossier: "+esc(rs[1].error.message)+". Recarga; si sigue igual, avísale a Andrés.");return;}
+  P={}; (rs[1].data||[]).forEach(function(r){P[r.clave]=r;});
+  listo();
+}
+async function cargarLista(){
+  if(DEMO) return;
+  var r=await sb.from("amazon_propuestas").select("*").order("created_at",{ascending:false}).limit(300);
+  if(r.error){toast("No se pudo leer la lista: "+r.error.message);return;}
+  LISTA=r.data||[];
+}
+function listo(){
+  $("app").style.display="block";
+  $("firma").hidden=false; $("fNombre").textContent=persona.nombre; $("fCorreo").textContent=persona.email;
+  var av=$("av"); av.innerHTML="";
+  if(persona.foto_url){var im=new Image();im.alt="";im.src=persona.foto_url;im.onerror=function(){av.textContent=iniciales(nombreCorto(persona.nombre));};av.appendChild(im);}
+  else av.textContent=iniciales(nombreCorto(persona.nombre));
+  pintarPct(); pintarFijos(); pintarEjemplo(); pintarLista(); pintarFalta();
+  if(email===SALES){ $("paramCard").hidden=false; pintarParams(); }
+  precargar();
+}
+function pintarPct(){
+  var mn=param("pct_min"); if(mn===null) mn=4; var mx=param("pct_max"); if(mx===null) mx=10; var df=param("pct_default"); if(df===null) df=6;
+  var sel=$("f_pct"), act=sel.value, h="";
+  for(var p=Math.ceil(mn);p<=Math.floor(mx);p++) h+='<option value="'+p+'">'+p+' %</option>';
+  sel.innerHTML=h; sel.value=act&&sel.querySelector('option[value="'+act+'"]')?act:String(df);
+  if(!sel.value) sel.selectedIndex=0;
+}
+function pintarFijos(){
+  var piso=param("comision_piso"), st=param("setup_precio"), sr=param("setup_precio_regular"), cd=param("compromiso_dias"), bc=param("beneficio_cargas"), bd=param("beneficio_dias");
+  $("fijosTxt").innerHTML='piso semanal <b>USD '+usd(piso)+'</b> por camión · creación de cuenta <b>USD '+usd(st)+'</b> (regular USD '+usd(sr)+') · compromiso <b>'+(cd===null?"—":cd)+' días</b> · beneficio inicial sin mínimo hasta <b>'+(bc===null?"—":bc)+' cargas</b> o <b>'+(bd===null?"—":bd)+' días</b>.';
+}
+function pintarEjemplo(){
+  var pct=num($("f_pct").value), b=param("ejemplo_base_1"), piso=param("comision_piso");
+  if(pct===null||b===null){$("ejemplo").textContent="—";return;}
+  var d=Math.round(b*pct)/100, desp=piso===null?d:Math.max(d,piso);
+  $("ejemplo").innerHTML='Con <b>'+pctTxt(pct)+' %</b>: una semana de USD '+usd(b)+' paga <b>USD '+usd(d)+'</b> durante el beneficio inicial'+(piso===null?' · piso: —':' · después, mínimo USD '+usd(piso)+' por camión → <b>USD '+usd(desp)+'</b>')+'.';
+}
+function pintarFalta(){
+  var f=faltanParams(), el=$("falta");
+  if(!f.length){el.hidden=true;return;}
+  el.hidden=false; el.innerHTML='<b>Para imprimir faltan parámetros de la agencia:</b> '+esc(f.join(" · "))+'. '+(email===SALES?'Escríbelos abajo en "Parámetros del dossier".':'Los fija Andrés (sales@). Guardar sí funciona.');
+}
+
+/* ---------------- filas dinámicas ---------------- */
+function filaUnidad(u){
+  u=u||{}; var d=document.createElement("div"); d.className="fila";
+  d.innerHTML='<input placeholder="Año" maxlength="4" inputmode="numeric" data-k="anio" value="'+esc(u.anio||"")+'"><input placeholder="Marca" maxlength="30" data-k="marca" value="'+esc(u.marca||"")+'"><select data-k="tipo">'+Object.keys(VEH).map(function(k){return '<option value="'+k+'"'+((u.tipo||$("f_vehiculo").value)===k?" selected":"")+'>'+VEH[k].es+'</option>';}).join("")+'</select><input placeholder="Medidas" maxlength="60" data-k="medidas" value="'+esc(u.medidas!==undefined?u.medidas:$("f_medidas").value.trim())+'"><input placeholder="VIN (17)" maxlength="17" data-k="vin" value="'+esc(u.vin||"")+'" style="text-transform:uppercase"><input placeholder="Placa" maxlength="12" data-k="placa" value="'+esc(u.placa||"")+'"><button type="button" class="x" title="Quitar">×</button>';
+  d.querySelector(".x").addEventListener("click",function(){d.remove();});
+  $("unidades").appendChild(d);
+}
+function filaConductor(c){
+  c=c||{}; var d=document.createElement("div"); d.className="fila cond";
+  d.innerHTML='<input placeholder="Nombre" maxlength="80" data-k="nombre" value="'+esc(c.nombre||"")+'"><input placeholder="Licencia" maxlength="30" data-k="licencia" value="'+esc(c.licencia||"")+'"><input placeholder="Estado" maxlength="2" data-k="estado" value="'+esc(c.estado||"")+'" style="text-transform:uppercase"><input placeholder="Teléfono" inputmode="tel" data-k="telefono" value="'+esc(c.telefono||"")+'"><button type="button" class="x" title="Quitar">×</button>';
+  d.querySelector(".x").addEventListener("click",function(){d.remove();});
+  $("conductores").appendChild(d);
+}
+function leerFilas(cont){
+  var out=[]; cont.querySelectorAll(".fila").forEach(function(f){
+    var o={}, vacio=true; f.querySelectorAll("[data-k]").forEach(function(i){ var v=(i.value||"").trim(); if(i.dataset.k==="vin"||i.dataset.k==="estado") v=v.toUpperCase(); o[i.dataset.k]=v; if(v&&i.tagName!=="SELECT") vacio=false; });
+    if(!vacio) out.push(o);
+  }); return out;
+}
+
+/* ---------------- formulario ↔ fila ---------------- */
+function limpiar(){
+  ACTUAL=null; $("form").reset(); $("f_estado").value="TX"; $("f_vehiculo").value="box_26"; $("f_unidades").value="1"; pintarPct();
+  $("unidades").innerHTML=""; $("conductores").innerHTML=""; $("dotHint").hidden=true; $("err").textContent="";
+  $("btnEs").disabled=true; $("btnEn").disabled=true; $("btnNueva").hidden=true;
+  $("estado").textContent="Propuesta nueva · al guardar, la base le pone el número.";
+  pintarEjemplo(); document.querySelectorAll(".bad").forEach(function(e){e.classList.remove("bad");});
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function cargar(r){
+  limpiar(); ACTUAL=r;
+  $("f_empresa").value=r.empresa||""; $("f_contacto").value=r.representante||""; $("f_telefono").value=fmtTel(r.telefono||"")||(r.telefono||"");
+  $("f_dot").value=r.dot||""; $("f_mc").value=r.mc||""; $("f_estado").value=r.estado_us||"TX"; $("f_unidades").value=r.unidades_activas||1;
+  pintarPct(); if($("f_pct").querySelector('option[value="'+Number(r.esquema_pct)+'"]')) $("f_pct").value=String(Number(r.esquema_pct));
+  $("f_horario").value=r.horario||"oficina"; $("f_rutas").value=r.rutas||"interestatal"; $("f_modalidad").value=r.modalidad||"ambos";
+  $("f_vehiculo").value=r.vehiculo_tipo||"box_26"; $("f_medidas").value=r.vehiculo_medidas||""; $("f_fecha_inicio").value=r.fecha_inicio||"";
+  (r.unidades||[]).forEach(filaUnidad); (r.conductores||[]).forEach(filaConductor);
+  if((r.unidades||[]).length||(r.conductores||[]).length) document.querySelectorAll("details")[0].open=true;
+  if(r.fecha_inicio) document.querySelectorAll("details")[1].open=true;
+  $("btnNueva").hidden=false; pintarEstado(); pintarEjemplo(); habilitarImprimir();
+}
+function pintarEstado(){
+  if(!ACTUAL){$("estado").textContent="Propuesta nueva · al guardar, la base le pone el número.";return;}
+  var r=ACTUAL, n=Number(r.veces_impresa)||0, t='<b>'+esc(r.numero)+'</b> · '+(r.estado==="emitida"?'Emitida'+(r.emitida_at?' el '+esc(fmtFechaHora(r.emitida_at)):'')+(r.emitida_por?' por '+esc(quien(r.emitida_por)):'')+(n?' · impresa '+n+(n===1?' vez':' veces'):''):'Borrador, sin imprimir')+' · hecha por '+esc(quien(r.creado_por))+(r.updated_at?' · guardada '+esc(fmtFechaHora(r.updated_at)):'');
+  $("estado").innerHTML=t;
+}
+function habilitarImprimir(){ var ok=!!ACTUAL&&!faltanParams().length; $("btnEs").disabled=!ok; $("btnEn").disabled=!ok; }
+function validar(){
+  var bad=[]; document.querySelectorAll(".bad").forEach(function(e){e.classList.remove("bad");});
+  function req(id,test){ var el=$(id), v=(el.value||"").trim(); if(!v||(test&&!test(v))){el.classList.add("bad");bad.push(el);} }
+  req("f_empresa"); req("f_contacto"); req("f_telefono",function(v){return digitos(v).length>=10&&digitos(v).length<=13;}); req("f_dot",function(v){return /^\d{5,8}$/.test(v);}); req("f_estado");
+  req("f_unidades",function(v){return Number(v)>=1&&Number(v)<=99;}); req("f_pct");
+  var vinMal=false; $("unidades").querySelectorAll('[data-k="vin"]').forEach(function(i){ var v=(i.value||"").trim(); if(v&&v.length!==17){i.classList.add("bad");vinMal=true;} });
+  if(vinMal) bad.push($("unidades").querySelector(".bad"));
+  if(bad.length){ $("err").textContent=vinMal&&bad.length===1?"El VIN tiene que tener 17 caracteres.":"Faltan datos obligatorios (marcados en rojo)."; bad[0].focus(); return false; }
+  $("err").textContent=""; return true;
+}
+function fila(){
+  return {
+    empresa:$("f_empresa").value.trim().toUpperCase(), representante:$("f_contacto").value.trim(), telefono:digitos($("f_telefono").value),
+    dot:$("f_dot").value.trim(), mc:$("f_mc").value.trim()||null, estado_us:$("f_estado").value, unidades_activas:Number($("f_unidades").value)||1,
+    esquema_tipo:"porcentaje", esquema_pct:Number($("f_pct").value),
+    esquema_piso:param("comision_piso"), setup_precio:param("setup_precio"), setup_precio_regular:param("setup_precio_regular"),
+    compromiso_dias:param("compromiso_dias"), beneficio_cargas:param("beneficio_cargas"), beneficio_dias:param("beneficio_dias"),
+    horario:$("f_horario").value, rutas:$("f_rutas").value, modalidad:$("f_modalidad").value,
+    vehiculo_tipo:$("f_vehiculo").value, vehiculo_medidas:$("f_medidas").value.trim()||null, fecha_inicio:$("f_fecha_inicio").value||null,
+    unidades:leerFilas($("unidades")), conductores:leerFilas($("conductores"))
+  };
+}
+async function guardar(){
+  if(!validar()) return null;
+  var b=$("btnGuardar"); b.disabled=true; b.textContent="Guardando…";
+  try{
+    var f=fila();
+    if(DEMO){
+      if(ACTUAL){ Object.assign(ACTUAL,f,{updated_at:new Date().toISOString()}); }
+      else { ACTUAL=Object.assign({id:"demo-"+Date.now(),numero:"PR-"+(new Date().getFullYear())+"-"+String(LISTA.length+1).padStart(3,"0"),estado:"borrador",idiomas_emitidos:[],veces_impresa:0,creado_por:email,created_at:new Date().toISOString(),updated_at:new Date().toISOString()},f); LISTA.unshift(ACTUAL); }
+    } else {
+      var r;
+      if(ACTUAL&&ACTUAL.id){ r=await sb.from("amazon_propuestas").update(f).eq("id",ACTUAL.id).select().single(); }
+      else { r=await sb.from("amazon_propuestas").insert(f).select().single(); }
+      if(r.error) throw new Error(r.error.message);
+      ACTUAL=r.data; await cargarLista();
+    }
+    toast("Guardada · "+ACTUAL.numero); $("btnNueva").hidden=false; pintarEstado(); pintarLista(); habilitarImprimir();
+    return ACTUAL;
+  }catch(e){ $("err").textContent="No se pudo guardar: "+(e&&e.message||e); return null; }
+  finally{ b.disabled=false; b.textContent="Guardar"; }
+}
+
+/* ---------------- dossier ---------------- */
+function bytesADataURL(blob){ return new Promise(function(ok,ko){ var fr=new FileReader(); fr.onload=function(){ok(fr.result);}; fr.onerror=ko; fr.readAsDataURL(blob); }); }
+async function precargar(){
+  try{
+    var rs=await Promise.all([fetch(ASSETS.es,{cache:"no-store"}),fetch(ASSETS.en,{cache:"no-store"}),fetch(ASSETS.mem)]);
+    if(rs[0].ok) TPL.es=await rs[0].text(); if(rs[1].ok) TPL.en=await rs[1].text(); if(rs[2].ok) MEM=await bytesADataURL(await rs[2].blob());
+  }catch(e){}
+}
+function datosDossier(r,lang){
+  var en=lang==="en", t=function(o){return o[en?"en":"es"];};
+  var pct=Number(r.esquema_pct), piso=num(r.esquema_piso), b1=param("ejemplo_base_1"), b2=param("ejemplo_base_2");
+  function ej(b){ if(b===null||!isFinite(pct)) return {d:null,p:null}; var d=Math.round(b*pct)/100; return {d:d,p:piso===null?d:Math.max(d,piso)}; }
+  var e1=ej(b1), e2=ej(b2);
+  var veh=VEH[r.vehiculo_tipo]||VEH.otro, vehTxt=t(veh)+(r.vehiculo_medidas?" · "+r.vehiculo_medidas:"");
+  var rut=TX.rutas[r.rutas]||TX.rutas.interestatal, mod=TX.modalidad[r.modalidad]||TX.modalidad.ambos, hor=TX.horario[r.horario]||TX.horario.oficina;
+  var testimonio=param(en?"testimonio_texto_en":"testimonio_texto_es");
+  var ag=persona&&persona.nombre?persona.nombre:(email.indexOf("amazonaud")===0?"Equipo Amazon Relay":email);
+  if(email.indexOf("amazonaud")===0) ag=en?"Amazon Relay Team":"Equipo Amazon Relay";
+  return {
+    cliente_nombre:r.empresa, contacto_nombre:r.representante, cliente_usdot:r.dot, cliente_mc:r.mc||"", cliente_estado:r.estado_us, unidades_cantidad:String(r.unidades_activas),
+    propuesta_numero:r.numero, propuesta_fecha:fmtHoy(lang),
+    programa_nombre:"Full Dispatch · "+t(mod)+" · "+(en?rut.pen:rut.pes),
+    comision_pct:pctTxt(pct), comision_piso:piso===null?"":usd(piso), setup_precio:r.setup_precio===null?"":usd(r.setup_precio), setup_precio_regular:r.setup_precio_regular===null?"":usd(r.setup_precio_regular),
+    compromiso_dias:r.compromiso_dias===null?"":String(r.compromiso_dias), beneficio_cargas:r.beneficio_cargas===null?"":String(r.beneficio_cargas), beneficio_dias:r.beneficio_dias===null?"":String(r.beneficio_dias),
+    ejemplo1_base:b1===null?"":usd(b1), ejemplo1_durante:e1.d===null?"":usd(e1.d), ejemplo1_despues:e1.p===null?"":usd(e1.p),
+    ejemplo2_base:b2===null?"":usd(b2), ejemplo2_durante:e2.d===null?"":usd(e2.d), ejemplo2_despues:e2.p===null?"":usd(e2.p),
+    fecha_inicio:r.fecha_inicio?fmtYMD(r.fecha_inicio,lang):(en?"To be confirmed":"Por confirmar"),
+    horario_texto:t(hor), rutas_texto:t(rut), modalidad_texto:t(mod), vehiculo_tipo_texto:vehTxt,
+    unidades:(r.unidades||[]).map(function(u){ var tv=VEH[u.tipo]?t(VEH[u.tipo]):(u.tipo||""); return {unidad_anio:u.anio||"",unidad_marca:u.marca||"",unidad_tipo:tv+(u.medidas?" · "+u.medidas:""),unidad_vin:u.vin||"",unidad_placa:u.placa||""}; }),
+    conductores:(r.conductores||[]).map(function(c){ return {conductor_nombre:c.nombre||"",conductor_licencia:c.licencia||"",conductor_estado:c.estado||"",conductor_telefono:fmtTel(c.telefono||"")||(c.telefono||"")}; }),
+    testimonio:!!testimonio, testimonio_texto:testimonio||"", testimonio_autor:param("testimonio_autor")||"", testimonio_operacion:param("testimonio_operacion")||"", testimonio_estado:param("testimonio_estado")||"",
+    nocturno:r.horario==="nocturno", recargo_nocturno:param("recargo_nocturno")===null?"":usd(param("recargo_nocturno")),
+    agente_nombre:ag
+  };
+}
+function nombreArchivo(r,lang){ return (lang==="en"?"Amazon Relay Proposal - ":"Propuesta Amazon Relay - ")+r.empresa+" - "+r.numero+" - "+lang.toUpperCase(); }
+async function imprimir(lang){
+  if(!ACTUAL){toast("Guarda primero.");return;}
+  var f=faltanParams(); if(f.length){toast("Faltan parámetros: "+f.join(", "));return;}
+  /* la ventana se abre YA (en el clic) para que el navegador no la bloquee; se rellena después */
+  var w=window.open("","_blank");
+  if(!w){toast("El navegador bloqueó la ventana — permite ventanas emergentes para este sitio.");return;}
+  w.document.open(); w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>'+esc(nombreArchivo(ACTUAL,lang))+'</title></head><body style="font-family:Inter,Arial,sans-serif;color:#1B2D3A;padding:40px">Preparando el documento…</body></html>'); w.document.close();
+  try{
+    if(!TPL[lang]||!MEM) await precargar();
+    if(!TPL[lang]) throw new Error("No se pudo cargar la plantilla "+lang.toUpperCase()+" (amazon-propuesta/plantilla_"+lang+".html).");
+    if(!MEM) throw new Error("No se pudo cargar el membrete (amazon-propuesta/membrete.png).");
+    /* guarda lo último escrito antes de imprimir (sin cambiar el número) */
+    var g=await guardar(); if(!g) throw new Error("Corrige el formulario antes de imprimir.");
+    var data=datosDossier(ACTUAL,lang);
+    var html=render(TPL[lang].split("%%MEM%%").join(MEM),data);
+    w.document.open(); w.document.write(html); w.document.close();
+    w.document.title=nombreArchivo(ACTUAL,lang);
+    /* registra la emisión */
+    var idi=(ACTUAL.idiomas_emitidos||[]).slice(); if(idi.indexOf(lang)<0) idi.push(lang);
+    var snap=Object.assign({},ACTUAL.snapshot||{}); snap[lang]=data; snap[lang+"_at"]=new Date().toISOString();
+    var upd={estado:"emitida",emitida_at:ACTUAL.emitida_at||new Date().toISOString(),emitida_por:ACTUAL.emitida_por||email,veces_impresa:(ACTUAL.veces_impresa||0)+1,idiomas_emitidos:idi,snapshot:snap};
+    if(DEMO){ Object.assign(ACTUAL,upd); } else { var r=await sb.from("amazon_propuestas").update(upd).eq("id",ACTUAL.id).select().single(); if(!r.error&&r.data) ACTUAL=r.data; else if(r.error) toast("Impresa, pero no se pudo registrar: "+r.error.message); await cargarLista(); }
+    pintarEstado(); pintarLista();
+    /* espera fuentes e imagen y manda a imprimir */
+    var listoFuentes=(w.document.fonts&&w.document.fonts.ready)?w.document.fonts.ready:Promise.resolve();
+    var im=w.document.querySelector("img.mem"); var listoImg=im&&!im.complete?new Promise(function(ok){im.onload=ok;im.onerror=ok;}):Promise.resolve();
+    await Promise.race([Promise.all([listoFuentes,listoImg]),new Promise(function(ok){setTimeout(ok,2500);})]);
+    setTimeout(function(){try{w.focus();w.print();}catch(e){}},300);
+    window.__apUltimoDossier={lang:lang,html:html,data:data};
+  }catch(e){
+    try{ w.document.body.innerHTML='<p style="font-family:Inter,Arial,sans-serif;color:#C0392B;padding:40px">'+esc(e&&e.message||e)+'</p>'; }catch(x){}
+    toast(e&&e.message||String(e));
+  }
+}
+
+/* ---------------- lista ---------------- */
+function pintarLista(){
+  var q=($("buscar").value||"").trim().toLowerCase();
+  var rows=LISTA.filter(function(r){ if(!q) return true; return (r.empresa||"").toLowerCase().indexOf(q)>=0||(r.dot||"").indexOf(q)>=0||(r.numero||"").toLowerCase().indexOf(q)>=0; });
+  $("cnt").textContent=LISTA.length?("· "+LISTA.length):"";
+  if(!rows.length){$("lista").innerHTML='<div class="vacio">'+(LISTA.length?"Nada coincide con la búsqueda.":"Todavía no hay propuestas. La primera que guardes aparece aquí.")+'</div>';return;}
+  var h='<table class="lista"><thead><tr><th>Número</th><th class="mh">Fecha</th><th>Empresa</th><th>DOT</th><th class="mh">%</th><th class="mh">Camiones</th><th class="mh">Hecha por</th><th>Estado</th><th class="ab"></th></tr></thead><tbody>';
+  rows.forEach(function(r){
+    var hecha=quien(r.creado_por);
+    h+='<tr data-fila="'+esc(r.id)+'"><td class="n">'+esc(r.numero||"—")+'</td><td class="mh">'+esc(fmtFechaHora(r.created_at).split(",")[0]||"")+'</td><td>'+esc(r.empresa)+'</td><td>'+esc(r.dot)+'</td><td class="mh">'+esc(pctTxt(r.esquema_pct))+' %</td><td class="mh">'+esc(r.unidades_activas)+'</td><td class="mh">'+esc(hecha)+'</td><td><span class="chip '+(r.estado==="emitida"?"ok":"warn")+'">'+(r.estado==="emitida"?"Emitida"+((r.idiomas_emitidos||[]).length?'<span class="idi"> · '+(r.idiomas_emitidos||[]).map(function(l){return l.toUpperCase();}).join("+")+'</span>':""):"Borrador")+'</span></td><td class="ab"><button type="button" class="btn2" data-abrir="'+esc(r.id)+'">Abrir</button></td></tr>';
+  });
+  $("lista").innerHTML=h+'</tbody></table>';
+  $("lista").querySelectorAll("tr[data-fila]").forEach(function(tr){ tr.addEventListener("click",function(){ var r=LISTA.find(function(x){return String(x.id)===tr.dataset.fila;}); if(r) cargar(r); }); });
+}
+function dotHint(){
+  var dot=$("f_dot").value.trim(), el=$("dotHint");
+  var otra=dot?LISTA.find(function(r){return r.dot===dot&&(!ACTUAL||r.id!==ACTUAL.id);}):null;
+  if(!otra){el.hidden=true;return;}
+  el.hidden=false; el.innerHTML='Ya hay una propuesta para este DOT: <b>'+esc(otra.numero)+'</b> · '+esc(otra.empresa)+' · '+esc(quien(otra.creado_por))+' · <a data-abrir-dot="'+esc(otra.id)+'">Abrir</a>';
+  el.querySelector("[data-abrir-dot]").addEventListener("click",function(){cargar(otra);});
+}
+
+/* ---------------- parámetros (sales@) ---------------- */
+function pintarParams(){
+  $("pm").innerHTML=PARAMS.map(function(p){
+    var r=P[p[0]]||{}, v=p[2]==="num"?(r.valor===null||r.valor===undefined?"":r.valor):(r.texto||"");
+    return '<div class="field"><label>'+esc(p[1])+(p[3]?' <i>*</i>':'')+'</label>'+(p[2]==="num"?'<input type="number" step="any" data-p="'+p[0]+'" value="'+esc(v)+'">':'<input type="text" maxlength="400" data-p="'+p[0]+'" value="'+esc(v)+'">')+(r.nota?'<small>'+esc(r.nota)+'</small>':'')+'</div>';
+  }).join("");
+}
+async function guardarParams(){
+  var b=$("btnParams"); b.disabled=true; var cambios=0, errores=[];
+  try{
+    var inputs=$("pm").querySelectorAll("[data-p]");
+    for(var i=0;i<inputs.length;i++){
+      var el=inputs[i], k=el.dataset.p, def=PARAMS.find(function(p){return p[0]===k;}), r=P[k]||{};
+      var v=(el.value||"").trim(), patch;
+      if(def[2]==="num"){ var n=v===""?null:Number(v); if(v!==""&&!isFinite(n)){errores.push(def[1]);continue;} if((r.valor===null||r.valor===undefined?null:Number(r.valor))===n) continue; patch={valor:n}; }
+      else { var t=v===""?null:v; if((r.texto||null)===t) continue; patch={texto:t}; }
+      patch.updated_by=email; patch.updated_at=new Date().toISOString();
+      if(DEMO){ P[k]=Object.assign({},r,patch); cambios++; continue; }
+      var res=await sb.from("amazon_propuesta_param").update(patch).eq("clave",k).select().maybeSingle();
+      if(res.error){errores.push(def[1]+": "+res.error.message);continue;}
+      if(!res.data){ var ins=await sb.from("amazon_propuesta_param").insert(Object.assign({clave:k},patch)).select().single(); if(ins.error){errores.push(def[1]+": "+ins.error.message);continue;} P[k]=ins.data; } else P[k]=res.data;
+      cambios++;
+    }
+    $("pmEstado").textContent=errores.length?("No se guardó: "+errores.join(" · ")):(cambios?("Guardados "+cambios+" parámetro"+(cambios>1?"s":"")+"."):"Sin cambios.");
+    pintarPct(); pintarFijos(); pintarEjemplo(); pintarFalta(); habilitarImprimir();
+  }finally{ b.disabled=false; }
+}
+
+/* ---------------- eventos ---------------- */
+$("btnGuardar").addEventListener("click",guardar);
+$("btnEs").addEventListener("click",function(){imprimir("es");});
+$("btnEn").addEventListener("click",function(){imprimir("en");});
+$("btnNueva").addEventListener("click",limpiar);
+$("btnParams").addEventListener("click",guardarParams);
+$("addUnidad").addEventListener("click",function(){filaUnidad();});
+$("addConductor").addEventListener("click",function(){filaConductor();});
+$("f_pct").addEventListener("change",pintarEjemplo);
+$("f_dot").addEventListener("blur",dotHint); $("f_dot").addEventListener("input",function(){ this.value=digitos(this.value).slice(0,8); });
+$("f_telefono").addEventListener("blur",function(){ var v=fmtTel(this.value); if(v) this.value=v; });
+$("f_empresa").addEventListener("blur",function(){ this.value=this.value.trim().toUpperCase(); });
+$("buscar").addEventListener("input",pintarLista);
+window.__AP={guardar:guardar,imprimir:imprimir,datosDossier:datosDossier,render:render,fila:fila,cargar:cargar,limpiar:limpiar,get lista(){return LISTA;},get actual(){return ACTUAL;},get params(){return P;}};
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",arrancar); else arrancar();
+})();
+</script>
+
+<script>
+(function(){
+"use strict";
+var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
+var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
+var PGV_ARCHIVO="amazon-propuesta.html";
+var PGV_VERSION=1; // v1 (14-oct-2026) - Propuesta Amazon Relay: una hoja (cliente, programa, unidades/conductores opcionales), número desde la base (PR-AAAA-###), dossier estándar ES/EN con membrete, lista compartida del piloto (Valentina, Karen Dayanna, Amazon Relay, sales@) y panel de parámetros para sales@.
+if(/[?&]demo=1\b/.test(location.search)||window.AP_DEMO===true)return;
+try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
+function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
+  if(document.getElementById('pgvBar'))return;
+  var b=document.createElement('div');
+  b.id='pgvBar';
+  b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:#FFB400;color:#0D3040;font:600 13px Arial,Helvetica,sans-serif;padding:10px 16px;display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.18);';
+  b.innerHTML='Hay una versión nueva de esta página. <button id="pgvBtn" type="button" style="font:700 13px Arial,Helvetica,sans-serif;background:#0D3040;color:#fff;border:none;border-radius:6px;padding:7px 14px;cursor:pointer;">Actualizar ahora</button>';
+  document.body.appendChild(b);
+  document.getElementById('pgvBtn').addEventListener('click',function(){location.reload(true);});
+}
+function pgvRun(){
+  try{
+    var c=window.supabase.createClient(PGV_URL,PGV_KEY,{db:{schema:'portal'}});
+    c.from('app_versiones').select('version').eq('archivo',PGV_ARCHIVO).maybeSingle().then(function(r){
+      if(!r||r.error||!r.data)return;
+      if(Number(r.data.version)>PGV_VERSION)pgvBanner();
+    });
+  }catch(e){}
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(pgvRun,400);});
+else setTimeout(pgvRun,400);
+setInterval(pgvRun,600000);
+})();
+</script>
+</body>
+</html>
