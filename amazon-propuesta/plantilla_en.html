@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Amazon Relay Proposal - {{cliente_nombre}} - {{propuesta_numero}} - EN</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- ===================================================================
+     Propuesta Amazon Relay · plantilla EN (traducción de la ES) · v1 (14-oct-2026)
+     Reconstruida desde Template-Propuesta-Amazon-Relay-ES.pdf (Chromium, 13-oct-2026).
+     La rellena amazon-propuesta.html: {{marcador}} = dato; {{#bloque}}…{{/bloque}} se repite
+     por cada elemento (unidades, conductores) o se muestra solo si existe (testimonio, nocturno);
+     {{^bloque}}…{{/bloque}} se muestra solo cuando NO existe. %%MEM%% = el membrete (PNG).
+     Carta 8.5 x 11 in · 9 páginas · fuentes Poppins (títulos) e Inter (cuerpo).
+     =================================================================== -->
+<!-- TODO: la cabecera de arriba se copio tal cual de la plantilla ES (regla: no tocar comentarios). Este archivo es la plantilla EN; actualizar la cabecera si se quiere. -->
+<style>
+:root{--navy:#1b2d3a;--teal:#10988a;--mint:#2dbea2;--txt:#2a3a41;--muted:#6a757b;--muted2:#5e6a6f;--light:#99a3a7;--sub:#b8c7cc;--zebra:#f3f7f8;--mintbg:#eaf5f3;--line:#dde4e8;--chip:#8b9399}
+*{box-sizing:border-box;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+html,body{margin:0;padding:0;background:#fff}
+body{font-family:'Inter',system-ui,sans-serif;color:var(--txt);font-size:14.2px;line-height:18px;-webkit-font-smoothing:antialiased}
+@page{size:8.5in 11in;margin:0}
+.page{position:relative;width:816px;height:1056px;overflow:hidden;background:#fff;page-break-after:always;break-after:page}
+.page:last-child{page-break-after:auto;break-after:auto}
+.mem{position:absolute;left:0;top:0;width:816px;height:1056px;z-index:0;pointer-events:none}
+.c{position:absolute;left:69px;top:0;width:678px;z-index:1}
+b,strong{font-weight:700;color:var(--navy)}
+.v{font-weight:inherit}
+/* encabezado corrido (págs. 2–9) */
+.run{position:absolute;left:69px;top:134px;width:678px;display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1px solid var(--navy);padding-bottom:7px;z-index:1}
+.run .k{font-family:'Poppins',sans-serif;font-weight:700;font-size:8px;letter-spacing:1.6px;color:var(--teal);text-transform:uppercase;line-height:12px}
+.run .d{font-size:11.6px;font-weight:700;color:var(--navy);line-height:15px;margin-top:2px}
+.run .mid{text-align:left}.run .r{text-align:right}
+h1.t{position:absolute;left:69px;top:176px;width:678px;margin:0;text-align:center;font-family:'Poppins',sans-serif;font-weight:700;font-size:19.6px;letter-spacing:2.2px;color:var(--navy);line-height:26px;z-index:1}
+.body{position:absolute;left:69px;top:230px;width:678px;z-index:1}
+.sub{text-align:center;font-size:12px;color:var(--muted2);font-style:italic;margin:-16px 0 18px}
+/* etiquetas de sección */
+.lab{font-family:'Poppins',sans-serif;font-weight:700;font-size:9.8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--navy);border-left:3px solid var(--teal);padding-left:8px;line-height:13px;margin:0 0 10px}
+.sec{font-family:'Poppins',sans-serif;font-weight:700;font-size:13.3px;color:var(--navy);margin:0 0 9px;line-height:18px}
+.sec i{font-style:normal;color:var(--teal)}
+p{margin:0 0 7px}
+p.j{text-align:justify}
+.nota{font-size:10.7px;line-height:13.5px;color:var(--muted);font-style:italic;margin:10px 0 0}
+.nota .v{font-style:normal}
+ul.pts{list-style:none;margin:0 0 8px;padding:0}
+ul.pts li{position:relative;padding-left:14px;margin:0 0 3px}
+ul.pts li:before{content:"";position:absolute;left:0;top:7px;width:5px;height:5px;border-radius:50%;background:var(--teal)}
+/* tablas */
+table.tb{width:100%;border-collapse:collapse;font-size:12.4px;line-height:16px}
+table.tb th{background:var(--navy);color:#fff;font-family:'Poppins',sans-serif;font-weight:700;font-size:8.9px;letter-spacing:1.3px;text-transform:uppercase;text-align:left;padding:7px 8px}
+table.tb td{padding:8px 8px;vertical-align:top;border-bottom:1px solid var(--line)}
+table.tb tr:nth-child(even) td{background:var(--zebra)}
+table.tb td.k{font-weight:700;color:var(--navy);width:120px}
+table.tb td.m{text-align:right;font-weight:700;color:var(--navy);white-space:nowrap}
+table.tb th.m{text-align:right}
+/* página 1 */
+.cover{position:absolute;left:69px;top:152px;width:678px;text-align:center;z-index:1}
+.cover .eye{font-family:'Poppins',sans-serif;font-weight:700;font-size:11.6px;letter-spacing:3.2px;color:var(--teal);line-height:16px}
+.cover .nm{font-family:'Poppins',sans-serif;font-weight:700;font-size:22px;color:var(--navy);line-height:30px;margin:10px 0 8px}
+.cover .meta{font-size:11.6px;line-height:15px;color:var(--muted2)}
+.cover .intro{font-size:16px;line-height:20px;color:var(--txt);margin:28px 40px 26px;text-align:center}
+.cover .intro b{color:var(--navy)}
+ul.sq{list-style:none;margin:0 0 0 84px;padding:0;text-align:left;width:520px}
+ul.sq li{position:relative;padding-left:18px;margin:0 0 10px;font-size:14.2px;line-height:18.5px}
+ul.sq li:before{content:"";position:absolute;left:0;top:6px;width:7px;height:7px;background:var(--teal)}
+.disc{position:absolute;left:69px;top:786px;width:678px;font-size:9.6px;line-height:12.5px;color:var(--muted);z-index:1;border-top:1px solid var(--line);padding-top:6px}
+/* página 2 */
+.prog{text-align:center;font-family:'Poppins',sans-serif;font-weight:700;font-size:8.9px;letter-spacing:1.6px;color:var(--teal);text-transform:uppercase;margin:-14px 0 16px}
+.kpis{display:flex;gap:12px;margin:0 0 14px}
+.kpi{flex:1;background:var(--navy);border-radius:9px;padding:14px 12px 13px;color:#fff;min-height:128px}
+.kpi .n{font-family:'Poppins',sans-serif;font-weight:700;font-size:26.7px;line-height:32px;color:var(--mint)}
+.kpi .n .v{color:var(--mint)}
+.kpi .l{font-family:'Poppins',sans-serif;font-weight:700;font-size:10.7px;line-height:14px;margin-top:4px;color:#fff}
+.kpi .s{font-size:10.7px;line-height:13.5px;color:var(--sub);margin-top:4px}
+.kpi .s .v{color:#fff}
+.tl{display:flex;justify-content:space-between;margin:14px 0 0;position:relative;padding:0 6px}
+.tl:before{content:"";position:absolute;left:36px;right:36px;top:7px;height:2px;background:#bfe3dc}
+.tl>div{position:relative;width:16.6%;text-align:center;font-size:10.7px;line-height:13.5px;color:var(--navy);padding-top:22px}
+.tl>div:before{content:"";position:absolute;left:50%;top:0;width:12px;height:12px;margin-left:-6px;border-radius:50%;background:var(--teal);border:2px solid #fff;box-shadow:0 0 0 1px var(--teal)}
+/* página 3 */
+.hl{background:var(--mintbg);border-left:3px solid var(--teal);padding:10px 12px;margin:0 0 12px}
+.hl p{margin:0}
+/* página 5 */
+.grid2{display:grid;grid-template-columns:1fr 1fr;column-gap:24px;margin:0 0 16px}
+.grid2>div{font-size:12.4px;line-height:16px;padding:6px 0;border-bottom:1px solid var(--line)}
+.grid2 b{color:var(--navy)}
+ul.chk{list-style:none;margin:0;padding:0;columns:2;column-gap:24px;font-size:12.4px;line-height:16px}
+ul.chk li{position:relative;padding-left:20px;margin:0 0 3px;break-inside:avoid}
+ul.chk li:before{content:"";position:absolute;left:1px;top:3px;width:9px;height:9px;border:1.3px solid var(--teal);border-radius:2px}
+.light{font-size:11px;line-height:14px;color:var(--light);font-style:italic;margin:6px 0 18px}
+/* página 6 */
+.stats{display:flex;gap:12px;margin:0 0 20px}
+.stats>div{flex:1;border-top:3px solid var(--teal);text-align:center;padding-top:8px}
+.stats .n{font-family:'Poppins',sans-serif;font-weight:700;font-size:24px;line-height:28px;color:var(--teal)}
+.stats .l{font-family:'Poppins',sans-serif;font-weight:700;font-size:8.9px;letter-spacing:1.3px;color:var(--navy);text-transform:uppercase;line-height:12px;margin-top:3px}
+.lv{display:flex;gap:12px;margin:0 0 10px}
+.lv>div{flex:1;border:1px solid var(--line);border-radius:7px;padding:12px 12px 10px;background:#fff}
+.lv>div.hi{background:var(--mintbg);border:2px solid var(--teal)}
+.lv .k{font-family:'Poppins',sans-serif;font-weight:700;font-size:8.9px;letter-spacing:1.3px;color:var(--teal);text-transform:uppercase;line-height:12px}
+.lv .n{font-family:'Poppins',sans-serif;font-weight:700;font-size:17px;line-height:22px;color:var(--navy);margin:6px 0 2px}
+.lv .n .v{color:var(--navy)}
+.lv .d{font-size:12px;font-weight:700;color:var(--navy);line-height:16px;margin:0 0 6px}
+.lv ul.pts li{font-size:11px;line-height:14px;margin-bottom:2px;padding-left:12px}
+.lv ul.pts li:before{width:4px;height:4px;top:5px}
+.quote{background:var(--zebra);padding:12px 14px;margin:14px 0 0}
+.quote .q{font-size:13px;line-height:17px;color:var(--txt)}
+.quote .a{font-family:'Poppins',sans-serif;font-weight:700;font-size:8.9px;letter-spacing:1px;color:var(--navy);margin-top:6px}
+/* página 7 */
+.p7 p.j{font-size:13px;line-height:17px}
+.p7 .lab{margin-bottom:7px}
+.pill{display:block;width:max-content;margin:-16px auto 12px;background:var(--navy);color:#fff;border-radius:999px;padding:5px 14px;font-family:'Poppins',sans-serif;font-weight:700;font-size:8.9px;letter-spacing:1.5px;text-transform:uppercase}
+.sv{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:0 0 14px}
+.sv>div{border:1px solid var(--line);border-radius:6px;padding:7px 10px;font-size:11px;line-height:14px}
+.sv .h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:2px}
+.sv .h b{font-size:11.6px;line-height:14px}
+.sv .h span{font-family:'Poppins',sans-serif;font-weight:700;font-size:11px;color:var(--teal);white-space:nowrap}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 14px}
+.chips span{border:1px solid var(--chip);border-radius:999px;padding:3px 10px;font-family:'Poppins',sans-serif;font-weight:700;font-size:8.9px;letter-spacing:1.3px;color:var(--navy);text-transform:uppercase}
+.band{background:var(--navy);border-radius:4px;padding:10px 14px;margin:12px 0 0}
+.band .h{font-family:'Poppins',sans-serif;font-weight:700;font-size:12px;color:var(--mint);line-height:16px}
+.band .l{font-size:12px;color:#fff;line-height:16px;margin-top:2px}
+/* página 9 */
+.sig{display:grid;grid-template-columns:1fr 180px;column-gap:24px;margin:22px 0 0}
+.sig>div{border-top:1px solid var(--navy);padding-top:5px;font-family:'Poppins',sans-serif;font-weight:700;font-size:8.9px;letter-spacing:1.3px;color:var(--navy);text-transform:uppercase;line-height:12px}
+.sig>div .who{display:block;font-family:'Inter',sans-serif;font-weight:400;font-size:10.7px;letter-spacing:0;text-transform:none;color:var(--txt);margin-top:2px}
+.sig2{display:grid;grid-template-columns:1fr 1fr;column-gap:24px;margin:18px 0 0}
+.sig2>div{border-top:1px solid var(--navy);padding-top:5px;font-family:'Poppins',sans-serif;font-weight:700;font-size:8.9px;letter-spacing:1.3px;color:var(--navy);text-transform:uppercase;line-height:12px;margin-bottom:16px}
+</style>
+</head>
+<body>
+
+<!-- ===================== PÁGINA 1 · PORTADA ===================== -->
+<section class="page">
+<img class="mem" src="%%MEM%%" alt="">
+<div class="cover">
+  <div class="eye">AMAZON RELAY PROPOSAL</div>
+  <div class="nm"><span class="v">{{cliente_nombre}}</span></div>
+  <div class="meta">Proposal <span class="v">{{propuesta_numero}}</span> · Issued <span class="v">{{propuesta_fecha}}</span> · Valid 30 days</div>
+  <div class="meta">USDOT <span class="v">{{cliente_usdot}}</span> · MC <span class="v">{{cliente_mc}}</span> · <span class="v">{{cliente_estado}}</span> · <span class="v">{{programa_nombre}}</span> · <span class="v">{{unidades_cantidad}}</span> truck(s)</div>
+  <p class="intro">Prepared especially for <b><span class="v">{{contacto_nombre}}</span></b>. This is the Amazon Relay operating program we built around your company: an account set up right, loads managed every day, and a bilingual ProtectGo team behind you from day one.</p>
+  <ul class="sq">
+    <li><b>Your account, set up right.</b> We gather, review, and submit your application, and follow up on every response from Amazon.</li>
+    <li><b>Your operation, covered.</b> Loads, schedules, incidents, and performance score managed by a team that speaks your language.</li>
+    <li><b>Clear billing.</b> One initial payment and a weekly commission you can calculate yourself — no surprises.</li>
+  </ul>
+</div>
+<div class="disc">This document is a preliminary proposal based on information provided by the client. Amazon decides account approval, load availability, and payments. It is not a contract and does not guarantee income. Final terms will be put in writing before we charge or begin service.</div>
+</section>
+
+<!-- ===================== PÁGINA 2 · RESUMEN ===================== -->
+<section class="page">
+<img class="mem" src="%%MEM%%" alt="">
+<div class="run"><div><div class="k">Client</div><div class="d"><span class="v">{{cliente_nombre}}</span></div></div><div class="mid"><div class="k">Agent</div><div class="d">ProtectGo Services LLC</div></div><div class="r"><div class="k">Proposal / Validity</div><div class="d"><span class="v">{{propuesta_numero}}</span> · <span class="v">{{propuesta_fecha}}</span> · 30 days</div></div></div>
+<h1 class="t">PROPOSAL SUMMARY</h1>
+<div class="body">
+  <div class="prog">Your program · <span class="v">{{programa_nombre}}</span> · <span class="v">{{unidades_cantidad}}</span> truck(s)</div>
+  <div class="kpis">
+    <div class="kpi"><div class="n">USD <span class="v">{{setup_precio}}</span></div><div class="l">Account setup</div><div class="s">One-time charge · regular price USD <span class="v">{{setup_precio_regular}}</span></div></div>
+    <div class="kpi"><div class="n"><span class="v">{{comision_pct}}</span>%</div><div class="l">Weekly commission</div><div class="s">Floor (minimum) USD <span class="v">{{comision_piso}}</span>/wk per truck after the initial benefit</div></div>
+    <div class="kpi"><div class="n"><span class="v">{{compromiso_dias}}</span> days</div><div class="l">Minimum commitment</div><div class="s">With at least <span class="v">{{unidades_cantidad}}</span> truck(s) assigned to our management</div></div>
+  </div>
+  <table class="tb">
+    <thead><tr><th>Service</th><th>How it’s billed</th><th class="m">Amount</th></tr></thead>
+    <tbody>
+      <tr><td class="k">Account setup</td><td>One-time charge, at signing</td><td class="m">USD <span class="v">{{setup_precio}}</span></td></tr>
+      <tr><td class="k">Load management — initial benefit</td><td><span class="v">{{comision_pct}}</span>% with no minimum until <span class="v">{{beneficio_cargas}}</span> loads or <span class="v">{{beneficio_dias}}</span> active days, whichever comes first</td><td class="m"><span class="v">{{comision_pct}}</span>%</td></tr>
+      <tr><td class="k">Load management — thereafter</td><td><span class="v">{{comision_pct}}</span>% with a minimum of USD <span class="v">{{comision_piso}}</span> per week per truck</td><td class="m"><span class="v">{{comision_pct}}</span>% or USD <span class="v">{{comision_piso}}</span></td></tr>
+      <tr><td class="k">Optional services</td><td>Per case, quoted separately</td><td class="m">see p. 7</td></tr>
+    </tbody>
+  </table>
+  <div class="lab" style="margin-top:22px">Your first 30 days</div>
+  <div class="tl"><div>Signature and setup payment</div><div>Documents and validations</div><div>Application submitted to Amazon</div><div>Amazon’s response</div><div>Onboarding 48–72 h</div><div>First loads</div></div>
+  <p class="nota">Amazon’s response times are outside ProtectGo’s control. The USD <span class="v">{{setup_precio}}</span> account setup fee is a separate charge from the commission.</p>
+</div>
+</section>
+
+<!-- ===================== PÁGINA 3 · LO QUE HACEMOS ===================== -->
+<section class="page">
+<img class="mem" src="%%MEM%%" alt="">
+<div class="run"><div><div class="k">Client</div><div class="d"><span class="v">{{cliente_nombre}}</span></div></div><div class="mid"><div class="k">Agent</div><div class="d">ProtectGo Services LLC</div></div><div class="r"><div class="k">Proposal / Validity</div><div class="d"><span class="v">{{propuesta_numero}}</span> · <span class="v">{{propuesta_fecha}}</span> · 30 days</div></div></div>
+<h1 class="t">WHAT WE DO FOR YOU</h1>
+<div class="body">
+  <div class="sec"><i>1.</i> We handle your account setup</div>
+  <div class="hl"><p><b>USD <span class="v">{{setup_precio}}</span>, a one-time charge for this service.</b> Regular price: USD <span class="v">{{setup_precio_regular}}</span>. This promotional price is tied to signing up for our load management for <span class="v">{{compromiso_dias}}</span> days, with at least one truck.</p></div>
+  <p class="j">We help you gather and review your information, prepare and submit the application, and follow up on Amazon’s responses. You provide the documents and complete any validations that must be done in your name.</p>
+  <p class="j"><b>Amazon decides whether to approve the account.</b> The USD <span class="v">{{setup_precio}}</span> pays for our management work. It does not buy or guarantee approval.</p>
+  <div class="sec" style="margin-top:18px"><i>2.</i> We manage your loads and your operation</div>
+  <p>Once your account is enabled to operate, the <b>Full Dispatch</b> service includes:</p>
+  <ul class="pts">
+    <li>Finding loads and contracts based on your availability and coordinating their assignment.</li>
+    <li>Reviewing schedules, arrivals, and departures, and guiding the driver.</li>
+    <li>Following up on incidents, proof of delivery, overweight issues, and breakdowns.</li>
+    <li>Reviewing your performance score and filing disputes with evidence when appropriate.</li>
+    <li>Reviewing results and opportunities to improve your operation.</li>
+  </ul>
+  <p class="j"><b>The service already includes score support and light operational control.</b> Levels 1 and 2 are not billed separately in this package.</p>
+  <p class="nota">Load availability, contracts, payments, and score decisions depend on Amazon. We do not promise any specific amount of income.</p>
+</div>
+</section>
+
+<!-- ===================== PÁGINA 4 · CUÁNTO PAGA ===================== -->
+<section class="page">
+<img class="mem" src="%%MEM%%" alt="">
+<div class="run"><div><div class="k">Client</div><div class="d"><span class="v">{{cliente_nombre}}</span></div></div><div class="mid"><div class="k">Agent</div><div class="d">ProtectGo Services LLC</div></div><div class="r"><div class="k">Proposal / Validity</div><div class="d"><span class="v">{{propuesta_numero}}</span> · <span class="v">{{propuesta_fecha}}</span> · 30 days</div></div></div>
+<h1 class="t">WHAT YOU PAY AND HOW IT WORKS</h1>
+<div class="body">
+  <div class="sec"><i>3.</i> Load management commission</div>
+  <p class="j"><b>Initially: <span class="v">{{comision_pct}}</span>%, no weekly minimum.</b> This benefit ends when you reach <span class="v">{{beneficio_cargas}}</span> loads or <span class="v">{{beneficio_dias}}</span> active days, whichever comes first. The <span class="v">{{comision_pct}}</span>% is charged from day one.</p>
+  <p class="j"><b>Afterward: <span class="v">{{comision_pct}}</span>%, with a minimum of USD <span class="v">{{comision_piso}}</span> per week per truck under our management.</b> If the <span class="v">{{comision_pct}}</span>% comes to less than USD <span class="v">{{comision_piso}}</span>, you pay USD <span class="v">{{comision_piso}}</span>. If it comes to more, you pay the <span class="v">{{comision_pct}}</span>% amount. The two amounts are not added together.</p>
+  <table class="tb" style="margin-top:6px">
+    <thead><tr><th>Weekly base per truck</th><th>During the benefit</th><th>After the benefit</th></tr></thead>
+    <tbody>
+      <tr><td class="k" style="width:auto">USD <span class="v">{{ejemplo1_base}}</span></td><td>USD <span class="v">{{ejemplo1_durante}}</span></td><td>USD <span class="v">{{ejemplo1_despues}}</span></td></tr>
+      <tr><td class="k" style="width:auto">USD <span class="v">{{ejemplo2_base}}</span></td><td>USD <span class="v">{{ejemplo2_durante}}</span></td><td>USD <span class="v">{{ejemplo2_despues}}</span></td></tr>
+    </tbody>
+  </table>
+  <p class="nota" style="margin:6px 0 12px">Billing examples, not income promises. The USD <span class="v">{{setup_precio}}</span> account setup fee is a separate charge from this commission.</p>
+  <p class="j">The percentage is calculated on the agreed revenue base for the loads we manage. It also includes base payments Amazon recognizes even when a load is not completed, such as rescued loads or layovers, when that revenue results from our management. Before starting, we will put in writing which items are included and how the commission is settled.</p>
+  <div class="sec" style="margin-top:18px"><i>4.</i> Commitment and service limits</div>
+  <p class="j"><b>Commitment: <span class="v">{{compromiso_dias}}</span> days and at least one truck assigned to our management.</b> A unit is considered active if it runs 4 loads in a week or works 5 days, even if it completes fewer loads because of trip length.</p>
+  <p class="j">After the initial benefit, the weekly minimum covers the work of managing the truck. It may apply even in a week with few loads, as long as the unit remains assigned to the service.</p>
+  {{^nocturno}}<p class="j"><b>Nights and weekends: not automatically included.</b> Standard hours are Monday through Friday, 8 a.m. – 5 p.m. Central Time; any additional coverage is quoted separately. Extraordinary account rescues are also quoted separately.</p>{{/nocturno}}
+  {{#nocturno}}<p class="j"><b>Nights and weekends: included in this proposal.</b> {{#recargo_nocturno}}Night and weekend coverage is billed at USD <span class="v">{{recargo_nocturno}}</span> per week per truck, separate from the commission.{{/recargo_nocturno}}{{^recargo_nocturno}}The price of night and weekend coverage will be set in writing before starting.{{/recargo_nocturno}} Extraordinary account rescues are quoted separately.</p>{{/nocturno}}
+  <p class="j">This proposal quotes our services. It does not include insurance, repairs, or other truck operating expenses.</p>
+</div>
+</section>
+
+<!-- ===================== PÁGINA 5 · SU OPERACIÓN ===================== -->
+<section class="page">
+<img class="mem" src="%%MEM%%" alt="">
+<div class="run"><div><div class="k">Client</div><div class="d"><span class="v">{{cliente_nombre}}</span></div></div><div class="mid"><div class="k">Agent</div><div class="d">ProtectGo Services LLC</div></div><div class="r"><div class="k">Proposal / Validity</div><div class="d"><span class="v">{{propuesta_numero}}</span> · <span class="v">{{propuesta_fecha}}</span> · 30 days</div></div></div>
+<h1 class="t">YOUR OPERATION</h1>
+<div class="body">
+  <div class="lab">Units</div>
+  <table class="tb">
+    <thead><tr><th>Year</th><th>Make</th><th>Type</th><th>VIN</th><th>Plate</th></tr></thead>
+    <tbody>
+      {{#unidades}}<tr><td><span class="v">{{unidad_anio}}</span></td><td><span class="v">{{unidad_marca}}</span></td><td><span class="v">{{unidad_tipo}}</span></td><td><span class="v">{{unidad_vin}}</span></td><td><span class="v">{{unidad_placa}}</span></td></tr>{{/unidades}}
+      {{^unidades}}<tr><td>To be confirmed</td><td>To be confirmed</td><td><span class="v">{{vehiculo_tipo_texto}}</span></td><td>To be confirmed</td><td>To be confirmed</td></tr>{{/unidades}}
+    </tbody>
+  </table>
+  <p class="light">One row per unit / driver · if no data: “To be confirmed before start”</p>
+  <div class="lab">Drivers</div>
+  <table class="tb">
+    <thead><tr><th>Driver</th><th>License</th><th>State</th><th>Phone</th></tr></thead>
+    <tbody>
+      {{#conductores}}<tr><td><span class="v">{{conductor_nombre}}</span></td><td><span class="v">{{conductor_licencia}}</span></td><td><span class="v">{{conductor_estado}}</span></td><td><span class="v">{{conductor_telefono}}</span></td></tr>{{/conductores}}
+      {{^conductores}}<tr><td>To be confirmed before start</td><td>To be confirmed</td><td>To be confirmed</td><td>To be confirmed</td></tr>{{/conductores}}
+    </tbody>
+  </table>
+  <p class="light">One row per unit / driver · if no data: “To be confirmed before start”</p>
+  <div class="lab">How we will operate</div>
+  <div class="grid2">
+    <div><b>Start of the <span class="v">{{compromiso_dias}}</span> days:</b> <span class="v">{{fecha_inicio}}</span></div>
+    <div><b>Service hours:</b> <span class="v">{{horario_texto}}</span></div>
+    <div><b>Routes:</b> <span class="v">{{rutas_texto}}</span> · <b>Mode:</b> <span class="v">{{modalidad_texto}}</span></div>
+    <div><b>Channel:</b> WhatsApp · email · SMS · <b>Weekly payment:</b> ACH debit, weekly in arrears</div>
+  </div>
+  <div class="sec"><i>5.</i> What we will agree on before starting</div>
+  <ul class="chk">
+    <li>Unit and schedule</li>
+    <li>Start date for the <span class="v">{{compromiso_dias}}</span> days</li>
+    <li>Payment method</li>
+    <li>How loads and active days are counted</li>
+    <li>Pauses</li>
+    <li>What happens if Amazon does not approve</li>
+    <li>Conditions for early cancellation</li>
+  </ul>
+  <p class="nota">Preliminary proposal. These points will be completed in writing before any charge or start of service. This quote does not confirm the company’s eligibility with Amazon.</p>
+</div>
+</section>
+
+<!-- ===================== PÁGINA 6 · MÁS ALLÁ DE LA GESTIÓN ===================== -->
+<section class="page">
+<img class="mem" src="%%MEM%%" alt="">
+<div class="run"><div><div class="k">Client</div><div class="d"><span class="v">{{cliente_nombre}}</span></div></div><div class="mid"><div class="k">Agent</div><div class="d">ProtectGo Services LLC</div></div><div class="r"><div class="k">Proposal / Validity</div><div class="d"><span class="v">{{propuesta_numero}}</span> · <span class="v">{{propuesta_fecha}}</span> · 30 days</div></div></div>
+<h1 class="t">PROTECTGO · BEYOND DISPATCH</h1>
+<div class="body">
+  <p class="sub">One team for your Relay operation, your permits, and your insurance — in your language.</p>
+  <div class="stats">
+    <div><div class="n">4+</div><div class="l">Years operating on Relay</div></div>
+    <div><div class="n">500+</div><div class="l">Drivers protected</div></div>
+    <div><div class="n">48–72 h</div><div class="l">Relay onboarding</div></div>
+    <div><div class="n">90%</div><div class="l">Score target we defend</div></div>
+  </div>
+  <div class="lab">Included in your ProtectGo experience</div>
+  <ul class="pts">
+    <li>An advisor who speaks your language — WhatsApp, email, or SMS — for the entire relationship.</li>
+    <li>Every score case backed by evidence and followed up until it closes.</li>
+    <li>A weekly report on loads, revenue, and billing — you see exactly what we see.</li>
+    <li>Insurance and operations under one roof: if your truck is rolling, your policy doesn’t lapse.</li>
+  </ul>
+  <div class="lab" style="margin-top:14px">The three management levels</div>
+  <div class="lv">
+    <div><div class="k">Basic</div><div class="n">USD 70/wk</div><div class="d">Dispute management</div><ul class="pts"><li>Detailed analysis of each infraction</li><li>Formal disputes with evidence</li><li>Follow-up until each case closes</li></ul></div>
+    <div><div class="k">Plus</div><div class="n">USD 150/wk</div><div class="d">Score + light operations</div><ul class="pts"><li>Everything in Basic</li><li>Daily review of schedules and arrivals</li><li>Driver guidance to avoid hits to your score</li></ul></div>
+    <div class="hi"><div class="k">Premium · Your proposal</div><div class="n"><span class="v">{{comision_pct}}</span>% per load</div><div class="d">Full dispatch</div><ul class="pts"><li>Load and contract sourcing</li><li>End-to-end load management</li><li>Weekly results review</li></ul></div>
+  </div>
+  <p class="nota" style="margin-top:4px">We keep your score above 90% and every case traceable — no income promises, no magic fixes.</p>
+  {{#testimonio}}<div class="quote"><div class="q">“<span class="v">{{testimonio_texto}}</span>”</div><div class="a">— <span class="v">{{testimonio_autor}}</span> · <span class="v">{{testimonio_operacion}}</span> · <span class="v">{{testimonio_estado}}</span></div></div>{{/testimonio}}
+</div>
+</section>
+
+<!-- ===================== PÁGINA 7 · BACK OFFICE ===================== -->
+<section class="page">
+<img class="mem" src="%%MEM%%" alt="">
+<div class="run"><div><div class="k">Client</div><div class="d"><span class="v">{{cliente_nombre}}</span></div></div><div class="mid"><div class="k">Agent</div><div class="d">ProtectGo Services LLC</div></div><div class="r"><div class="k">Proposal / Validity</div><div class="d"><span class="v">{{propuesta_numero}}</span> · <span class="v">{{propuesta_fecha}}</span> · 30 days</div></div></div>
+<h1 class="t">YOUR BACK OFFICE ON THE ROAD</h1>
+<div class="body p7">
+  <span class="pill">Optional services · Billed separately</span>
+  <div class="sv">
+    <div><div class="h"><b>Suspended account recovery</b><span>from USD 1,500</span></div>Suspension analysis, a formal appeal with evidence, and follow-up until the case closes.</div>
+    <div><div class="h"><b>Funds recovery</b><span>from USD 1,000</span></div>Payments withheld or not recognized by Amazon: a documented claim and follow-up.</div>
+    <div><div class="h"><b>Load Board Recovery</b><span>USD 250</span></div>Regain access to the load board.</div>
+    <div><div class="h"><b>Score audit / maintenance</b><span>USD 300</span></div>A complete score review and a plan to sustain it.</div>
+    <div><div class="h"><b>Safer/FMCSA setup · MOTUS migration</b><span>USD 450 · USD 350</span></div>We get your federal registrations ready and migrated.</div>
+    <div><div class="h"><b>One-on-one operations consulting</b><span>USD 200</span></div>A session with your operation on the table.</div>
+  </div>
+  <div class="lab">Permits and compliance — paperwork, handled</div>
+  <!-- TODO: la ES dice "en español"; en EN se adapto a "in your language". Confirmar con Andres. -->
+  <p class="j">USDOT, MC Authority, IFTA, BOC-3, UCR, and MCS-150 updates — handled and monitored for you, in your language, without losing days waiting in line. An expired registration can mean an out-of-service order and fines starting at USD 1,000: we track every renewal and file it before it expires.</p>
+  <div class="chips"><span>USDOT</span><span>MC Authority</span><span>IFTA</span><span>BOC-3</span><span>UCR</span><span>MCS-150</span></div>
+  <div class="lab">Your insurance, under the same roof</div>
+  <p class="j">Written quotes compared across A-rated carriers before you pay anything. Commercial Auto Liability · Motor Truck Cargo · Physical Damage · General Liability · Trailer Interchange · Non-Trucking Liability.</p>
+  <div class="lab" style="margin-top:10px">Advisory services</div>
+  <p class="j">Safety Plan / FMCSA (USD 400) · Contract structuring (USD 350) · Leasing advisory (USD 150). A second opinion before you sign can be worth thousands.</p>
+  <div class="band"><div class="h">Ready when you are</div><div class="l">WhatsApp +1 (210) 961-9194 · sales@protectgoservices.com · protectgoservices.com</div></div>
+  <p class="nota">The services on this page are optional, billed separately, and not part of the program quoted in this proposal.</p>
+</div>
+</section>
+
+<!-- ===================== PÁGINA 8 · TÉRMINOS ===================== -->
+<section class="page">
+<img class="mem" src="%%MEM%%" alt="">
+<div class="run"><div><div class="k">Client</div><div class="d"><span class="v">{{cliente_nombre}}</span></div></div><div class="mid"><div class="k">Agent</div><div class="d">ProtectGo Services LLC</div></div><div class="r"><div class="k">Proposal / Validity</div><div class="d"><span class="v">{{propuesta_numero}}</span> · <span class="v">{{propuesta_fecha}}</span> · 30 days</div></div></div>
+<h1 class="t">TERMS AND RESPONSIBILITIES</h1>
+<div class="body">
+  <div class="lab">Contingencies</div>
+  <p class="j">This proposal is contingent on receiving and validating: the client’s complete documents; any validations Amazon requires in the client’s name; and the company’s eligibility with Amazon (active authority, current insurance, and an acceptable safety rating). This proposal does not confirm the company’s eligibility with Amazon.</p>
+  <div class="lab" style="margin-top:16px">Notices</div>
+  <p class="j">This proposal is valid for 30 days from its issue date. Amazon decides account approval, load availability, payments, and score decisions; ProtectGo does not promise any specific amount of income. The setup fee pays for the management work, not for approval. This proposal does not include insurance, repairs, or other truck operating expenses.</p>
+  <div class="lab" style="margin-top:16px">Client responsibilities</div>
+  <p class="j">Report every incident on the same day it occurs, whether or not you are at fault, so evidence can be gathered in time; keep access to your Relay account; provide proof of delivery and documents when requested; and notify us of pauses, unit changes, or driver changes before they happen.</p>
+  <div class="lab" style="margin-top:16px">Billing and payment</div>
+  <p class="j">The commission is settled weekly in arrears by authorized ACH debit. The weekly minimum applies as long as the unit remains assigned to the service. The minimum commitment is <span class="v">{{compromiso_dias}}</span> days. Late payment entitles ProtectGo to suspend the service and, if it persists, to send the debt to collections.</p>
+  <div class="lab" style="margin-top:16px">Cancellation</div>
+  <p class="j">Before the minimum term ends: under the conditions put in writing before starting. After the term: with 7 days’ notice. Charges already incurred are non-refundable. [Text subject to legal review]</p>
+</div>
+</section>
+
+<!-- ===================== PÁGINA 9 · ACEPTACIÓN ===================== -->
+<section class="page">
+<img class="mem" src="%%MEM%%" alt="">
+<div class="run"><div><div class="k">Client</div><div class="d"><span class="v">{{cliente_nombre}}</span></div></div><div class="mid"><div class="k">Agent</div><div class="d">ProtectGo Services LLC</div></div><div class="r"><div class="k">Proposal / Validity</div><div class="d"><span class="v">{{propuesta_numero}}</span> · <span class="v">{{propuesta_fecha}}</span> · 30 days</div></div></div>
+<h1 class="t">ACCEPTANCE AND AUTHORIZATION</h1>
+<div class="body">
+  <p class="j">By signing, the client acknowledges receiving this Amazon Relay Proposal and understanding the program, billing, and terms described. The proposal is an estimate based on the information provided; service begins once the agreements on page 5 are completed in writing.</p>
+  <div class="sig"><div>Client signature</div><div>Date</div></div>
+  <div class="sig"><div>Agent — ProtectGo Services LLC<span class="who"><span class="v">{{agente_nombre}}</span></span></div><div>Date</div></div>
+  <div class="lab" style="margin-top:18px">Initial payment authorization</div>
+  <p class="j">The client authorizes ProtectGo Services LLC to process the account setup payment of USD <span class="v">{{setup_precio}}</span> using the payment method indicated below. The charge is processed ONLY after the client signs this authorization.</p>
+  <div class="sig2"><div>Account holder</div><div>Originating bank</div><div>Reference / Confirmation #</div><div>Date sent</div></div>
+  <!-- TODO: revision legal. (2) "no es parte de Amazon" se puso como "is not affiliated with Amazon" (formula usual en EE. UU.). (3) La ES es ambigua: los 30 dias pueden ser el plazo para pedir el reembolso o el plazo para iniciar la gestion; el EN conserva la misma ambiguedad. -->
+  <p class="nota" style="margin-top:-6px">Disclosures: (1) This charge covers the account setup service described in this proposal; it does not buy or guarantee Amazon’s approval. (2) ProtectGo Services LLC provides management services; it is not affiliated with Amazon. (3) The client may request a refund of any amounts for which work has not begun within 30 days following this authorization. (4) A declined payment delays the start of service.</p>
+  <div class="lab" style="margin-top:18px">Weekly debit authorization (ACH)</div>
+  <p class="j">The client authorizes ProtectGo Services LLC to debit, weekly in arrears, the commission calculated as described on page 4 of this proposal from the bank account designated in writing. This authorization remains in effect as long as units are assigned to the service and may be revoked with 7 days’ notice once the minimum commitment has been met. [Text subject to legal review — NACHA]</p>
+  <div class="sig" style="margin-top:24px"><div>Account holder signature</div><div>Date</div></div>
+</div>
+</section>
+
+</body>
+</html>
