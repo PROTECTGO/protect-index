@@ -240,6 +240,69 @@ body[data-ocupado]{cursor:progress}
   .c-nota,.c-tot{display:none}
 }
 @media(max-width:420px){ .lentes.n2,.lentes.n3{grid-template-columns:1fr} .apl,.frm .fx{justify-content:flex-start} }
+
+/* =====================================================================
+   v3 · 01 La agencia (solo direccion_total). Mismo sistema: tokens --pg-*,
+   ámbar #D9A520 solo para "atrás del ritmo / debajo del estándar", cero barras.
+   El anillo de la casa: el color es lo que llevan; la barrita, dónde deberían ir hoy.
+   ===================================================================== */
+.pg-side a[data-go][hidden]{display:none!important}
+.fr .fr-nums.n3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.fr-mix{width:100%;display:flex;gap:7px;flex-wrap:wrap;align-items:center;font-size:12px;color:#b9c6d0}
+.fr-mix .t{font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#8da0ad;margin-right:3px}
+.fr-mix .ch{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:999px;padding:4px 10px;white-space:nowrap}
+.fr-mix .ch b{font-family:var(--pg-font-num);color:#fff;font-weight:600}
+.eyl{font-size:11.5px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--pg-muted);margin:4px 0 6px}
+.leyenda{display:flex;gap:8px;align-items:center;font-size:12px;color:var(--pg-muted);margin:0 0 12px;line-height:1.4}
+.leyenda svg{width:28px;height:28px;flex:0 0 28px}
+.areas{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-bottom:18px}
+.area{display:block;background:var(--pg-card);border:1px solid var(--pg-line);border-radius:16px;padding:16px 18px 14px;position:relative;overflow:hidden;box-shadow:0 1px 3px rgba(27,45,58,.04);text-decoration:none;color:inherit;min-width:0}
+.area::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--pg-mint)}
+.area.r::before{background:var(--pg-mint-deep)} .area.e::before{background:var(--pg-azul)}
+a.area:hover{border-color:var(--pg-mint-soft);box-shadow:0 4px 14px rgba(27,45,58,.08)}
+a.area:focus-visible,a.liqc:focus-visible{outline:3px solid var(--pg-mint);outline-offset:2px}
+.area .top{display:flex;gap:14px;align-items:center;margin-bottom:12px}
+.area .info{min-width:0}
+.area .k{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--pg-muted)}
+.area .nm{font-size:11.5px;color:var(--pg-muted);margin-top:1px}
+.area .v{font-family:var(--pg-font-num);font-size:26px;font-weight:700;color:var(--pg-ink);margin:6px 0 2px;line-height:1.1}
+.area .ref{font-size:12px;color:var(--pg-muted);line-height:1.45}
+.area .ref b{font-family:var(--pg-font-num);color:var(--pg-ink);font-weight:600}
+.area .rit{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 9px}
+.area .s{font-size:12px;color:var(--pg-txt);border-top:1px dashed var(--pg-line);padding-top:9px;line-height:1.45}
+.area .s b{font-family:var(--pg-font-num);font-weight:600;color:var(--pg-ink)}
+.area .ab{font-size:12px;font-weight:700;color:var(--pg-mint-deep);margin-top:9px}
+.anlw{display:flex;flex-direction:column;align-items:center;gap:6px;flex:0 0 auto}
+.anlw .pg-pill{font-family:var(--pg-font-num);font-size:11px}
+.anl{position:relative;flex:0 0 auto}
+.anl svg{display:block;width:100%;height:100%}
+.anl.c96{width:96px;height:96px} .anl.c108{width:108px;height:108px} .anl.c84{width:84px;height:84px}
+.cara{position:absolute;left:19px;top:19px;width:58px;height:58px;border-radius:50%;overflow:hidden;background:#E3F4EF;box-shadow:0 0 0 2px #fff}
+.cara img{width:100%;height:100%;object-fit:cover;object-position:50% 20%;transform:scale(1.3);transform-origin:50% 26%;display:block}
+.cara .ini{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font:800 17px var(--pg-font-title);color:var(--pg-mint-deep)}
+.anl .cen{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.anl .cen .n{font-family:var(--pg-font-num);font-weight:700;font-size:21px;color:var(--pg-ink);line-height:1}
+.anl .cen .l{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--pg-muted);margin-top:4px}
+.anl.c84 .cen .n{font-size:14px} .anl.c84 .cen .l{font-size:8.5px;margin-top:2px}
+.cierre h2 .pg-pill{font-family:var(--pg-font-body)}
+.dos{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:4px}
+.dos .b{display:flex;gap:16px;align-items:center;min-width:0}
+.dos .t{min-width:0;font-size:12.5px;color:var(--pg-txt);line-height:1.55}
+.dos .t .k{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--pg-muted);margin-bottom:3px}
+.dos .t b{font-family:var(--pg-font-num);color:var(--pg-ink)}
+.dos .t .neg{font-family:var(--pg-font-num);font-weight:700;color:var(--pg-neg)}
+.nota-a{background:#FBF3E2;border:1px solid #EAD09A;border-radius:12px;padding:8px 12px;font-size:12.5px;color:#8a6a1d;margin-top:14px;line-height:1.45}
+.nota-a b{font-family:var(--pg-font-num)}
+.liqc{display:flex;gap:14px;align-items:center;background:var(--pg-card);border:1px solid var(--pg-line);border-radius:16px;padding:12px 18px;text-decoration:none;color:var(--pg-txt);font-size:13px;line-height:1.5;margin-bottom:18px;cursor:pointer}
+.liqc:hover{border-color:var(--pg-mint-soft)}
+.liqc .tx{flex:1;min-width:0}
+.liqc .tx .k{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--pg-muted);margin-bottom:2px}
+.liqc b{font-family:var(--pg-font-num);color:var(--pg-ink)}
+.liqc .ir{font-weight:700;color:var(--pg-mint-deep);white-space:nowrap}
+@media(max-width:1180px){ .area .top{flex-direction:column;align-items:flex-start} }
+@media(max-width:760px){ .area .top{flex-direction:row;align-items:center} }
+@media(max-width:620px){ .areas,.dos{grid-template-columns:1fr} }
+@media(max-width:420px){ .fr .fr-nums.n3{grid-template-columns:1fr} .liqc{flex-wrap:wrap} .liqc .ir{width:100%} }
 </style>
 <script src="pg-novedades.js"></script>
 </head>
@@ -259,13 +322,41 @@ body[data-ocupado]{cursor:progress}
  <aside class="pg-side">
   <div class="pg-brand"><div class="pg-logo">G</div><div class="pg-wordmark">gabi</div></div>
   <div class="pg-tagline">LIQUIDEZ</div>
-  <a data-go="liq" class="on" href="#liq"><span class="k">01</span> Liquidez</a>
-  <a data-go="ret" href="#ret"><span class="k">02</span> Retiros</a>
+  <a data-go="age" href="#age" id="navAge" hidden><span class="k">01</span> La agencia</a>
+  <a data-go="liq" class="on" href="#liq" id="navLiq"><span class="k">01</span> Liquidez</a>
+  <a data-go="ret" href="#ret" id="navRet"><span class="k">02</span> Retiros</a>
   <div class="pg-foot" id="pie"><div class="skel" style="width:80%;opacity:.25"></div></div>
  </aside>
 
  <main class="pg-main" id="main">
   <div id="acceso"></div>
+
+  <!-- ================= 01 · LA AGENCIA (solo direccion_total: portal.liquidez_agencia) ================= -->
+  <section class="pg-section" id="s-age">
+   <div class="pg-top">
+    <div>
+     <div class="pg-eyebrow" id="eyAge">La agencia</div>
+     <h1>La agencia</h1>
+    </div>
+    <div class="sellos"><span class="sello" id="selloAge">—</span><button class="hq" type="button" data-act="ayuda-age" title="Qué es cada cosa">?</button></div>
+   </div>
+   <div class="fr" id="frAge">
+    <div class="fr-nums n3">
+     <div><div class="skel" style="width:60%"></div><div class="skel" style="height:26px"></div></div>
+     <div><div class="skel" style="width:60%"></div><div class="skel" style="height:26px"></div></div>
+     <div><div class="skel" style="width:60%"></div><div class="skel" style="height:26px"></div></div>
+    </div>
+   </div>
+   <div class="eyl">Las áreas · cada una contra su vara</div>
+   <div class="leyenda" id="leyenda"></div>
+   <div class="areas" id="areas">
+    <div class="area"><div class="skel" style="width:50%"></div><div class="skel" style="height:60px"></div></div>
+    <div class="area r"><div class="skel" style="width:50%"></div><div class="skel" style="height:60px"></div></div>
+    <div class="area e"><div class="skel" style="width:50%"></div><div class="skel" style="height:60px"></div></div>
+   </div>
+   <div class="pg-card cierre" id="cierre"><div class="skel" style="width:40%"></div><div class="skel" style="height:60px"></div></div>
+   <a class="liqc" id="liqc" href="#liq"><div class="skel" style="width:60%"></div></a>
+  </section>
 
   <!-- ================= 01 · LIQUIDEZ ================= -->
   <section class="pg-section on" id="s-liq">
@@ -314,7 +405,7 @@ body[data-ocupado]{cursor:progress}
    <div class="pg-card" id="cRet"><div class="skel"></div><div class="skel"></div><div class="skel" style="width:70%"></div></div>
   </section>
 
-  <div class="pg-footnote">GABI · Liquidez v2 · ProtectGo Services LLC</div>
+  <div class="pg-footnote">GABI · Liquidez v3 · ProtectGo Services LLC</div>
  </main>
 </div>
 
@@ -374,7 +465,10 @@ const toastErr = (e, pre) => toast((pre || '') + errMsg(e), true);
 let D = null;            // respuesta de liquidez_panel()
 let EMAIL = '';
 let OCUPADO = false;     // una escritura a la vez
-const UI = { per:'sem', vista:'sem', abiertos:new Set(), aplazar:null, edit:null, confirmar:null, retForm:null, peq:false, tab:'liq', prog:'' };
+const UI = { per:'sem', vista:'sem', abiertos:new Set(), aplazar:null, edit:null, confirmar:null, retForm:null, peq:false, tab:'liq', prog:'', inicio:false, navego:false };
+/* v3 · La agencia: portal.liquidez_agencia() (solo direccion_total; a los demás {puede:false}). */
+let AG = null;            // respuesta de liquidez_agencia()
+let AG_ESTADO = 'cargando';  // cargando | si | no | error
 const keyOf = it => it.clave + '|' + it.fecha_original;
 const P = () => (D && D.puede) || {};
 
@@ -386,7 +480,12 @@ async function arrancar(){
   if (!ses) { $('gate').style.display = 'block'; return; }
   EMAIL = (ses.user && ses.user.email) || '';
   $('app').style.display = '';
-  irA(location.hash === '#ret' ? 'ret' : 'liq', true);
+  /* v3 · Con #ret o #liq se respeta la pestaña. Sin #, la primera pestaña se decide sola:
+     La agencia si la base la contesta (solo dirección), Liquidez para los demás. */
+  const h = location.hash;
+  UI.inicio = !(h === '#ret' || h === '#liq');
+  irA(h === '#ret' ? 'ret' : 'liq', true);
+  cargarAgencia(0);
   await cargar();
 }
 $('g-btn').addEventListener('click', async () => {
@@ -416,6 +515,7 @@ async function cargar(){
   $('main').classList.remove('sin-acceso');
   $('acceso').innerHTML = '';
   pintar();
+  decidirInicio();
 }
 function sinAcceso(){
   $('main').classList.add('sin-acceso');
@@ -426,7 +526,225 @@ function sinAcceso(){
 function pintar(){
   pintarCabecera(); pintarFranja(); pintarIngresos(); pintarEntra(); pintarSale();
   pintarOnda(); pintarFijos(); pintarRetiros(); pintarPie();
+  if (AG) pintarCajaAgencia();
   document.body.dataset.listo = '1';
+}
+
+/* =====================================================================
+   v3 · 01 LA AGENCIA — el macro de dirección. Sale entera de portal.liquidez_agencia():
+   cada número viene del motor de su área (el mismo que ve el área). Aquí no se calcula
+   nada de negocio: solo el "debería ir hoy" de la franja (vara × días corridos ÷ días del mes).
+   ===================================================================== */
+async function cargarAgencia(intento){
+  let r;
+  try { r = await SB.schema('portal').rpc('liquidez_agencia'); } catch (e) { r = { data:null, error:e }; }
+  if (r.error || !r.data) {
+    if (!intento) { setTimeout(() => cargarAgencia(1), 2500); return; }   // un reintento, como Equipo comercial
+    AG_ESTADO = 'error';
+    if (P().ver_renov) { mostrarAgencia(); pintarAgenciaError(errMsg(r.error || 'Sin respuesta')); }
+    decidirInicio();
+    return;
+  }
+  if (r.data.puede !== true) { AG = null; AG_ESTADO = 'no'; ocultarAgencia(); decidirInicio(); return; }
+  AG = r.data; AG_ESTADO = 'si';
+  mostrarAgencia(); pintarAgencia(); decidirInicio();
+}
+/* La primera pestaña, una sola vez y solo si nadie ha tocado el menú:
+   La agencia si la base la contestó (o el panel ya dijo que es dirección); si no, Liquidez. */
+function decidirInicio(){
+  if (!UI.inicio || UI.navego) return;
+  if (AG_ESTADO === 'si') { UI.inicio = false; irA('age', true); return; }
+  if (AG_ESTADO === 'no') { UI.inicio = false; return; }
+  if (D && P().ver_renov) { mostrarAgencia(); irA('age', true); UI.inicio = false; return; }   // esqueleto mientras llega
+  if (D && !P().ver_renov) { UI.inicio = false; }
+}
+function mostrarAgencia(){
+  $('navAge').hidden = false;
+  $('navAge').querySelector('.k').textContent = '01';
+  $('navLiq').querySelector('.k').textContent = '02';
+  $('navRet').querySelector('.k').textContent = '03';
+  if (UI.tab === 'liq') { try { history.replaceState(null, '', '#liq'); } catch (e) {} }   // así un recargue vuelve a Liquidez
+}
+function ocultarAgencia(){
+  $('navAge').hidden = true;
+  $('navLiq').querySelector('.k').textContent = '01';
+  $('navRet').querySelector('.k').textContent = '02';
+  if (UI.tab === 'age') irA('liq', true);
+}
+function pintarAgenciaError(m){
+  $('frAge').innerHTML = '<div class="fr-line" style="border-top:none;padding-top:0"><span class="pg-semaforo gray"></span><span>No pudimos leer La agencia. <span class="mini" style="color:#8da0ad">' + esc(m) + '</span></span>'
+    + '<button class="pg-btn sm mint" type="button" data-act="reintentar-age" style="margin-left:auto">Reintentar</button></div>';
+}
+
+/* El ritmo de la casa (decidido 9-sep, el mismo de Equipo comercial): contra el "debería ir hoy". */
+function ritmo(valor, deberia){
+  const x = num(valor), d = num(deberia);
+  if (x == null || !d) return null;
+  const p = x / d * 100;
+  return p >= 105 ? {t:'Adelante del ritmo', c:'ok'} : (p >= 95 ? {t:'En el ritmo', c:'ok'} : {t:'Atrás del ritmo', c:'warn'});
+}
+const pctDe = (a, b) => { const x = num(a), y = num(b); return (x == null || !y) ? null : x / y * 100; };
+const pctTxt = p => p == null ? '—' : Math.round(p) + '%';
+const mesNom = iso => { const f = fISO(iso); return f ? MES_L[f.m - 1] : '—'; };
+const Mayus = t => t ? t.charAt(0).toUpperCase() + t.slice(1) : t;
+/* EL ANILLO de la casa (sin barras): el color es lo que llevan contra la vara; la barrita es dónde
+   deberían ir hoy (en Renovaciones, el estándar del área). Extremos rectos para que el final del
+   color se lea exacto contra la barrita; la pista es el mismo color, más clarito. */
+function anilloAg(o){
+  const S = o.tam || 130, c = S / 2, W = o.grosor || 11, R = c - W / 2 - 4;
+  const C = 2 * Math.PI * R;
+  const v = num(o.val), vara = num(o.vara), mk = num(o.marca);
+  const p = (v == null || !vara) ? 0 : Math.max(0, Math.min(1, v / vara));
+  const col = o.ok ? (o.oscuro ? '#2DBFA3' : '#229A82') : (o.oscuro ? '#F0C55A' : '#D9A520');
+  const pista = (v == null) ? (o.oscuro ? 'rgba(255,255,255,.12)' : '#E7EDF2')
+              : (o.ok ? (o.oscuro ? 'rgba(45,191,163,.18)' : '#DDF1EC') : (o.oscuro ? 'rgba(240,197,90,.18)' : '#FBF0D9'));
+  let t = '<svg viewBox="0 0 ' + S + ' ' + S + '" role="img" aria-label="' + esc(o.titulo || '') + '"><title>' + esc(o.titulo || '') + '</title>'
+    + '<circle cx="' + c + '" cy="' + c + '" r="' + R.toFixed(1) + '" fill="none" stroke="' + pista + '" stroke-width="' + W + '"/>';
+  if (p > 0) t += '<circle cx="' + c + '" cy="' + c + '" r="' + R.toFixed(1) + '" fill="none" stroke="' + col + '" stroke-width="' + W
+    + '" stroke-linecap="butt" stroke-dasharray="' + (C * p).toFixed(2) + ' ' + C.toFixed(2) + '" transform="rotate(-90 ' + c + ' ' + c + ')"/>';
+  if (mk != null && vara) {
+    const a = 2 * Math.PI * Math.max(0, Math.min(1, mk / vara)) - Math.PI / 2, r1 = R - W / 2 - 3, r2 = R + W / 2 + 3;
+    t += '<line class="barrita" x1="' + (c + r1 * Math.cos(a)).toFixed(1) + '" y1="' + (c + r1 * Math.sin(a)).toFixed(1) + '" x2="' + (c + r2 * Math.cos(a)).toFixed(1)
+      + '" y2="' + (c + r2 * Math.sin(a)).toFixed(1) + '" stroke="' + (o.oscuro ? '#FFFFFF' : '#1B2D3A') + '" stroke-width="2.6" stroke-linecap="round"/>';
+  }
+  return t + '</svg>';
+}
+/* La cara chiquita adentro del anillo (portal.fotos_personas). Si no hay foto o no carga: las iniciales. */
+const iniciales = n => String(n || '').split(/\s+/).filter(Boolean).slice(0, 2).map(x => x[0]).join('').toUpperCase() || '·';
+function caraAg(p){
+  p = p || {};
+  return '<div class="cara" data-ini="' + esc(iniciales(p.nombre)) + '">'
+    + (p.foto ? '<img src="' + esc(p.foto) + '" alt="' + esc(p.nombre || '') + '">' : '<div class="ini">' + esc(iniciales(p.nombre)) + '</div>') + '</div>';
+}
+function plantarIniciales(raiz){
+  raiz.querySelectorAll('.cara img').forEach(img => {
+    const poner = () => { const c = img.closest('.cara'); if (c) c.innerHTML = '<div class="ini">' + esc(c.dataset.ini || '·') + '</div>'; };
+    img.addEventListener('error', poner, { once:true });
+    if (img.complete && img.naturalWidth === 0) poner();
+  });
+}
+const pillRit = x => x ? '<span class="pg-pill ' + x.c + '">' + x.t + '</span>' : '<span class="pg-pill muted">—</span>';
+const nOr = v => num(v) == null ? '—' : num(v).toLocaleString('en-US');
+
+function pintarAgencia(){
+  const A = AG; if (!A) return;
+  const r = A.reloj || {}, g = A.agencia || {}, L = g.lineas || {};
+  const hh = num(r.habiles_hoy), hm = num(r.habiles_mes);
+  const f = fISO(A.mes);
+  $('eyAge').textContent = (f ? Mayus(MES_L[f.m - 1]) + ' ' + f.y : '—') + (hh != null && hm ? ' · día ' + hh + ' de ' + hm + ' hábiles' : '');
+  $('selloAge').textContent = 'datos ' + (A.calculado ? horaBog(A.calculado) : '—');
+
+  /* 1 · la franja: lo que entró contra lo que el mes necesita */
+  const deb = (hh != null && hm && num(g.necesita) != null) ? Math.round(num(g.necesita) * hh / hm) : null;
+  const rt = ritmo(g.ingreso, deb);
+  const cubrio = num(g.ingreso) != null && num(g.necesita) != null && num(g.ingreso) >= num(g.necesita);
+  const okF = cubrio || !!(rt && rt.c === 'ok');
+  const p = pctDe(g.ingreso, g.necesita);
+  let lectura;
+  if (num(g.ingreso) == null) lectura = 'Todavía no hay datos del mes.';
+  else if (cubrio) lectura = 'El mes ya cubrió operar y el retiro mínimo: sobran <b>' + usd(g.sobra) + '</b>.';
+  else if (rt) lectura = rt.t + ': a hoy debería haber entrado <b>' + usd(deb) + '</b> y van <b>' + usd(g.ingreso) + '</b>.';
+  else lectura = 'Sin reloj del mes: no se puede leer el ritmo.';
+  const mix = [['Ventas nuevas', L.nueva], ['Renovaciones', L.renovacion], ['Endosos', L.endoso], ['Otros', L.otros]]
+    .map(([k, v]) => '<span class="ch">' + k + ' <b>' + usd(v) + '</b></span>').join('');
+  $('frAge').innerHTML =
+      '<div class="fr-nums n3">'
+    +   '<div class="fr-n"><div class="l">Entró este mes</div><div class="v' + (cubrio ? ' mint' : '') + '">' + usd(g.ingreso) + '</div><div class="s">premium ' + usd(g.premium) + '</div></div>'
+    +   '<div class="fr-n"><div class="l">Necesita el mes</div><div class="v">' + usd(g.necesita) + '</div><div class="s">nómina · fijos · retiro mínimo</div></div>'
+    +   '<div class="fr-n"><div class="l">' + (cubrio ? 'Sobra' : 'Falta') + '</div><div class="v ' + (cubrio ? 'mint' : 'warn') + '">' + usd(cubrio ? g.sobra : g.falta) + '</div><div class="s">' + (cubrio ? 'después del retiro mínimo' : 'para cubrir el mes') + '</div></div>'
+    + '</div>'
+    + '<div class="fr-ring"><div class="ring-in">'
+    +   anilloAg({val:g.ingreso, vara:g.necesita, marca:deb, ok:okF, oscuro:true, tam:130, grosor:11,
+                  titulo:'Entró ' + usd(g.ingreso) + ' de ' + usd(g.necesita) + ' (' + pctTxt(p) + '). A hoy debería ir ' + usd(deb) + ' (' + pctTxt(pctDe(deb, g.necesita)) + ').'})
+    +   '<div class="c"><div class="n">' + pctTxt(p) + '</div><div class="l">del mes</div></div></div>'
+    +   '<div class="cap">debería ir ' + usd(deb) + '</div></div>'
+    + '<div class="fr-line"><span class="pg-semaforo ' + (num(g.ingreso) == null ? 'gray' : (okF ? 'green' : 'amber')) + '"></span><span>' + lectura + '</span></div>'
+    + '<div class="fr-mix"><span class="t">De dónde vino</span>' + mix + '</div>';
+
+  /* 2 · las áreas: el número de su propia herramienta contra su propia vara, con su cara en el anillo */
+  $('leyenda').innerHTML = anilloAg({val:35, vara:100, marca:58, ok:false, tam:28, grosor:5, titulo:'Cómo leer el anillo'})
+    + '<span>El color es lo que llevan; la barrita, dónde deberían ir hoy. Si la barrita va delante del color, van atrás. En Renovaciones la barrita es el ' + (num((A.renovaciones || {}).estandar) ?? 70) + '&nbsp;% del área.</span>';
+  const e = A.equipo || {}, rn = A.renovaciones || {}, en = A.endosos || {};
+  const rtE = ritmo(e.mc, e.deberia), rtN = ritmo(en.ingreso, en.deberia);
+  const est = num(rn.estandar), pRn = num(rn.pct);
+  const okR = pRn != null && est != null && pRn >= est;
+  const pillRn = (pRn == null || est == null) ? '<span class="pg-pill muted">—</span>'
+    : (okR ? '<span class="pg-pill ok">Sobre el ' + est + '%</span>' : '<span class="pg-pill warn">Debajo del ' + est + '%</span>');
+  const pie = (txt, ok, hay) => '</div><span class="pg-pill ' + (!hay ? 'muted' : (ok ? 'ok' : 'warn')) + '">' + txt + '</span>';
+  const pE = pctDe(e.mc, e.meta), pN = pctDe(en.ingreso, en.promedio6);
+  $('areas').innerHTML =
+      '<a class="area" href="gabi-brahian.html"><div class="top"><div class="anlw"><div class="anl c96">'
+    +   anilloAg({val:e.mc, vara:e.meta, marca:e.deberia, ok:!!(rtE && rtE.c === 'ok'), tam:96, grosor:8,
+                  titulo:'Equipo: ' + usd(e.mc) + ' de ' + usd(e.meta) + ' (' + pctTxt(pE) + '). Debería ir hoy ' + usd(e.deberia) + ' (' + pctTxt(pctDe(e.deberia, e.meta)) + ').'})
+    +   caraAg(e.persona) + pie(pctTxt(pE), !!(rtE && rtE.c === 'ok'), pE != null) + '</div>'
+    +   '<div class="info"><div class="k">Ventas nuevas</div><div class="nm">' + esc((e.persona || {}).nombre || '—') + '</div>'
+    +   '<div class="v">' + usd(e.mc) + '</div><div class="ref">de <b>' + usd(e.meta) + '</b> · meta plena del equipo</div></div></div>'
+    +   '<div class="rit">' + pillRit(rtE) + '<span class="mini">debería ir ' + usd(e.deberia) + '</span></div>'
+    +   '<div class="s"><b>' + nOr(e.ventas) + '</b> ventas · <b>' + nOr(e.activos) + '</b> de ' + nOr(e.personas) + ' con venta · fees <b>' + usd(e.fees) + '</b></div>'
+    +   '<div class="ab">Abrir Equipo comercial →</div></a>'
+    + '<a class="area r" href="renovaciones.html"><div class="top"><div class="anlw"><div class="anl c96">'
+    +   anilloAg({val:pRn, vara:100, marca:est, ok:okR, tam:96, grosor:8,
+                  titulo:'Renovó ' + (pRn == null ? '—' : pRn.toFixed(1) + '%') + ' del premium que vence en ' + mesNom(A.mes) + '. El área pide ' + (est ?? '—') + '%.'})
+    +   caraAg(rn.persona) + pie(pRn == null ? '—' : pRn.toFixed(1) + '%', okR, pRn != null) + '</div>'
+    +   '<div class="info"><div class="k">Renovaciones</div><div class="nm">' + esc((rn.persona || {}).nombre || '—') + '</div>'
+    +   '<div class="v">' + usd(rn.renovado) + '</div><div class="ref">de <b>' + usd(rn.vence) + '</b> que vence en ' + mesNom(A.mes) + '</div></div></div>'
+    +   '<div class="rit">' + pillRn + '<span class="mini">estándar del área</span></div>'
+    +   '<div class="s"><b>' + nOr(rn.renovadas) + '</b> de ' + nOr(rn.cuentas) + ' cuentas · <b>' + nOr(rn.en_juego_n) + '</b> en juego (' + usd(rn.en_juego_premium) + ')</div>'
+    +   '<div class="ab">Abrir Renovaciones →</div></a>'
+    + '<div class="area e"><div class="top"><div class="anlw"><div class="anl c96">'
+    +   anilloAg({val:en.ingreso, vara:en.promedio6, marca:en.deberia, ok:!!(rtN && rtN.c === 'ok'), tam:96, grosor:8,
+                  titulo:'Endosos: ' + usd(en.ingreso) + ' de ' + usd(en.promedio6) + ' (' + pctTxt(pN) + '). Debería ir hoy ' + usd(en.deberia) + '.'})
+    +   caraAg(en.persona) + pie(pctTxt(pN), !!(rtN && rtN.c === 'ok'), pN != null) + '</div>'
+    +   '<div class="info"><div class="k">Endosos</div><div class="nm">' + esc((en.persona || {}).nombre || '—') + '</div>'
+    +   '<div class="v">' + usd(en.ingreso) + '</div><div class="ref">de <b>' + usd(en.promedio6) + '</b> · su promedio de 6 meses</div></div></div>'
+    +   '<div class="rit">' + pillRit(rtN) + '<span class="mini">debería ir ' + usd(en.deberia) + '</span></div>'
+    +   '<div class="s"><b>' + nOr(en.positivos) + '</b> positivos · <b>' + nOr(en.negativos) + '</b> negativos · premium neto <b>' + usd(en.premium_neto) + '</b></div></div>';
+  plantarIniciales($('areas'));
+
+  /* 3 · el mes que cerró y el año: cuánto de lo que necesitaba (operar + retiro mínimo) entró */
+  const c = A.cerrado || {}, an = A.anio || {};
+  const pillC = c.estado === 'verde' ? '<span class="pg-pill ok">cubrió el retiro</span>'
+    : (c.estado === 'ambar' ? '<span class="pg-pill warn">no alcanzó el retiro</span>' : (c.estado === 'rojo' ? '<span class="pg-pill due">pérdida operativa</span>' : ''));
+  const bloque = (titulo, ing, nec, sobra) => {
+    const okB = num(sobra) != null && num(sobra) >= 0, pB = pctDe(ing, nec);
+    return '<div class="b"><div class="anl c108">'
+      + anilloAg({val:ing, vara:nec, ok:okB, tam:108, grosor:10, titulo:titulo + ': entró ' + usd(ing) + ' de ' + usd(nec) + ' (' + pctTxt(pB) + ').'})
+      + '<div class="cen"><div class="n">' + pctTxt(pB) + '</div><div class="l">cubrió</div></div></div>'
+      + '<div class="t"><div class="k">' + esc(titulo) + '</div>Entró <b>' + usd(ing) + '</b><br>de <b>' + usd(nec) + '</b> que necesitaba<br>'
+      + (num(sobra) == null ? '—' : (okB ? 'sobraron <b>' + usd(sobra) + '</b>' : 'faltaron <span class="neg">' + usd(Math.abs(num(sobra))) + '</span>')) + '</div></div>';
+  };
+  const notaPay = c.payout_cargado === false
+    ? '<div class="nota-a">El costo no trae las comisiones de agentes de ' + mesNom(c.mes) + ': están cargadas <b>' + (num(c.payout_personas) || 0) + '</b> personas (<b>' + usd(c.payout) + '</b>). Cuando se carguen, el mes y el año bajan.</div>' : '';
+  $('cierre').innerHTML = (c.mes
+      ? '<h2><span>' + Mayus(mesNom(c.mes)) + ' cerrado y el año</span>' + pillC + '</h2>'
+        + '<div class="dos">' + bloque(Mayus(mesNom(c.mes)), c.ingreso, c.necesitaba, c.sobra)
+        + (an.desde ? bloque(Mayus(mesNom(an.desde)) + ' a ' + mesNom(an.hasta), an.ingreso, an.necesitaba, an.sobra) : '') + '</div>' + notaPay
+      : '<h2><span>El mes cerrado</span></h2><div class="vacio">—</div>');
+
+  /* 4 · la caja, en una tarjeta chiquita (los números son los de la pestaña Liquidez) */
+  pintarCajaAgencia();
+}
+function pintarCajaAgencia(){
+  if (!D) return;
+  const rr = D.retiro || {}, pb = num(rr.punto_bajo), colchon = num(rr.colchon);
+  const val = rr.registrado != null ? rr.registrado : rr.sugerido;
+  const obj = num(rr.obj) != null ? rr.obj : (D.params || {}).obj;
+  const ojo = (pb != null && colchon != null && pb < colchon && rr.punto_bajo_lunes) ? ' Ojo: la semana del <b>' + fCorta(rr.punto_bajo_lunes) + '</b> la caja baja a <b>' + usd(pb) + '</b>.' : '';
+  $('liqc').innerHTML = '<div class="anl c84">'
+    + anilloAg({val:val, vara:obj, ok:rr.semaforo === 'verde', tam:84, grosor:7, titulo:'Retiro ' + usd(val) + ' por socio de ' + usd(obj) + ' objetivo.'})
+    + '<div class="cen"><div class="n">' + usd(val) + '</div><div class="l">por socio</div></div></div>'
+    + '<div class="tx"><div class="k">La caja</div>Caja <b>' + usd(D.caja && D.caja.saldo) + '</b> · esta semana quedan <b>' + usd(D.semana && D.semana.queda) + '</b>.' + ojo + '</div>'
+    + '<span class="ir">Ver Liquidez →</span>';
+}
+function abrirAyudaAgencia(){
+  $('modalBody').innerHTML = '<h3>La agencia · qué es cada cosa</h3>'
+    + '<p><b>El anillo:</b> el color es lo que llevan de verdad. La barrita es dónde deberían ir hoy si el mes se repartiera parejo por días hábiles (días corridos ÷ días del mes). Si la barrita va más adelante que el color, van atrás del ritmo; si el color pasa la barrita, van adelante. En Renovaciones la barrita es el estándar del área.</p>'
+    + '<p><b>Entró este mes:</b> fees y comisiones de todas las líneas, del BOS (el mismo total del motor del mes).</p>'
+    + '<p><b>Necesita el mes:</b> nómina + gastos fijos + el retiro mínimo de los tres socios. Las comisiones de agentes entran al costo cuando se cargan.</p>'
+    + '<p><b>Ritmo:</b> adelante desde 105 %, en el ritmo entre 95 y 105 %, atrás por debajo de 95 % del "debería ir hoy". El reloj es el mismo de Equipo comercial.</p>'
+    + '<p><b>Las áreas:</b> cada una con el número de su propia herramienta y su propia vara: la meta plena del equipo, el estándar de renovación del área y el promedio de 6 meses de endosos.</p>'
+    + '<p><b>El mes cerrado y el año:</b> cuánto de lo que necesitaba (operar + retiro mínimo) entró. El año suma de enero al mes que cerró.</p>';
+  abrirModal();
 }
 
 /* ---------- derivados ---------- */
@@ -983,19 +1301,25 @@ function irA(tab, sinScroll){
   UI.tab = tab;
   document.querySelectorAll('.pg-side a[data-go]').forEach(x => x.classList.toggle('on', x.dataset.go === tab));
   document.querySelectorAll('.pg-section').forEach(s => s.classList.toggle('on', s.id === 's-' + tab));
-  try { history.replaceState(null, '', tab === 'ret' ? '#ret' : location.pathname + location.search); } catch (e) {}
+  /* v3 · #ret y, cuando existe La agencia, #liq; La agencia (o Liquidez para los demás) va sin # */
+  const conAgencia = !$('navAge').hidden;
+  const hash = tab === 'ret' ? '#ret' : (tab === 'liq' && conAgencia ? '#liq' : '');
+  try { history.replaceState(null, '', hash || (location.pathname + location.search)); } catch (e) {}
   if (tab === 'liq' && D) pintarOnda();
   if (!sinScroll) window.scrollTo({top:0, behavior:'smooth'});
 }
-document.querySelectorAll('.pg-side a[data-go]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); irA(a.dataset.go); }));
+document.querySelectorAll('.pg-side a[data-go]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); UI.navego = true; irA(a.dataset.go); }));
 
 /* ---------- clics (un solo escuchador) ---------- */
 document.addEventListener('click', async e => {
+  if (e.target.closest('#liqc')) { e.preventDefault(); UI.navego = true; irA('liq'); return; }
   const b = e.target.closest('[data-act]'); if (!b) return;
   const act = b.dataset.act;
   if (act === 'modal-x') { cerrarModal(); return; }
   if (act === 'salir') { try { await SB.auth.signOut(); } catch (er) {} location.reload(); return; }
   if (act === 'reintentar') { cargar(); return; }
+  if (act === 'ayuda-age') { abrirAyudaAgencia(); return; }
+  if (act === 'reintentar-age') { cargarAgencia(1); return; }
   if (!D) return;
   const it = b.dataset.i != null ? (D.items || [])[+b.dataset.i] : null;
   switch (act) {
@@ -1098,7 +1422,7 @@ arrancar();
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="gabi-liquidez.html";
-var PGV_VERSION=2; // v2 - 13-oct-2026 el retiro se lee con la semana contra sí misma (Caja + Entra − Sale de esta semana − colchón, entre los socios, hasta el objetivo); las 4 semanas solo avisan. Lo que vencía antes del último saldo de Chase se da por pagado (pie en Sale). | v1 - 12-oct-2026 GABI LIQUIDEZ EN EL PORTAL: una pantalla de dirección que sale entera de portal.liquidez_panel() — franja (caja, entra, sale, queda y anillo del retiro por socio), ingresos semana/mes, por entrar, la cola de pagos con un clic (liquidez_decidir), cuatro semanas y fijos del mes; pestaña Retiros (registrar, corregir, cerrar la semana) y carga del corte de Jeff. Cero barras, guion cuando no hay dato, sin almacenamiento del navegador.
+var PGV_VERSION=3; // v3 - 14-oct-2026 01 LA AGENCIA (solo direccion_total, portal.liquidez_agencia): el macro de dirección en tarjetas con anillos — la franja del mes (entró contra lo que necesita: nómina, fijos y retiro mínimo, con la barrita del "debería ir hoy"), las tres áreas con la cara chiquita de su líder adentro del anillo (Ventas nuevas · Brahian, Renovaciones · Karen, Endosos · Jhon Ramírez), el mes cerrado y el año en dos anillos con el aviso de comisiones de agentes sin cargar, y la caja en una tarjeta chiquita. Abre ahí para dirección; Jorge y los demás siguen en Liquidez y Retiros sin cambios. | v2 - 13-oct-2026 el retiro se lee con la semana contra sí misma (Caja + Entra − Sale de esta semana − colchón, entre los socios, hasta el objetivo); las 4 semanas solo avisan. Lo que vencía antes del último saldo de Chase se da por pagado (pie en Sale). | v1 - 12-oct-2026 GABI LIQUIDEZ EN EL PORTAL: una pantalla de dirección que sale entera de portal.liquidez_panel() — franja (caja, entra, sale, queda y anillo del retiro por socio), ingresos semana/mes, por entrar, la cola de pagos con un clic (liquidez_decidir), cuatro semanas y fijos del mes; pestaña Retiros (registrar, corregir, cerrar la semana) y carga del corte de Jeff. Cero barras, guion cuando no hay dato, sin almacenamiento del navegador.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;
