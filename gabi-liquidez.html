@@ -499,14 +499,17 @@ $('g-btn').addEventListener('click', async () => {
 $('g-pass').addEventListener('keydown', e => { if (e.key === 'Enter') $('g-btn').click(); });
 
 /* ---------- datos: UNA sola lectura ---------- */
-async function cargar(){
+async function cargar(intento){
   let r;
   try { r = await SB.schema('portal').rpc('liquidez_panel'); } catch (e) { r = { data:null, error:e }; }
   if (r.error || !r.data) {
     const m = errMsg(r.error || 'Sin respuesta');
     if (/no_autorizado/i.test(m)) { sinAcceso(); return; }
     if (!D) {
-      $('main').classList.add('sin-acceso');
+      /* v4 · si la base está ocupada (statement timeout), un reintento a los 2.5 s antes del aviso */
+      if (!intento) { setTimeout(() => cargar(1), 2500); return; }
+      /* v4 · si La agencia ya cargó, se queda a la vista; el aviso habla solo de la liquidez */
+      if (AG_ESTADO !== 'si') $('main').classList.add('sin-acceso');
       $('acceso').innerHTML = '<div class="pg-card aviso"><b>No pudimos leer la liquidez.</b> <span class="mini">' + esc(m) + '</span><div style="margin-top:10px"><button class="pg-btn sm" type="button" data-act="reintentar">Reintentar</button></div></div>';
     } else toastErr(r.error, 'No pudimos actualizar: ');
     return;
@@ -625,6 +628,8 @@ function plantarIniciales(raiz){
 }
 const pillRit = x => x ? '<span class="pg-pill ' + x.c + '">' + x.t + '</span>' : '<span class="pg-pill muted">—</span>';
 const nOr = v => num(v) == null ? '—' : num(v).toLocaleString('en-US');
+/* v4 · singular y plural: "1 negativo", "2 negativos"; guion si no hay dato */
+const cuantos = (v, uno, varios) => { const x = num(v); return '<b>' + (x == null ? '—' : x.toLocaleString('en-US')) + '</b> ' + (x === 1 ? uno : varios); };
 
 function pintarAgencia(){
   const A = AG; if (!A) return;
@@ -680,7 +685,7 @@ function pintarAgencia(){
     +   '<div class="info"><div class="k">Ventas nuevas</div><div class="nm">' + esc((e.persona || {}).nombre || '—') + '</div>'
     +   '<div class="v">' + usd(e.mc) + '</div><div class="ref">de <b>' + usd(e.meta) + '</b> · meta plena del equipo</div></div></div>'
     +   '<div class="rit">' + pillRit(rtE) + '<span class="mini">debería ir ' + usd(e.deberia) + '</span></div>'
-    +   '<div class="s"><b>' + nOr(e.ventas) + '</b> ventas · <b>' + nOr(e.activos) + '</b> de ' + nOr(e.personas) + ' con venta · fees <b>' + usd(e.fees) + '</b></div>'
+    +   '<div class="s">' + cuantos(e.ventas, 'venta', 'ventas') + ' · <b>' + nOr(e.activos) + '</b> de ' + nOr(e.personas) + ' con venta · fees <b>' + usd(e.fees) + '</b></div>'
     +   '<div class="ab">Abrir Equipo comercial →</div></a>'
     + '<a class="area r" href="renovaciones.html"><div class="top"><div class="anlw"><div class="anl c96">'
     +   anilloAg({val:pRn, vara:100, marca:est, ok:okR, tam:96, grosor:8,
@@ -689,7 +694,7 @@ function pintarAgencia(){
     +   '<div class="info"><div class="k">Renovaciones</div><div class="nm">' + esc((rn.persona || {}).nombre || '—') + '</div>'
     +   '<div class="v">' + usd(rn.renovado) + '</div><div class="ref">de <b>' + usd(rn.vence) + '</b> que vence en ' + mesNom(A.mes) + '</div></div></div>'
     +   '<div class="rit">' + pillRn + '<span class="mini">estándar del área</span></div>'
-    +   '<div class="s"><b>' + nOr(rn.renovadas) + '</b> de ' + nOr(rn.cuentas) + ' cuentas · <b>' + nOr(rn.en_juego_n) + '</b> en juego (' + usd(rn.en_juego_premium) + ')</div>'
+    +   '<div class="s"><b>' + nOr(rn.renovadas) + '</b> de ' + (num(rn.cuentas) === 1 ? '1 cuenta' : nOr(rn.cuentas) + ' cuentas') + ' · <b>' + nOr(rn.en_juego_n) + '</b> en juego (' + usd(rn.en_juego_premium) + ')</div>'
     +   '<div class="ab">Abrir Renovaciones →</div></a>'
     + '<div class="area e"><div class="top"><div class="anlw"><div class="anl c96">'
     +   anilloAg({val:en.ingreso, vara:en.promedio6, marca:en.deberia, ok:!!(rtN && rtN.c === 'ok'), tam:96, grosor:8,
@@ -698,7 +703,7 @@ function pintarAgencia(){
     +   '<div class="info"><div class="k">Endosos</div><div class="nm">' + esc((en.persona || {}).nombre || '—') + '</div>'
     +   '<div class="v">' + usd(en.ingreso) + '</div><div class="ref">de <b>' + usd(en.promedio6) + '</b> · su promedio de 6 meses</div></div></div>'
     +   '<div class="rit">' + pillRit(rtN) + '<span class="mini">debería ir ' + usd(en.deberia) + '</span></div>'
-    +   '<div class="s"><b>' + nOr(en.positivos) + '</b> positivos · <b>' + nOr(en.negativos) + '</b> negativos · premium neto <b>' + usd(en.premium_neto) + '</b></div></div>';
+    +   '<div class="s">' + cuantos(en.positivos, 'positivo', 'positivos') + ' · ' + cuantos(en.negativos, 'negativo', 'negativos') + ' · premium neto <b>' + usd(en.premium_neto) + '</b></div></div>';
   plantarIniciales($('areas'));
 
   /* 3 · el mes que cerró y el año: cuánto de lo que necesitaba (operar + retiro mínimo) entró */
@@ -714,7 +719,7 @@ function pintarAgencia(){
       + (num(sobra) == null ? '—' : (okB ? 'sobraron <b>' + usd(sobra) + '</b>' : 'faltaron <span class="neg">' + usd(Math.abs(num(sobra))) + '</span>')) + '</div></div>';
   };
   const notaPay = c.payout_cargado === false
-    ? '<div class="nota-a">El costo no trae las comisiones de agentes de ' + mesNom(c.mes) + ': están cargadas <b>' + (num(c.payout_personas) || 0) + '</b> personas (<b>' + usd(c.payout) + '</b>). Cuando se carguen, el mes y el año bajan.</div>' : '';
+    ? '<div class="nota-a">El costo no trae las comisiones de agentes de ' + mesNom(c.mes) + ': ' + ((num(c.payout_personas) || 0) === 1 ? 'está cargada <b>1</b> persona' : 'están cargadas <b>' + (num(c.payout_personas) || 0) + '</b> personas') + ' (<b>' + usd(c.payout) + '</b>). Cuando se carguen, el mes y el año bajan.</div>' : '';
   $('cierre').innerHTML = (c.mes
       ? '<h2><span>' + Mayus(mesNom(c.mes)) + ' cerrado y el año</span>' + pillC + '</h2>'
         + '<div class="dos">' + bloque(Mayus(mesNom(c.mes)), c.ingreso, c.necesitaba, c.sobra)
@@ -1422,7 +1427,7 @@ arrancar();
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="gabi-liquidez.html";
-var PGV_VERSION=3; // v3 - 14-oct-2026 01 LA AGENCIA (solo direccion_total, portal.liquidez_agencia): el macro de dirección en tarjetas con anillos — la franja del mes (entró contra lo que necesita: nómina, fijos y retiro mínimo, con la barrita del "debería ir hoy"), las tres áreas con la cara chiquita de su líder adentro del anillo (Ventas nuevas · Brahian, Renovaciones · Karen, Endosos · Jhon Ramírez), el mes cerrado y el año en dos anillos con el aviso de comisiones de agentes sin cargar, y la caja en una tarjeta chiquita. Abre ahí para dirección; Jorge y los demás siguen en Liquidez y Retiros sin cambios. | v2 - 13-oct-2026 el retiro se lee con la semana contra sí misma (Caja + Entra − Sale de esta semana − colchón, entre los socios, hasta el objetivo); las 4 semanas solo avisan. Lo que vencía antes del último saldo de Chase se da por pagado (pie en Sale). | v1 - 12-oct-2026 GABI LIQUIDEZ EN EL PORTAL: una pantalla de dirección que sale entera de portal.liquidez_panel() — franja (caja, entra, sale, queda y anillo del retiro por socio), ingresos semana/mes, por entrar, la cola de pagos con un clic (liquidez_decidir), cuatro semanas y fijos del mes; pestaña Retiros (registrar, corregir, cerrar la semana) y carga del corte de Jeff. Cero barras, guion cuando no hay dato, sin almacenamiento del navegador.
+var PGV_VERSION=4; // v4 - 14-oct-2026 (auditoría en producción): si la base está ocupada y liquidez_panel falla al entrar, un reintento automático a los 2.5 s antes del aviso; si La agencia ya cargó, se queda a la vista y el aviso habla solo de la liquidez; singular y plural en las tarjetas ("1 negativo", "1 venta", "1 persona"). | v3 - 14-oct-2026 01 LA AGENCIA (solo direccion_total, portal.liquidez_agencia): el macro de dirección en tarjetas con anillos — la franja del mes (entró contra lo que necesita: nómina, fijos y retiro mínimo, con la barrita del "debería ir hoy"), las tres áreas con la cara chiquita de su líder adentro del anillo (Ventas nuevas · Brahian, Renovaciones · Karen, Endosos · Jhon Ramírez), el mes cerrado y el año en dos anillos con el aviso de comisiones de agentes sin cargar, y la caja en una tarjeta chiquita. Abre ahí para dirección; Jorge y los demás siguen en Liquidez y Retiros sin cambios. | v2 - 13-oct-2026 el retiro se lee con la semana contra sí misma (Caja + Entra − Sale de esta semana − colchón, entre los socios, hasta el objetivo); las 4 semanas solo avisan. Lo que vencía antes del último saldo de Chase se da por pagado (pie en Sale). | v1 - 12-oct-2026 GABI LIQUIDEZ EN EL PORTAL: una pantalla de dirección que sale entera de portal.liquidez_panel() — franja (caja, entra, sale, queda y anillo del retiro por socio), ingresos semana/mes, por entrar, la cola de pagos con un clic (liquidez_decidir), cuatro semanas y fijos del mes; pestaña Retiros (registrar, corregir, cerrar la semana) y carga del corte de Jeff. Cero barras, guion cuando no hay dato, sin almacenamiento del navegador.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;
