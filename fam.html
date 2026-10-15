@@ -657,7 +657,7 @@ function doLogin(){
   msg('Entrando…');
   sb.auth.signInWithPassword({email:em,password:pw}).then(function(r){if(r.error)msg(r.error.message,'err');else msg('');});
 }
-var PERMITIDOS=['fam@protectgoservices.com','endorsement@protectgoservices.com'];
+var PERMITIDOS=['fam@protectgoservices.com','endorsement@protectgoservices.com','sales@protectgoservices.com'];  /* v13: sales@ (dirección) entra a todo */
 function onAuthed(session){
   var email=(session&&session.user?session.user.email:'')||'';
   if(PERMITIDOS.indexOf(email.toLowerCase())<0){
@@ -688,7 +688,7 @@ else setTimeout(init,60);
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="fam.html";
-var PGV_VERSION=12; // v12 - 14-oct-2026 PG-FIN-08 Payment Invoice (link de pago ePayPolicy): una tarjeta más en Documentos ProtectGo (agencia), igual a las otras; número PG-REC-AAAA-#### que pone la base (portal.fam_recibos); fee del pagador tarjeta 3.9 % · ACH 1 % tope $12 (recibos reales de ePayPolicy). Todo lo demás igual a la v11. // v11 - 12-oct-2026 PESTAÑA EQUIPO (encima de la v10 de pending cancellation, intacta): tercera pestaña "Equipo · llamadas y ventas" (solo cuenta fam@, igual que las otras dos): pg-llamadas.js en modo grande sobre portal.equipo_llamadas_pulso() — Hoy · Último día hábil · Semana · Mes, cuatro cifras grandes que filtran, lista de todo el equipo con columna Registradas (pólizas en el BOS), franja Día corto. Mismo número que Equipo Comercial y Mi proceso. Documentos y Amazon intactos. // v10 - 9-oct-2026 desplegable de pending cancellation (pg-pendientes-cancel.js): las pólizas que se están cayendo, con candado por rol. // v9 - Ronda 15: código de confirmación bancaria al pagar la liquidación mensual a Operyx (Registrar pago a Operyx · rpc amazon_liquidar_operyx), columna y filtro Liquidación Operyx en Pagos validados, Liquidar transacciones filtradas. Antes: v8 - Ronda 13: desglose Operyx/ProtectGo por cobro + liquidación mensual a Operyx (MS-YYYY-MM). Antes: v7 - Bandeja FAM de Amazon Relay (validar fondos + statement semanal). Antes: v5 - Protect Index: las direcciones internas del sitio pasan a relativas (el sitio ya no depende de como se llame el repo). Las que viajan por correo (recuperar contrasena, fotos de firma, sello de RRHH) quedan absolutas apuntando a protect-index.
+var PGV_VERSION=13; // v13 - 15-oct-2026 entra sales@ (dirección) a FAM con sus pestañas (Documentos, Equipo, Amazon); lo demás igual a la v12. // v12 - 14-oct-2026 PG-FIN-08 Payment Invoice (link de pago ePayPolicy): una tarjeta más en Documentos ProtectGo (agencia), igual a las otras; número PG-REC-AAAA-#### que pone la base (portal.fam_recibos); fee del pagador tarjeta 3.9 % · ACH 1 % tope $12 (recibos reales de ePayPolicy). Todo lo demás igual a la v11. // v11 - 12-oct-2026 PESTAÑA EQUIPO (encima de la v10 de pending cancellation, intacta): tercera pestaña "Equipo · llamadas y ventas" (solo cuenta fam@, igual que las otras dos): pg-llamadas.js en modo grande sobre portal.equipo_llamadas_pulso() — Hoy · Último día hábil · Semana · Mes, cuatro cifras grandes que filtran, lista de todo el equipo con columna Registradas (pólizas en el BOS), franja Día corto. Mismo número que Equipo Comercial y Mi proceso. Documentos y Amazon intactos. // v10 - 9-oct-2026 desplegable de pending cancellation (pg-pendientes-cancel.js): las pólizas que se están cayendo, con candado por rol. // v9 - Ronda 15: código de confirmación bancaria al pagar la liquidación mensual a Operyx (Registrar pago a Operyx · rpc amazon_liquidar_operyx), columna y filtro Liquidación Operyx en Pagos validados, Liquidar transacciones filtradas. Antes: v8 - Ronda 13: desglose Operyx/ProtectGo por cobro + liquidación mensual a Operyx (MS-YYYY-MM). Antes: v7 - Bandeja FAM de Amazon Relay (validar fondos + statement semanal). Antes: v5 - Protect Index: las direcciones internas del sitio pasan a relativas (el sitio ya no depende de como se llame el repo). Las que viajan por correo (recuperar contrasena, fotos de firma, sello de RRHH) quedan absolutas apuntando a protect-index.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;
@@ -733,6 +733,8 @@ setInterval(pgvCheck,600000);
   var URL_ = "https://hivpqsepwsfmafamxkzy.supabase.co";
   var KEY_ = "sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
   var FAM = 'fam@protectgoservices.com';
+  var DIR = 'sales@protectgoservices.com';  /* v13: dirección también ve las pestañas de FAM */
+  function esFam() { return ME === FAM || ME === DIR; }
   var sbA = null, ME = '', CARGANDO = false;
   var D = { cobros: [], cli: {}, loads: [], inv: [], st: [], rep: {}, regla: null, reglaSrv: null, act: [], pago: '' };
   var ST_TAB = null; /* 'semanal' | 'mensual' */
@@ -789,7 +791,7 @@ setInterval(pgvCheck,600000);
   }
   function sesion(s) {
     ME = ((s && s.user && s.user.email) || '').toLowerCase();
-    var ok = ME === FAM;
+    var ok = esFam();
     var tabs = $f('famTabs'); if (tabs) tabs.style.display = ok ? 'flex' : 'none';
     if (!ok) { mostrar('docs'); return; }
     cargar(true);
@@ -837,7 +839,7 @@ setInterval(pgvCheck,600000);
     p.innerHTML = 'Amazon' + (n ? ' <b>' + n + '</b>' : '') + ((nuevos || liq) ? ' <i title="' + (liq ? 'Liquidación Operyx por pagar' : nuevos + ' novedad' + (nuevos === 1 ? '' : 'es') + ' en Actividad') + '"></i>' : '');
     p.classList.toggle('on', n > 0 || nuevos > 0 || liq > 0);
     p.title = n ? n + ' cobro' + (n === 1 ? '' : 's') + ' por validar en el banco' : 'Sin cobros por validar';
-    p.style.display = ME === FAM ? '' : 'none';
+    p.style.display = esFam() ? '' : 'none';
   }
   function pintarError(m) { var a = $f('famAmz'); if (a) a.innerHTML = '<div class="fa-err">No se pudo cargar la bandeja de Amazon: ' + esc(m) + '</div>'; }
 
@@ -1379,7 +1381,7 @@ setInterval(pgvCheck,600000);
 
   /* la bandeja se refresca sola cada 60 s y al volver a la pestaña (el aviso llega por el widget de novedades) */
   function auto() {
-    if (document.hidden || ME !== FAM) return;
+    if (document.hidden || !esFam()) return;
     var abierto = Object.keys(ABIERTO).some(function (k) { return ABIERTO[k] === 'validar' || ABIERTO[k] === 'devolver'; });
     if (!abierto) cargar(true);
   }
