@@ -11,6 +11,7 @@
 --navy:#002F3D; --navy-2:#0a5b54; --teal:#229A82; --teal-2:#1a7a68;
 --mint:#BADFCE; --mint-soft:#E4F2EB; --mint-ghost:#F2F8F5;
 --amber:#FFB400; --amber-soft:#fff7e0; --papel:#FAF9F5; --surface:#fff;
+--ambar:#D9A520; --indigo:#5B6BD6; --indigo-soft:#EEF0FB; --indigo-ink:#4352B8;
 --ink:#0D141A; --muted:#5a6a6e; --faint:#8a989a; --hairline:#d8e0de; --line:#e6ebe9;
 --grad:linear-gradient(135deg,var(--navy) 0%,var(--teal) 100%);
 --r-sm:10px; --r-md:14px; --r-lg:20px; --r-pill:999px;
@@ -30,13 +31,20 @@ body{font-family:var(--font-text);color:var(--ink);background:var(--papel);min-h
 .pg-bar .user{font-family:var(--font-mono);font-size:12px;color:#9fc6bd;}
 .pg-b{font:inherit;font-size:13px;font-weight:600;cursor:pointer;border-radius:9px;padding:8px 14px;border:1px solid rgba(255,255,255,.25);background:transparent;color:#fff;text-decoration:none;display:inline-flex;align-items:center;}
 .pg-b:hover{background:rgba(255,255,255,.08);}
+/* v6: en pantallas angostas la barra baja el correo a su propia fila (antes empujaba la pagina a 522 px a 400 px) */
+@media (max-width:640px){
+.pg-bar{height:auto;min-height:58px;flex-wrap:wrap;padding:8px 14px;row-gap:4px;column-gap:10px;}
+.pg-bar .logo{font-size:13px;}
+.pg-bar .pg-b{padding:7px 11px;font-size:12.5px;}
+.pg-bar .user{order:9;flex:1 0 100%;min-width:0;font-size:11px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+}
 
 /* ---------- Contenido ---------- */
 .wrap{max-width:1120px;margin:0 auto;padding:34px 22px 70px;}
 .head-rep h1{font-family:var(--font-title);font-weight:800;font-size:27px;color:var(--navy);margin:0 0 6px;}
 .head-rep p{color:var(--muted);margin:0 0 22px;font-size:14px;max-width:640px;}
 
-.tabs{display:flex;gap:8px;margin-bottom:16px;}
+.tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
 .tab-btn{font:inherit;font-size:13.5px;font-weight:700;padding:9px 18px;border-radius:var(--r-pill);border:1px solid var(--hairline);background:#fff;color:var(--muted);cursor:pointer;}
 .tab-btn.active{background:var(--navy);color:#fff;border-color:var(--navy);}
 
@@ -51,24 +59,36 @@ body{font-family:var(--font-text);color:var(--ink);background:var(--papel);min-h
 .sp2{flex:1;}
 .sem-label{font-size:12.5px;color:var(--muted);font-family:var(--font-mono);}
 
-.summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;}
-@media (max-width:760px){.summary-grid{grid-template-columns:repeat(2,1fr);}}
-.summary-box{background:#fff;border:1px solid var(--line);border-radius:var(--r-md);padding:16px 18px;box-shadow:var(--shadow-2);}
+.summary-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:22px;}
+@media (max-width:760px){.summary-grid{grid-template-columns:repeat(2,1fr);}.summary-grid .sum-wide{grid-column:span 2;}}
+.summary-box{background:#fff;border:1px solid var(--line);border-radius:var(--r-md);padding:16px 18px;box-shadow:var(--shadow-2);min-width:0;}
 .summary-box .num{font-family:var(--font-title);font-weight:800;font-size:26px;color:var(--navy);}
 .summary-box .lbl{font-size:12px;color:var(--muted);margin-top:2px;}
+.summary-box .sub{font-size:11.5px;font-weight:600;color:var(--indigo-ink);margin-top:2px;}
+.summary-box.sum-link{cursor:pointer;}
+.summary-box.sum-link:hover{border-color:var(--ambar);}
+.summary-box.sum-link:focus-visible{outline:2px solid var(--ambar);outline-offset:2px;}
+.summary-box.sum-link .lbl{color:var(--ambar);font-weight:700;}
 
 .table-scroll{overflow-x:auto;}
 table.rep-table{width:100%;border-collapse:collapse;background:#fff;border-radius:var(--r-md);overflow:hidden;box-shadow:var(--shadow-2);}
 table.rep-table th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);background:var(--mint-ghost);padding:12px 14px;font-weight:700;white-space:nowrap;}
 table.rep-table td{padding:10px 14px;border-top:1px solid var(--line);font-size:13.5px;vertical-align:middle;}
 table.rep-table td.persona{font-weight:600;color:var(--navy);white-space:nowrap;}
-.cell{border-radius:9px;padding:8px 10px;display:inline-block;min-width:150px;}
+/* v6: la semana pasa de 7 a 9 columnas; encabezados que parten linea y menos relleno para que quepan sin barra interna a 1280 px */
+table.rep-table.week th{white-space:normal;line-height:1.3;vertical-align:bottom;padding:12px 10px;}
+table.rep-table.week td{padding:10px;}
+.cell{border-radius:9px;padding:8px 10px;display:inline-block;min-width:150px;max-width:270px;vertical-align:middle;}
 .cell .l1{font-weight:600;display:block;}
 .cell .l2{font-size:11.5px;opacity:.85;margin-top:2px;display:block;}
+.cell .l3{font-size:10.5px;margin-top:3px;display:block;line-height:1.35;}
 .cell.green{background:var(--mint-soft);color:var(--teal-2);}
 .cell.amber{background:var(--amber-soft);color:#9a6b00;}
 .cell.red{background:#fdecea;color:#c0392b;}
 .cell.empty{background:#f2f3f3;color:var(--faint);min-width:auto;padding:8px 12px;}
+.cell.nomark{background:#f2f3f3;color:var(--muted);}
+.cell.just{background:var(--indigo-soft);color:var(--indigo);}
+.cell.just .l2,.cell.just .l3{color:var(--indigo-ink);opacity:1;}
 
 .legend{display:flex;flex-wrap:wrap;gap:18px;margin-top:16px;font-size:12.5px;color:var(--muted);}
 .legend .dot{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;vertical-align:middle;}
@@ -76,8 +96,51 @@ table.rep-table td.persona{font-weight:600;color:var(--navy);white-space:nowrap;
 .legend .dot.amber{background:var(--amber);}
 .legend .dot.red{background:#e57368;}
 .legend .dot.gray{background:#dfe3e2;}
+.legend .dot.just{background:var(--indigo);}
 
-.empty-msg{padding:44px 20px;text-align:center;color:var(--muted);font-size:14px;background:#fff;border-radius:var(--r-md);box-shadow:var(--shadow-2);}
+.empty-msg{padding:44px 20px;text-align:center;color:var(--muted);font-size:14px;background:#fff;border-radius:var(--r-md);box-shadow:var(--shadow-2);overflow-wrap:anywhere;}
+
+/* ---------- v6 · pestaña Por revisar (tarjetas, no tabla) ---------- */
+.rv-note{margin:0 0 14px;padding:11px 14px;border-radius:var(--r-sm);background:var(--mint-ghost);border:1px solid var(--line);color:var(--navy);font-size:13.5px;font-weight:600;}
+.rv-list{display:grid;gap:12px;max-width:780px;}
+.rv-card{background:#fff;border:1px solid var(--line);border-left:4px solid var(--ambar);border-radius:var(--r-md);padding:14px 16px;box-shadow:var(--shadow-2);min-width:0;}
+.rv-card.acc{border-left-color:var(--indigo);}
+.rv-card.rej{border-left-color:#e57368;}
+.rv-head{font-size:14px;color:var(--navy);margin-bottom:8px;overflow-wrap:anywhere;}
+.rv-head b{font-weight:700;}
+.rv-line{font-size:13px;line-height:1.55;margin:2px 0;overflow-wrap:anywhere;}
+.rv-line.rv-dim{color:var(--muted);font-size:12.5px;}
+.rv-k{display:inline-block;min-width:62px;color:var(--muted);font-weight:600;}
+.rv-good{color:var(--teal-2);font-weight:600;}
+.rv-bad{color:#c0392b;font-weight:600;}
+.rv-com{margin:9px 0 7px;padding:9px 11px;background:var(--mint-ghost);border-radius:9px;font-style:italic;font-size:13.5px;line-height:1.5;white-space:pre-wrap;overflow-wrap:anywhere;color:var(--ink);}
+.rv-meta{font-size:12px;color:var(--muted);overflow-wrap:anywhere;}
+.rv-status{font-size:13px;font-weight:700;margin-top:8px;overflow-wrap:anywhere;}
+.rv-status.acc{color:var(--indigo-ink);}
+.rv-status.rej{color:#c0392b;}
+.rv-own{margin-top:10px;font-size:12.5px;color:var(--muted);}
+.rv-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;}
+.rv-btn{font:inherit;font-size:13.5px;font-weight:700;min-height:40px;padding:8px 16px;border-radius:9px;cursor:pointer;flex:1 1 120px;}
+.rv-btn.ok{background:var(--teal);color:#fff;border:1px solid var(--teal);}
+.rv-btn.ok:hover:not(:disabled){background:var(--teal-2);}
+.rv-btn.no{background:#fff;color:#c0392b;border:1px solid #e0a09a;}
+.rv-btn.no:hover:not(:disabled){background:#fdecea;}
+.rv-btn.ghost{background:#fff;color:var(--muted);border:1px solid var(--hairline);}
+.rv-btn:disabled{opacity:.5;cursor:not-allowed;}
+.rv-reject{margin-top:12px;padding:11px;background:#fdf6f5;border:1px solid #f1d4d0;border-radius:10px;}
+.rv-reject input{width:100%;font:inherit;font-size:14px;padding:10px 12px;border:1px solid var(--hairline);border-radius:9px;background:#fff;}
+.rv-reject input:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(34,154,130,.15);}
+.rv-reject .rv-actions{margin-top:9px;}
+.rv-hint{font-size:11.5px;color:var(--muted);margin-top:6px;}
+.rv-link{font:inherit;font-size:13px;font-weight:700;color:var(--teal-2);background:none;border:none;padding:8px 0 0;cursor:pointer;text-decoration:underline;}
+.rv-err{margin-top:9px;font-size:13px;font-weight:600;color:#c0392b;overflow-wrap:anywhere;}
+.rv-err:empty{display:none;}
+.rv-card [hidden]{display:none!important;}
+.rv-tgl-wrap{margin:22px 0 12px;}
+.rv-toggle{font:inherit;font-size:13px;font-weight:700;color:var(--navy);background:#fff;border:1px solid var(--hairline);border-radius:var(--r-pill);padding:9px 18px;cursor:pointer;}
+.rv-toggle::before{content:"\25B8  ";}
+.rv-toggle[aria-expanded="true"]{background:var(--mint-soft);}
+.rv-toggle[aria-expanded="true"]::before{content:"\25BE  ";}
 
 .noaccess-wrap{max-width:480px;margin:110px auto;text-align:center;background:#fff;border-radius:var(--r-lg);padding:42px 32px;box-shadow:var(--shadow-3);}
 .noaccess-wrap h2{font-family:var(--font-title);color:var(--navy);margin:0 0 10px;font-size:21px;}
@@ -124,15 +187,16 @@ table.rep-table td.persona{font-weight:600;color:var(--navy);white-space:nowrap;
 <div class="wrap">
 <div class="head-rep">
 <h1>Reporte de breaks y almuerzo</h1>
-<p>Marcaciones del equipo: break de la mañana, almuerzo y break de la tarde. Vista por día o por semana.</p>
+<p>Marcaciones del equipo: break de la mañana, almuerzo y break de la tarde. Vista por día o por semana, y las justificaciones de olvidos por revisar.</p>
 </div>
 
 <div class="tabs">
 <button class="tab-btn active" id="tabDiaBtn">Día</button>
 <button class="tab-btn" id="tabSemanaBtn">Semana</button>
+<button class="tab-btn" id="tabRevBtn">Por revisar</button>
 </div>
 
-<div class="controls">
+<div class="controls" id="controls">
 <div class="date-group" id="dateGroupDia">
 <button class="arrow-btn" id="btnDiaPrev" title="Día anterior">&#8249;</button>
 <input type="date" id="dateDia">
@@ -154,8 +218,9 @@ table.rep-table td.persona{font-weight:600;color:var(--navy);white-space:nowrap;
 <div class="summary-grid">
 <div class="summary-box"><div class="num" id="sumPersonas">0</div><div class="lbl">Personas que marcaron</div></div>
 <div class="summary-box"><div class="num" id="sumATiempo">0</div><div class="lbl">Marcas a tiempo</div></div>
-<div class="summary-box"><div class="num" id="sumExceso">0</div><div class="lbl">Marcas con exceso</div></div>
+<div class="summary-box"><div class="num" id="sumExceso">0</div><div class="lbl">Marcas con exceso</div><div class="sub" id="sumExcesoSub" style="display:none;"></div></div>
 <div class="summary-box"><div class="num" id="sumSinRegreso">0</div><div class="lbl">Marcas sin regreso</div></div>
+<div class="summary-box sum-link sum-wide" id="sumPorRevisarBox" role="button" tabindex="0" title="Abrir la pestaña Por revisar"><div class="num" id="sumPorRevisar">&#8212;</div><div class="lbl">Justificaciones por revisar</div></div>
 </div>
 <div class="table-scroll" id="diaTableWrap"><div class="empty-msg">Cargando…</div></div>
 <div class="legend">
@@ -163,12 +228,21 @@ table.rep-table td.persona{font-weight:600;color:var(--navy);white-space:nowrap;
 <span><span class="dot amber"></span>Salió fuera de horario o volvió tarde</span>
 <span><span class="dot red"></span>Se pasó del tiempo permitido, o salió y nunca marcó el regreso</span>
 <span><span class="dot gray"></span>No marcó ese espacio</span>
+<span><span class="dot just"></span>Justificada (aceptada)</span>
 </div>
 </div>
 
 <!-- ===== Vista Semana ===== -->
 <div id="contentSemana" style="display:none;">
 <div class="table-scroll" id="semanaTableWrap"><div class="empty-msg">Cargando…</div></div>
+</div>
+
+<!-- ===== Vista Por revisar (justificaciones de olvidos) ===== -->
+<div id="contentRev" style="display:none;">
+<div id="rvNote"></div>
+<div class="rv-list" id="rvList"><div class="empty-msg">Cargando…</div></div>
+<div class="rv-tgl-wrap"><button type="button" class="rv-toggle" id="rvToggle" data-rv="toggle" aria-expanded="false">Ver revisadas (14 días)</button></div>
+<div class="rv-list" id="rvRevList" style="display:none;"></div>
 </div>
 
 </div>
@@ -216,6 +290,7 @@ var app=document.getElementById("app");
 var noAccess=document.getElementById("noAccess");
 var bootstrapped=false;
 var weekLoaded=false;
+var dayLoaded=false;
 
 var currentTab="dia";
 var selectedDay=null;
@@ -223,7 +298,23 @@ var selectedWeekAnchor=null;
 var serverHoy=null;
 var dayRows=[];
 var weekRows=[];
+var dayJust=[];        // v6: justificaciones del dia mostrado
+var weekJust=[];       // v6: justificaciones de la semana mostrada
+var dayJustOk=true;    // false = reporte_breaks_justif fallo: la pagina sigue como v5
+var weekJustOk=true;
 var searchTerm="";
+
+// v6: justificaciones de olvidos
+var myEmail="";        // correo de la sesion, en minusculas (para detectar lo "propio")
+var VALIDADOR=false;   // true solo para quien acepta o no acepta (es_validador_breaks)
+var pendList=[];       // TODAS las pendientes, de cualquier fecha, la mas vieja primero
+var pendOk=null;       // null = sin cargar, true = bien, false = fallo
+var pendErr="";
+var showRev=false;     // interruptor "Ver revisadas (14 dias)"
+var revList=[];
+var revState="idle";   // idle | loading | ok | err
+var revErr="";
+var dayToken=0, weekToken=0, pendToken=0, revToken=0;   // descartan respuestas viejas
 
 /* ---------- utilidades ---------- */
 function pad(n){ return (n<10?"0":"")+n; }
@@ -244,6 +335,20 @@ return {desde:fromDateUTC(monday),hasta:fromDateUTC(sunday)};
 // TODO: solo se usa si hora_servidor() falla por completo (ej. sin red). No debe usarse para logica de negocio.
 function fallbackTodayLocal(){ var d=new Date(); return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()); }
 
+var DIAS_ES=["dom","lun","mar","mié","jue","vie","sáb"];
+var MESES_ES=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+// "2026-10-19" -> "lun 19 oct"
+function fmtFechaCorta(s){
+if(!s) return "—";
+var p=parseDateStr(s);
+if(isNaN(p.y)||isNaN(p.m)||isNaN(p.d)) return String(s);
+return DIAS_ES[toDateUTC(s).getUTCDay()]+" "+p.d+" "+MESES_ES[p.m-1];
+}
+
+function clock12(hh,mm,withPeriod){
+var h12=hh%12; if(h12===0) h12=12;
+return h12+":"+mm+(withPeriod?(" "+(hh>=12?"p.m.":"a.m.")):"");
+}
 // salida_local / entrada_local vienen "YYYY-MM-DDTHH:MM:SS" ya en hora Colombia y SIN zona horaria.
 // Se formatean partiendo el string a mano — jamas con new Date(...) porque el navegador
 // le aplicaria de nuevo su propia zona horaria y mostraria una hora falsa.
@@ -254,10 +359,31 @@ if(parts.length<2) return null;
 var hm=parts[1].split(":");
 var hh=parseInt(hm[0],10);
 var mm=hm[1];
-var period=(hh>=12)?"p.m.":"a.m.";
-var h12=hh%12; if(h12===0) h12=12;
-return h12+":"+mm+" "+period;
+return clock12(hh,mm,true);
 }
+// Hora suelta "HH:MM[:SS]" (salida_declarada / regreso_declarado) -> "12:35 p.m." (o "12:35" sin periodo)
+function fmtHM(s,withPeriod){
+if(!s) return null;
+var hm=String(s).split(":");
+var hh=parseInt(hm[0],10);
+if(isNaN(hh)||hm.length<2) return null;
+return clock12(hh,String(hm[1]).slice(0,2),withPeriod!==false);
+}
+
+// Marcas de tiempo con zona (created_at, revisado_at) -> hora Colombia (UTC-5, sin horario de verano).
+function parseTs(s){
+if(!s) return NaN;
+var t=String(s).trim().replace(" ","T").replace(/(\.\d{3})\d+/,"$1");
+var tm=t.split("T")[1]||"";
+if(!/(Z|[+-]\d{2}(:?\d{2})?)$/.test(tm)) t+="Z";
+else if(/[+-]\d{2}$/.test(t)) t+=":00";
+return Date.parse(t);
+}
+function tsNum(s){ var n=parseTs(s); return isNaN(n)?0:n; }
+function coParts(ms){ var d=new Date(ms-5*3600000); return {ymd:fromDateUTC(d),hh:d.getUTCHours(),mm:pad(d.getUTCMinutes())}; }
+function fmtTsHora(s){ var ms=parseTs(s); if(isNaN(ms)) return "—"; var p=coParts(ms); return clock12(p.hh,p.mm,true); }
+function fmtTsFechaHora(s){ var ms=parseTs(s); if(isNaN(ms)) return "—"; var p=coParts(ms); var d=parseDateStr(p.ymd); return d.d+" "+MESES_ES[d.m-1]+" "+clock12(p.hh,p.mm,true); }
+function fmtTsCsv(s){ var ms=parseTs(s); if(isNaN(ms)) return ""; var p=coParts(ms); return p.ymd+" "+pad(p.hh)+":"+p.mm; }
 
 // Clasifica cada fila en una de las 3 columnas. Valores reales verificados en Supabase
 // (03-ago-2026): espacio = 'break_am' | 'almuerzo' | 'break_pm'.
@@ -290,51 +416,133 @@ if(row.en_ventana===false||row.regreso_tarde) return "Fuera de horario";
 return "A tiempo";
 }
 
+/* ---------- v6 · justificaciones: mapa persona|fecha|espacio ---------- */
+function jkey(email,fecha,cat){ return String(email||"").toLowerCase()+"|"+String(fecha||"")+"|"+cat; }
+function rowKey(row){ return jkey(row.email,row.fecha,categoryOf(row)); }
+function isLive(j){ return j.estado==="pendiente"||j.estado==="aceptada"; }
+// La justificacion que manda por celda: la viva (pendiente/aceptada) si hay; si no, la ultima rechazada.
+function buildJustMap(list){
+var map={}; var i,j,k,cur;
+for(i=0;i<(list||[]).length;i++){
+j=list[i];
+k=jkey(j.email,j.fecha,categoryOf(j));
+cur=map[k];
+if(!cur){ map[k]=j; continue; }
+if(isLive(j)&&!isLive(cur)) map[k]=j;
+else if(isLive(j)===isLive(cur)&&tsNum(j.created_at)>=tsNum(cur.created_at)) map[k]=j;
+}
+return map;
+}
+function isAcc(j){ return !!j&&j.estado==="aceptada"; }
+
+// "declaró 12:35 → 1:32" (horas sin periodo, como en la tabla); si solo declaró una, dice cuál.
+function declTxt(j){
+if(!j) return "";
+var s=fmtHM(j.salida_declarada,false), r=fmtHM(j.regreso_declarado,false);
+if(s&&r) return "declaró "+s+" &#8594; "+r;
+if(s) return "declaró salida "+s;
+if(r) return "declaró regreso "+r;
+return "";
+}
+// Tercera linea de la celda justificada: lo que realmente marco el sistema.
+function marcoCell(row,j){
+var s,e;
+if(row){
+s=row.salida_local?fmtTime(row.salida_local):"&#8212;";
+e=row.abierta?"sin regreso":(row.entrada_local?fmtTime(row.entrada_local):"&#8212;");
+return "Marcó "+s+" &#8594; "+e;
+}
+if(j&&j.marca_id&&j.salida_sistema_local){
+s=fmtTime(j.salida_sistema_local)||"&#8212;";
+e=j.entrada_sistema_local?fmtTime(j.entrada_sistema_local):"sin regreso";
+return "Marcó "+s+" &#8594; "+e;
+}
+return "No marcó";
+}
+
 /* ---------- render Dia ---------- */
-function cellHtml(row){
-if(!row) return '<td><span class="cell empty">&#8212;</span></td>';
-var c=classify(row);
+function cellHtml(row,just){
+if(!row&&!just) return '<td><span class="cell empty">&#8212;</span></td>';
+var st=just?just.estado:"";
+var title=(just&&just.comentario)?(' title="'+esc(just.comentario)+'"'):"";
+var cls,l1,l2="",l3="",d;
+if(just&&st==="aceptada"){
+cls="just";
+l1=(just.salida_efectiva_local?fmtTime(just.salida_efectiva_local):"&#8212;")+" &#8594; "+(just.entrada_efectiva_local?fmtTime(just.entrada_efectiva_local):"&#8212;");
+l2=((just.minutos_efectivos!==null&&just.minutos_efectivos!==undefined)?(esc(just.minutos_efectivos)+" min &middot; "):"")+"Justificada";
+l3=marcoCell(row,just);
+}else if(!row){
+cls="nomark";
+l1="No marcó";
+l3=(st==="rechazada")?"&#10007; No aceptada":"&#128221; Por revisar";
+d=declTxt(just); if(d) l3+=" &middot; "+d;
+}else{
+cls=classify(row);
 var salida=row.salida_local?fmtTime(row.salida_local):"&#8212;";
 var entrada=row.abierta?"sin regreso":(row.entrada_local?fmtTime(row.entrada_local):"&#8212;");
-var line1=salida+" &#8594; "+entrada;
-var line2=(row.minutos!==null&&row.minutos!==undefined&&row.minutos!=="")?(row.minutos+" min"):"";
-return '<td><span class="cell '+c+'"><span class="l1">'+line1+'</span><span class="l2">'+line2+'</span></span></td>';
+l1=salida+" &#8594; "+entrada;
+l2=(row.minutos!==null&&row.minutos!==undefined&&row.minutos!=="")?(row.minutos+" min"):"";
+if(st==="pendiente"){
+l3="&#128221; Por revisar";
+d=declTxt(just); if(d) l3+=" &middot; "+d;
+}else if(st==="rechazada"){
+l3="&#10007; No aceptada";
+}
+}
+return '<td><span class="cell '+cls+'"'+title+'><span class="l1">'+l1+'</span><span class="l2">'+l2+'</span>'+(l3?'<span class="l3">'+l3+'</span>':"")+'</span></td>';
 }
 
 function renderDay(){
 var term=(searchTerm||"").toLowerCase();
+var jmap=buildJustMap(dayJust);
 var map={};
-var i,row,cat,key;
+var i,row,cat,key,k,j,p;
+function person(email,nombre){
+var e=String(email||"").toLowerCase();
+if(!map[e]) map[e]={nombre:nombre||email,email:e,am:null,lunch:null,pm:null,amJ:null,lunchJ:null,pmJ:null};
+return map[e];
+}
 for(i=0;i<dayRows.length;i++){
 row=dayRows[i];
-key=row.email;
-if(!map[key]) map[key]={nombre:row.nombre||row.email,email:row.email,am:null,lunch:null,pm:null};
+p=person(row.email,row.nombre||row.email);
 cat=categoryOf(row);
-if(cat==="am") map[key].am=row;
-else if(cat==="lunch") map[key].lunch=row;
-else if(cat==="pm") map[key].pm=row;
+if(cat==="am"||cat==="lunch"||cat==="pm") p[cat]=row;
 }
-var persons=[]; var k;
+// v6: quien solo tiene declaraciones tambien sale en la tabla
+for(k in jmap){
+if(!jmap.hasOwnProperty(k)) continue;
+j=jmap[k];
+p=person(j.email,j.nombre||j.email);
+cat=categoryOf(j);
+if(cat==="am"||cat==="lunch"||cat==="pm") p[cat+"J"]=j;
+}
+var persons=[];
 for(k in map){ if(map.hasOwnProperty(k)) persons.push(map[k]); }
-if(term){ persons=persons.filter(function(p){ return String(p.nombre).toLowerCase().indexOf(term)>=0; }); }
+if(term){ persons=persons.filter(function(q){ return String(q.nombre).toLowerCase().indexOf(term)>=0; }); }
 persons.sort(function(a,b){ return String(a.nombre).localeCompare(String(b.nombre)); });
 
 // Resumen: siempre sobre el dia completo (no cambia con la busqueda).
-var personasSet={}; var onTime=0,exceso=0,sinRegreso=0;
+var personasSet={}; var onTime=0,exceso=0,sinRegreso=0,justificadas=0;
 for(i=0;i<dayRows.length;i++){
 row=dayRows[i];
-personasSet[row.email]=true;
+personasSet[String(row.email||"").toLowerCase()]=true;
 if(classify(row)==="green") onTime++;
-if(row.excedido) exceso++;
+if(row.excedido){
+if(isAcc(jmap[rowKey(row)])) justificadas++; else exceso++;
+}
 if(row.abierta) sinRegreso++;
 }
+for(k in jmap){ if(jmap.hasOwnProperty(k)) personasSet[String(jmap[k].email||"").toLowerCase()]=true; }
 document.getElementById("sumPersonas").textContent=Object.keys(personasSet).length;
 document.getElementById("sumATiempo").textContent=onTime;
 document.getElementById("sumExceso").textContent=exceso;
 document.getElementById("sumSinRegreso").textContent=sinRegreso;
+var sub=document.getElementById("sumExcesoSub");
+if(justificadas>0){ sub.textContent="+"+justificadas+" justificadas"; sub.style.display="block"; }
+else { sub.textContent=""; sub.style.display="none"; }
 
 var wrap=document.getElementById("diaTableWrap");
-if(dayRows.length===0){
+if(dayRows.length===0&&Object.keys(jmap).length===0){
 wrap.innerHTML='<div class="empty-msg">Nadie ha marcado este día todavía.</div>';
 return;
 }
@@ -344,8 +552,8 @@ return;
 }
 var html='<table class="rep-table"><thead><tr><th>Persona</th><th>Break mañana</th><th>Almuerzo</th><th>Break tarde</th></tr></thead><tbody>';
 for(i=0;i<persons.length;i++){
-var p=persons[i];
-html+="<tr><td class=\"persona\">"+esc(p.nombre)+"</td>"+cellHtml(p.am)+cellHtml(p.lunch)+cellHtml(p.pm)+"</tr>";
+p=persons[i];
+html+="<tr><td class=\"persona\">"+esc(p.nombre)+"</td>"+cellHtml(p.am,p.amJ)+cellHtml(p.lunch,p.lunchJ)+cellHtml(p.pm,p.pmJ)+"</tr>";
 }
 html+="</tbody></table>";
 wrap.innerHTML=html;
@@ -354,28 +562,51 @@ wrap.innerHTML=html;
 /* ---------- render Semana ---------- */
 function renderWeek(){
 var term=(searchTerm||"").toLowerCase();
+var jmap=buildJustMap(weekJust);
 var map={};
-var i,row,cat,key;
+var seen={};
+var i,row,cat,key,k,j,p,mins,acc;
+function person(email,nombre){
+var e=String(email||"").toLowerCase();
+if(!map[e]) map[e]={nombre:nombre||email,email:e,days:{},am:0,lunch:0,pm:0,exceso:0,sinRegreso:0,just:0,rev:0};
+return map[e];
+}
+function addMins(pp,c,m){
+if(c==="am") pp.am+=m; else if(c==="lunch") pp.lunch+=m; else if(c==="pm") pp.pm+=m;
+}
 for(i=0;i<weekRows.length;i++){
 row=weekRows[i];
-key=row.email;
-if(!map[key]) map[key]={nombre:row.nombre||row.email,email:row.email,days:{},am:0,lunch:0,pm:0,exceso:0,sinRegreso:0};
-map[key].days[row.fecha]=true;
+p=person(row.email,row.nombre||row.email);
+p.days[row.fecha]=true;
 cat=categoryOf(row);
-var mins=row.minutos||0;
-if(cat==="am") map[key].am+=mins;
-else if(cat==="lunch") map[key].lunch+=mins;
-else if(cat==="pm") map[key].pm+=mins;
-if(row.excedido) map[key].exceso++;
-if(row.abierta) map[key].sinRegreso++;
+key=rowKey(row);
+seen[key]=true;
+j=jmap[key];
+acc=isAcc(j);
+// v6: las aceptadas cuentan con la hora declarada; las demas, con la del sistema
+mins=(acc&&j.minutos_efectivos!==null&&j.minutos_efectivos!==undefined)?Number(j.minutos_efectivos):(row.minutos||0);
+addMins(p,cat,mins);
+if(row.excedido&&!acc) p.exceso++;
+if(row.abierta) p.sinRegreso++;
 }
-var persons=[]; var k;
+for(k in jmap){
+if(!jmap.hasOwnProperty(k)) continue;
+j=jmap[k];
+p=person(j.email,j.nombre||j.email);
+if(j.estado==="aceptada"){
+p.just++;
+if(!seen[k]&&j.minutos_efectivos!==null&&j.minutos_efectivos!==undefined) addMins(p,categoryOf(j),Number(j.minutos_efectivos));
+}else if(j.estado==="pendiente"){
+p.rev++;
+}
+}
+var persons=[];
 for(k in map){ if(map.hasOwnProperty(k)) persons.push(map[k]); }
-if(term){ persons=persons.filter(function(p){ return String(p.nombre).toLowerCase().indexOf(term)>=0; }); }
-persons.sort(function(a,b){ return b.exceso-a.exceso; });
+if(term){ persons=persons.filter(function(q){ return String(q.nombre).toLowerCase().indexOf(term)>=0; }); }
+persons.sort(function(a,b){ return (b.exceso-a.exceso)||String(a.nombre).localeCompare(String(b.nombre)); });
 
 var wrap=document.getElementById("semanaTableWrap");
-if(weekRows.length===0){
+if(weekRows.length===0&&Object.keys(jmap).length===0){
 wrap.innerHTML='<div class="empty-msg">Nadie ha marcado esta semana todavía.</div>';
 return;
 }
@@ -383,82 +614,389 @@ if(persons.length===0){
 wrap.innerHTML='<div class="empty-msg">No hay resultados para tu búsqueda.</div>';
 return;
 }
-var html='<table class="rep-table"><thead><tr><th>Persona</th><th>Días marcados</th><th>Total break mañana</th><th>Total almuerzo</th><th>Total break tarde</th><th>Excesos</th><th>Sin regreso</th></tr></thead><tbody>';
+var html='<table class="rep-table week"><thead><tr><th>Persona</th><th>Días marcados</th><th>Total break mañana</th><th>Total almuerzo</th><th>Total break tarde</th><th>Excesos</th><th>Sin regreso</th><th>Justificadas</th><th>Por revisar</th></tr></thead><tbody>';
 for(i=0;i<persons.length;i++){
-var p=persons[i];
+p=persons[i];
 var dias=Object.keys(p.days).length;
-html+="<tr><td class=\"persona\">"+esc(p.nombre)+"</td><td>"+dias+"</td><td>"+p.am+" min</td><td>"+p.lunch+" min</td><td>"+p.pm+" min</td><td>"+p.exceso+"</td><td>"+p.sinRegreso+"</td></tr>";
+html+="<tr><td class=\"persona\">"+esc(p.nombre)+"</td><td>"+dias+"</td><td>"+p.am+" min</td><td>"+p.lunch+" min</td><td>"+p.pm+" min</td><td>"+p.exceso+"</td><td>"+p.sinRegreso+"</td><td>"+(weekJustOk?p.just:"&#8212;")+"</td><td>"+(weekJustOk?p.rev:"&#8212;")+"</td></tr>";
 }
 html+="</tbody></table>";
 wrap.innerHTML=html;
 }
 
 /* ---------- fetch ---------- */
-function fetchDay(dateStr){
-var wrap=document.getElementById("diaTableWrap");
-wrap.innerHTML='<div class="empty-msg">Cargando…</div>';
-sb.rpc("reporte_breaks",{p_desde:dateStr,p_hasta:dateStr}).then(function(r){
-if(r.error){ wrap.innerHTML='<div class="empty-msg">Error cargando datos: '+esc(r.error.message)+'</div>'; return; }
-dayRows=r.data||[];
-renderDay();
-}).catch(function(e){ wrap.innerHTML='<div class="empty-msg">Error de red.</div>'; });
+// Justificaciones de un rango. Si falla (ej. el SQL aun no esta montado) la pagina sigue como v5.
+function fetchJust(desde,hasta){
+return sb.rpc("reporte_breaks_justif",{p_desde:desde,p_hasta:hasta}).then(function(r){
+if(r.error){ console.warn("reporte_breaks_justif:",r.error.message); return {ok:false,data:[]}; }
+return {ok:true,data:r.data||[]};
+}).catch(function(e){ console.warn("reporte_breaks_justif:",e); return {ok:false,data:[]}; });
 }
 
-function fetchWeek(anchor){
+function fetchDay(dateStr,silent){
+var wrap=document.getElementById("diaTableWrap");
+var tk=++dayToken;
+if(!silent) wrap.innerHTML='<div class="empty-msg">Cargando…</div>';
+Promise.all([sb.rpc("reporte_breaks",{p_desde:dateStr,p_hasta:dateStr}),fetchJust(dateStr,dateStr)]).then(function(res){
+if(tk!==dayToken) return;
+var r=res[0], jr=res[1];
+if(r.error){ if(!silent) wrap.innerHTML='<div class="empty-msg">Error cargando datos: '+esc(r.error.message)+'</div>'; return; }
+dayRows=r.data||[];
+dayJust=jr.data; dayJustOk=jr.ok;
+dayLoaded=true;
+renderDay();
+}).catch(function(e){ if(tk!==dayToken) return; if(!silent) wrap.innerHTML='<div class="empty-msg">Error de red.</div>'; });
+}
+
+function fetchWeek(anchor,silent){
 var range=weekRangeOf(anchor);
 document.getElementById("semLabel").textContent=range.desde+" → "+range.hasta;
 var wrap=document.getElementById("semanaTableWrap");
-wrap.innerHTML='<div class="empty-msg">Cargando…</div>';
-sb.rpc("reporte_breaks",{p_desde:range.desde,p_hasta:range.hasta}).then(function(r){
-if(r.error){ wrap.innerHTML='<div class="empty-msg">Error cargando datos: '+esc(r.error.message)+'</div>'; return; }
+var tk=++weekToken;
+if(!silent) wrap.innerHTML='<div class="empty-msg">Cargando…</div>';
+Promise.all([sb.rpc("reporte_breaks",{p_desde:range.desde,p_hasta:range.hasta}),fetchJust(range.desde,range.hasta)]).then(function(res){
+if(tk!==weekToken) return;
+var r=res[0], jr=res[1];
+if(r.error){ if(!silent) wrap.innerHTML='<div class="empty-msg">Error cargando datos: '+esc(r.error.message)+'</div>'; return; }
 weekRows=r.data||[];
+weekJust=jr.data; weekJustOk=jr.ok;
 renderWeek();
-}).catch(function(e){ wrap.innerHTML='<div class="empty-msg">Error de red.</div>'; });
+}).catch(function(e){ if(tk!==weekToken) return; if(!silent) wrap.innerHTML='<div class="empty-msg">Error de red.</div>'; });
+}
+
+// Despues de decidir una justificacion: refresca Dia y Semana si ya estaban cargados (sin parpadeo).
+function refreshViews(){
+if(dayLoaded&&selectedDay) fetchDay(selectedDay,true);
+if(weekLoaded&&selectedWeekAnchor) fetchWeek(selectedWeekAnchor,true);
+}
+
+/* ---------- v6 · pestaña "Por revisar" ---------- */
+function updatePendUI(){
+var n=(pendOk===true)?pendList.length:null;
+document.getElementById("tabRevBtn").textContent="Por revisar"+(n===null?"":" · "+n);
+document.getElementById("sumPorRevisar").textContent=(n===null)?"—":n;
+}
+
+function loadPend(done){
+var tk=++pendToken;
+sb.rpc("justif_breaks_por_revisar").then(function(r){
+if(tk!==pendToken) return;
+if(r.error){ pendOk=false; pendErr=r.error.message||""; console.warn("justif_breaks_por_revisar:",pendErr); }
+else{
+pendOk=true; pendErr="";
+pendList=(r.data||[]).slice().sort(function(a,b){
+if(a.fecha!==b.fecha) return String(a.fecha)<String(b.fecha)?-1:1;
+return tsNum(a.created_at)-tsNum(b.created_at);
+});
+}
+updatePendUI();
+if(done) done();
+}).catch(function(e){
+if(tk!==pendToken) return;
+pendOk=false; pendErr=""; console.warn("justif_breaks_por_revisar:",e);
+updatePendUI();
+if(done) done();
+});
+}
+
+function marcoCard(j){
+if(!j.marca_id) return "No marcó";
+var s=j.salida_sistema_local?fmtTime(j.salida_sistema_local):"&#8212;";
+var e=j.entrada_sistema_local?fmtTime(j.entrada_sistema_local):"sin regreso";
+var m=(j.minutos_sistema!==null&&j.minutos_sistema!==undefined)?(" &middot; "+esc(j.minutos_sistema)+" min"):"";
+return s+" &#8594; "+e+m;
+}
+function declaraCard(j){
+var ef=(j.salida_efectiva_local?fmtTime(j.salida_efectiva_local):"&#8212;")+" &#8594; "+(j.entrada_efectiva_local?fmtTime(j.entrada_efectiva_local):"&#8212;");
+var hasMin=(j.minutos_efectivos!==null&&j.minutos_efectivos!==undefined);
+var m=hasMin?(" &middot; "+esc(j.minutos_efectivos)+" min"):"";
+var v="";
+if(hasMin&&j.permitido_min!==null&&j.permitido_min!==undefined){
+var over=(j.excedido_efectivo===null||j.excedido_efectivo===undefined)?(j.minutos_efectivos>j.permitido_min):!!j.excedido_efectivo;
+if(over) v=' <span class="rv-bad">&#8594; con lo declarado se pasa '+esc(Math.max(1,Number(j.minutos_efectivos)-Number(j.permitido_min)))+' min</span>';
+else v=' <span class="rv-good">&#8594; con lo declarado queda dentro ('+esc(j.permitido_min)+')</span>';
+}
+return ef+m+v;
+}
+
+// mode: "pend" (lista por revisar) | "rev" (ya revisadas)
+function cardHtml(j,mode){
+var own=(String(j.email||"").toLowerCase()===myEmail);
+var canAct=VALIDADOR&&!own;
+var cls="rv-card"+(mode==="rev"?(j.estado==="aceptada"?" acc":" rej"):"");
+var h='<div class="'+cls+'" data-id="'+esc(j.id)+'" data-mode="'+mode+'">';
+h+='<div class="rv-head"><b>'+esc(j.nombre||j.email)+'</b> &middot; '+esc(fmtFechaCorta(j.fecha))+' &middot; '+esc(j.espacio_label||j.espacio)+'</div>';
+h+='<div class="rv-line">'+(j.marca_id?'<span class="rv-k">Marcó:</span> ':'')+marcoCard(j)+'</div>';
+if(j.salida_declarada||j.regreso_declarado){
+h+='<div class="rv-line"><span class="rv-k">Declara:</span> '+declaraCard(j)+'</div>';
+}else{
+h+='<div class="rv-line rv-dim">No declaró horas: solo explica lo que pasó.</div>';
+}
+h+='<div class="rv-com">&quot;'+esc(j.comentario)+'&quot;</div>';
+h+='<div class="rv-meta">Enviada '+esc(fmtTsHora(j.created_at))+' &middot; '+(j.origen==="auto"?"se abrió sola":"con el botón")+'</div>';
+if(mode==="rev"){
+var por=esc(j.revisado_por||"—"), cuando=esc(fmtTsFechaHora(j.revisado_at));
+if(j.estado==="aceptada"){
+h+='<div class="rv-status acc">&#10003; Aceptada por '+por+' &middot; '+cuando+'</div>';
+}else{
+h+='<div class="rv-status rej">&#10007; No aceptada: '+esc(j.nota_revision||"—")+'</div>';
+h+='<div class="rv-meta">Revisó '+por+' &middot; '+cuando+'</div>';
+}
+if(canAct) h+='<button type="button" class="rv-link" data-rv="cambiar">Cambiar decisión</button>';
+}
+if(canAct){
+h+='<div class="rv-actions" data-box="acts"'+(mode==="rev"?' hidden':'')+'>'
++'<button type="button" class="rv-btn ok" data-rv="aceptar">Aceptar</button>'
++'<button type="button" class="rv-btn no" data-rv="noaceptar">No aceptar</button></div>';
+h+='<div class="rv-reject" data-box="rej" hidden>'
++'<input type="text" maxlength="300" autocomplete="off" placeholder="Motivo (lo ve la persona)" aria-label="Motivo (lo ve la persona)">'
++'<div class="rv-hint">Mínimo 5 letras. La persona lo va a ver.</div>'
++'<div class="rv-actions"><button type="button" class="rv-btn ok" data-rv="confirmar" disabled>Confirmar</button>'
++'<button type="button" class="rv-btn ghost" data-rv="cancelar">Cancelar</button></div></div>';
+}else if(VALIDADOR&&own){
+h+='<div class="rv-own">Es tuya: no puedes revisar tu propia justificación.</div>';
+}
+h+='<div class="rv-err" role="alert"></div>';
+h+='</div>';
+return h;
+}
+
+function renderPendList(){
+var list=document.getElementById("rvList");
+if(pendOk===null){ list.innerHTML='<div class="empty-msg">Cargando…</div>'; return; }
+if(pendOk===false){ list.innerHTML='<div class="empty-msg">No se pudieron cargar las justificaciones'+(pendErr?': '+esc(pendErr):'.')+'</div>'; return; }
+if(!pendList.length){ list.innerHTML='<div class="empty-msg">No hay justificaciones por revisar.</div>'; return; }
+var h="",i;
+for(i=0;i<pendList.length;i++) h+=cardHtml(pendList[i],"pend");
+list.innerHTML=h;
+}
+
+function renderRevisadas(){
+var box=document.getElementById("rvRevList");
+var tg=document.getElementById("rvToggle");
+tg.setAttribute("aria-expanded",showRev?"true":"false");
+box.style.display=showRev?"grid":"none";
+if(!showRev) return;
+if(revState==="loading"||revState==="idle"){ box.innerHTML='<div class="empty-msg">Cargando…</div>'; return; }
+if(revState==="err"){ box.innerHTML='<div class="empty-msg">No se pudieron cargar las revisadas'+(revErr?': '+esc(revErr):'.')+'</div>'; return; }
+if(!revList.length){ box.innerHTML='<div class="empty-msg">No hay justificaciones revisadas en los últimos 14 días.</div>'; return; }
+var h="",i;
+for(i=0;i<revList.length;i++) h+=cardHtml(revList[i],"rev");
+box.innerHTML=h;
+}
+
+function renderRev(){
+document.getElementById("rvNote").innerHTML=VALIDADOR?"":'<div class="rv-note">Solo Andrés López acepta o no acepta.</div>';
+renderPendList();
+renderRevisadas();
+}
+
+function loadRev(){
+var tk=++revToken;
+revState="loading";
+renderRevisadas();
+var hoy=serverHoy||fallbackTodayLocal();
+sb.rpc("reporte_breaks_justif",{p_desde:addDays(hoy,-14),p_hasta:hoy}).then(function(r){
+if(tk!==revToken) return;
+if(r.error){ revState="err"; revErr=r.error.message||""; }
+else{
+revList=(r.data||[]).filter(function(j){ return j.estado!=="pendiente"; });
+revList.sort(function(a,b){ return tsNum(b.revisado_at)-tsNum(a.revisado_at); });
+revState="ok"; revErr="";
+}
+renderRevisadas();
+}).catch(function(e){ if(tk!==revToken) return; revState="err"; revErr=""; renderRevisadas(); });
+}
+
+function toggleRev(){
+showRev=!showRev;
+if(showRev) loadRev(); else renderRevisadas();
+}
+
+function syncConfirm(card){
+var inp=card.querySelector(".rv-reject input");
+var btn=card.querySelector('[data-rv="confirmar"]');
+if(inp&&btn) btn.disabled=(inp.value.trim().length<5);
+}
+function setBusy(card,busy){
+var bs=card.querySelectorAll("button"),i;
+for(i=0;i<bs.length;i++) bs[i].disabled=busy;
+if(!busy) syncConfirm(card);
+}
+function cardErr(card,t){ var e=card.querySelector(".rv-err"); if(e) e.textContent=t||""; }
+
+function decide(card,estado,nota){
+var id=card.getAttribute("data-id");
+cardErr(card,"");
+setBusy(card,true);
+var payload={estado:estado,nota_revision:(estado==="rechazada")?nota:null};
+sb.from("marcas_breaks_justif").update(payload).eq("id",id).select("id,estado").then(function(r){
+if(r.error){ setBusy(card,false); cardErr(card,r.error.message||"No se pudo guardar la decisión."); return; }
+if(!r.data||!r.data.length){ setBusy(card,false); cardErr(card,"No se guardó la decisión. Revisa tu permiso e inténtalo de nuevo."); return; }
+onDecided(card,id);
+}).catch(function(e){ setBusy(card,false); cardErr(card,"Error de red. Inténtalo de nuevo."); });
+}
+
+function onDecided(card,id){
+var inRev=(card.getAttribute("data-mode")==="rev");
+var i;
+if(!inRev){
+for(i=0;i<pendList.length;i++){ if(pendList[i].id===id){ pendList.splice(i,1); break; } }
+if(card.parentNode) card.parentNode.removeChild(card);
+updatePendUI();
+if(!pendList.length) renderPendList();
+}
+if(showRev||inRev) loadRev();
+refreshViews();
+}
+
+function onRevClick(e){
+var b=e.target.closest?e.target.closest("[data-rv]"):null;
+if(!b) return;
+var a=b.getAttribute("data-rv");
+if(a==="toggle"){ toggleRev(); return; }
+var card=b.closest(".rv-card");
+if(!card) return;
+var acts=card.querySelector('[data-box="acts"]');
+var rej=card.querySelector('[data-box="rej"]');
+var inp=card.querySelector(".rv-reject input");
+if(a==="aceptar"){ decide(card,"aceptada",null); }
+else if(a==="noaceptar"){
+if(acts) acts.hidden=true;
+if(rej) rej.hidden=false;
+cardErr(card,"");
+if(inp){ inp.focus(); }
+syncConfirm(card);
+}
+else if(a==="cancelar"){
+if(inp) inp.value="";
+if(rej) rej.hidden=true;
+if(acts) acts.hidden=false;
+cardErr(card,"");
+syncConfirm(card);
+}
+else if(a==="confirmar"){
+var nota=inp?inp.value.trim():"";
+if(nota.length<5){ cardErr(card,"Escribe el motivo (mínimo 5 letras)."); return; }
+decide(card,"rechazada",nota);
+}
+else if(a==="cambiar"){
+b.hidden=true;
+if(acts) acts.hidden=false;
+}
+}
+function onRevInput(e){
+var t=e.target;
+if(t&&t.tagName==="INPUT"&&t.closest(".rv-reject")){ var card=t.closest(".rv-card"); if(card) syncConfirm(card); }
+}
+function onRevKey(e){
+var t=e.target;
+if(e.key==="Enter"&&t&&t.tagName==="INPUT"&&t.closest(".rv-reject")){
+var card=t.closest(".rv-card");
+var btn=card?card.querySelector('[data-rv="confirmar"]'):null;
+if(btn&&!btn.disabled) btn.click();
+}
 }
 
 /* ---------- tabs ---------- */
 function switchTab(tab){
 currentTab=tab;
+var isRev=(tab==="rev");
 document.getElementById("tabDiaBtn").className="tab-btn"+(tab==="dia"?" active":"");
 document.getElementById("tabSemanaBtn").className="tab-btn"+(tab==="semana"?" active":"");
+document.getElementById("tabRevBtn").className="tab-btn"+(isRev?" active":"");
+document.getElementById("controls").style.display=isRev?"none":"flex";
 document.getElementById("dateGroupDia").style.display=(tab==="dia")?"flex":"none";
 document.getElementById("dateGroupSemana").style.display=(tab==="semana")?"flex":"none";
 document.getElementById("contentDia").style.display=(tab==="dia")?"block":"none";
 document.getElementById("contentSemana").style.display=(tab==="semana")?"block":"none";
+document.getElementById("contentRev").style.display=isRev?"block":"none";
 if(tab==="semana"&&!weekLoaded){
 weekLoaded=true;
 selectedWeekAnchor=selectedDay||serverHoy||fallbackTodayLocal();
 document.getElementById("dateSemana").value=selectedWeekAnchor;
 fetchWeek(selectedWeekAnchor);
 }
+if(isRev){
+renderRev();
+if(sb){
+loadPend(function(){ if(currentTab==="rev") renderPendList(); });
+if(showRev) loadRev();
+}
+}
 }
 
 /* ---------- CSV ---------- */
 function csvField(f){
 var s=String(f===null||f===undefined?"":f);
-if(s.indexOf(";")>=0||s.indexOf('"')>=0||s.indexOf("\n")>=0){ s='"'+s.replace(/"/g,'""')+'"'; }
+if(s.indexOf(";")>=0||s.indexOf('"')>=0||s.indexOf("\n")>=0||s.indexOf("\r")>=0){ s='"'+s.replace(/"/g,'""')+'"'; }
 return s;
 }
+// Texto escrito por personas: si empieza con = + - @ el Excel lo tomaria como formula; se le antepone una comilla.
+function csvText(s){
+var t=String(s===null||s===undefined?"":s);
+if(/^[=+\-@\t\r]/.test(t)) t="'"+t;
+return t;
+}
+var JUST_ESTADO={pendiente:"Por revisar",aceptada:"Aceptada",rechazada:"No aceptada"};
+function justFields(j){
+if(!j) return ["","","","","","","",""];
+var hasDecl=!!(j.salida_declarada||j.regreso_declarado);
+return [
+csvText(j.comentario),
+j.salida_declarada?(fmtHM(j.salida_declarada,true)||""):"",
+j.regreso_declarado?(fmtHM(j.regreso_declarado,true)||""):"",
+(hasDecl&&j.minutos_efectivos!==null&&j.minutos_efectivos!==undefined)?j.minutos_efectivos:"",
+JUST_ESTADO[j.estado]||j.estado||"",
+j.revisado_por||"",
+j.revisado_at?fmtTsCsv(j.revisado_at):"",
+csvText(j.nota_revision)
+];
+}
 function exportCSV(){
-var rows=(currentTab==="dia")?dayRows:weekRows;
+if(currentTab==="rev") return;
+var isDay=(currentTab==="dia");
+var rows=isDay?dayRows:weekRows;
+var jmap=buildJustMap(isDay?dayJust:weekJust);
 var term=(searchTerm||"").toLowerCase();
 var filtered=term?rows.filter(function(r){ return String(r.nombre||"").toLowerCase().indexOf(term)>=0; }):rows;
 var lines=[];
-lines.push(["Persona","Correo","Fecha","Espacio","Salida","Entrada","Minutos","Permitido","Estado"].join(";"));
-var i,r,salida,entrada,fields,j;
+lines.push(["Persona","Correo","Fecha","Espacio","Salida","Entrada","Minutos","Permitido","Estado","Justificación","Salida declarada","Regreso declarado","Minutos con lo declarado","Estado justificación","Revisó","Fecha revisión","Nota de revisión"].join(";"));
+var i,r,salida,entrada,fields,j,k,out;
+function pushLine(fl){
+out=[];
+for(j=0;j<fl.length;j++){ out.push(csvField(fl[j])); }
+lines.push(out.join(";"));
+}
+var seen={};
+for(i=0;i<rows.length;i++){ seen[rowKey(rows[i])]=true; }
 for(i=0;i<filtered.length;i++){
 r=filtered[i];
 salida=r.salida_local?fmtTime(r.salida_local):"";
 entrada=r.abierta?"":(r.entrada_local?fmtTime(r.entrada_local):"");
 fields=[r.nombre||"",r.email||"",r.fecha||"",r.espacio_label||r.espacio||"",salida,entrada,(r.minutos!==null&&r.minutos!==undefined?r.minutos:""),(r.permitido_min!==null&&r.permitido_min!==undefined?r.permitido_min:""),estadoOf(r)];
-var out=[];
-for(j=0;j<fields.length;j++){ out.push(csvField(fields[j])); }
-lines.push(out.join(";"));
+pushLine(fields.concat(justFields(jmap[rowKey(r)])));
+}
+// Declaraciones de quien no marco ese espacio: tambien van, con las horas declaradas.
+var extras=[];
+for(k in jmap){
+if(!jmap.hasOwnProperty(k)||seen[k]) continue;
+if(term&&String(jmap[k].nombre||"").toLowerCase().indexOf(term)<0) continue;
+extras.push(jmap[k]);
+}
+extras.sort(function(a,b){
+if(a.fecha!==b.fecha) return String(a.fecha)<String(b.fecha)?-1:1;
+return String(a.nombre||"").localeCompare(String(b.nombre||""))||String(a.espacio).localeCompare(String(b.espacio));
+});
+for(i=0;i<extras.length;i++){
+r=extras[i];
+fields=[r.nombre||"",r.email||"",r.fecha||"",r.espacio_label||r.espacio||"","","","",(r.permitido_min!==null&&r.permitido_min!==undefined?r.permitido_min:""),"No marcó"];
+pushLine(fields.concat(justFields(r)));
 }
 var csvContent="﻿"+lines.join("\r\n");
 var blob=new Blob([csvContent],{type:"text/csv;charset=utf-8;"});
 var url=URL.createObjectURL(blob);
-var nameDate=(currentTab==="dia")?selectedDay:weekRangeOf(selectedWeekAnchor).desde;
+var nameDate=isDay?selectedDay:weekRangeOf(selectedWeekAnchor).desde;
 var a=document.createElement("a");
 a.href=url;
 a.download="breaks-"+nameDate+".csv";
@@ -473,6 +1011,7 @@ function msg(t,cls){ var m=document.getElementById("msg"); if(m){ m.textContent=
 
 function onAuthed(session){
 var email=session&&session.user?String(session.user.email).toLowerCase():"";
+myEmail=email;
 var u=document.getElementById("pgUser"); if(u) u.textContent=email;
 ov.style.display="none";
 var allowed=ALLOWED.indexOf(email)>=0;
@@ -492,9 +1031,28 @@ function onSignedOut(){
 app.style.display="none";
 noAccess.style.display="none";
 ov.style.display="flex";
+// v6: al cerrar sesion se olvida todo lo de la persona anterior (validador, pendientes, revisadas)
+bootstrapped=false; dayLoaded=false; weekLoaded=false;
+VALIDADOR=false; myEmail=""; pendList=[]; pendOk=null; revList=[]; revState="idle"; showRev=false;
+dayRows=[]; dayJust=[]; weekRows=[]; weekJust=[];
+document.getElementById("diaTableWrap").innerHTML='<div class="empty-msg">Cargando…</div>';
+document.getElementById("semanaTableWrap").innerHTML='<div class="empty-msg">Cargando…</div>';
+document.getElementById("rvList").innerHTML='<div class="empty-msg">Cargando…</div>';
+document.getElementById("rvRevList").innerHTML="";
+updatePendUI();
+if(currentTab!=="dia") switchTab("dia");
 }
 
 function bootstrap(){
+// v6: quien puede decidir (solo Andres Lopez) y cuantas justificaciones esperan
+sb.rpc("es_validador_breaks").then(function(r){
+var v=r?r.data:null;
+if(Array.isArray(v)) v=v[0];
+if(r&&r.error) console.warn("es_validador_breaks:",r.error.message);
+VALIDADOR=!!(r&&!r.error&&(v===true||v==="true"||v==="t"));
+if(currentTab==="rev") renderRev();
+}).catch(function(e){ VALIDADOR=false; console.warn("es_validador_breaks:",e); });
+loadPend(function(){ if(currentTab==="rev") renderPendList(); });
 sb.rpc("hora_servidor").then(function(r){
 var hoy=null;
 if(!r.error&&r.data&&r.data.length){ hoy=r.data[0].hoy; }
@@ -536,6 +1094,15 @@ document.addEventListener("keydown",function(e){ if(e.key==="Enter"&&ov.style.di
 function wireControls(){
 document.getElementById("tabDiaBtn").addEventListener("click",function(){ switchTab("dia"); });
 document.getElementById("tabSemanaBtn").addEventListener("click",function(){ switchTab("semana"); });
+document.getElementById("tabRevBtn").addEventListener("click",function(){ switchTab("rev"); });
+
+var box=document.getElementById("sumPorRevisarBox");
+box.addEventListener("click",function(){ switchTab("rev"); });
+box.addEventListener("keydown",function(e){ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); switchTab("rev"); } });
+var rv=document.getElementById("contentRev");
+rv.addEventListener("click",onRevClick);
+rv.addEventListener("input",onRevInput);
+rv.addEventListener("keydown",onRevKey);
 
 document.getElementById("dateDia").addEventListener("change",function(){ selectedDay=this.value; fetchDay(selectedDay); });
 document.getElementById("btnDiaPrev").addEventListener("click",function(){ selectedDay=addDays(selectedDay||fallbackTodayLocal(),-1); document.getElementById("dateDia").value=selectedDay; fetchDay(selectedDay); });
@@ -545,7 +1112,7 @@ document.getElementById("dateSemana").addEventListener("change",function(){ sele
 document.getElementById("btnSemPrev").addEventListener("click",function(){ selectedWeekAnchor=addDays(selectedWeekAnchor||fallbackTodayLocal(),-7); document.getElementById("dateSemana").value=selectedWeekAnchor; fetchWeek(selectedWeekAnchor); });
 document.getElementById("btnSemNext").addEventListener("click",function(){ selectedWeekAnchor=addDays(selectedWeekAnchor||fallbackTodayLocal(),7); document.getElementById("dateSemana").value=selectedWeekAnchor; fetchWeek(selectedWeekAnchor); });
 
-document.getElementById("searchBox").addEventListener("input",function(){ searchTerm=this.value; if(currentTab==="dia") renderDay(); else renderWeek(); });
+document.getElementById("searchBox").addEventListener("input",function(){ searchTerm=this.value; if(currentTab==="dia") renderDay(); else if(currentTab==="semana") renderWeek(); });
 document.getElementById("exportBtn").addEventListener("click",exportCSV);
 }
 
@@ -566,7 +1133,7 @@ else setTimeout(init,60);
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="reporte-breaks.html";
-var PGV_VERSION=5; // v5 - Protect Index: las direcciones internas del sitio pasan a relativas (el sitio ya no depende de como se llame el repo). Las que viajan por correo (recuperar contrasena, fotos de firma, sello de RRHH) quedan absolutas apuntando a protect-index.
+var PGV_VERSION=6; // v6 (19-oct-2026) - justificaciones de olvidos: pestaña Por revisar (Andrés López acepta o no), celdas con estado, cuadro por revisar, CSV con columnas de justificación. // v5 - Protect Index: las direcciones internas del sitio pasan a relativas (el sitio ya no depende de como se llame el repo). Las que viajan por correo (recuperar contrasena, fotos de firma, sello de RRHH) quedan absolutas apuntando a protect-index.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;
