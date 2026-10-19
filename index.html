@@ -159,6 +159,41 @@ body{font-family:var(--font-text);color:var(--ink);background:var(--papel);min-h
 .brk-btn.brk-btn-volver:hover{background:var(--teal-2);}
 .brk-btn:disabled{opacity:.5;cursor:not-allowed;}
 .brk-err{max-width:1080px;font-size:12.5px;color:#c0392b;min-height:16px;margin-top:8px;}
+/* v37 · Mi Jornada: justificar olvidos de marcación (aviso "Justifica", enlace, estado y casilla) */
+.brk-aviso{display:flex;flex-direction:column;gap:8px;margin:0 0 16px;padding:12px 16px;background:#FBF3DC;border:1px solid #D9A520;border-left-width:5px;border-radius:var(--r-md);color:#6b5200;font-size:13px;line-height:1.45;}
+.brk-aviso[hidden]{display:none;}
+.brk-aviso-linea{display:flex;align-items:center;justify-content:space-between;gap:8px 14px;flex-wrap:wrap;}
+.brk-aviso-linea>span{flex:1 1 220px;min-width:0;overflow-wrap:anywhere;}
+.brk-aviso-linea b{font-weight:700;}
+.brk-aviso-btn{font:inherit;font-size:12.5px;font-weight:700;padding:7px 16px;border-radius:var(--r-pill);border:1px solid #D9A520;background:#fff;color:#6b5200;cursor:pointer;flex:none;}
+.brk-aviso-btn:hover{background:#F6E7B8;}
+.brk-link{display:block;width:fit-content;max-width:100%;margin-top:9px;font:inherit;font-size:12.5px;font-weight:600;color:var(--teal-2);background:none;border:none;padding:2px 0;cursor:pointer;text-decoration:underline;text-underline-offset:3px;text-align:left;}
+.brk-link:hover{color:var(--navy);}
+.brk-card.brk-con-caja .brk-acc{display:none;}
+.brk-declarado{margin-top:8px;font-size:12.5px;font-weight:600;color:var(--navy);line-height:1.4;}
+.brk-tag{display:block;width:fit-content;max-width:100%;margin-top:8px;font-size:11.5px;font-weight:600;line-height:1.35;padding:5px 11px;border-radius:var(--r-pill);border:1px solid transparent;overflow-wrap:anywhere;}
+.brk-tag-pend{background:#FBF3DC;border-color:#D9A520;color:#6b5200;}
+.brk-tag-ok{background:var(--mint-soft);border-color:var(--teal);color:var(--teal-2);}
+.brk-tag-no{background:#FBE9E7;border-color:#D5594F;color:#D5594F;border-radius:var(--r-sm);font-weight:700;}
+.brk-coment{margin-top:6px;font-size:12px;font-style:italic;color:var(--muted);line-height:1.4;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}
+.brk-caja{display:flex;flex-direction:column;gap:10px;margin-top:10px;padding:14px;background:var(--surface);border:1px solid #D9A520;border-radius:var(--r-md);}
+.brk-caja-tit{margin:0;font-size:13px;font-weight:600;color:var(--navy);line-height:1.45;}
+.brk-caja-horas{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:10px;}
+.brk-campo{display:flex;flex-direction:column;gap:4px;min-width:0;}
+.brk-campo label{font-size:11.5px;font-weight:600;color:var(--muted);}
+.brk-campo input,.brk-campo textarea{width:100%;min-width:0;font:inherit;font-size:14px;color:var(--ink);background:#fff;padding:9px 10px;border:1px solid var(--hairline);border-radius:var(--r-sm);}
+.brk-campo textarea{resize:vertical;min-height:72px;line-height:1.4;}
+.brk-campo input:focus,.brk-campo textarea:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(34,154,130,.15);}
+.brk-contador{align-self:flex-end;font-family:var(--font-mono);font-size:11.5px;color:var(--muted);}
+.brk-contador.brk-ok{color:var(--teal-2);}
+.brk-nota{margin:0;font-size:11.5px;color:var(--muted);line-height:1.45;}
+.brk-caja-msg{font-size:12.5px;font-weight:600;color:#c0392b;}
+.brk-caja-msg:empty{display:none;}
+.brk-caja-acc{display:flex;align-items:center;justify-content:space-between;gap:8px 12px;flex-wrap:wrap;}
+.brk-caja-acc .brk-btn{margin-top:0;padding:11px 16px;}
+.brk-ahora-no{font:inherit;font-size:13px;font-weight:600;color:var(--muted);background:none;border:none;padding:8px 4px;cursor:pointer;}
+.brk-ahora-no:hover{color:var(--navy);text-decoration:underline;}
+@media (max-width:480px){.brk-caja-horas{grid-template-columns:1fr;}}
 
 /* ============================================================
    MURO DE NOVEDADES (v15) · estandar visual GABI/ProtectGo
@@ -543,6 +578,7 @@ body{font-family:var(--font-text);color:var(--ink);background:var(--papel);min-h
 <div class="brk-clock" id="brkClock">--:--:-- --</div>
 </div>
 <p class="brk-sub">Marca antes de salir y apenas regreses.</p>
+<div class="brk-aviso" id="brkAviso" hidden></div>
 <div class="brk-grid">
 <div class="brk-card" id="brk-card-break_am"><div id="brk-body-break_am">
 <div class="brk-nombre">Break mañana</div>
@@ -1010,6 +1046,10 @@ window.pgOnSesion(function(s){
 "use strict";
 // Panel "Mi Jornada": marcacion de breaks y almuerzo. Cliente propio de Supabase,
 // mismo patron que los otros scripts de este archivo (misma sesion por dominio).
+// v37 (19-oct-2026): justificar olvidos de marcacion ("Olvidé marcar", casilla que se abre
+// sola pasado 5 min, aviso "Justifica"). La hora que marca el servidor NUNCA se cambia: la
+// justificacion es una capa aparte (lee mis_justif_breaks_hoy, escribe marcas_breaks_justif)
+// y la valida Andres Lopez en el Reporte de Breaks. Si esa capa falla, marcar sigue igual.
 var SUPABASE_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var SUPABASE_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var sb=null;
@@ -1019,12 +1059,19 @@ var HOY=null;       // fecha (YYYY-MM-DD) segun el servidor, para el update de "
 var HORA_OK=false;  // false hasta que hora_servidor responda bien; con false los botones quedan deshabilitados.
 var STATE={};       // espacio -> fila de mis_marcas_hoy (o undefined si no ha marcado hoy)
 var TICK=null;
+var JUST={};        // v37: espacio -> la justificacion de hoy que manda (la viva: pendiente/aceptada; si no, la ultima rechazada)
+var CAJA=null;      // v37: casilla abierta {espacio, origen, conMarca, el}. Solo una a la vez.
+var CARGADO=false;  // v37: true tras la primera carga buena (antes el reloj no re-pinta tarjetas)
+var ENVIANDO=false; // v37: una justificacion en camino
 
+// Ventanas: las mismas de portal.v_marcas_breaks y portal.v_marcas_breaks_justif (si cambian, se cambian en los tres).
 var ESPACIOS={
-break_am:{nombre:"Break mañana",ventana:"9:30 – 10:30 a.m.",permitido:20},
-almuerzo:{nombre:"Almuerzo",ventana:"12:30 – 2:30 p.m.",permitido:60},
-break_pm:{nombre:"Break tarde",ventana:"4:20 – 4:50 p.m.",permitido:20}
+break_am:{nombre:"Break mañana",ventana:"9:30 – 10:30 a.m.",permitido:20,ini:"09:30",fin:"10:30"},
+almuerzo:{nombre:"Almuerzo",ventana:"12:30 – 2:30 p.m.",permitido:60,ini:"12:30",fin:"14:30"},
+break_pm:{nombre:"Break tarde",ventana:"4:20 – 4:50 p.m.",permitido:20,ini:"16:20",fin:"16:50"}
 };
+var TOLERANCIA_AUTO_MIN=5;  // la casilla se abre sola (y sale el aviso) solo si se paso MAS de esto
+var MIN_COMENTARIO=15;      // el mismo minimo de la base (mbj_comentario_largo)
 
 var panel=document.getElementById("brkPanel");
 
@@ -1073,25 +1120,96 @@ if(clock) clock.textContent = msg || "No se pudo confirmar la hora del servidor 
 function cardBody(espacio){ return document.getElementById("brk-body-"+espacio); }
 function cardEl(espacio){ return document.getElementById("brk-card-"+espacio); }
 
+// ---------- v37 · ayudas de la justificacion ----------
+// Todo texto escrito por personas (comentario, motivo de rechazo) pasa por esc() o textContent.
+function esc(s){ return String(s==null?"":s).replace(/[&<>"']/g,function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]; }); }
+// "2026-10-19T12:35:08" o "12:35:00" -> "12:35" (partiendo el texto, como fmtHoraLocalStr). Sin dato -> "".
+function hhmm(str){
+if(!str) return "";
+var t=String(str); t = t.indexOf("T")>=0 ? t.split("T")[1] : t;
+var p=t.split(":"), h=parseInt(p[0],10), m=parseInt(p[1],10);
+if(isNaN(h)||isNaN(m)||h<0||h>23||m<0||m>59) return "";
+return pad2(h)+":"+pad2(m);
+}
+function ahoraHHMM(){ var d=serverNow(); return pad2(d.getHours())+":"+pad2(d.getMinutes()); }
+function minTxt(n){ return (n===null||n===undefined||n==="") ? "—" : String(n); }
+function esViva(j){ return !!j && (j.estado==="pendiente"||j.estado==="aceptada"); }
+// Minutos por encima de lo permitido de una marca CERRADA y excedida (0 si no aplica).
+function exceso(espacio){
+var row=STATE[espacio];
+if(!row||row.abierta||!row.excedido) return 0;
+var permitidoMin = row.permitido_min!=null ? row.permitido_min : ESPACIOS[espacio].permitido;
+return Math.max(0,(row.minutos||0)-permitidoMin);
+}
+// Se paso MAS de la tolerancia y no hay justificacion viva: aviso "Justifica" y casilla automatica.
+function pideJustificar(espacio){ return exceso(espacio)>TOLERANCIA_AUTO_MIN && !esViva(JUST[espacio]); }
+// La casilla solo se abre sin marca abierta (primero "Ya volví") y sin justificacion viva.
+function puedeJustificar(espacio){ var row=STATE[espacio]; return !(row&&row.abierta) && !esViva(JUST[espacio]); }
+// "Olvidé marcar" aparece desde que abre la ventana de ese espacio (hora del servidor).
+function ventanaAbierta(espacio){ return HORA_OK && ahoraHHMM()>=ESPACIOS[espacio].ini; }
+// mis_justif_breaks_hoy viene por created_at: manda la viva; si no hay, la ultima rechazada.
+function armarJust(rows){
+var j={};
+(rows||[]).forEach(function(x){
+if(!x||!ESPACIOS[x.espacio]) return;
+if(esViva(x)) j[x.espacio]=x;
+else if(x.estado==="rechazada" && !esViva(j[x.espacio])) j[x.espacio]=x;
+});
+return j;
+}
+function tagHtml(j){
+if(!j) return "";
+if(j.estado==="pendiente") return '<span class="brk-tag brk-tag-pend">📝 Enviada · por revisar</span>';
+if(j.estado==="aceptada") return '<span class="brk-tag brk-tag-ok">✓ Aceptada por Andrés López</span>';
+if(j.estado==="rechazada") return '<span class="brk-tag brk-tag-no">✗ No aceptada: '+esc(j.nota_revision||"—")+'</span>';
+return "";
+}
+function comentHtml(j){
+if(!j||!j.comentario) return "";
+return '<div class="brk-coment" title="'+esc(j.comentario)+'">“'+esc(j.comentario)+'”</div>';
+}
+function linkHtml(espacio,txt){
+return '<button type="button" class="brk-link brk-acc" data-brk-act="justificar" data-brk-espacio="'+espacio+'">'+txt+'</button>';
+}
+
 function renderCard(espacio){
 var cfg=ESPACIOS[espacio];
 var row=STATE[espacio];
+var j=JUST[espacio];
 var body=cardBody(espacio);
 var card=cardEl(espacio);
 if(!body||!card) return;
 var metaHtml='<div class="brk-meta">'+cfg.ventana+' · '+cfg.permitido+' min</div>';
+var olvido="0";
 
 if(!row){
-card.className="brk-card";
+if(esViva(j)){
+// No marco, pero declaro sus horas: sin "Salir" (ese espacio ya quedo cubierto).
+card.className="brk-card brk-cerrada";
 body.innerHTML =
 '<div class="brk-nombre">'+cfg.nombre+'</div>'+
 metaHtml+
-'<button class="brk-btn" data-brk-act="salir" data-brk-espacio="'+espacio+'"'+(HORA_OK?'':' disabled')+'>Salir</button>';
+'<div class="brk-declarado">No marcaste · declaraste '+esc(fmtHoraLocalStr(j.salida_efectiva_local))+' &#8594; '+esc(fmtHoraLocalStr(j.entrada_efectiva_local))+' · '+esc(minTxt(j.minutos_efectivos))+' min</div>'+
+tagHtml(j)+comentHtml(j);
+} else {
+card.className="brk-card";
+olvido = ventanaAbierta(espacio) ? "1" : "0";
+var rech = !!j && j.estado==="rechazada";
+body.innerHTML =
+'<div class="brk-nombre">'+cfg.nombre+'</div>'+
+metaHtml+
+'<button class="brk-btn brk-acc" data-brk-act="salir" data-brk-espacio="'+espacio+'"'+(HORA_OK?'':' disabled')+'>Salir</button>'+
+(rech ? tagHtml(j)+comentHtml(j) : '')+
+(olvido==="1" ? linkHtml(espacio,"Olvidé marcar") : '');
+}
+card.setAttribute("data-brk-olvido",olvido);
+fijarCaja(espacio);
 return;
 }
 
 if(row.abierta){
 card.className="brk-card brk-afuera";
+card.setAttribute("data-brk-olvido",olvido);
 body.innerHTML =
 '<div class="brk-nombre">'+cfg.nombre+'</div>'+
 metaHtml+
@@ -1100,11 +1218,13 @@ metaHtml+
 '<div class="brk-over" id="brk-over-'+espacio+'"></div>'+
 '<button class="brk-btn brk-btn-volver" data-brk-act="volver" data-brk-espacio="'+espacio+'"'+(HORA_OK?'':' disabled')+'>Ya volví</button>';
 tickOne(espacio);
+fijarCaja(espacio);
 return;
 }
 
 // cerrada: ya marco salida y entrada
 card.className="brk-card brk-cerrada";
+card.setAttribute("data-brk-olvido",olvido);
 var chipCls="ok", chipTxt="A tiempo";
 if(row.en_ventana===false){ chipCls="fuera"; chipTxt="Fuera de horario"; }
 else if(row.excedido){
@@ -1112,14 +1232,180 @@ var permitidoMin = row.permitido_min!=null ? row.permitido_min : cfg.permitido;
 var pasado = Math.max(0, (row.minutos||0) - permitidoMin);
 chipCls="late"; chipTxt="Se pasó "+pasado+" min";
 }
+var extra="";
+if(esViva(j)){
+if(j.salida_declarada!=null || j.regreso_declarado!=null)
+extra+='<div class="brk-declarado">Declaraste '+esc(fmtHoraLocalStr(j.salida_efectiva_local))+' &#8594; '+esc(fmtHoraLocalStr(j.entrada_efectiva_local))+' · '+esc(minTxt(j.minutos_efectivos))+' min</div>';
+extra+=tagHtml(j)+comentHtml(j);
+} else {
+var rechazada = !!j && j.estado==="rechazada";
+if(rechazada) extra+=tagHtml(j)+comentHtml(j);
+if(chipCls!=="ok" || rechazada) extra+=linkHtml(espacio,"¿Se te olvidó marcar? Justificar");
+}
 body.innerHTML =
 '<div class="brk-nombre">'+cfg.nombre+'</div>'+
 metaHtml+
 '<div class="brk-summary">'+fmtHoraLocalStr(row.salida_local)+' &#8594; '+fmtHoraLocalStr(row.entrada_local)+' · '+(row.minutos!=null?row.minutos:"--")+' min</div>'+
-'<span class="brk-chip '+chipCls+'">'+chipTxt+'</span>';
+'<span class="brk-chip '+chipCls+'">'+chipTxt+'</span>'+
+extra;
+fijarCaja(espacio);
 }
 
 function renderAll(){ Object.keys(ESPACIOS).forEach(function(e){ renderCard(e); }); }
+
+// v37 · Aviso "Justifica": una linea por break cerrado que se paso MAS de 5 min y no tiene justificacion viva.
+function pintarAviso(){
+var box=document.getElementById("brkAviso"); if(!box) return;
+var lineas=Object.keys(ESPACIOS).filter(function(e){ return pideJustificar(e); });
+if(!lineas.length){ box.innerHTML=""; box.hidden=true; return; }
+box.innerHTML = lineas.map(function(e){
+return '<div class="brk-aviso-linea"><span><b>Te pasaste '+exceso(e)+' min en el '+ESPACIOS[e].nombre+'.</b> Si se te olvidó marcar, justifícalo hoy.</span>'+
+'<button type="button" class="brk-aviso-btn" data-brk-act="justificar" data-brk-espacio="'+e+'">Justificar</button></div>';
+}).join("");
+box.hidden=false;
+}
+
+// ---------- v37 · la casilla (dentro de la tarjeta, nunca un modal) ----------
+function construirCaja(espacio,origen){
+var row=STATE[espacio];
+var tit = !row ? "¿Se te olvidó marcar? Pon a qué hora saliste y a qué hora volviste."
+: (origen==="auto" ? "Te pasaste "+exceso(espacio)+" min. Si se te olvidó marcar el regreso, pon a qué hora volviste de verdad."
+: "¿Se te olvidó marcar? Corrige la hora que no cuadra y cuéntanos qué pasó.");
+var box=document.createElement("div");
+box.className="brk-caja";
+box.setAttribute("role","group");
+box.setAttribute("aria-label","Justificar "+ESPACIOS[espacio].nombre);
+box.innerHTML =
+'<p class="brk-caja-tit"></p>'+
+'<div class="brk-caja-horas">'+
+'<div class="brk-campo"><label for="brk-sal-'+espacio+'">Salí a las</label><input type="time" step="60" id="brk-sal-'+espacio+'" data-brk-campo="salida"></div>'+
+'<div class="brk-campo"><label for="brk-reg-'+espacio+'">Volví a las</label><input type="time" step="60" id="brk-reg-'+espacio+'" data-brk-campo="regreso"></div>'+
+'</div>'+
+'<div class="brk-campo"><label for="brk-com-'+espacio+'">¿Qué pasó?</label>'+
+'<textarea id="brk-com-'+espacio+'" data-brk-campo="comentario" maxlength="500" rows="3" placeholder="Ej.: Estaba en una llamada con un cliente y marqué al colgar."></textarea>'+
+'<div class="brk-contador" aria-live="polite"></div></div>'+
+'<p class="brk-nota">La hora que marcó el sistema no se borra. Andrés López revisa tu justificación. Solo se puede hoy.</p>'+
+'<div class="brk-caja-msg" role="alert"></div>'+
+'<div class="brk-caja-acc">'+
+'<button type="button" class="brk-btn" data-brk-act="enviar-justif" data-brk-espacio="'+espacio+'">Enviar justificación</button>'+
+'<button type="button" class="brk-ahora-no" data-brk-act="ahora-no" data-brk-espacio="'+espacio+'">Ahora no</button>'+
+'</div>';
+box.querySelector(".brk-caja-tit").textContent=tit;
+if(row){ // con marca: vienen llenas con lo que marco el sistema; sin marca: vacias
+box.querySelector('[data-brk-campo="salida"]').value=hhmm(row.salida_local);
+box.querySelector('[data-brk-campo="regreso"]').value=hhmm(row.entrada_local);
+}
+var ta=box.querySelector('[data-brk-campo="comentario"]');
+var cont=box.querySelector(".brk-contador");
+function contar(){
+var n=Array.from(String(ta.value||"").trim()).length;
+cont.textContent=n+" / mín "+MIN_COMENTARIO;
+cont.classList.toggle("brk-ok", n>=MIN_COMENTARIO);
+}
+ta.addEventListener("input",contar); contar();
+// Al corregir cualquier campo, el aviso de error viejo se quita (vuelve a validarse al enviar).
+box.addEventListener("input",function(){ var m=box.querySelector(".brk-caja-msg"); if(m&&!ENVIANDO) m.textContent=""; });
+return box;
+}
+
+// Pone (o vuelve a poner, tras re-pintar la tarjeta) la casilla abierta dentro de su tarjeta.
+function fijarCaja(espacio){
+if(!CAJA||CAJA.espacio!==espacio) return;
+if(!puedeJustificar(espacio) || (!!STATE[espacio])!==CAJA.conMarca){ cerrarCaja(); return; }
+var body=cardBody(espacio), card=cardEl(espacio);
+if(!body||!card){ cerrarCaja(); return; }
+card.classList.add("brk-con-caja");
+if(CAJA.el.parentNode!==body) body.appendChild(CAJA.el);
+}
+
+function cerrarCaja(){
+if(!CAJA) return;
+var c=CAJA; CAJA=null;
+if(c.el&&c.el.parentNode) c.el.parentNode.removeChild(c.el);
+var card=cardEl(c.espacio); if(card) card.classList.remove("brk-con-caja");
+}
+
+function enfocarCaja(){
+if(!CAJA||!CAJA.el) return;
+var el=CAJA.el;
+var f = !CAJA.conMarca ? el.querySelector('[data-brk-campo="salida"]')
+: (CAJA.origen==="auto" ? el.querySelector('[data-brk-campo="regreso"]') : el.querySelector('[data-brk-campo="comentario"]'));
+try{ el.scrollIntoView({block:"nearest"}); }catch(e){}
+try{ if(f) f.focus({preventScroll:true}); }catch(e){}
+}
+
+function abrirCaja(espacio,origen){
+if(!ESPACIOS[espacio]||!HORA_OK||!CARGADO) return;
+if(!puedeJustificar(espacio)) return;
+if(CAJA&&CAJA.espacio===espacio){ enfocarCaja(); return; }
+cerrarCaja();
+CAJA={espacio:espacio, origen:(origen==="auto"?"auto":"boton"), conMarca:!!STATE[espacio], el:null};
+CAJA.el=construirCaja(espacio,CAJA.origen);
+fijarCaja(espacio);
+enfocarCaja();
+}
+
+function msgCaja(caja,t){ if(!caja||!caja.el) return; var m=caja.el.querySelector(".brk-caja-msg"); if(m) m.textContent=t||""; }
+
+// Mismos mensajes y mismo orden que la guardia de la base (marcas_breaks_justif_guardia).
+function validarCaja(espacio,s,r,c){
+var row=STATE[espacio];
+if(Array.from(c).length<MIN_COMENTARIO) return "Cuéntanos qué pasó (mínimo 15 letras).";
+if(!row && (!s||!r)) return "Pon a qué hora saliste y a qué hora volviste.";
+var ahora=ahoraHHMM();
+if((s&&s>ahora)||(r&&r>ahora)) return "La hora no puede ser más tarde que la hora actual.";
+// Lo que coincide con el sistema (al minuto) no es correccion; el orden se revisa solo si declaro alguna hora.
+var sSis=row?hhmm(row.salida_local):"", rSis=row?hhmm(row.entrada_local):"";
+var sDec=(s&&s!==sSis)?s:"", rDec=(r&&r!==rSis)?r:"";
+if(sDec||rDec){
+var sEf=sDec||sSis, rEf=rDec||rSis;
+if(sEf&&rEf&&rEf<=sEf) return "La hora de regreso tiene que ser después de la de salida.";
+}
+return "";
+}
+
+function enviarJustif(espacio){
+var caja=CAJA;
+if(!caja||caja.espacio!==espacio||ENVIANDO) return;
+var el=caja.el;
+var s=hhmm(el.querySelector('[data-brk-campo="salida"]').value);
+var r=hhmm(el.querySelector('[data-brk-campo="regreso"]').value);
+var c=String(el.querySelector('[data-brk-campo="comentario"]').value||"").trim();
+if(!HORA_OK||!HOY){ msgCaja(caja,"No se pudo confirmar la hora del servidor — recarga la página"); return; }
+var m=validarCaja(espacio,s,r,c);
+if(m){ msgCaja(caja,m); return; }
+msgCaja(caja,"");
+var btn=el.querySelector('[data-brk-act="enviar-justif"]');
+ENVIANDO=true; if(btn){ btn.disabled=true; btn.textContent="Enviando…"; }
+function soltar(){ ENVIANDO=false; if(btn){ btn.disabled=false; btn.textContent="Enviar justificación"; } }
+// Antes de enviar se vuelve a pedir la hora: las justificaciones son del mismo dia (la base igual lo exige).
+Promise.resolve(sb.rpc("hora_servidor")).then(function(h){
+var fila=(h&&!h.error&&h.data&&h.data[0])?h.data[0]:null;
+if(fila){
+var t=Date.parse(fila.ahora); if(!isNaN(t)) OFFSET=t-Date.now();
+if(fila.hoy && fila.hoy!==HOY) return "dia";
+}
+return sb.from("marcas_breaks_justif").insert({fecha:HOY, espacio:espacio, salida_declarada:s||null,
+regreso_declarado:r||null, comentario:c, origen:caja.origen}).select("id");
+}).then(function(res){
+soltar();
+if(res==="dia"){
+var aviso="Se cerró el día: las justificaciones son del mismo día.";
+msgCaja(caja,aviso);
+if(CAJA===caja) cerrarCaja();
+errRow(aviso);
+cargarHora(function(ok){ if(ok) cargarTodo(function(){ errRow(aviso); }); else renderAll(); });
+return;
+}
+if(!res||res.error){
+var e=res&&res.error;
+msgCaja(caja,(e&&e.code==="23505") ? "Ya justificaste este break hoy." : ((e&&e.message)||"No se pudo enviar la justificación."));
+return;
+}
+if(CAJA===caja) cerrarCaja();
+cargarTodo();
+}).catch(function(){ soltar(); msgCaja(caja,"No se pudo enviar la justificación. Revisa tu conexión e intenta de nuevo."); });
+}
 
 // Contador en vivo: usa "salida" (timestamptz con zona, Date.parse) contra Date.now()+OFFSET.
 // Si el RPC no trajera "salida" (solo salida_local), se arma el timestamp asumiendo -05:00 (Bogota, sin DST).
@@ -1145,10 +1431,21 @@ if(overEl) overEl.textContent = "";
 }
 }
 
+// v37: cuando abre la ventana de un espacio sin marca, aparece "Olvidé marcar" sin recargar.
+function revisarVentanas(){
+if(!CARGADO) return;
+Object.keys(ESPACIOS).forEach(function(e){
+if(STATE[e]||esViva(JUST[e])) return;
+var c=cardEl(e); if(!c) return;
+if(c.getAttribute("data-brk-olvido")!==(ventanaAbierta(e)?"1":"0")) renderCard(e);
+});
+}
+
 function tickAll(){
 var clock=document.getElementById("brkClock");
 if(HORA_OK && clock) clock.textContent = fmtClock(serverNow());
 Object.keys(ESPACIOS).forEach(function(e){ tickOne(e); });
+revisarVentanas();
 }
 
 function cargarHora(cb){
@@ -1162,13 +1459,28 @@ if(cb) cb(true);
 });
 }
 
-function cargarMarcas(){
-sb.rpc("mis_marcas_hoy").then(function(r){
-if(r.error){ errRow("No se pudo cargar el estado de hoy: "+r.error.message); return; }
+// v37: marcas + justificaciones de hoy a la vez. FAIL-OPEN: si mis_justif_breaks_hoy falla
+// (o la base todavia no la tiene), se sigue sin la capa de justificacion y marcar funciona igual.
+function cargarTodo(cb){
+var pJust;
+try{
+pJust=Promise.resolve(sb.rpc("mis_justif_breaks_hoy")).then(function(r){
+if(!r||r.error){ try{ console.warn("[mi jornada] sin justificaciones:", r&&r.error&&r.error.message); }catch(e){} return null; }
+return r.data||[];
+},function(e){ try{ console.warn("[mi jornada] sin justificaciones:", e); }catch(e2){} return null; });
+}catch(e){ try{ console.warn("[mi jornada] sin justificaciones:", e); }catch(e2){} pJust=Promise.resolve(null); }
+var pMarcas=Promise.resolve(sb.rpc("mis_marcas_hoy")).then(null,function(e){ return {error:{message:(e&&e.message)||"sin conexión"}}; });
+Promise.all([pMarcas,pJust]).then(function(rr){
+var r=rr[0];
+if(!r||r.error){ errRow("No se pudo cargar el estado de hoy: "+((r&&r.error&&r.error.message)||"sin respuesta")); if(cb) cb(false); return; }
 STATE={};
 (r.data||[]).forEach(function(row){ STATE[row.espacio]=row; });
+JUST = rr[1] ? armarJust(rr[1]) : {};
+CARGADO=true;
 errRow("");
 renderAll();
+pintarAviso();
+if(cb) cb(true);
 });
 }
 
@@ -1179,7 +1491,7 @@ if(r.error){
 if(r.error.code==="23505") errRow("Ya marcaste este espacio hoy");
 else errRow(r.error.message||"No se pudo marcar la salida");
 } else { errRow(""); }
-cargarMarcas();
+cargarTodo();
 });
 }
 
@@ -1187,9 +1499,10 @@ function marcarEntrada(espacio){
 if(!HORA_OK){ errRow("No se pudo confirmar la hora del servidor — recarga la página"); return; }
 if(!HOY){ errRow("No se pudo confirmar la fecha del servidor — recarga la página"); return; }
 sb.from("marcas_breaks").update({entrada:null}).eq("espacio",espacio).eq("fecha",HOY).is("entrada",null).then(function(r){
-if(r.error) errRow(r.error.message||"No se pudo marcar el regreso");
-else errRow("");
-cargarMarcas();
+if(r.error){ errRow(r.error.message||"No se pudo marcar el regreso"); cargarTodo(); return; }
+errRow("");
+// v37: si al volver se paso MAS de 5 min y no hay justificacion viva, la casilla se abre sola.
+cargarTodo(function(ok){ if(ok && pideJustificar(espacio)) abrirCaja(espacio,"auto"); });
 });
 }
 
@@ -1199,12 +1512,15 @@ var espacio=b.getAttribute("data-brk-espacio");
 var act=b.getAttribute("data-brk-act");
 if(act==="salir") marcarSalida(espacio);
 else if(act==="volver") marcarEntrada(espacio);
+else if(act==="justificar") abrirCaja(espacio,"boton");
+else if(act==="enviar-justif") enviarJustif(espacio);
+else if(act==="ahora-no") cerrarCaja();
 });
 
 function iniciarCarga(){
 cargarHora(function(ok){
 if(ok){
-cargarMarcas();
+cargarTodo();
 tickAll();
 if(!TICK) TICK=setInterval(tickAll,1000);
 } else {
@@ -1224,7 +1540,7 @@ function onAuthed(email){
 if(!marca(email)){ onSignedOut(); return; }
 setPanelVisible(true); iniciarCarga();
 }
-function onSignedOut(){ setPanelVisible(false); if(TICK){ clearInterval(TICK); TICK=null; } }
+function onSignedOut(){ setPanelVisible(false); if(TICK){ clearInterval(TICK); TICK=null; } cerrarCaja(); CARGADO=false; }
 
 // v24: cliente compartido y un solo aviso de sesión (antes hora_servidor y
 // mis_marcas_hoy se pedían dos veces por cada apertura del portal).
@@ -2687,7 +3003,7 @@ document.addEventListener("visibilitychange",function(){
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="index.html";
-var PGV_VERSION=36; // v36 (14-oct-2026) - tarjeta nueva Propuesta Amazon Relay (amazon-propuesta.html), visible por pantalla_acceso amazon_propuesta (paquete amazon_propuesta: Valentina Londoño, Karen Dayanna Jaramillo, amazonaud@ y sales@). Nada más cambia. // v35 (13-oct-2026) - la tarjeta GABI 360 pasa a GABI Liquidez (gabi-liquidez.html, dentro del portal, misma pestaña); Liquidez semanal y GABI · Mi panel también apuntan ahí (en widgets_registro quedan apagadas para no repetir la tarjeta). La app de Vercel queda como histórico por enlace directo. // v34 - 13-oct-2026 el anillito de cancelaciones del saludo le sale a TODOS los que venden: con base (5+ vencidas) "llegan a renovar" como v33; sin base y con caídas "siguen vivas" (% de sus pólizas de 12 meses que no se cayeron); sin ninguna cancelada un chulito "sin cancelaciones". Lee portal.mi_cartera_saludo() (solo la fila de la persona; antes bajaba la vista de todo el equipo). // v33 - 9-oct-2026 el índice pasa a "llegan a renovación" (meta 80 %) y se ve como anillito arriba a la derecha del anillo de la meta; la pastilla de la fila se quita. Toca el anillito y abre Mi proceso. // v32 - 8-oct-2026 la pastilla de cancelaciones del saludo también sale en "ver como" (lee la persona del saludo, no mi_persona()). // v31 - 8-oct-2026 CANCELACIONES EN EL SALUDO: una pastilla más al final de la fila Racha · a cotizar · llamadas, mismo estilo (● 8 % cancelaciones · 1 de 13), solo asesores con 5+ liabilities; lee v_cartera_indice_visible + mi_persona(); no toca mi_hero ni la fila de cifras, la onda o el anillo. // v30 - 6-oct-2026 CARGA INMEDIATA: el saludo sale de portal.rapido('mi_hero') (cache por persona, ~10 ms) y se repinta solo si portal.refrescar trae algo mas nuevo (mas de 5 min); 'ver como' sigue en vivo. pg-sombra y pg-bonos se cargan en el head (antes los inyectaba pg-novedades despues de DOMContentLoaded) y arrancan con la sesion del portal. Montado encima de la v29 (cartera por persona de Renovaciones, commit 76170db), que queda intacta. | v29 - 6-oct-2026: el saludo de Renovaciones lee la cartera que le cuenta a la persona (nivel persona en v_renov_cartera_graficas_visible, via mi_persona) en vez de solo el area KAREN: a Karen le entra Retencion (sep y oct) y toda la cartera que la regla le asigna. Si no resuelve la persona, cae al area KAREN como antes. Cero cambios en la base. | v28 - 6-oct-2026: EL SALUDO DE RENOVACIONES. Karen Suaza (y quien tenga Renovaciones como herramienta principal) ve el saludo grande con su foto dentro del anillo, como direccion, pero con su cartera: renovado del mes, lo que vence, en juego, vencidas sin renovar, el % retenido contra el estandar del area (70 %, sale de estandar_pct), las dos curvas del año (vence punteada, quedo menta) y la linea "faltan $X para el 70 %". Mismos datos de renovaciones.html (v_renov_cartera_graficas_visible, nivel area KAREN), guion cuando faltan montos. Cero cambios en la base. La foto de Andres (sales@) entra por portal.fotos_personas. | v27 - 6-oct-2026: tarjeta nueva Guidelines MGA (guidelines.html), visible por pantalla_acceso guidelines_mga (todas las areas internas; sin externo ni cliente). De los externos, solo quoteautocomercial@gmail.com ve la tarjeta (candado EXTERNOS). | v26 - LA META CON CARA: en el saludo, quien tiene meta (asesor) o ve la del equipo (direccion) ve su foto DENTRO de un anillo grande (184 px) que se llena con su % de la meta, mint si va al ritmo del mes y ambar #D9A520 si va detras, con un comentario corto debajo (ritmo = meta x habiles corridos / habiles del mes, el mismo de la onda). La foto de la izquierda se quita para no repetirla. Y el muelle de abajo a la derecha (pg-sombra.js v2, lo carga pg-novedades.js v4.6): la bolita de la meta con el numero de la meta en miles adentro, roja sin ventas, ambar detras del ritmo, mint al ritmo; y pegada arriba la barrita con las caritas del Top fee y el Top premium, que los 3 primeros dias habiles del mes muestra el mes cerrado y despues el mes en curso. | v25 - ARRANQUE RAPIDO Y CASILLAS CON VOLUMEN. (1) Un solo cliente de Supabase y un solo aviso de sesion para toda la pagina (pgSB / pgOnSesion): antes habia seis clientes y cada consulta de arranque se hacia dos veces (mis_pantallas, widgets_registro, hora_servidor, mis_marcas_hoy, tareas_kam, novedades_muro). (2) Cero relojes: se quitaron los setTimeout de 60/90/150/220/400/1200 ms y el de 800 ms antes de acomodar las tarjetas; el acomodo arranca en cuanto contestan puertas + orden (Promise.all), no cuando lo dice un reloj. (3) La cuadricula arranca tapada (.pg-cargando) y se destapa UNA vez ya acomodada, fail-open a los 2,5 s: se acabo el parpadeo del orden viejo al nuevo. (4) El saludo oscuro se pinta de inmediato con el nombre del correo y la fecha (sin cifras) y mi_hero lo completa cuando llega. (5) widgets_registro se lee una vez y sirve a mantenimiento y a areas. (6) Fuentes por <link> con preconnect (no @import), preconnect a Supabase y al CDN, preload de supabase-js. (7) Las herramientas de los grupos por area dejan de ser pastillas: casillas con volumen (min 118 px), icono propio y SOLO el nombre, tres por fila y dos en el telefono. La principal y las de apoyo quedan igual. Del lado de la base, en la misma entrega: indice de expresion en bos_registros para es_venta_nueva (mi_hero 5,2 s -> 0,6 s). Se monto encima de la v24 (Firmas Renewals), que queda intacta. // v24 - 1-oct-2026: tarjeta nueva Firmas · Renewals (generador-firmas-renewal.html), visible por pantalla_acceso firmas_renewal (Karen Suaza, renewal@ y dirección). // v23 - tarjeta nueva: Kit de Referidos (kit-referidos.html), visible por pantalla_acceso kit_referidos. // v22 - Protect Index: las direcciones internas del sitio pasan a relativas (el sitio ya no depende de como se llame el repo). Las que viajan por correo (recuperar contrasena, fotos de firma, sello de RRHH) quedan absolutas apuntando a protect-index. // v21 - Amazon Relay entra al portal: la tarjeta apunta a amazon-relay/ (ruta relativa, mismo sitio) en vez del repo aparte de GitHub. El archivo llego con su historia via git subtree, identico al original (sha256 971d0582...b33a). Falta que widgets_registro deje de mandar la URL absoluta de ese widget. // v20 - el hero muestra la combinada (premium + fee x10) con su desglose; antes sumaba premium + fee y mostraba menos de lo que la persona lleva. La onda del mes quedo en la misma combinada y leyendo de bos_v, asi termina exactamente en el numero grande. El desglose lo ve tambien la direccion (hero de equipo) y dice lo que el fee APORTA (fee x10 ya multiplicado), no el fee suelto: las dos cifras de la linea chica suman exacto el numero grande. // v19 - El portal con relieve y el portal de otra persona: saludo por rol (mi_hero: quien tiene meta ve la suya, direccion y el lider ven la del equipo, el resto su nombre y su herramienta), onda del mes, una tarjeta principal que manda, novedades compactas y las herramientas agrupadas por area. Con ?ver_como=<correo> un director abre el portal tal como lo ve esa persona, en solo lectura. REGLA: este numero y portal.app_versiones.version deben ir juntos; si la tabla va adelante del archivo, el verificador recarga el portal en bucle para todo el mundo (paso el 4-sep-2026).
+var PGV_VERSION=37; // v37 (19-oct-2026) - Mi Jornada: justificar olvidos de marcación (Olvidé marcar, casilla que se abre sola pasado 5 min, aviso Justifica). Lee mis_justif_breaks_hoy; escribe marcas_breaks_justif. Nada más cambia. // v36 (14-oct-2026) - tarjeta nueva Propuesta Amazon Relay (amazon-propuesta.html), visible por pantalla_acceso amazon_propuesta (paquete amazon_propuesta: Valentina Londoño, Karen Dayanna Jaramillo, amazonaud@ y sales@). Nada más cambia. // v35 (13-oct-2026) - la tarjeta GABI 360 pasa a GABI Liquidez (gabi-liquidez.html, dentro del portal, misma pestaña); Liquidez semanal y GABI · Mi panel también apuntan ahí (en widgets_registro quedan apagadas para no repetir la tarjeta). La app de Vercel queda como histórico por enlace directo. // v34 - 13-oct-2026 el anillito de cancelaciones del saludo le sale a TODOS los que venden: con base (5+ vencidas) "llegan a renovar" como v33; sin base y con caídas "siguen vivas" (% de sus pólizas de 12 meses que no se cayeron); sin ninguna cancelada un chulito "sin cancelaciones". Lee portal.mi_cartera_saludo() (solo la fila de la persona; antes bajaba la vista de todo el equipo). // v33 - 9-oct-2026 el índice pasa a "llegan a renovación" (meta 80 %) y se ve como anillito arriba a la derecha del anillo de la meta; la pastilla de la fila se quita. Toca el anillito y abre Mi proceso. // v32 - 8-oct-2026 la pastilla de cancelaciones del saludo también sale en "ver como" (lee la persona del saludo, no mi_persona()). // v31 - 8-oct-2026 CANCELACIONES EN EL SALUDO: una pastilla más al final de la fila Racha · a cotizar · llamadas, mismo estilo (● 8 % cancelaciones · 1 de 13), solo asesores con 5+ liabilities; lee v_cartera_indice_visible + mi_persona(); no toca mi_hero ni la fila de cifras, la onda o el anillo. // v30 - 6-oct-2026 CARGA INMEDIATA: el saludo sale de portal.rapido('mi_hero') (cache por persona, ~10 ms) y se repinta solo si portal.refrescar trae algo mas nuevo (mas de 5 min); 'ver como' sigue en vivo. pg-sombra y pg-bonos se cargan en el head (antes los inyectaba pg-novedades despues de DOMContentLoaded) y arrancan con la sesion del portal. Montado encima de la v29 (cartera por persona de Renovaciones, commit 76170db), que queda intacta. | v29 - 6-oct-2026: el saludo de Renovaciones lee la cartera que le cuenta a la persona (nivel persona en v_renov_cartera_graficas_visible, via mi_persona) en vez de solo el area KAREN: a Karen le entra Retencion (sep y oct) y toda la cartera que la regla le asigna. Si no resuelve la persona, cae al area KAREN como antes. Cero cambios en la base. | v28 - 6-oct-2026: EL SALUDO DE RENOVACIONES. Karen Suaza (y quien tenga Renovaciones como herramienta principal) ve el saludo grande con su foto dentro del anillo, como direccion, pero con su cartera: renovado del mes, lo que vence, en juego, vencidas sin renovar, el % retenido contra el estandar del area (70 %, sale de estandar_pct), las dos curvas del año (vence punteada, quedo menta) y la linea "faltan $X para el 70 %". Mismos datos de renovaciones.html (v_renov_cartera_graficas_visible, nivel area KAREN), guion cuando faltan montos. Cero cambios en la base. La foto de Andres (sales@) entra por portal.fotos_personas. | v27 - 6-oct-2026: tarjeta nueva Guidelines MGA (guidelines.html), visible por pantalla_acceso guidelines_mga (todas las areas internas; sin externo ni cliente). De los externos, solo quoteautocomercial@gmail.com ve la tarjeta (candado EXTERNOS). | v26 - LA META CON CARA: en el saludo, quien tiene meta (asesor) o ve la del equipo (direccion) ve su foto DENTRO de un anillo grande (184 px) que se llena con su % de la meta, mint si va al ritmo del mes y ambar #D9A520 si va detras, con un comentario corto debajo (ritmo = meta x habiles corridos / habiles del mes, el mismo de la onda). La foto de la izquierda se quita para no repetirla. Y el muelle de abajo a la derecha (pg-sombra.js v2, lo carga pg-novedades.js v4.6): la bolita de la meta con el numero de la meta en miles adentro, roja sin ventas, ambar detras del ritmo, mint al ritmo; y pegada arriba la barrita con las caritas del Top fee y el Top premium, que los 3 primeros dias habiles del mes muestra el mes cerrado y despues el mes en curso. | v25 - ARRANQUE RAPIDO Y CASILLAS CON VOLUMEN. (1) Un solo cliente de Supabase y un solo aviso de sesion para toda la pagina (pgSB / pgOnSesion): antes habia seis clientes y cada consulta de arranque se hacia dos veces (mis_pantallas, widgets_registro, hora_servidor, mis_marcas_hoy, tareas_kam, novedades_muro). (2) Cero relojes: se quitaron los setTimeout de 60/90/150/220/400/1200 ms y el de 800 ms antes de acomodar las tarjetas; el acomodo arranca en cuanto contestan puertas + orden (Promise.all), no cuando lo dice un reloj. (3) La cuadricula arranca tapada (.pg-cargando) y se destapa UNA vez ya acomodada, fail-open a los 2,5 s: se acabo el parpadeo del orden viejo al nuevo. (4) El saludo oscuro se pinta de inmediato con el nombre del correo y la fecha (sin cifras) y mi_hero lo completa cuando llega. (5) widgets_registro se lee una vez y sirve a mantenimiento y a areas. (6) Fuentes por <link> con preconnect (no @import), preconnect a Supabase y al CDN, preload de supabase-js. (7) Las herramientas de los grupos por area dejan de ser pastillas: casillas con volumen (min 118 px), icono propio y SOLO el nombre, tres por fila y dos en el telefono. La principal y las de apoyo quedan igual. Del lado de la base, en la misma entrega: indice de expresion en bos_registros para es_venta_nueva (mi_hero 5,2 s -> 0,6 s). Se monto encima de la v24 (Firmas Renewals), que queda intacta. // v24 - 1-oct-2026: tarjeta nueva Firmas · Renewals (generador-firmas-renewal.html), visible por pantalla_acceso firmas_renewal (Karen Suaza, renewal@ y dirección). // v23 - tarjeta nueva: Kit de Referidos (kit-referidos.html), visible por pantalla_acceso kit_referidos. // v22 - Protect Index: las direcciones internas del sitio pasan a relativas (el sitio ya no depende de como se llame el repo). Las que viajan por correo (recuperar contrasena, fotos de firma, sello de RRHH) quedan absolutas apuntando a protect-index. // v21 - Amazon Relay entra al portal: la tarjeta apunta a amazon-relay/ (ruta relativa, mismo sitio) en vez del repo aparte de GitHub. El archivo llego con su historia via git subtree, identico al original (sha256 971d0582...b33a). Falta que widgets_registro deje de mandar la URL absoluta de ese widget. // v20 - el hero muestra la combinada (premium + fee x10) con su desglose; antes sumaba premium + fee y mostraba menos de lo que la persona lleva. La onda del mes quedo en la misma combinada y leyendo de bos_v, asi termina exactamente en el numero grande. El desglose lo ve tambien la direccion (hero de equipo) y dice lo que el fee APORTA (fee x10 ya multiplicado), no el fee suelto: las dos cifras de la linea chica suman exacto el numero grande. // v19 - El portal con relieve y el portal de otra persona: saludo por rol (mi_hero: quien tiene meta ve la suya, direccion y el lider ven la del equipo, el resto su nombre y su herramienta), onda del mes, una tarjeta principal que manda, novedades compactas y las herramientas agrupadas por area. Con ?ver_como=<correo> un director abre el portal tal como lo ve esa persona, en solo lectura. REGLA: este numero y portal.app_versiones.version deben ir juntos; si la tabla va adelante del archivo, el verificador recarga el portal en bucle para todo el mundo (paso el 4-sep-2026).
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;
