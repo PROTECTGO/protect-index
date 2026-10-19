@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <!-- ===================================================================
-     Propuesta Amazon Relay · plantilla ES · v1 (14-oct-2026)
+     Propuesta Amazon Relay · plantilla ES · v3 (19-oct-2026) · v2: sin piso ni beneficio inicial · v3: imprime con los datos que haya (línea del cliente y del programa armadas en el widget; promo solo si hay)
      Reconstruida desde Template-Propuesta-Amazon-Relay-ES.pdf (Chromium, 13-oct-2026).
      La rellena amazon-propuesta.html: {{marcador}} = dato; {{#bloque}}…{{/bloque}} se repite
      por cada elemento (unidades, conductores) o se muestra solo si existe (testimonio, nocturno);
@@ -136,7 +136,7 @@ ul.chk li:before{content:"";position:absolute;left:1px;top:3px;width:9px;height:
   <div class="eye">PROPUESTA AMAZON RELAY</div>
   <div class="nm"><span class="v">{{cliente_nombre}}</span></div>
   <div class="meta">Propuesta <span class="v">{{propuesta_numero}}</span> · Emitida <span class="v">{{propuesta_fecha}}</span> · Válida 30 días</div>
-  <div class="meta">USDOT <span class="v">{{cliente_usdot}}</span> · MC <span class="v">{{cliente_mc}}</span> · <span class="v">{{cliente_estado}}</span> · <span class="v">{{programa_nombre}}</span> · <span class="v">{{unidades_cantidad}}</span> camión(es)</div>
+  <div class="meta"><span class="v">{{cliente_linea}}</span></div>
   <p class="intro">Preparada especialmente para <b><span class="v">{{contacto_nombre}}</span></b>. Este es el programa de operación en Amazon Relay que armamos alrededor de su empresa: una cuenta bien creada, cargas gestionadas todos los días y un equipo bilingüe de ProtectGo detrás de usted desde el primer día.</p>
   <ul class="sq">
     <li><b>Cuenta bien creada.</b> Reunimos, revisamos y presentamos su solicitud, y seguimos cada respuesta de Amazon.</li>
@@ -153,18 +153,17 @@ ul.chk li:before{content:"";position:absolute;left:1px;top:3px;width:9px;height:
 <div class="run"><div><div class="k">Cliente</div><div class="d"><span class="v">{{cliente_nombre}}</span></div></div><div class="mid"><div class="k">Agente</div><div class="d">ProtectGo Services LLC</div></div><div class="r"><div class="k">Propuesta / Vigencia</div><div class="d"><span class="v">{{propuesta_numero}}</span> · <span class="v">{{propuesta_fecha}}</span> · 30 días</div></div></div>
 <h1 class="t">RESUMEN DE LA PROPUESTA</h1>
 <div class="body">
-  <div class="prog">Su programa · <span class="v">{{programa_nombre}}</span> · <span class="v">{{unidades_cantidad}}</span> camión(es)</div>
+  <div class="prog">Su programa · <span class="v">{{programa_linea}}</span></div>
   <div class="kpis">
-    <div class="kpi"><div class="n">USD <span class="v">{{setup_precio}}</span></div><div class="l">Creación de cuenta</div><div class="s">Un solo cobro · precio regular USD <span class="v">{{setup_precio_regular}}</span></div></div>
-    <div class="kpi"><div class="n"><span class="v">{{comision_pct}}</span>%</div><div class="l">Comisión semanal</div><div class="s">Piso USD <span class="v">{{comision_piso}}</span>/sem por camión tras el beneficio inicial</div></div>
-    <div class="kpi"><div class="n"><span class="v">{{compromiso_dias}}</span> días</div><div class="l">Compromiso mínimo</div><div class="s">Con al menos <span class="v">{{unidades_cantidad}}</span> camión(es) asignado(s) a gestión</div></div>
+    <div class="kpi"><div class="n">USD <span class="v">{{setup_precio}}</span></div><div class="l">Creación de cuenta</div><div class="s">Un solo cobro{{#hay_promo}} · precio regular USD <span class="v">{{setup_precio_regular}}</span>{{/hay_promo}}{{^hay_promo}}, al firmar{{/hay_promo}}</div></div>
+    <div class="kpi"><div class="n"><span class="v">{{comision_pct}}</span>%</div><div class="l">Comisión semanal</div><div class="s">Sobre cada carga que gestionamos, sin mínimo semanal</div></div>
+    <div class="kpi"><div class="n"><span class="v">{{compromiso_dias}}</span> días</div><div class="l">Compromiso mínimo</div><div class="s">Con al menos un camión asignado a gestión</div></div>
   </div>
   <table class="tb">
     <thead><tr><th>Concepto</th><th>Cómo se cobra</th><th class="m">Monto</th></tr></thead>
     <tbody>
       <tr><td class="k">Creación de cuenta</td><td>Un solo cobro, al firmar</td><td class="m">USD <span class="v">{{setup_precio}}</span></td></tr>
-      <tr><td class="k">Gestión de cargas — beneficio inicial</td><td><span class="v">{{comision_pct}}</span>% sin mínimo hasta <span class="v">{{beneficio_cargas}}</span> cargas o <span class="v">{{beneficio_dias}}</span> días activos, lo que ocurra primero</td><td class="m"><span class="v">{{comision_pct}}</span>%</td></tr>
-      <tr><td class="k">Gestión de cargas — después</td><td><span class="v">{{comision_pct}}</span>% con mínimo de USD <span class="v">{{comision_piso}}</span> por semana por camión</td><td class="m"><span class="v">{{comision_pct}}</span>% ó USD <span class="v">{{comision_piso}}</span></td></tr>
+      <tr><td class="k">Gestión de cargas</td><td><span class="v">{{comision_pct}}</span>% de cada carga gestionada, sin mínimo semanal; se liquida cada semana</td><td class="m"><span class="v">{{comision_pct}}</span>%</td></tr>
       <tr><td class="k">Servicios opcionales</td><td>Por caso, cotizados aparte</td><td class="m">ver pág. 7</td></tr>
     </tbody>
   </table>
@@ -181,7 +180,7 @@ ul.chk li:before{content:"";position:absolute;left:1px;top:3px;width:9px;height:
 <h1 class="t">LO QUE HACEMOS POR USTED</h1>
 <div class="body">
   <div class="sec"><i>1.</i> Gestionamos la creación de su cuenta</div>
-  <div class="hl"><p><b>USD <span class="v">{{setup_precio}}</span>, un solo cobro por esta gestión.</b> Precio regular: USD <span class="v">{{setup_precio_regular}}</span>. La promoción está vinculada a contratar nuestra gestión de cargas por <span class="v">{{compromiso_dias}}</span> días, con al menos un camión.</p></div>
+  <div class="hl"><p><b>USD <span class="v">{{setup_precio}}</span>, un solo cobro por esta gestión.</b>{{#hay_promo}} Precio regular: USD <span class="v">{{setup_precio_regular}}</span>. La promoción está vinculada a contratar nuestra gestión de cargas por <span class="v">{{compromiso_dias}}</span> días, con al menos un camión.{{/hay_promo}}</p></div>
   <p class="j">Le ayudamos a reunir y revisar la información, preparar y presentar la solicitud, y dar seguimiento a las respuestas de Amazon. Usted entrega los documentos y realiza las validaciones que deban hacerse a su nombre.</p>
   <p class="j"><b>Amazon decide si aprueba la cuenta.</b> Los USD <span class="v">{{setup_precio}}</span> pagan nuestro trabajo de gestión. No compran ni garantizan la aprobación.</p>
   <div class="sec" style="margin-top:18px"><i>2.</i> Gestionamos sus cargas y su operación</div>
@@ -205,20 +204,18 @@ ul.chk li:before{content:"";position:absolute;left:1px;top:3px;width:9px;height:
 <h1 class="t">CUÁNTO PAGA Y CÓMO FUNCIONA</h1>
 <div class="body">
   <div class="sec"><i>3.</i> Comisión por la gestión de cargas</div>
-  <p class="j"><b>Inicio: <span class="v">{{comision_pct}}</span>%, sin mínimo semanal.</b> Este beneficio termina al llegar a <span class="v">{{beneficio_cargas}}</span> cargas o <span class="v">{{beneficio_dias}}</span> días activos, lo que ocurra primero. El <span class="v">{{comision_pct}}</span>% se cobra desde el inicio.</p>
-  <p class="j"><b>Después: <span class="v">{{comision_pct}}</span>%, con mínimo de USD <span class="v">{{comision_piso}}</span> por semana por camión bajo nuestra gestión.</b> Si el <span class="v">{{comision_pct}}</span>% da menos de USD <span class="v">{{comision_piso}}</span>, paga USD <span class="v">{{comision_piso}}</span>. Si da más, paga el resultado del <span class="v">{{comision_pct}}</span>%. No se suman ambos valores.</p>
+  <p class="j"><b><span class="v">{{comision_pct}}</span>% sobre cada carga que gestionamos, sin mínimo semanal.</b> Se cobra desde la primera carga y se liquida cada semana, semana vencida.</p>
   <table class="tb" style="margin-top:6px">
-    <thead><tr><th>Base semanal del camión</th><th>Durante el beneficio</th><th>Después del beneficio</th></tr></thead>
+    <thead><tr><th>Base semanal del camión</th><th class="m">Comisión (<span class="v">{{comision_pct}}</span>%)</th></tr></thead>
     <tbody>
-      <tr><td class="k" style="width:auto">USD <span class="v">{{ejemplo1_base}}</span></td><td>USD <span class="v">{{ejemplo1_durante}}</span></td><td>USD <span class="v">{{ejemplo1_despues}}</span></td></tr>
-      <tr><td class="k" style="width:auto">USD <span class="v">{{ejemplo2_base}}</span></td><td>USD <span class="v">{{ejemplo2_durante}}</span></td><td>USD <span class="v">{{ejemplo2_despues}}</span></td></tr>
+      <tr><td class="k" style="width:auto">USD <span class="v">{{ejemplo1_base}}</span></td><td class="m">USD <span class="v">{{ejemplo1_comision}}</span></td></tr>
+      <tr><td class="k" style="width:auto">USD <span class="v">{{ejemplo2_base}}</span></td><td class="m">USD <span class="v">{{ejemplo2_comision}}</span></td></tr>
     </tbody>
   </table>
   <p class="nota" style="margin:6px 0 12px">Ejemplos de cobro, no promesas de ingresos. Los USD <span class="v">{{setup_precio}}</span> de creación son un cobro separado de esta comisión.</p>
   <p class="j">El porcentaje se calcula sobre la base de ingresos acordada para las cargas gestionadas. También incluye pagos base que Amazon reconoce aunque una carga no se complete, como cargas rescatadas o layovers, cuando sean ingresos producidos por nuestra gestión. Antes de iniciar, dejaremos por escrito qué conceptos incluye y cómo se liquida.</p>
   <div class="sec" style="margin-top:18px"><i>4.</i> Compromiso y límites del servicio</div>
   <p class="j"><b>Compromiso: <span class="v">{{compromiso_dias}}</span> días y al menos un camión asignado a gestión.</b> Una unidad se considera activa si realiza 4 cargas en la semana o trabaja 5 días, aunque complete menos cargas por la duración de los viajes.</p>
-  <p class="j">Después del beneficio inicial, el mínimo semanal corresponde al trabajo de gestionar el camión. Puede aplicar aunque esa semana se realicen pocas cargas, mientras la unidad siga asignada al servicio.</p>
   {{^nocturno}}<p class="j"><b>Noches y fines de semana: no se incluyen automáticamente.</b> El horario estándar es lunes a viernes, 8 a.m. – 5 p.m. hora Central; cualquier cobertura adicional se cotiza por separado. Los rescates extraordinarios de cuentas también se cotizan aparte.</p>{{/nocturno}}
   {{#nocturno}}<p class="j"><b>Noches y fines de semana: incluidos en esta propuesta.</b> {{#recargo_nocturno}}La cobertura nocturna y de fines de semana se cobra a USD <span class="v">{{recargo_nocturno}}</span> por semana por camión, aparte de la comisión.{{/recargo_nocturno}}{{^recargo_nocturno}}El valor de la cobertura nocturna y de fines de semana se deja por escrito antes de iniciar.{{/recargo_nocturno}} Los rescates extraordinarios de cuentas se cotizan aparte.</p>{{/nocturno}}
   <p class="j">Esta propuesta cotiza nuestros servicios. No incluye seguros, reparaciones ni otros gastos de operación del camión.</p>
@@ -261,7 +258,6 @@ ul.chk li:before{content:"";position:absolute;left:1px;top:3px;width:9px;height:
     <li>Unidad y horario</li>
     <li>Fecha de inicio de los <span class="v">{{compromiso_dias}}</span> días</li>
     <li>Forma de pago</li>
-    <li>Conteo de cargas y días activos</li>
     <li>Pausas</li>
     <li>Qué ocurre si Amazon no aprueba</li>
     <li>Condiciones para cancelar antes del plazo</li>
@@ -341,7 +337,7 @@ ul.chk li:before{content:"";position:absolute;left:1px;top:3px;width:9px;height:
   <div class="lab" style="margin-top:16px">Responsabilidades del cliente</div>
   <p class="j">Reportar todo incidente el mismo día en que ocurre, sea o no responsable, para reunir la evidencia a tiempo; mantener el acceso a su cuenta de Relay; entregar comprobantes de entrega y documentos cuando se soliciten; e informar pausas, cambios de unidad o de conductor antes de que ocurran.</p>
   <div class="lab" style="margin-top:16px">Cobro y pago</div>
-  <p class="j">La comisión se liquida semanalmente, semana vencida, mediante débito ACH autorizado. El mínimo semanal aplica mientras la unidad esté asignada al servicio. El compromiso mínimo es de <span class="v">{{compromiso_dias}}</span> días. El retraso en el pago faculta a ProtectGo a suspender el servicio y, de persistir, a enviar la deuda a cobranza.</p>
+  <p class="j">La comisión se liquida semanalmente, semana vencida, mediante débito ACH autorizado. El compromiso mínimo es de <span class="v">{{compromiso_dias}}</span> días. El retraso en el pago faculta a ProtectGo a suspender el servicio y, de persistir, a enviar la deuda a cobranza.</p>
   <div class="lab" style="margin-top:16px">Cancelación</div>
   <p class="j">Antes del plazo mínimo: según las condiciones que se dejen por escrito antes de iniciar. Después del plazo: con aviso de 7 días. Los cobros ya causados no se reembolsan. [Texto sujeto a revisión legal]</p>
 </div>

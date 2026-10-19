@@ -7,7 +7,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <!-- ===================================================================
-     Propuesta Amazon Relay · plantilla EN (traducción de la ES) · v1 (14-oct-2026)
+     Propuesta Amazon Relay · plantilla EN (traducción de la ES) · v3 (19-oct-2026) · v2: sin piso ni beneficio inicial · v3: imprime con los datos que haya
      Reconstruida desde Template-Propuesta-Amazon-Relay-ES.pdf (Chromium, 13-oct-2026).
      La rellena amazon-propuesta.html: {{marcador}} = dato; {{#bloque}}…{{/bloque}} se repite
      por cada elemento (unidades, conductores) o se muestra solo si existe (testimonio, nocturno);
@@ -137,7 +137,7 @@ ul.chk li:before{content:"";position:absolute;left:1px;top:3px;width:9px;height:
   <div class="eye">AMAZON RELAY PROPOSAL</div>
   <div class="nm"><span class="v">{{cliente_nombre}}</span></div>
   <div class="meta">Proposal <span class="v">{{propuesta_numero}}</span> · Issued <span class="v">{{propuesta_fecha}}</span> · Valid 30 days</div>
-  <div class="meta">USDOT <span class="v">{{cliente_usdot}}</span> · MC <span class="v">{{cliente_mc}}</span> · <span class="v">{{cliente_estado}}</span> · <span class="v">{{programa_nombre}}</span> · <span class="v">{{unidades_cantidad}}</span> truck(s)</div>
+  <div class="meta"><span class="v">{{cliente_linea}}</span></div>
   <p class="intro">Prepared especially for <b><span class="v">{{contacto_nombre}}</span></b>. This is the Amazon Relay operating program we built around your company: an account set up right, loads managed every day, and a bilingual ProtectGo team behind you from day one.</p>
   <ul class="sq">
     <li><b>Your account, set up right.</b> We gather, review, and submit your application, and follow up on every response from Amazon.</li>
@@ -154,18 +154,17 @@ ul.chk li:before{content:"";position:absolute;left:1px;top:3px;width:9px;height:
 <div class="run"><div><div class="k">Client</div><div class="d"><span class="v">{{cliente_nombre}}</span></div></div><div class="mid"><div class="k">Agent</div><div class="d">ProtectGo Services LLC</div></div><div class="r"><div class="k">Proposal / Validity</div><div class="d"><span class="v">{{propuesta_numero}}</span> · <span class="v">{{propuesta_fecha}}</span> · 30 days</div></div></div>
 <h1 class="t">PROPOSAL SUMMARY</h1>
 <div class="body">
-  <div class="prog">Your program · <span class="v">{{programa_nombre}}</span> · <span class="v">{{unidades_cantidad}}</span> truck(s)</div>
+  <div class="prog">Your program · <span class="v">{{programa_linea}}</span></div>
   <div class="kpis">
-    <div class="kpi"><div class="n">USD <span class="v">{{setup_precio}}</span></div><div class="l">Account setup</div><div class="s">One-time charge · regular price USD <span class="v">{{setup_precio_regular}}</span></div></div>
-    <div class="kpi"><div class="n"><span class="v">{{comision_pct}}</span>%</div><div class="l">Weekly commission</div><div class="s">Floor (minimum) USD <span class="v">{{comision_piso}}</span>/wk per truck after the initial benefit</div></div>
-    <div class="kpi"><div class="n"><span class="v">{{compromiso_dias}}</span> days</div><div class="l">Minimum commitment</div><div class="s">With at least <span class="v">{{unidades_cantidad}}</span> truck(s) assigned to our management</div></div>
+    <div class="kpi"><div class="n">USD <span class="v">{{setup_precio}}</span></div><div class="l">Account setup</div><div class="s">One-time charge{{#hay_promo}} · regular price USD <span class="v">{{setup_precio_regular}}</span>{{/hay_promo}}{{^hay_promo}}, at signing{{/hay_promo}}</div></div>
+    <div class="kpi"><div class="n"><span class="v">{{comision_pct}}</span>%</div><div class="l">Weekly commission</div><div class="s">On each load we manage, with no weekly minimum</div></div>
+    <div class="kpi"><div class="n"><span class="v">{{compromiso_dias}}</span> days</div><div class="l">Minimum commitment</div><div class="s">With at least one truck assigned to our management</div></div>
   </div>
   <table class="tb">
     <thead><tr><th>Service</th><th>How it’s billed</th><th class="m">Amount</th></tr></thead>
     <tbody>
       <tr><td class="k">Account setup</td><td>One-time charge, at signing</td><td class="m">USD <span class="v">{{setup_precio}}</span></td></tr>
-      <tr><td class="k">Load management — initial benefit</td><td><span class="v">{{comision_pct}}</span>% with no minimum until <span class="v">{{beneficio_cargas}}</span> loads or <span class="v">{{beneficio_dias}}</span> active days, whichever comes first</td><td class="m"><span class="v">{{comision_pct}}</span>%</td></tr>
-      <tr><td class="k">Load management — thereafter</td><td><span class="v">{{comision_pct}}</span>% with a minimum of USD <span class="v">{{comision_piso}}</span> per week per truck</td><td class="m"><span class="v">{{comision_pct}}</span>% or USD <span class="v">{{comision_piso}}</span></td></tr>
+      <tr><td class="k">Load management</td><td><span class="v">{{comision_pct}}</span>% of each load we manage, no weekly minimum; settled weekly</td><td class="m"><span class="v">{{comision_pct}}</span>%</td></tr>
       <tr><td class="k">Optional services</td><td>Per case, quoted separately</td><td class="m">see p. 7</td></tr>
     </tbody>
   </table>
@@ -182,7 +181,7 @@ ul.chk li:before{content:"";position:absolute;left:1px;top:3px;width:9px;height:
 <h1 class="t">WHAT WE DO FOR YOU</h1>
 <div class="body">
   <div class="sec"><i>1.</i> We handle your account setup</div>
-  <div class="hl"><p><b>USD <span class="v">{{setup_precio}}</span>, a one-time charge for this service.</b> Regular price: USD <span class="v">{{setup_precio_regular}}</span>. This promotional price is tied to signing up for our load management for <span class="v">{{compromiso_dias}}</span> days, with at least one truck.</p></div>
+  <div class="hl"><p><b>USD <span class="v">{{setup_precio}}</span>, a one-time charge for this service.</b>{{#hay_promo}} Regular price: USD <span class="v">{{setup_precio_regular}}</span>. This promotional price is tied to signing up for our load management for <span class="v">{{compromiso_dias}}</span> days, with at least one truck.{{/hay_promo}}</p></div>
   <p class="j">We help you gather and review your information, prepare and submit the application, and follow up on Amazon’s responses. You provide the documents and complete any validations that must be done in your name.</p>
   <p class="j"><b>Amazon decides whether to approve the account.</b> The USD <span class="v">{{setup_precio}}</span> pays for our management work. It does not buy or guarantee approval.</p>
   <div class="sec" style="margin-top:18px"><i>2.</i> We manage your loads and your operation</div>
@@ -206,20 +205,18 @@ ul.chk li:before{content:"";position:absolute;left:1px;top:3px;width:9px;height:
 <h1 class="t">WHAT YOU PAY AND HOW IT WORKS</h1>
 <div class="body">
   <div class="sec"><i>3.</i> Load management commission</div>
-  <p class="j"><b>Initially: <span class="v">{{comision_pct}}</span>%, no weekly minimum.</b> This benefit ends when you reach <span class="v">{{beneficio_cargas}}</span> loads or <span class="v">{{beneficio_dias}}</span> active days, whichever comes first. The <span class="v">{{comision_pct}}</span>% is charged from day one.</p>
-  <p class="j"><b>Afterward: <span class="v">{{comision_pct}}</span>%, with a minimum of USD <span class="v">{{comision_piso}}</span> per week per truck under our management.</b> If the <span class="v">{{comision_pct}}</span>% comes to less than USD <span class="v">{{comision_piso}}</span>, you pay USD <span class="v">{{comision_piso}}</span>. If it comes to more, you pay the <span class="v">{{comision_pct}}</span>% amount. The two amounts are not added together.</p>
+  <p class="j"><b><span class="v">{{comision_pct}}</span>% on each load we manage, with no weekly minimum.</b> It is charged from the first load and settled weekly in arrears.</p>
   <table class="tb" style="margin-top:6px">
-    <thead><tr><th>Weekly base per truck</th><th>During the benefit</th><th>After the benefit</th></tr></thead>
+    <thead><tr><th>Weekly base per truck</th><th class="m">Commission (<span class="v">{{comision_pct}}</span>%)</th></tr></thead>
     <tbody>
-      <tr><td class="k" style="width:auto">USD <span class="v">{{ejemplo1_base}}</span></td><td>USD <span class="v">{{ejemplo1_durante}}</span></td><td>USD <span class="v">{{ejemplo1_despues}}</span></td></tr>
-      <tr><td class="k" style="width:auto">USD <span class="v">{{ejemplo2_base}}</span></td><td>USD <span class="v">{{ejemplo2_durante}}</span></td><td>USD <span class="v">{{ejemplo2_despues}}</span></td></tr>
+      <tr><td class="k" style="width:auto">USD <span class="v">{{ejemplo1_base}}</span></td><td class="m">USD <span class="v">{{ejemplo1_comision}}</span></td></tr>
+      <tr><td class="k" style="width:auto">USD <span class="v">{{ejemplo2_base}}</span></td><td class="m">USD <span class="v">{{ejemplo2_comision}}</span></td></tr>
     </tbody>
   </table>
   <p class="nota" style="margin:6px 0 12px">Billing examples, not income promises. The USD <span class="v">{{setup_precio}}</span> account setup fee is a separate charge from this commission.</p>
   <p class="j">The percentage is calculated on the agreed revenue base for the loads we manage. It also includes base payments Amazon recognizes even when a load is not completed, such as rescued loads or layovers, when that revenue results from our management. Before starting, we will put in writing which items are included and how the commission is settled.</p>
   <div class="sec" style="margin-top:18px"><i>4.</i> Commitment and service limits</div>
   <p class="j"><b>Commitment: <span class="v">{{compromiso_dias}}</span> days and at least one truck assigned to our management.</b> A unit is considered active if it runs 4 loads in a week or works 5 days, even if it completes fewer loads because of trip length.</p>
-  <p class="j">After the initial benefit, the weekly minimum covers the work of managing the truck. It may apply even in a week with few loads, as long as the unit remains assigned to the service.</p>
   {{^nocturno}}<p class="j"><b>Nights and weekends: not automatically included.</b> Standard hours are Monday through Friday, 8 a.m. – 5 p.m. Central Time; any additional coverage is quoted separately. Extraordinary account rescues are also quoted separately.</p>{{/nocturno}}
   {{#nocturno}}<p class="j"><b>Nights and weekends: included in this proposal.</b> {{#recargo_nocturno}}Night and weekend coverage is billed at USD <span class="v">{{recargo_nocturno}}</span> per week per truck, separate from the commission.{{/recargo_nocturno}}{{^recargo_nocturno}}The price of night and weekend coverage will be set in writing before starting.{{/recargo_nocturno}} Extraordinary account rescues are quoted separately.</p>{{/nocturno}}
   <p class="j">This proposal quotes our services. It does not include insurance, repairs, or other truck operating expenses.</p>
@@ -262,7 +259,6 @@ ul.chk li:before{content:"";position:absolute;left:1px;top:3px;width:9px;height:
     <li>Unit and schedule</li>
     <li>Start date for the <span class="v">{{compromiso_dias}}</span> days</li>
     <li>Payment method</li>
-    <li>How loads and active days are counted</li>
     <li>Pauses</li>
     <li>What happens if Amazon does not approve</li>
     <li>Conditions for early cancellation</li>
@@ -343,7 +339,7 @@ ul.chk li:before{content:"";position:absolute;left:1px;top:3px;width:9px;height:
   <div class="lab" style="margin-top:16px">Client responsibilities</div>
   <p class="j">Report every incident on the same day it occurs, whether or not you are at fault, so evidence can be gathered in time; keep access to your Relay account; provide proof of delivery and documents when requested; and notify us of pauses, unit changes, or driver changes before they happen.</p>
   <div class="lab" style="margin-top:16px">Billing and payment</div>
-  <p class="j">The commission is settled weekly in arrears by authorized ACH debit. The weekly minimum applies as long as the unit remains assigned to the service. The minimum commitment is <span class="v">{{compromiso_dias}}</span> days. Late payment entitles ProtectGo to suspend the service and, if it persists, to send the debt to collections.</p>
+  <p class="j">The commission is settled weekly in arrears by authorized ACH debit. The minimum commitment is <span class="v">{{compromiso_dias}}</span> days. Late payment entitles ProtectGo to suspend the service and, if it persists, to send the debt to collections.</p>
   <div class="lab" style="margin-top:16px">Cancellation</div>
   <p class="j">Before the minimum term ends: under the conditions put in writing before starting. After the term: with 7 days’ notice. Charges already incurred are non-refundable. [Text subject to legal review]</p>
 </div>
