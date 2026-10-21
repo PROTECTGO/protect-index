@@ -10,7 +10,15 @@
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <script src="pg-volver.js" defer></script>
 <!-- ===================================================================
-     Guidelines MGA · v2 (6-oct-2026)
+     Guidelines MGA · v3 (21-oct-2026)
+     v3: buscador de palabras clave. Con texto en la búsqueda, cada mercado de
+         la lista muestra hasta 3 frases de su ficha donde está la palabra
+         (✓ Aceptables / Conductores / Cómo funciona · ✕ Inaceptables · ℹ resto),
+         ordena primero a los que aceptan y cuenta "aceptan · no · mencionan".
+         Normalizador (26,000 = 26K = 26000 · lbs = libras · pick-up = pickup ·
+         plurales) y sinónimos desde portal.guidelines_sinonimos (si no carga,
+         busca con los de respaldo del archivo). Chips de vocabulario
+         (chip_orden de la misma tabla) con conteo en vivo.
      v2: ficha reorganizada (Perfilar arriba; cómo trabajar en acordeones;
          programas y tablas; notas), vista expandida a pantalla completa
          (botón Expandir / tecla E / doble clic en el nombre; flechas para
@@ -64,6 +72,27 @@ h1{font-family:var(--f-tit);font-weight:800;font-size:24px;color:var(--ink);marg
 .buscar input:focus{outline:none;border-color:var(--mint);box-shadow:0 0 0 3px rgba(45,191,163,.15)}
 .buscar svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted)}
 .filtros{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:10px}
+/* v3 · chips de vocabulario */
+.chips{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:-2px 0 12px}
+.chips .lb{font-size:12px;color:var(--muted);margin-right:2px}
+.chip{display:inline-flex;align-items:center;gap:5px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:4px 10px;font:600 12.5px var(--f-body);color:var(--ink);cursor:pointer;white-space:nowrap}
+.chip:hover{border-color:var(--mint)}
+.chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.chip .n{font:600 11px var(--f-num);color:var(--muted)}
+.chip.on .n{color:#BFD8D5}
+.chip.mas{border-style:dashed;color:var(--mint-deep)}
+/* v3 · frases en la lista */
+.it .sn{margin-top:6px;display:flex;flex-direction:column;gap:3px}
+.it .sn div{font-size:12px;line-height:1.4;color:var(--txt);overflow-wrap:anywhere;padding-left:16px;position:relative}
+.it .sn div::before{position:absolute;left:0;top:0;font-weight:800}
+.it .sn .k-si::before{content:"✓";color:var(--mint-deep)}
+.it .sn .k-no::before{content:"✕";color:var(--rojo)}
+.it .sn .k-info::before{content:"ℹ";color:var(--gris)}
+.it .sn .sc{font-weight:700;color:var(--muted)}
+.it .sn .mas{color:var(--mint-deep);font-weight:600;padding-left:16px}
+.it .sn .mas::before{content:""}
+.lista-h .resumen{font-size:12px;color:var(--muted)}
+.lista-h .resumen b{color:var(--ink)}
 .filtros select{padding:8px 10px;border:1px solid var(--line);border-radius:9px;font:13px var(--f-body);background:#fff;color:var(--txt);min-width:0}
 .filtros select.on{border-color:var(--mint-deep);background:#F1FAF8}
 .lnk{background:none;border:none;color:var(--mint-deep);font:600 13px var(--f-body);cursor:pointer;padding:6px 4px}
@@ -288,6 +317,7 @@ html.xp-on,html.xp-on body{overflow:hidden}
   .wrap{padding:16px 12px 90px}
   h1{font-size:21px}
   .filtros{display:grid;grid-template-columns:1fr 1fr}
+  .chips{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px;-webkit-overflow-scrolling:touch}
   .filtros .lnk{grid-column:1/-1;text-align:left}
   .tipos{grid-template-columns:minmax(0,1fr)}
   .cards{grid-template-columns:minmax(0,1fr)}
@@ -310,9 +340,10 @@ html.xp-on,html.xp-on body{overflow:hidden}
    </div>
    <div class="buscar">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-    <input id="q" type="search" autocomplete="off" spellcheck="false" placeholder="Buscar: auto liability, Texas, dump, new venture…" aria-label="Buscar en los guidelines">
+    <input id="q" type="search" autocomplete="off" spellcheck="false" placeholder="Buscar: pickup, box truck, 26,000 lbs, new venture, Texas…" aria-label="Buscar en los guidelines">
    </div>
   </div>
+  <div class="chips" id="chips" aria-label="Palabras para buscar"></div>
   <div class="filtros" id="filtros">
    <select id="fTipo" aria-label="Tipo de mercado"><option value="">Tipo: todos</option></select>
    <select id="fCov" aria-label="Cobertura"><option value="">Cobertura: todas</option></select>
@@ -332,7 +363,7 @@ html.xp-on,html.xp-on body{overflow:hidden}
   <section id="vMercados">
    <div class="mk" id="mk">
     <aside class="lista">
-     <div class="lista-h"><span>Mercados</span><span><span class="mono" id="cnt">—</span></span></div>
+     <div class="lista-h"><span>Mercados <span class="resumen" id="resumen"></span></span><span><span class="mono" id="cnt">—</span></span></div>
      <div class="items" id="items" role="listbox" aria-label="Mercados"></div>
     </aside>
     <article class="panel" id="panel">
@@ -448,8 +479,38 @@ var SINONIMOS=[
   {k:["new venture","new ventures","empresa nueva","negocio nuevo","nuevo negocio"],alt:["new venture","empresa nueva","negocio nuevo","nuevo negocio","nuevas empresas","new business"]},
   {k:["mexicanos","mexicano"],alt:["mexican","mexico"]}
 ];
-var SIN_KEYS=[]; SINONIMOS.forEach(function(s){s.k.forEach(function(k){SIN_KEYS.push([norm(k),s]);});});
-SIN_KEYS.sort(function(a,b){return b[0].length-a[0].length;});
+/* v3 · normalizador: lo mismo para el texto de las fichas y para lo que escribe el usuario */
+var COMPUESTOS=[["pick up","pickup"],["hot shot","hotshot"],["box truck","boxtruck"],["owner operator","owneroperator"],["dry van","dryvan"],["new venture","newventure"],["car hauler","carhauler"],["auto hauler","autohauler"],["loss run","lossrun"],["frac sand","fracsand"],["sand gravel","sandgravel"],["sand and gravel","sandgravel"],["arena y grava","sandgravel"]];
+function nrm(s){
+  var x=norm(s);
+  x=x.replace(/(\d)[,.](\d{3})(?!\d)/g,"$1$2").replace(/(\d)[,.](\d{3})(?!\d)/g,"$1$2").replace(/(\d) (\d{3})(?!\d)/g,"$1$2");
+  x=x.replace(/\$?(\d+(?:\.\d+)?)\s*(k|m)\b/g,function(_,n,u){ return String(Math.round(parseFloat(n)*(u==="k"?1000:1000000))); });
+  x=x.replace(/\b(lbs?|libras?|pounds?)\b/g," lbs ");
+  x=x.replace(/[^a-z0-9]+/g," ").replace(/\s+/g," ").trim();
+  x=" "+x+" ";
+  COMPUESTOS.forEach(function(c){ var a=" "+c[0]+" "; while(x.indexOf(a)>=0)x=x.replace(a," "+c[1]+" "); });
+  x=x.replace(/ ([a-z]{3,}?)(es|s)(?= )/g,function(m,w,suf){ if(w.slice(-1)==="s"&&suf==="s")return m; if(w+suf==="lbs"||w+suf==="bus"||w+suf==="gas")return m; return " "+(suf==="es"&&/[aeiou]$/.test(w)?w+"e":w+(suf==="es"?"e":"")); });
+  x=" "+x.replace(/\s+/g," ").trim()+" ";
+  COMPUESTOS.forEach(function(c){ var a=" "+c[0]+" "; while(x.indexOf(a)>=0)x=x.replace(a," "+c[1]+" "); });
+  return x;
+}
+/* coincidencia por inicio de palabra (4+ letras) o palabra completa (cortas) */
+function pega(hayN,term){ term=String(term||"").trim(); if(!term)return false; var ult=term.split(" ").pop(); return ult.length>=4?hayN.indexOf(" "+term)>=0:hayN.indexOf(" "+term+" ")>=0; }
+var SIN_TABLA=[];  /* filas de portal.guidelines_sinonimos */
+var SIN_KEYS=[];
+function armarSinonimos(filas){
+  SIN_TABLA=(filas||[]).filter(function(r){return r&&r.canon;});
+  var vistos={}; SIN_KEYS=[];
+  SIN_TABLA.forEach(function(r){
+    var claves=[r.canon].concat(arr(r.variantes)).map(function(k){return nrm(k).trim();}).filter(Boolean);
+    var grupo={alt:claves.filter(function(v,i,a){return a.indexOf(v)===i;}),canon:r.canon};
+    claves.forEach(function(k){ if(!vistos[k]){vistos[k]=1; SIN_KEYS.push([k,grupo]);} });
+  });
+  SINONIMOS.forEach(function(s){ s.k.forEach(function(k){ var nk=nrm(k).trim(); if(vistos[nk])return; vistos[nk]=1;
+    SIN_KEYS.push([nk, s.cov?{cov:s.cov}:{alt:s.alt.map(function(a){return nrm(a).trim();}).concat([nk])}]); }); });
+  SIN_KEYS.sort(function(a,b){return b[0].length-a[0].length;});
+}
+armarSinonimos([]);
 var TIPO_AP=[["acepto","Aceptó"],["declino","Declinó"],["tiempo","Tiempo de respuesta"],["requisito","Requisito"],["precio","Precio"],["otro","Otro"]];
 var TIPO_AP_L={}; TIPO_AP.forEach(function(t){TIPO_AP_L[t[0]]=t[1];});
 var SELLO={nuevo:"🕓 nuevo",validado:"✅ validado",incorporado:"📌 incorporado",descartado:"✖ descartado"};
@@ -505,7 +566,31 @@ function estadosTexto(f){
 /* ---------------- preparación ---------------- */
 function prep(f){
   var cs={}; arr(f.coverages).forEach(function(c){covCanon(c).forEach(function(k){cs[k]=1;});}); f._cov=cs;
-  hay(f);
+  hay(f); lineas(f);
+}
+/* v3 · líneas de la ficha con su sección, para mostrar dónde pegó la palabra */
+var SECS=[["acceptable","Aceptables","si",0],["driver","Conductores","si",0],["how_it_works","Cómo funciona","si",0],["unacceptable","Inaceptables","no",1],["new_business","Nuevo negocio","info",2],["pricing","Pricing","info",2],["submission","Cómo someter","info",2],["notes","Notas","info",2],["pending","Por confirmar","info",2]];
+function lineas(f){
+  var L=[];
+  SECS.forEach(function(s){ arr(f[s[0]]).forEach(function(x){ L.push({sec:s[1],k:s[2],p:s[3],t:String(x),n:nrm(x)}); }); });
+  if(f.coverage_note)L.push({sec:"Cobertura",k:"info",p:2,t:String(f.coverage_note),n:nrm(f.coverage_note)});
+  (Array.isArray(f.carriers)?f.carriers:[]).forEach(function(c){ if(typeof c==="string")L.push({sec:"Carriers",k:"info",p:2,t:c,n:nrm(c)});
+    else if(c){ arr(c.detail).forEach(function(d){ L.push({sec:c.name||"Programa",k:"si",p:0,t:String(d),n:nrm(d)}); }); } });
+  (Array.isArray(f.tables)?f.tables:[]).forEach(function(tb){ if(!tb)return; (tb.rows||[]).forEach(function(r){ var s=arr(r).join(" · "); if(s)L.push({sec:tb.title||"Tabla",k:"info",p:2,t:s,n:nrm(s)}); }); });
+  APORTES.forEach(function(a){ if(a.mga_id===f.id&&(a.estado==="validado"||a.estado==="incorporado")&&a.texto)L.push({sec:"Experiencia",k:"info",p:2,t:String(a.texto),n:nrm(a.texto)}); });
+  f._lin=L;
+}
+/* términos de texto activos de la búsqueda (sin coberturas ni estados) */
+function terminos(P){ var g=[]; (P.txt||[]).forEach(function(t){g.push([t]);}); (P.alt||[]).forEach(function(a){g.push(a.map(function(x){return String(x).trim();}).filter(Boolean));}); return g; }
+function frases(f,grupos){
+  if(!grupos.length)return null;
+  var hits=f._lin.filter(function(l){ return grupos.some(function(g){ return g.some(function(t){return pega(l.n,t);}); }); });
+  /* si la palabra está en Inaceptables, manda lo conservador: ese mercado cuenta como "no" y esa frase va primero */
+  var hayNo=hits.some(function(l){return l.p===1;});
+  var orden=function(l){ return hayNo?(l.p===1?0:l.p===0?1:2):l.p; };
+  hits.sort(function(a,b){return orden(a)-orden(b);});
+  hits._clase=hayNo?1:(hits.length&&hits[0].p===0?0:2);
+  return hits;
 }
 function hay(f){
   var p=[f.id,f.name,f.program,f.via,f.coverage_note,(TIPO[f.tipo]||{}).label,(f.states||{}).label,(f.states||{}).note];
@@ -514,7 +599,7 @@ function hay(f){
   (Array.isArray(f.carriers)?f.carriers:[]).forEach(function(c){ if(typeof c==="string")p.push(c); else if(c){p.push(c.name); p=p.concat(arr(c.detail));} });
   (Array.isArray(f.tables)?f.tables:[]).forEach(function(t){ if(!t)return; p.push(t.title,t.footnote); p=p.concat(arr(t.headers)); (t.rows||[]).forEach(function(r){p=p.concat(arr(r));}); });
   APORTES.forEach(function(a){ if(a.mga_id===f.id&&(a.estado==="validado"||a.estado==="incorporado")){p.push(a.texto,a.cuenta);} });
-  f._hay=" "+norm(p.filter(Boolean).join(" \n "))+" ";
+  f._hay=nrm(p.filter(Boolean).join(" \n "));
 }
 
 /* ---------------- búsqueda ---------------- */
@@ -523,8 +608,9 @@ function parse(qRaw){
   var raw=String(qRaw||"").trim(); if(!raw)return out;
   /* códigos de estado en MAYÚSCULA (TX, NY…) — AL se toma como cobertura */
   raw=raw.replace(/\b[A-Z]{2}\b/g,function(c){ if(EST_SET[c]&&c!=="AL"){out.est.push(c);return " ";} return c; });
-  var q=" "+norm(raw).replace(/[,;]+/g," ").replace(/\s+/g," ")+" ";
-  EST_NOMBRES.forEach(function(e){ var k=" "+e[0]+" "; while(q.indexOf(k)>=0){ out.est.push(e[1]); q=q.replace(k," "); } });
+  var q0=" "+norm(raw).replace(/[,;]+/g," ").replace(/\s+/g," ")+" ";
+  EST_NOMBRES.forEach(function(e){ var k=" "+e[0]+" "; while(q0.indexOf(k)>=0){ out.est.push(e[1]); q0=q0.replace(k," "); } });
+  var q=nrm(q0);
   SIN_KEYS.forEach(function(e){ var k=" "+e[0]+" "; while(q.indexOf(k)>=0){ q=q.replace(k," ");
       if(e[1].cov){ if(out.cov.indexOf(e[1].cov)<0)out.cov.push(e[1].cov); if(e[0].length>=4)out.hl.push(e[0]); }
       else { out.alt.push(e[1].alt.concat([e[0]])); out.hl=out.hl.concat(e[1].alt,[e[0]]); } } });
@@ -545,11 +631,18 @@ function aplicar(){
     if(fC&&!f._cov[fC])return false;
     if(fS){ if(fS==="confirmar"){ if(!arr(f.pending).length)return false; } else if(f.estado!==fS)return false; }
     for(var i=0;i<P.cov.length;i++) if(!f._cov[P.cov[i]])return false;
-    for(var j=0;j<P.alt.length;j++){ if(!P.alt[j].some(function(a){return f._hay.indexOf(norm(a))>=0;}))return false; }
-    for(var k=0;k<P.txt.length;k++) if(f._hay.indexOf(P.txt[k])<0)return false;
+    for(var j=0;j<P.alt.length;j++){ if(!P.alt[j].some(function(a){return pega(f._hay,String(a).trim());}))return false; }
+    for(var k=0;k<P.txt.length;k++) if(!pega(f._hay,P.txt[k]))return false;
     for(var m=0;m<est.length;m++){ var r=estadoEn(f,est[m]); if(r==="no")return false; if(r==="depende")dep[f.id]=(dep[f.id]||[]).concat(est[m]); }
     return true;
   });
+  /* v3 · con palabras en la búsqueda: primero los que la tienen en Aceptables, luego Inaceptables, luego el resto */
+  var G=terminos(P); S.frases={}; S.grupos=G;
+  if(G.length){
+    res.forEach(function(f){ S.frases[f.id]=frases(f,G)||[]; });
+    var rk=function(f){ var h=S.frases[f.id]; return h.length?h._clase:3; };
+    res=res.map(function(f,i){return [f,i];}).sort(function(a,b){return (rk(a[0])-rk(b[0]))||(a[1]-b[1]);}).map(function(x){return x[0];});
+  }
   S.res=res; S.depende=dep; S.estBuscados=est;
   ["fTipo","fCov","fEst","fSit"].forEach(function(id){$(id).classList.toggle("on",!!$(id).value);});
   pintarLista();
@@ -578,13 +671,46 @@ function pintarLista(){
     var covs=arr(f.coverages), cv=covs.slice(0,6).map(function(c){var hit=covCanon(c).some(function(k){return S.parsed&&S.parsed.cov.indexOf(k)>=0||$("fCov").value===k;});return '<span class="cv'+(hit?" hit":"")+'">'+esc(c)+'</span>';}).join("")+(covs.length>6?'<span class="cv">+'+(covs.length-6)+'</span>':"");
     h+='<div class="it'+(S.sel===f.id?" sel":"")+'" role="option" tabindex="0" data-id="'+esc(f.id)+'">'+logoHtml(f.logo,f.name)+
        '<div class="tx"><div class="nm">'+esc(f.name)+'</div>'+(f.program?'<div class="pg">'+esc(f.program)+'</div>':"")+
-       '<div class="row">'+tipoPill(f.tipo)+cv+'</div></div>'+
+       '<div class="row">'+tipoPill(f.tipo)+cv+'</div>'+snHtml(f)+'</div>'+
        '<div class="der">'+sitHtml(f)+(S.depende[f.id]?'<span class="dep" title="La disponibilidad en '+esc(S.depende[f.id].join(", "))+' depende de condiciones">depende</span>':"")+'</div></div>';
   });
   if(!S.res.length)h='<div class="vacio">Ningún mercado coincide con la búsqueda y los filtros.</div>';
   $("items").innerHTML=h;
   $("cnt").textContent=S.res.length+" de "+FICHAS.length;
+  var R=$("resumen");
+  if(S.grupos&&S.grupos.length&&S.res.length){
+    var si=0,no=0,me=0; S.res.forEach(function(f){ var h=S.frases[f.id]||[]; if(!h.length)return; if(h._clase===0)si++; else if(h._clase===1)no++; else me++; });
+    R.innerHTML='· <b>'+si+'</b> aceptan · <b>'+no+'</b> no · <b>'+me+'</b> mencionan';
+  } else R.innerHTML="";
   arreglarLogos($("items"));
+  if(S.parsed&&S.parsed.hl&&S.parsed.hl.length)resaltar($("items"),S.parsed.hl);
+  pintarChips();
+}
+function recorte(txt){ txt=String(txt); return txt.length>170?txt.slice(0,167).replace(/\s+\S*$/,"")+"…":txt; }
+function snHtml(f){
+  var h=S.frases&&S.frases[f.id]; if(!h||!h.length)return "";
+  var top=h.slice(0,3).map(function(l){ return '<div class="k-'+l.k+'"><span class="sc">'+esc(l.sec)+' ·</span> '+esc(recorte(l.t))+'</div>'; }).join("");
+  if(h.length>3)top+='<div class="mas">+'+(h.length-3)+' más en la ficha</div>';
+  return '<div class="sn">'+top+'</div>';
+}
+/* v3 · chips de vocabulario: filas de la tabla con chip_orden; conteo = fichas que lo mencionan */
+var CHIPS_TODOS=false;
+function pintarChips(){
+  var el=$("chips"); if(!el)return;
+  var filas=SIN_TABLA.slice().filter(function(r){return CHIPS_TODOS||r.chip_orden!=null;});
+  if(!filas.length){el.innerHTML="";el.style.display="none";return;}
+  el.style.display="";
+  filas.sort(function(a,b){ var x=a.chip_orden==null?999:a.chip_orden, y=b.chip_orden==null?999:b.chip_orden; return (x-y)||String(a.canon).localeCompare(String(b.canon),"es"); });
+  var q=nrm($("q").value);
+  var h='<span class="lb">Prueba:</span>'+filas.map(function(r){
+    var claves=[r.canon].concat(arr(r.variantes)).map(function(k){return nrm(k).trim();});
+    var n=FICHAS.filter(function(f){return claves.some(function(k){return pega(f._hay,k);});}).length;
+    var on=q.indexOf(" "+nrm(r.canon).trim()+" ")>=0;
+    return '<button type="button" class="chip'+(on?" on":"")+'" data-chip="'+esc(r.canon)+'">'+esc(r.canon)+' <span class="n">'+n+'</span></button>';
+  }).join("");
+  var hayMas=SIN_TABLA.some(function(r){return r.chip_orden==null;});
+  if(hayMas||CHIPS_TODOS)h+='<button type="button" class="chip mas" data-chip-mas="1">'+(CHIPS_TODOS?"menos":"más…")+'</button>';
+  el.innerHTML=h;
 }
 function arreglarLogos(root){
   root.querySelectorAll(".logo img").forEach(function(img){
@@ -893,6 +1019,12 @@ function enlazar(){
   ["fTipo","fCov","fEst","fSit"].forEach(function(id){ $(id).addEventListener("change",aplicar); });
   $("limpiar").addEventListener("click",function(){ ["fTipo","fCov","fEst","fSit"].forEach(function(id){$(id).value="";}); $("q").value=""; S.q=""; S.parsed=parse(""); aplicar(); });
   $("volver").addEventListener("click",volverLista);
+  $("chips").addEventListener("click",function(e){
+    var m=e.target.closest("[data-chip-mas]"); if(m){ CHIPS_TODOS=!CHIPS_TODOS; pintarChips(); return; }
+    var b=e.target.closest("[data-chip]"); if(!b)return;
+    var c=b.getAttribute("data-chip"); $("q").value=(b.classList.contains("on")?"":c);
+    S.q=$("q").value; S.parsed=parse(S.q); aplicar(); $("q").focus();
+  });
   $("items").addEventListener("click",function(e){ var it=e.target.closest(".it"); if(it)abrir(it.getAttribute("data-id"),true); });
   $("items").addEventListener("keydown",function(e){ var it=e.target.closest(".it"); if(!it)return;
     if(e.key==="Enter"||e.key===" "){e.preventDefault();abrir(it.getAttribute("data-id"),true);}
@@ -964,6 +1096,7 @@ async function arrancar(){
     var D=window.GL_DEMO;
     if(!D){bloquear("Modo prueba sin datos (falta window.GL_DEMO).");return;}
     fijarUsuario(D.email||"demo@protectgoservices.com");
+    armarSinonimos(D.sinonimos||[]);
     montar(D.tipos,D.fichas,D.aportes,D.personas);
     /* solo para el arnés de pruebas: cambiar de usuario sin recargar */
     window.__GL={setEmail:function(e){ fijarUsuario(e); S.editando=null; S.formAbierto=false; $("yo").textContent=EMAIL; $("tabAportes").hidden=!ADM; marca(); if(S.view==="aportes"&&!ADM)verVista("mercados"); repintarExp(); }, estado:S};
@@ -979,8 +1112,11 @@ async function arrancar(){
     sb.from("guidelines_tipos").select(COLS_TIPO).order("orden"),
     sb.from("guidelines_mga").select(COLS_MGA).order("orden"),
     sb.from("guidelines_aportes").select(COLS_AP).order("created_at",{ascending:false}),
-    sb.from("v_personas").select("email,nombre")
+    sb.from("v_personas").select("email,nombre"),
+    sb.from("guidelines_sinonimos").select("canon,variantes,chip_orden").eq("activo",true)
   ]);
+  /* v3 · sinónimos: si la tabla no está o falla, se busca con los de respaldo del archivo */
+  armarSinonimos(rs[4]&&!rs[4].error?rs[4].data:[]);
   if(rs[1].error||rs[0].error){bloquear('No se pudieron cargar los guidelines. Recarga la página; si sigue igual, avísale a Andrés. <a href="./">Volver al Index</a>');return;}
   if(!rs[1].data||!rs[1].data.length){bloquear('Tu cuenta no tiene acceso a Guidelines MGA. <a href="./">Volver al Index</a>');return;}
   /* aportes o personas con error: la ficha sigue funcionando, sin experiencias / con correo corto */
@@ -997,7 +1133,7 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="guidelines.html";
-var PGV_VERSION=2; // v2 - ficha reorganizada (Perfilar / cómo trabajar / programas y tablas / notas), vista expandida a pantalla completa con navegación y lista por nombre. v1 - Guidelines MGA: 40 fichas y 5 tipos de mercado desde portal.guidelines_*, búsqueda con sinónimos y estados, filtros, experiencias del equipo con sellos y bandeja de sales@, anti-descarga y marca de agua.
+var PGV_VERSION=3; // v3 - buscador de palabras clave: frases en la lista, normalizador, sinónimos desde portal.guidelines_sinonimos y chips. v2 - v2 - ficha reorganizada (Perfilar / cómo trabajar / programas y tablas / notas), vista expandida a pantalla completa con navegación y lista por nombre. v1 - Guidelines MGA: 40 fichas y 5 tipos de mercado desde portal.guidelines_*, búsqueda con sinónimos y estados, filtros, experiencias del equipo con sellos y bandeja de sales@, anti-descarga y marca de agua.
 if(/[?&]demo=1\b/.test(location.search))return;
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
