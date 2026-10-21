@@ -303,6 +303,39 @@ a.area:focus-visible,a.liqc:focus-visible{outline:3px solid var(--pg-mint);outli
 @media(max-width:760px){ .area .top{flex-direction:row;align-items:center} }
 @media(max-width:620px){ .areas,.dos{grid-template-columns:1fr} }
 @media(max-width:420px){ .fr .fr-nums.n3{grid-template-columns:1fr} .liqc{flex-wrap:wrap} .liqc .ir{width:100%} }
+
+/* =====================================================================
+   v5 · Chase a la vista (20-oct). La tarjeta de la caja de La agencia deja de ser un
+   enlace entero: trae el saldo con su fecha y el botón Actualizar Chase (socios). Aviso
+   arriba cuando Chase pasa del límite de días. Cuadre de Chase al guardar. Ámbar #D9A520.
+   ===================================================================== */
+.avchase{display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:#FBF3E2;border:1px solid #EAD09A;border-radius:14px;padding:12px 16px;color:#8a6a1d;font-size:13.5px;margin-bottom:16px;line-height:1.45}
+.avchase b{font-family:var(--pg-font-num)}
+.avchase .pg-btn{margin-left:auto}
+.liqc{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:16px;align-items:center;cursor:default;position:relative;overflow:hidden;padding:14px 18px 14px 22px}
+.liqc:hover{border-color:var(--pg-line)}
+.liqc::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--pg-mint)}
+.liqc.stale::before{background:var(--pg-warn)}
+.liqc .ch{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:3px 0 5px}
+.liqc .ch .m{font-family:var(--pg-font-num);font-size:24px;font-weight:700;color:var(--pg-ink);line-height:1.1}
+.liqc.stale .ch .m{color:#8a6a1d}
+.liqc .nota-c{font-size:12.5px;color:#8a6a1d}
+.liqc .acc{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
+.liqc .acc input{border:1px solid var(--pg-line);border-radius:10px;padding:9px 11px;font-family:var(--pg-font-num);font-size:15px;width:180px;max-width:100%;color:var(--pg-ink);background:#fff}
+.liqc .ir{text-decoration:none;align-self:end}
+.liqc .ir:focus-visible{outline:3px solid var(--pg-mint);outline-offset:2px;border-radius:6px}
+.fr .btn-osc{display:inline-block;background:transparent;border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:8px;padding:6px 12px;font:700 12px var(--pg-font-body);cursor:pointer;margin-top:9px}
+.fr .btn-osc:hover{background:rgba(255,255,255,.1)}
+.fr .fr-n .s.warn{color:#F0C55A}
+.cuadre h2 .pg-pill{font-family:var(--pg-font-body)}
+.cuadre .pg-table td small{display:block;color:var(--pg-muted);font-size:11px;font-weight:400}
+.cuadre .pg-table tr.tot td{border-top:2px solid var(--pg-ink);font-weight:700}
+@media(max-width:620px){ .liqc{grid-template-columns:auto minmax(0,1fr)} .liqc .ir{grid-column:1/-1;align-self:auto} }
+@media(max-width:420px){ .avchase .pg-btn{margin-left:0} }
+.sello[data-act]{cursor:pointer}
+.sello[data-act]:hover{border-color:var(--pg-mint-soft);color:var(--pg-ink)}
+.sello.warn[data-act]:hover{color:#6b5216}
+.sello[data-act]:focus-visible{outline:3px solid var(--pg-mint);outline-offset:2px}
 </style>
 <script src="pg-novedades.js"></script>
 </head>
@@ -330,6 +363,8 @@ a.area:focus-visible,a.liqc:focus-visible{outline:3px solid var(--pg-mint);outli
 
  <main class="pg-main" id="main">
   <div id="acceso"></div>
+  <div id="avisoChase"></div>
+  <div id="cuadreChase"></div>
 
   <!-- ================= 01 · LA AGENCIA (solo direccion_total: portal.liquidez_agencia) ================= -->
   <section class="pg-section" id="s-age">
@@ -338,7 +373,7 @@ a.area:focus-visible,a.liqc:focus-visible{outline:3px solid var(--pg-mint);outli
      <div class="pg-eyebrow" id="eyAge">La agencia</div>
      <h1>La agencia</h1>
     </div>
-    <div class="sellos"><span class="sello" id="selloAge">—</span><button class="hq" type="button" data-act="ayuda-age" title="Qué es cada cosa">?</button></div>
+    <div class="sellos"><span class="sello" id="selloChaseAge" hidden></span><span class="sello" id="selloAge">—</span><button class="hq" type="button" data-act="ayuda-age" title="Qué es cada cosa">?</button></div>
    </div>
    <div class="fr" id="frAge">
     <div class="fr-nums n3">
@@ -347,6 +382,7 @@ a.area:focus-visible,a.liqc:focus-visible{outline:3px solid var(--pg-mint);outli
      <div><div class="skel" style="width:60%"></div><div class="skel" style="height:26px"></div></div>
     </div>
    </div>
+   <div class="liqc" id="liqc"><div class="skel" style="width:60%"></div></div>
    <div class="eyl">Las áreas · cada una contra su vara</div>
    <div class="leyenda" id="leyenda"></div>
    <div class="areas" id="areas">
@@ -355,7 +391,6 @@ a.area:focus-visible,a.liqc:focus-visible{outline:3px solid var(--pg-mint);outli
     <div class="area e"><div class="skel" style="width:50%"></div><div class="skel" style="height:60px"></div></div>
    </div>
    <div class="pg-card cierre" id="cierre"><div class="skel" style="width:40%"></div><div class="skel" style="height:60px"></div></div>
-   <a class="liqc" id="liqc" href="#liq"><div class="skel" style="width:60%"></div></a>
   </section>
 
   <!-- ================= 01 · LIQUIDEZ ================= -->
@@ -405,7 +440,7 @@ a.area:focus-visible,a.liqc:focus-visible{outline:3px solid var(--pg-mint);outli
    <div class="pg-card" id="cRet"><div class="skel"></div><div class="skel"></div><div class="skel" style="width:70%"></div></div>
   </section>
 
-  <div class="pg-footnote">GABI · Liquidez v3 · ProtectGo Services LLC</div>
+  <div class="pg-footnote">GABI · Liquidez v5 · ProtectGo Services LLC</div>
  </main>
 </div>
 
@@ -465,7 +500,7 @@ const toastErr = (e, pre) => toast((pre || '') + errMsg(e), true);
 let D = null;            // respuesta de liquidez_panel()
 let EMAIL = '';
 let OCUPADO = false;     // una escritura a la vez
-const UI = { per:'sem', vista:'sem', abiertos:new Set(), aplazar:null, edit:null, confirmar:null, retForm:null, peq:false, tab:'liq', prog:'', inicio:false, navego:false };
+const UI = { per:'sem', vista:'sem', abiertos:new Set(), aplazar:null, edit:null, confirmar:null, retForm:null, peq:false, tab:'liq', prog:'', inicio:false, navego:false, cuadre:null };
 /* v3 · La agencia: portal.liquidez_agencia() (solo direccion_total; a los demás {puede:false}). */
 let AG = null;            // respuesta de liquidez_agencia()
 let AG_ESTADO = 'cargando';  // cargando | si | no | error
@@ -529,6 +564,7 @@ function sinAcceso(){
 function pintar(){
   pintarCabecera(); pintarFranja(); pintarIngresos(); pintarEntra(); pintarSale();
   pintarOnda(); pintarFijos(); pintarRetiros(); pintarPie();
+  pintarAvisoChase(); pintarCuadreChase();
   if (AG) pintarCajaAgencia();
   document.body.dataset.listo = '1';
 }
@@ -731,15 +767,110 @@ function pintarAgencia(){
 }
 function pintarCajaAgencia(){
   if (!D) return;
-  const rr = D.retiro || {}, pb = num(rr.punto_bajo), colchon = num(rr.colchon);
+  const rr = D.retiro || {}, c = D.caja || {}, pu = P(), pb = num(rr.punto_bajo), colchon = num(rr.colchon);
   const val = rr.registrado != null ? rr.registrado : rr.sugerido;
   const obj = num(rr.obj) != null ? rr.obj : (D.params || {}).obj;
+  const fch = fechaChase(c);
   const ojo = (pb != null && colchon != null && pb < colchon && rr.punto_bajo_lunes) ? ' Ojo: la semana del <b>' + fCorta(rr.punto_bajo_lunes) + '</b> la caja baja a <b>' + usd(pb) + '</b>.' : '';
+  /* v5 · el saldo de Chase se pone aquí mismo (socios). Si Chase pasa del límite, el campo ya sale abierto. */
+  const abierto = !!pu.socio && (UI.edit === 'saldo-age' || !!c.stale);
+  const prev = $('inSaldoAge'), guarda = prev ? { v:prev.value, f:document.activeElement === prev } : null;
+  let acc = '';
+  if (pu.socio) acc = abierto
+    ? '<div class="acc"><input type="number" step="0.01" id="inSaldoAge" data-ok="bSaldoAge" placeholder="Saldo de Chase hoy" aria-label="Saldo de Chase hoy">'
+      + '<button class="pg-btn mint" type="button" id="bSaldoAge" data-act="saldo-age-ok">Guardar</button>'
+      + (c.stale ? '' : '<button class="pg-btn sec" type="button" data-act="cerrar-edit-age">Cancelar</button>') + '</div>'
+    : '<div class="acc"><button class="pg-btn mint" type="button" data-act="saldo-age">Actualizar Chase</button></div>';
+  $('liqc').classList.toggle('stale', !!c.stale);
   $('liqc').innerHTML = '<div class="anl c84">'
     + anilloAg({val:val, vara:obj, ok:rr.semaforo === 'verde', tam:84, grosor:7, titulo:'Retiro ' + usd(val) + ' por socio de ' + usd(obj) + ' objetivo.'})
     + '<div class="cen"><div class="n">' + usd(val) + '</div><div class="l">por socio</div></div></div>'
-    + '<div class="tx"><div class="k">La caja</div>Caja <b>' + usd(D.caja && D.caja.saldo) + '</b> · esta semana quedan <b>' + usd(D.semana && D.semana.queda) + '</b>.' + ojo + '</div>'
-    + '<span class="ir">Ver Liquidez →</span>';
+    + '<div class="tx"><div class="k">La caja · Chase</div>'
+    + '<div class="ch"><span class="m">' + usd(c.saldo) + '</span><span class="sello' + (fch.warn ? ' warn' : '') + '">' + esc(fch.txt) + '</span></div>'
+    + (c.stale ? '<div class="nota-c">El retiro está apagado hasta que pongas el saldo de hoy.</div>'
+               : '<div>Esta semana quedan <b>' + usd(D.semana && D.semana.queda) + '</b>.' + ojo + '</div>')
+    + acc + '</div>'
+    + '<a class="ir" id="irLiq" href="#liq">Ver Liquidez →</a>';
+  if (guarda) { const n = $('inSaldoAge'); if (n) { n.value = guarda.v; if (guarda.f) n.focus(); } }
+  const s = $('selloChaseAge');
+  if (s) {
+    s.hidden = false; s.className = 'sello' + (fch.warn ? ' warn' : ''); s.textContent = fch.sello;
+    if (pu.socio) { s.dataset.act = 'saldo-aviso'; s.setAttribute('role', 'button'); s.tabIndex = 0; s.title = 'Actualizar Chase'; }
+    else { delete s.dataset.act; s.removeAttribute('role'); s.removeAttribute('tabindex'); s.removeAttribute('title'); }
+  }
+}
+/* v5 · la fecha del último saldo de Chase en palabras ("al 13-oct · hace 7 días"); ámbar si pasó del límite. */
+function fechaChase(c){
+  c = c || {};
+  if (!c.actualizado) return { txt:'sin saldo', sello:'Chase · —', warn:true, dia:null };
+  let dia;
+  try { dia = new Intl.DateTimeFormat('en-CA', { timeZone:'America/Bogota' }).format(new Date(c.actualizado)); } catch (e) { dia = String(c.actualizado).slice(0, 10); }
+  const d = num(c.dias), n = d == null ? null : Math.floor(d);
+  const hace = d == null ? '' : (d < 1 ? 'hoy' : 'hace ' + n + (n === 1 ? ' día' : ' días'));
+  const plaid = c.fuente === 'plaid';
+  return {
+    txt: (plaid ? 'Plaid · ' : '') + 'al ' + fCorta(dia) + (hace ? ' · ' + hace : ''),
+    sello: plaid ? 'Plaid ' + horaBog(c.actualizado) : 'Chase · ' + (d == null ? '—' : d < 1 ? 'hoy' : 'hace ' + n + ' d'),
+    warn: !!c.stale, dia
+  };
+}
+/* v5 · aviso arriba (las tres pestañas): solo socios y solo si Chase pasó del límite de días. */
+function pintarAvisoChase(){
+  const el = $('avisoChase'); if (!el) return;
+  const c = (D && D.caja) || {};
+  if (!D || !c.stale || !P().socio) { el.innerHTML = ''; return; }
+  const d = num(c.dias), fch = fechaChase(c);
+  const ult = (num(c.saldo) != null && fch.dia) ? ' (último saldo <b>' + usd2(c.saldo) + '</b> del ' + esc(fCorta(fch.dia)) + ')' : '';
+  el.innerHTML = '<div class="avchase" role="status"><span class="pg-semaforo gray"></span><span>'
+    + (d == null ? 'Chase no tiene saldo.' : 'Chase lleva <b>' + Math.floor(d) + (Math.floor(d) === 1 ? ' día' : ' días') + '</b> sin actualizar' + ult + '.')
+    + ' El retiro está en gris hasta que pongas el saldo de hoy.</span>'
+    + '<button class="pg-btn mint sm" type="button" data-act="saldo-aviso">Poner el saldo de hoy</button></div>';
+}
+/* v5 · cuadre de Chase: se arma ANTES de guardar con lo que trae el panel y se muestra si la escritura sale bien.
+   Esperado = saldo anterior + ventas que entraron (BOS) − pagos vencidos (se dan por pagados al poner el saldo de hoy;
+   los cortes de deuda con las MGAs no) ± lo marcado después del saldo anterior. */
+function cuadreDe(v){
+  const c = D.caja || {}, it = D.items || [], aj = D.ajustes || [];
+  const suma = a => a.reduce((t, x) => t + (num(x.monto) || 0), 0);
+  const ventas = suma(it.filter(x => x.estado === 'ya_entro'));
+  const venc = it.filter(x => x.sentido === 'sale' && x.estado === 'vencido' && x.tipo !== 'deuda_mga');
+  const vencidos = suma(venc);
+  const ajE = suma(aj.filter(a => a.sentido === 'entra')), ajS = suma(aj.filter(a => a.sentido === 'sale'));
+  const esperado = (num(c.saldo) || 0) + ventas - vencidos + ajE - ajS;
+  return { anterior:num(c.saldo), dia:fechaChase(c).dia, ventas, vencidos, nVenc:venc.length, ajE, ajS, esperado, real:v, dif:v - esperado };
+}
+function pintarCuadreChase(){
+  const el = $('cuadreChase'); if (!el) return;
+  const q = UI.cuadre;
+  if (!q) { el.innerHTML = ''; return; }
+  const ok = Math.abs(q.dif) < 1000;
+  const sin = v => usd2(Math.abs(v));
+  const fila = (t, v, cls, sub) => '<tr' + (cls ? ' class="' + cls + '"' : '') + '><td>' + t + (sub ? '<small>' + sub + '</small>' : '') + '</td><td class="num">' + v + '</td></tr>';
+  el.innerHTML = '<div class="pg-card cuadre">'
+    + '<h2><span>Cuadre de Chase · del ' + esc(q.dia ? fCorta(q.dia) : '—') + ' a hoy</span><span class="h2r">'
+    + (ok ? '<span class="pg-pill ok">cuadra</span>' : '<span class="pg-pill warn">falta explicar ' + usd(Math.abs(q.dif)) + '</span>')
+    + '<button class="hq" type="button" data-act="cuadre-x" title="Cerrar" aria-label="Cerrar el cuadre">✕</button></span></h2>'
+    + '<table class="pg-table"><tbody>'
+    + fila('Chase anterior', usd2(q.anterior))
+    + fila('+ Ventas y endosos que entraron', '+' + sin(q.ventas), '', 'DP que todavía están en el banco + fees (BOS)')
+    + fila('− Pagos que vencieron', '−' + sin(q.vencidos), '', q.nVenc ? plural(q.nVenc, 'pago sin marcar: se da por pagado', 'pagos sin marcar: se dan por pagados') : 'ninguno')
+    + ((q.ajE || q.ajS) ? fila('± Marcados después del saldo anterior', (q.ajE - q.ajS < 0 ? '−' : '+') + sin(q.ajE - q.ajS), '', 'entró ' + usd2(q.ajE) + ' · salió ' + usd2(q.ajS)) : '')
+    + fila('= Chase esperado', usd2(q.esperado), 'tot')
+    + fila('Chase de hoy', usd2(q.real))
+    + fila('Diferencia', (q.dif < 0 ? '−' : '+') + sin(q.dif))
+    + '</tbody></table>'
+    + (ok ? '' : '<div class="nota-a">' + (q.dif > 0 ? 'Hay más plata de la que el sistema sabe' : 'Hay menos plata de la que el sistema sabe')
+      + ': es lo que llegó de las compañías (comisiones por statement) y lo que se pagó sin marcar.</div>')
+    + '</div>';
+}
+async function guardarSaldo(b, idInput){
+  const v = num(($(idInput) || {}).value);
+  const banco = ((D.caja || {}).cuentas || []).find(c => c.tipo === 'banco');
+  if (v == null) { toast('Escribe el saldo', true); return; }
+  if (!banco) { toast('No encontramos la cuenta de banco', true); return; }
+  const cu = cuadreDe(v);
+  const ok = await escribir(b, () => SB.rpc('caja_actualizar_saldo_v2', { p_caja_id:banco.id, p_saldo_nuevo:v, p_notas:'GABI Liquidez' }), 'Saldo de Chase actualizado');
+  if (ok) { UI.cuadre = cu; pintarCuadreChase(); }
 }
 function abrirAyudaAgencia(){
   $('modalBody').innerHTML = '<h3>La agencia · qué es cada cosa</h3>'
@@ -783,7 +914,7 @@ function pintarCabecera(){
   else { const d = num(c.dias); chase = 'Chase · ' + (d == null ? '—' : d < 1 ? 'hoy' : 'hace ' + Math.floor(d) + ' d'); }
   const dc = diasDesde(fr.corte);
   const corte = 'Corte de Jeff · ' + (dc == null ? '—' : dc < 1 ? 'hoy' : 'hace ' + Math.floor(dc) + ' d');
-  $('sellos').innerHTML = '<span class="sello' + (c.stale ? ' warn' : '') + '">' + esc(chase) + '</span> '
+  $('sellos').innerHTML = '<span class="sello' + (c.stale ? ' warn' : '') + '"' + (P().socio ? ' data-act="saldo-aviso" role="button" tabindex="0" title="Actualizar Chase"' : '') + '>' + esc(chase) + '</span> '
     + '<span class="sello' + (dc == null || dc > 10 ? ' warn' : '') + '">' + esc(corte) + '</span>';
   $('tgMes').textContent = (() => { const f = fISO(D.hoy); return f ? MES_L[f.m - 1].charAt(0).toUpperCase() + MES_L[f.m - 1].slice(1) : 'Mes'; })();
 }
@@ -833,7 +964,9 @@ function pintarFranja(){
   } else vCaja = '<div class="v' + (c.stale ? ' warn' : '') + '">' + usd(c.saldo) + '</div>';
   const txtT = 'tarjetas deben ' + usd(deuda);
   const sCaja = (pu.operar && tarj.length) ? '<button class="lnk" type="button" data-act="tarjetas">' + esc(txtT) + '</button>' : esc(txtT);
-  const lapiz = pu.socio && UI.edit !== 'saldo' ? '<button class="ed" type="button" data-act="saldo" title="Poner el saldo de Chase">✎</button>' : '';
+  /* v5 · el ✎ pasa a ser un botón visible, y debajo del saldo va su fecha */
+  const lapiz = pu.socio && UI.edit !== 'saldo' ? '<button class="btn-osc" type="button" data-act="saldo" title="Poner el saldo de Chase">Actualizar</button>' : '';
+  const fch = fechaChase(c);
 
   /* anillo */
   let val, lbl = 'retiro · socio';
@@ -863,7 +996,7 @@ function pintarFranja(){
 
   $('franja').innerHTML =
     '<div class="fr-nums">'
-    + '<div class="fr-n"><div class="l">Caja' + lapiz + '</div>' + vCaja + '<div class="s">' + sCaja + '</div></div>'
+    + '<div class="fr-n"><div class="l">Caja · Chase</div>' + vCaja + '<div class="s' + (fch.warn ? ' warn' : '') + '">' + esc(fch.txt) + '</div><div class="s">' + sCaja + '</div>' + lapiz + '</div>'
     + '<div class="fr-n"><div class="l">Entra</div><div class="v mint">' + usd(s.entra) + '</div><div class="s">esta semana</div></div>'
     + '<div class="fr-n"><div class="l">Sale</div><div class="v">' + usd(s.sale) + '</div><div class="s">esta semana · ' + plural(nPagos, 'pago', 'pagos') + '</div></div>'
     + '<div class="fr-n"><div class="l">Queda</div><div class="v ' + clsQ + '">' + usd(s.queda) + '</div><div class="s">colchón ' + usd(colchon) + '</div></div>'
@@ -1291,7 +1424,7 @@ function abrirAyuda(){
   const p = D ? (D.params || {}) : {};
   const peso = num(p.peso) == null ? '—' : Math.round(num(p.peso) * 100) + '%';
   $('modalBody').innerHTML = '<h3>Qué es cada cosa</h3>'
-    + '<p><b>Caja</b> es el saldo de Chase. <b>Entra</b> y <b>Sale</b> son lo de esta semana según el motor: el BOS, los compromisos, los down payments y el corte de Jeff. <b>Queda</b> = Caja + Entra − Sale.</p>'
+    + '<p><b>Caja</b> es el saldo de Chase. Se pone con el botón <b>Actualizar</b> (aquí o en La agencia); si pasa de <b>' + esc(p.stale_dias == null ? '—' : p.stale_dias) + ' días</b> sin actualizar, el retiro se apaga. Al guardarlo sale el cuadre: lo que el sistema esperaba contra lo que hay. <b>Entra</b> y <b>Sale</b> son lo de esta semana según el motor: el BOS, los compromisos, los down payments y el corte de Jeff. <b>Queda</b> = Caja + Entra − Sale.</p>'
     + '<p>Todo lo que está en pesos se pasa a dólares con la TRM de trabajo: <b>' + n0(p.trm) + '</b>.</p>'
     + '<p>Lo estimado cuenta a <b>' + peso + '</b> para el retiro.</p>'
     + '<p>El retiro de la semana = lo que <b>Queda</b> esta semana menos el colchón de <b>' + usd(p.colchon) + '</b>, entre <b>' + esc(p.socios == null ? '—' : p.socios) + '</b>, nunca por encima del objetivo (' + usd(p.obj) + '). Las <b>' + esc(p.horizonte == null ? '—' : p.horizonte) + ' semanas</b> no lo recortan: si más adelante la caja baja del colchón, la línea de abajo avisa.</p>'
@@ -1317,7 +1450,7 @@ document.querySelectorAll('.pg-side a[data-go]').forEach(a => a.addEventListener
 
 /* ---------- clics (un solo escuchador) ---------- */
 document.addEventListener('click', async e => {
-  if (e.target.closest('#liqc')) { e.preventDefault(); UI.navego = true; irA('liq'); return; }
+  if (e.target.closest('#irLiq')) { e.preventDefault(); UI.navego = true; irA('liq'); return; }
   const b = e.target.closest('[data-act]'); if (!b) return;
   const act = b.dataset.act;
   if (act === 'modal-x') { cerrarModal(); return; }
@@ -1360,17 +1493,26 @@ document.addEventListener('click', async e => {
     case 'venc-no': UI.confirmar = null; pintarSale(); break;
     case 'venc-ok': todoVencido(); break;
     case 'saldo': UI.edit = 'saldo'; pintarFranja(); { const f = $('inSaldo'); if (f) { f.focus(); f.select(); } } break;
+    case 'saldo-age': UI.edit = 'saldo-age'; pintarCajaAgencia(); { const f = $('inSaldoAge'); if (f) f.focus(); } break;
+    case 'cerrar-edit-age': UI.edit = null; pintarCajaAgencia(); break;
+    case 'saldo-age-ok': guardarSaldo(b, 'inSaldoAge'); break;
+    case 'cuadre-x': UI.cuadre = null; pintarCuadreChase(); break;
+    case 'saldo-aviso': {
+      /* el aviso abre el campo en la pestaña donde estás: La agencia (su tarjeta) o Liquidez (la franja) */
+      if (UI.tab === 'age' && AG) {
+        UI.edit = 'saldo-age'; pintarCajaAgencia();
+        const f = $('inSaldoAge'); if (f) { f.focus(); try { f.scrollIntoView({ block:'center', behavior:'smooth' }); } catch (er) {} }
+      } else {
+        if (UI.tab !== 'liq') { UI.navego = true; irA('liq', true); }
+        UI.edit = 'saldo'; pintarFranja();
+        const f = $('inSaldo'); if (f) { f.focus(); f.select(); }
+      }
+      break;
+    }
     case 'tarjetas': UI.edit = UI.edit === 'tarjetas' ? null : 'tarjetas'; pintarFranja(); break;
     case 'ret-reg': UI.edit = 'retiro'; pintarFranja(); { const f = $('inRetiro'); if (f) f.focus(); } break;
     case 'cerrar-edit': UI.edit = null; pintarFranja(); break;
-    case 'saldo-ok': {
-      const v = num(($('inSaldo') || {}).value);
-      const banco = ((D.caja || {}).cuentas || []).find(c => c.tipo === 'banco');
-      if (v == null) { toast('Escribe el saldo', true); return; }
-      if (!banco) { toast('No encontramos la cuenta de banco', true); return; }
-      escribir(b, () => SB.rpc('caja_actualizar_saldo_v2', { p_caja_id:banco.id, p_saldo_nuevo:v, p_notas:'GABI Liquidez' }), 'Saldo de Chase actualizado');
-      break;
-    }
+    case 'saldo-ok': guardarSaldo(b, 'inSaldo'); break;
     case 'tarj-ok': {
       const id = b.dataset.id, v = num(($('td-' + id) || {}).value);
       if (v == null || v < 0) { toast('Escribe la deuda de la tarjeta', true); return; }
@@ -1418,7 +1560,7 @@ $('modal').addEventListener('click', e => { if (e.target === $('modal')) cerrarM
 let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (D && UI.tab === 'liq') pintarOnda(); }, 150); });
 
 arrancar();
-/* TODO: cuando Plaid (sync-chase-saldo) esté vivo, el lápiz de CAJA queda solo como respaldo; hoy es la vía principal. */
+/* TODO: cuando Plaid (plaid-chase) esté vivo, el botón Actualizar queda solo como respaldo; hoy es la vía principal. */
 /* TODO: "Corregir" en Retiros pide nota libre; si retiro_corregir exige un formato de nota, ajustarlo aquí. */
 </script>
 <script>
@@ -1427,7 +1569,7 @@ arrancar();
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="gabi-liquidez.html";
-var PGV_VERSION=4; // v4 - 14-oct-2026 (auditoría en producción): si la base está ocupada y liquidez_panel falla al entrar, un reintento automático a los 2.5 s antes del aviso; si La agencia ya cargó, se queda a la vista y el aviso habla solo de la liquidez; singular y plural en las tarjetas ("1 negativo", "1 venta", "1 persona"). | v3 - 14-oct-2026 01 LA AGENCIA (solo direccion_total, portal.liquidez_agencia): el macro de dirección en tarjetas con anillos — la franja del mes (entró contra lo que necesita: nómina, fijos y retiro mínimo, con la barrita del "debería ir hoy"), las tres áreas con la cara chiquita de su líder adentro del anillo (Ventas nuevas · Brahian, Renovaciones · Karen, Endosos · Jhon Ramírez), el mes cerrado y el año en dos anillos con el aviso de comisiones de agentes sin cargar, y la caja en una tarjeta chiquita. Abre ahí para dirección; Jorge y los demás siguen en Liquidez y Retiros sin cambios. | v2 - 13-oct-2026 el retiro se lee con la semana contra sí misma (Caja + Entra − Sale de esta semana − colchón, entre los socios, hasta el objetivo); las 4 semanas solo avisan. Lo que vencía antes del último saldo de Chase se da por pagado (pie en Sale). | v1 - 12-oct-2026 GABI LIQUIDEZ EN EL PORTAL: una pantalla de dirección que sale entera de portal.liquidez_panel() — franja (caja, entra, sale, queda y anillo del retiro por socio), ingresos semana/mes, por entrar, la cola de pagos con un clic (liquidez_decidir), cuatro semanas y fijos del mes; pestaña Retiros (registrar, corregir, cerrar la semana) y carga del corte de Jeff. Cero barras, guion cuando no hay dato, sin almacenamiento del navegador.
+var PGV_VERSION=5; // v5 - 20-oct-2026 CHASE A LA VISTA: en La agencia la tarjeta de la caja trae el saldo de Chase con su fecha y el botón Actualizar Chase (socios; si Chase pasó del límite de días, el campo ya sale abierto) y deja de ser un enlace entero ("Ver Liquidez →" aparte); aviso arriba en las tres pestañas cuando Chase pasó del límite ("Poner el saldo de hoy"); en la franja de Liquidez el ✎ pasa a un botón visible Actualizar con la fecha del saldo debajo; al guardar sale el cuadre de Chase (anterior + ventas que entraron − pagos vencidos = esperado, contra el real); sello de Chase en La agencia. Misma función caja_actualizar_saldo_v2; la base no cambia. | v4 - 14-oct-2026 (auditoría en producción): si la base está ocupada y liquidez_panel falla al entrar, un reintento automático a los 2.5 s antes del aviso; si La agencia ya cargó, se queda a la vista y el aviso habla solo de la liquidez; singular y plural en las tarjetas ("1 negativo", "1 venta", "1 persona"). | v3 - 14-oct-2026 01 LA AGENCIA (solo direccion_total, portal.liquidez_agencia): el macro de dirección en tarjetas con anillos — la franja del mes (entró contra lo que necesita: nómina, fijos y retiro mínimo, con la barrita del "debería ir hoy"), las tres áreas con la cara chiquita de su líder adentro del anillo (Ventas nuevas · Brahian, Renovaciones · Karen, Endosos · Jhon Ramírez), el mes cerrado y el año en dos anillos con el aviso de comisiones de agentes sin cargar, y la caja en una tarjeta chiquita. Abre ahí para dirección; Jorge y los demás siguen en Liquidez y Retiros sin cambios. | v2 - 13-oct-2026 el retiro se lee con la semana contra sí misma (Caja + Entra − Sale de esta semana − colchón, entre los socios, hasta el objetivo); las 4 semanas solo avisan. Lo que vencía antes del último saldo de Chase se da por pagado (pie en Sale). | v1 - 12-oct-2026 GABI LIQUIDEZ EN EL PORTAL: una pantalla de dirección que sale entera de portal.liquidez_panel() — franja (caja, entra, sale, queda y anillo del retiro por socio), ingresos semana/mes, por entrar, la cola de pagos con un clic (liquidez_decidir), cuatro semanas y fijos del mes; pestaña Retiros (registrar, corregir, cerrar la semana) y carga del corte de Jeff. Cero barras, guion cuando no hay dato, sin almacenamiento del navegador.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;
