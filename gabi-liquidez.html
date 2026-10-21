@@ -336,6 +336,58 @@ a.area:focus-visible,a.liqc:focus-visible{outline:3px solid var(--pg-mint);outli
 .sello[data-act]:hover{border-color:var(--pg-mint-soft);color:var(--pg-ink)}
 .sello.warn[data-act]:hover{color:#6b5216}
 .sello[data-act]:focus-visible{outline:3px solid var(--pg-mint);outline-offset:2px}
+
+/* =====================================================================
+   v6 · MODO VER (20-oct). Cortes de tu consolidado (solo dirección), la lectura B del retiro
+   (propuesta, solo dirección) y el cierre del mes en caja. El retiro oficial no cambia.
+   Mismo sistema: tokens --pg-*, ámbar #D9A520, cero barras, guion sin dato.
+   ===================================================================== */
+.cortes-card .cortes{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.cortes-card .ficha{background:#F9FBFC;border:1px solid var(--pg-line);border-radius:14px;padding:12px 14px;min-width:0}
+.cortes-card .ficha.llego{background:#F2FAF7;border-color:#CFE9E1}
+.cortes-card .ficha.sf{border-style:dashed}
+.cortes-card .ficha .k{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--pg-muted)}
+.cortes-card .ficha .v{font-family:var(--pg-font-num);font-size:22px;font-weight:700;color:var(--pg-ink);margin:6px 0 2px}
+.cortes-card .ficha .v.neg{color:var(--pg-neg)}
+.cortes-card .ficha .s{font-size:11.5px;color:var(--pg-muted);line-height:1.45}
+.cortes-card .ficha .s b{font-family:var(--pg-font-num);color:var(--pg-ink);font-weight:600}
+.cortes-card details{margin-top:8px}
+.cortes-card summary{cursor:pointer;font-size:12px;font-weight:700;color:var(--pg-mint-deep)}
+.cortes-card .ln{display:flex;justify-content:space-between;gap:8px;font-size:12px;padding:4px 0;border-bottom:1px dashed var(--pg-line)}
+.cortes-card .ln span{min-width:0;overflow-wrap:anywhere}
+.cortes-card .ln b{font-family:var(--pg-font-num);font-weight:600;color:var(--pg-ink);white-space:nowrap}
+.cortes-card .chk{margin-top:12px;font-size:12.5px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.cortes-card .chk b{font-family:var(--pg-font-num)}
+.cortes-card .vacio-c{font-size:13px;color:var(--pg-muted);display:flex;gap:12px;align-items:center;flex-wrap:wrap;line-height:1.5}
+.cortes-card .vacio-c span{flex:1;min-width:220px}
+.cortes-card h2 .h2r{flex-wrap:wrap;justify-content:flex-end}
+.cortes-card h2 .pg-pill{font-family:var(--pg-font-body)}
+.cortes-card .cuando{font-family:var(--pg-font-num);font-size:11px;color:var(--pg-muted);font-weight:600}
+.cortes-card .cuando.warn{color:#8a6a1d}
+.pg-btn.seguro{background:#FCEEEC;border:1px solid #F3D3D0;color:var(--pg-neg)}
+.fr .fr-ring.dos{width:auto;display:flex;gap:18px;align-items:flex-start}
+.fr .fr-ring.dos .ringA{width:170px;text-align:center}
+.fr .ringB{display:flex;flex-direction:column;align-items:center;gap:5px;padding-top:6px;max-width:120px;text-align:center}
+.fr .ringB .anl{width:84px;height:84px}
+.fr .ringB .anl .cen .n{color:#fff;font-size:14px}
+.fr .ringB .anl .cen .l{color:#8da0ad;font-size:8.5px;margin-top:2px}
+.fr .ringB .tag{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#8da0ad}
+.fr .ringB .nb{font-size:10.5px;color:#8da0ad;line-height:1.35}
+.fr .fr-line.b{border-top:1px dashed rgba(255,255,255,.12)}
+.liqc .ringsAB{display:flex;gap:10px;align-items:flex-start}
+.liqc .ringB2{display:flex;flex-direction:column;align-items:center;gap:3px}
+.anl.c64{width:64px;height:64px}
+.anl.c64 .cen .n{font-size:11px}
+.anl.c64 .cen .l{font-size:7.5px;margin-top:2px}
+.liqc .ringB2 .tag{font-size:9.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--pg-muted);white-space:nowrap}
+.mesln{margin-top:12px;font-size:13px;line-height:1.5;color:var(--pg-txt)}
+.mesln b{font-family:var(--pg-font-num);color:var(--pg-ink)}
+.mesln .lb{font-weight:700;color:var(--pg-ink)}
+.cuadre .pista{margin-top:10px;font-size:12.5px;color:var(--pg-txt);line-height:1.5}
+.cuadre .pista b{font-family:var(--pg-font-num)}
+@media(max-width:980px){ .cortes-card .cortes{grid-template-columns:1fr 1fr} }
+@media(max-width:760px){ .fr .fr-ring.dos{justify-content:center} }
+@media(max-width:420px){ .cortes-card .cortes{grid-template-columns:1fr} .fr .fr-ring.dos .ringA{width:auto} }
 </style>
 <script src="pg-novedades.js"></script>
 </head>
@@ -412,6 +464,8 @@ a.area:focus-visible,a.liqc:focus-visible{outline:3px solid var(--pg-mint);outli
     </div>
    </div>
 
+   <div class="pg-card cortes-card" id="cCortes" hidden></div>
+
    <div class="ing-h">
     <div class="pg-eyebrow" style="margin:0">Ingresos · lo que vende la agencia</div>
     <div class="pg-toggle" id="tgPer"><button class="on" type="button" data-act="per" data-v="sem">Semana</button><button type="button" data-act="per" data-v="mes" id="tgMes">Mes</button></div>
@@ -440,7 +494,7 @@ a.area:focus-visible,a.liqc:focus-visible{outline:3px solid var(--pg-mint);outli
    <div class="pg-card" id="cRet"><div class="skel"></div><div class="skel"></div><div class="skel" style="width:70%"></div></div>
   </section>
 
-  <div class="pg-footnote">GABI · Liquidez v5 · ProtectGo Services LLC</div>
+  <div class="pg-footnote">GABI · Liquidez v6 · ProtectGo Services LLC</div>
  </main>
 </div>
 
@@ -564,7 +618,7 @@ function sinAcceso(){
 function pintar(){
   pintarCabecera(); pintarFranja(); pintarIngresos(); pintarEntra(); pintarSale();
   pintarOnda(); pintarFijos(); pintarRetiros(); pintarPie();
-  pintarAvisoChase(); pintarCuadreChase();
+  pintarAvisoChase(); pintarCuadreChase(); pintarCortes();
   if (AG) pintarCajaAgencia();
   document.body.dataset.listo = '1';
 }
@@ -771,6 +825,7 @@ function pintarCajaAgencia(){
   const val = rr.registrado != null ? rr.registrado : rr.sugerido;
   const obj = num(rr.obj) != null ? rr.obj : (D.params || {}).obj;
   const fch = fechaChase(c);
+  const B = D.retiro_ciclo;   /* v6 · la lectura B (propuesta), solo dirección */
   const ojo = (pb != null && colchon != null && pb < colchon && rr.punto_bajo_lunes) ? ' Ojo: la semana del <b>' + fCorta(rr.punto_bajo_lunes) + '</b> la caja baja a <b>' + usd(pb) + '</b>.' : '';
   /* v5 · el saldo de Chase se pone aquí mismo (socios). Si Chase pasa del límite, el campo ya sale abierto. */
   const abierto = !!pu.socio && (UI.edit === 'saldo-age' || !!c.stale);
@@ -782,9 +837,12 @@ function pintarCajaAgencia(){
       + (c.stale ? '' : '<button class="pg-btn sec" type="button" data-act="cerrar-edit-age">Cancelar</button>') + '</div>'
     : '<div class="acc"><button class="pg-btn mint" type="button" data-act="saldo-age">Actualizar Chase</button></div>';
   $('liqc').classList.toggle('stale', !!c.stale);
-  $('liqc').innerHTML = '<div class="anl c84">'
+  $('liqc').innerHTML = (B ? '<div class="ringsAB">' : '') + '<div class="anl c84">'
     + anilloAg({val:val, vara:obj, ok:rr.semaforo === 'verde', tam:84, grosor:7, titulo:'Retiro ' + usd(val) + ' por socio de ' + usd(obj) + ' objetivo.'})
     + '<div class="cen"><div class="n">' + usd(val) + '</div><div class="l">por socio</div></div></div>'
+    + (B ? '<div class="ringB2"><div class="anl c64">'
+        + anilloAg({val:B.por_socio, vara:obj, ok:B.semaforo === 'verde', tam:64, grosor:6, titulo:'Propuesta B: ' + usd(B.por_socio) + ' por socio, parejo hasta el corte del ' + fCorta(B.proximo_corte) + '.'})
+        + '<div class="cen"><div class="n">' + usd(B.por_socio) + '</div><div class="l">propuesta</div></div></div><div class="tag">B · propuesta</div></div></div>' : '')
     + '<div class="tx"><div class="k">La caja · Chase</div>'
     + '<div class="ch"><span class="m">' + usd(c.saldo) + '</span><span class="sello' + (fch.warn ? ' warn' : '') + '">' + esc(fch.txt) + '</span></div>'
     + (c.stale ? '<div class="nota-c">El retiro está apagado hasta que pongas el saldo de hoy.</div>'
@@ -861,6 +919,7 @@ function pintarCuadreChase(){
     + '</tbody></table>'
     + (ok ? '' : '<div class="nota-a">' + (q.dif > 0 ? 'Hay más plata de la que el sistema sabe' : 'Hay menos plata de la que el sistema sabe')
       + ': es lo que llegó de las compañías (comisiones por statement) y lo que se pagó sin marcar.</div>')
+    + pistaLlego(q, ok)
     + '</div>';
 }
 async function guardarSaldo(b, idInput){
@@ -946,6 +1005,224 @@ function lineaLectura(){
   if (r.semaforo === 'verde') return 'Esta semana cabe el objetivo.' + ojo;
   return '—';
 }
+/* =====================================================================
+   v6 · LA LECTURA B (propuesta, solo dirección): el mismo retiro todas las semanas hasta el próximo corte
+   sin que ninguna baje del colchón. Sale de portal.liquidez_panel() (retiro_ciclo) con los mismos números
+   oficiales de la lectura A. Es informativa: no registra nada.
+   ===================================================================== */
+function anilloB(B, obj){
+  return '<div class="ringB"><div class="anl">'
+    + anilloAg({val:B.por_socio, vara:obj, ok:B.semaforo === 'verde', oscuro:true, tam:84, grosor:7, titulo:'Propuesta B: ' + usd(B.por_socio) + ' por socio, parejo hasta el corte del ' + fCorta(B.proximo_corte) + '.'})
+    + '<div class="cen"><div class="n">' + usd(B.por_socio) + '</div><div class="l">por socio</div></div></div>'
+    + '<div class="tag">B · propuesta</div><div class="nb">necesita a los 3 socios</div></div>';
+}
+function lineaB(){
+  const B = D.retiro_ciclo; if (!B) return '';
+  if (B.semaforo === 'gris') return '<b>B · propuesta</b>: en gris hasta poner el saldo.';
+  const r = D.retiro || {}, p = D.params || {};
+  const obj = num(r.obj) != null ? num(r.obj) : num(p.obj);
+  const ag = num(B.aguanta);
+  return 'B · propuesta (necesita a los 3 socios): parejo hasta el corte del ' + esc(fCorta(B.proximo_corte)) + ' aguanta <b>' + usd(ag == null ? null : Math.max(0, ag)) + '</b> por semana → <b>' + usd(B.por_socio) + '</b>.'
+    + (B.semana_que_manda ? ' Manda la semana del <b>' + esc(fCorta(B.semana_que_manda)) + '</b>: entran <b>' + usd(B.entra_manda) + '</b> y salen <b>' + usd(B.sale_manda) + '</b>.' : '')
+    + ' Para ' + usd(obj) + ': Chase de <b>' + usd(B.umbral_obj) + '</b>.'
+    + (num(B.holgura) > 0 ? ' Le sobran <b>' + usd(B.holgura) + '</b> por socio por semana: se deciden en el corte.' : '');
+}
+/* v6 · el cierre del mes en caja (para todos, con los números oficiales del panel) */
+function lineaMes(){
+  const M = D.mes; if (!M || num(M.saldo_antes_retiros) == null) return '';
+  const r = D.retiro || {}, p = D.params || {}, c = D.caja || {};
+  const socios = num(r.socios) || num(p.socios) || 3;
+  const R = r.registrado != null ? num(r.registrado) : (r.sugerido != null ? num(r.sugerido) : num(r.min != null ? r.min : p.min));
+  const N = num(M.retiros_semanas) || 0;
+  const X = num(M.saldo_antes_retiros), Y = X - N * socios * (R || 0);
+  const f = fISO(M.fin);
+  const viejo = c.stale ? ' (con el Chase del ' + esc(fCorta(fechaChase(c).dia)) + ')' : '';
+  return '<span class="lb">' + esc(Mayus(mesNom(M.fin))) + ' cierra en Chase con</span> <b>' + usd(X) + '</b> antes de retiros (después de la nómina y las comisiones del ' + (f ? f.d : '—') + ')' + viejo
+    + ' · con ' + plural(N, 'retiro', 'retiros') + ' de <b>' + usd(R) + '</b> por socio: <b>' + usd(Y) + '</b>.';
+}
+/* v6 · en el cuadre de Chase, lo que tu consolidado marca como "ya llegó" (solo dirección) */
+function pistaLlego(q, ok){
+  const C = D && D.consolidado;
+  if (ok || !C || !(num(C.llego) > 0)) return '';
+  const z = q.dif - num(C.llego);
+  return '<div class="pista">Tu consolidado marca <b>' + usd(C.llego) + '</b> como «ya llegó». Si todo eso entró después del ' + esc(q.dia ? fCorta(q.dia) : '—') + ', quedan <b>' + usd(z) + '</b> sin explicar.</div>';
+}
+
+/* =====================================================================
+   v6 · CORTES DE TU CONSOLIDADO (solo dirección, MODO VER: no cambia el retiro).
+   portal.liquidez_panel() trae el consolidado vigente; se pega con liquidez_consolidado_guardar
+   y se quita con liquidez_consolidado_jubilar (nada se borra: el anterior se jubila).
+   ===================================================================== */
+const montoO = v => (num(v) == null || num(v) === 0) ? '—' : usd(Math.abs(num(v)));
+function pintarCortes(){
+  const el = $('cCortes'); if (!el) return;
+  if (!D || !P().pegar_consolidado) { el.hidden = true; el.innerHTML = ''; return; }
+  el.hidden = false;
+  const C = D.consolidado;
+  if (!C) {
+    el.innerHTML = '<h2><span>Cortes · tu consolidado</span><span class="pg-pill muted">modo ver</span></h2>'
+      + '<div class="vacio-c"><span>Pega tu consolidado para verlo por fecha de corte: lo que ya llegó, lo que entra y lo que se debe en cada corte y lo que no tiene fecha. No cambia el retiro.</span>'
+      + '<button class="pg-btn mint sm" type="button" data-act="consol">Pegar consolidado</button></div>';
+    return;
+  }
+  const L = C.lineas || [];
+  const lns = f => L.filter(f).map(l => '<div class="ln"><span>' + esc(l.concepto) + (l.confianza === 'estimado' ? ' <span class="pg-pill warn">aprox</span>' : '') + '</span><b>' + usd2(l.monto) + '</b></div>').join('') || '<div class="ln"><span>—</span><b>—</b></div>';
+  const nLl = L.filter(l => l.seccion === 'llego').length;
+  const fichas = ['<div class="ficha llego"><div class="k">Ya en Chase</div><div class="v">' + usd(C.llego) + '</div><div class="s">ya llegó · no se suma otra vez</div>'
+    + '<details><summary>' + plural(nLl, 'MGA', 'MGAs') + '</summary>' + lns(l => l.seccion === 'llego') + '</details></div>'];
+  (C.cortes || []).forEach(c => {
+    fichas.push('<div class="ficha"><div class="k">Corte ' + esc(fCorta(c.fecha)) + '</div><div class="v' + (num(c.neto) < 0 ? ' neg' : '') + '">' + usd(c.neto) + '</div>'
+      + '<div class="s">entra <b>' + montoO(c.entra) + '</b> · sale <b>' + montoO(c.sale) + '</b></div>'
+      + '<details><summary>ver líneas</summary>' + lns(l => l.seccion === 'con_fecha' && l.fecha === c.fecha) + '</details></div>');
+  });
+  const sf = C.sin_fecha || {};
+  fichas.push('<div class="ficha sf"><div class="k">Sin fecha</div><div class="v' + (num(sf.neto) < 0 ? ' neg' : '') + '">' + usd(sf.neto) + '</div>'
+    + '<div class="s">entra <b>' + montoO(sf.entra) + '</b> (no cuenta para el retiro) · se debe <b>' + montoO(sf.sale) + '</b>' + (C.alimenta ? ' (se aparta hoy)' : ' (sin fecha)') + '</div>'
+    + '<details><summary>ver líneas</summary>' + lns(l => l.seccion === 'sin_fecha') + '</details></div>');
+  let dia = '';
+  try { dia = new Intl.DateTimeFormat('en-CA', { timeZone:'America/Bogota' }).format(new Date(C.tomado_en)); } catch (e) { dia = String(C.tomado_en || '').slice(0, 10); }
+  const d = num(C.dias), n = d == null ? null : Math.floor(d);
+  const hace = d == null ? '' : (d < 1 ? 'hoy' : 'hace ' + n + (n === 1 ? ' día' : ' días'));
+  const sm = (C.sin_monto || []).map(x => esc(x)).join(' · ');
+  el.innerHTML = '<h2><span>Cortes · tu consolidado</span><span class="h2r">'
+    + (C.alimenta ? '' : '<span class="pg-pill muted">Modo ver: no cambia el retiro</span>')
+    + '<span class="cuando' + (C.fresco ? '' : ' warn') + '">pegado el ' + esc(fCorta(dia)) + (hace ? ' · ' + hace : '') + '</span>'
+    + '<button class="pg-btn sec sm" type="button" data-act="consol">Pegar otro</button>'
+    + '<button class="pg-btn sec sm" type="button" data-act="consol-quitar">Quitar</button></span></h2>'
+    + '<div class="cortes">' + fichas.join('') + '</div>'
+    + '<div class="chk">' + (C.total_declarado == null ? '<span class="pg-pill muted">sin total en tu tabla</span>' : (C.cuadra ? '<span class="pg-pill ok">✓ cuadra</span>' : '<span class="pg-pill due">✗ no cuadra</span>'))
+    + '<span>Total de tu tabla <b>' + usd2(C.total_declarado) + '</b> · calculado <b>' + usd2(C.total_calculado) + '</b></span>'
+    + (sm ? '<span class="mini">Sin monto: ' + sm + ' (—)</span>' : '') + '</div>';
+}
+
+/* v6 · el lector de tu consolidado (el mismo del ejemplo del 20-oct). Cada fila se lee sola:
+   columna 1 = estado o fecha · columna 2 = MGA o concepto · última celda = monto. La fila que trae
+   solo un monto (tu total en negrilla) no es línea: es el total para el ✓. */
+const LECTOR = (() => {
+  const hoy = () => (D && D.hoy) || new Date().toISOString().slice(0, 10);
+  const pad2 = n => String(n).padStart(2, '0');
+  const r2 = v => Math.round(v * 100) / 100;
+  const sinT = x => String(x).normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const MESES = {ene:1,enero:1,jan:1,january:1,feb:2,febrero:2,february:2,mar:3,marzo:3,march:3,abr:4,abril:4,apr:4,april:4,may:5,mayo:5,
+    jun:6,junio:6,june:6,jul:7,julio:7,july:7,ago:8,agosto:8,aug:8,august:8,sep:9,sept:9,septiembre:9,september:9,oct:10,octubre:10,october:10,
+    nov:11,noviembre:11,november:11,dic:12,diciembre:12,dec:12,december:12};
+  function armar(mes, dia, anio){
+    if (!(mes >= 1 && mes <= 12 && dia >= 1 && dia <= 31)) return null;
+    if (anio) { const y = +anio < 100 ? 2000 + +anio : +anio; return y + '-' + pad2(mes) + '-' + pad2(dia); }
+    const y0 = (fISO(hoy()) || {y:new Date().getFullYear()}).y;
+    for (const y of [y0 - 1, y0, y0 + 1]) { const iso = y + '-' + pad2(mes) + '-' + pad2(dia); const df = difDias(iso, hoy()); if (df >= -60 && df <= 300) return iso; }
+    return null;
+  }
+  function fechaDe(txt){
+    const t = sinT(String(txt || '').toLowerCase());
+    let m = t.match(/\b(\d{4})-(\d{2})-(\d{2})\b/); if (m) return m[0];
+    m = t.match(/\b([a-z]{3,10})\.?\s+(\d{1,2})\b/);
+    if (m && MESES[m[1]]) return armar(MESES[m[1]], +m[2]);
+    m = t.match(/\b(\d{1,2})\s*(?:de\s+|-|\s)\s*([a-z]{3,10})\b/);
+    if (m && MESES[m[2]]) return armar(MESES[m[2]], +m[1]);
+    m = t.match(/\b(\d{1,2})\/(\d{1,2})(?:\/(\d{2,4}))?\b/);
+    if (m) return armar(+m[2], +m[1], m[3]);
+    return null;
+  }
+  function dinero(x){
+    let t = String(x == null ? '' : x).trim();
+    if (!t) return null;
+    if (/^n\/?a$/i.test(t)) return {na:true};
+    let neg = false;
+    t = t.replace(/usd/ig, '');
+    if (/^\(.*\)$/.test(t)) { neg = true; t = t.slice(1, -1); }
+    t = t.replace(/[$\s]/g, '');
+    if (t === '-' || t === '—' || t === '') return {na:true};
+    if (/^[-−]/.test(t)) { neg = true; t = t.replace(/^[-−]/, ''); }
+    if (/^\(.*\)$/.test(t)) { neg = true; t = t.slice(1, -1); }
+    if (/^\d{1,3}(\.\d{3})+(,\d+)?$/.test(t)) t = t.replace(/\./g, '').replace(',', '.');
+    else t = t.replace(/,/g, '');
+    if (!/^\d+(\.\d+)?$/.test(t)) return null;
+    const v = Number(t); return {v: neg ? -v : v};
+  }
+  function celdas(linea){
+    if (linea.indexOf('\t') >= 0) return linea.split('\t');
+    if (linea.indexOf('|') >= 0) return linea.split('|');
+    if (linea.indexOf(';') >= 0) return linea.split(';');
+    const m = linea.match(/^(.*?)\s+(\$?\s?\(?[-−]?\$?\s?[\d.,]+\)?|N\/A)\s*$/i);
+    return m ? [m[1], m[2]] : [linea];
+  }
+  function estadoDe(txt){
+    const t = sinT(String(txt || '').toLowerCase()).trim();
+    if (!t) return null;
+    if (/ya\s*lleg|^llego|recibid/.test(t)) return {s:'llego'};
+    if (/no se sabe|sin fecha/.test(t)) return {s:'sin_fecha'};
+    if (/^n\/?a$/.test(t)) return {s:'na'};
+    const f = fechaDe(t); if (f) return {s:'con_fecha', fecha:f};
+    return {s:'otro'};
+  }
+  function leer(txt){
+    const R = {lineas:[], total_declarado:null, ignoradas:[]};
+    let orden = 0;
+    String(txt || '').split(/\r?\n/).forEach(raw => {
+      if (!raw.trim()) return;
+      const cs = celdas(raw).map(c => c.trim());
+      let iM = -1, mon = null;
+      for (let i = cs.length - 1; i >= 0; i--) { if (cs[i] === '' || cs[i] === '$') continue; const dd = dinero(cs[i]); if (dd) { iM = i; mon = dd; } break; }
+      const textos = cs.map((c, i) => ({c, i})).filter(o => o.i !== iM && o.c !== '' && o.c !== '$');
+      if (!textos.length) { if (mon && mon.v != null) R.total_declarado = mon.v; return; }
+      const todo = sinT(textos.map(o => o.c).join(' ').toLowerCase());
+      if (!mon && /ingreso|comision/.test(todo) && /\bmga\b/.test(todo)) { R.ignoradas.push({raw, por:'encabezado'}); return; }
+      if (/^total\b/.test(sinT(textos[0].c.toLowerCase()))) { if (mon && mon.v != null) R.total_declarado = mon.v; return; }
+      const col1 = (cs.length > 1 && iM !== 0) ? cs[0] : '';
+      const est = (col1 && textos.length > 1) ? estadoDe(col1) : null;
+      const resto = est ? textos.filter(o => o.i !== 0) : textos;
+      const concepto = resto.map(o => o.c).join(' · ') || col1;
+      const cl = sinT(concepto.toLowerCase());
+      const tipo = /\bdp\b|down\s*pay/.test(cl) ? 'dp' : (/\buec\b|unearned/.test(cl) ? 'uec' : (/diferid/.test(cl) ? 'diferido' : (/batch/.test(cl) ? 'batch' : 'comision')));
+      const fecha = (est && est.fecha) || fechaDe(concepto);
+      let seccion;
+      if (!mon || mon.v == null) seccion = 'sin_monto';
+      else if (est && est.s === 'llego') seccion = 'llego';
+      else if (est && est.s === 'sin_fecha') seccion = 'sin_fecha';
+      else seccion = fecha ? 'con_fecha' : 'sin_fecha';
+      R.lineas.push({
+        orden: ++orden, seccion, estado: col1, concepto,
+        mga: tipo === 'dp' ? concepto.replace(/^dp\s*/i, '').trim() : concepto,
+        monto: (mon && mon.v != null) ? r2(mon.v) : null,
+        fecha: seccion === 'con_fecha' ? fecha : null,
+        confianza: /aprox|~|≈|estimad/.test(sinT(raw.toLowerCase())) ? 'estimado' : 'firme',
+        tipo
+      });
+    });
+    R.total_calculado = r2(R.lineas.filter(l => l.monto != null).reduce((a, l) => a + l.monto, 0));
+    R.cuadra = R.total_declarado != null && Math.abs(R.total_calculado - R.total_declarado) < 0.01;
+    return R;
+  }
+  return { leer };
+})();
+let CONSOL = null;
+function abrirConsolidado(){
+  CONSOL = null;
+  $('modalBody').innerHTML = '<h3>Pegar consolidado</h3>'
+    + '<div class="mini" style="margin:-6px 0 10px">Copia la tabla de la hoja (INGRESO APROXIMADO · MGA · COMISIÓN) y pégala aquí. Modo ver: no cambia el retiro.</div>'
+    + '<textarea id="consolTxt" rows="8" spellcheck="false" placeholder="Ya Llegó&#9;Geico&#9;$ 16,667.80&#10;Octubre 30&#9;DP Dynamic&#9;$ (13,096.33)"></textarea>'
+    + '<div class="prev" id="consolPrev"></div>'
+    + '<div class="row"><button class="pg-btn sec" type="button" data-act="modal-x">Cancelar</button><button class="pg-btn mint" type="button" id="bConsol" data-act="consol-ok" disabled>Guardar consolidado</button></div>';
+  abrirModal();
+  const ta = $('consolTxt');
+  ta.addEventListener('input', previewConsolidado);
+  ta.focus();
+}
+function previewConsolidado(){
+  const txt = ($('consolTxt') || {}).value || '';
+  CONSOL = LECTOR.leer(txt);
+  const C = CONSOL, L = C.lineas;
+  const nom = {llego:'Ya llegó', con_fecha:'Con fecha', sin_fecha:'Sin fecha', sin_monto:'Sin monto'};
+  $('consolPrev').innerHTML = L.length
+    ? '<table class="pg-table"><thead><tr><th>Cómo lo leyó</th><th>MGA o concepto</th><th class="num">Monto</th></tr></thead><tbody>'
+      + L.map(l => '<tr><td>' + nom[l.seccion] + (l.fecha ? ' · ' + esc(fCorta(l.fecha)) : '') + '</td><td>' + esc(l.concepto) + '<small>' + esc(l.tipo) + (l.estado ? ' · columna 1: ' + esc(l.estado) : '') + '</small></td><td class="num">' + usd2(l.monto) + '</td></tr>').join('')
+      + '<tr id="consolTot"><td colspan="2"><b>' + plural(L.length, 'línea', 'líneas') + '</b> · total calculado' + (C.total_declarado != null ? ' · tu total ' + usd2(C.total_declarado) + (C.cuadra ? ' ✓' : ' ✗') : ' · tu tabla no trae total') + '</td><td class="num"><b>' + usd2(C.total_calculado) + '</b></td></tr></tbody></table>'
+      + (C.ignoradas.length ? '<div class="mini">Ignoradas: ' + esc(C.ignoradas.map(x => x.por).join(', ')) + '</div>' : '')
+    : (txt.trim() ? '<div class="malas">No encontré líneas con MGA y monto.</div>' : '');
+  const b = $('bConsol'); b.disabled = !L.length; b.textContent = L.length ? 'Guardar consolidado (' + plural(L.length, 'línea', 'líneas') + ')' : 'Guardar consolidado';
+}
+
 function pintarFranja(){
   const c = D.caja || {}, s = D.semana || {}, r = D.retiro || {}, p = D.params || {}, pu = P();
   const tarj = c.tarjetas || [];
@@ -969,6 +1246,7 @@ function pintarFranja(){
   const fch = fechaChase(c);
 
   /* anillo */
+  const B = D.retiro_ciclo;   /* v6 · la lectura B (propuesta), solo dirección */
   let val, lbl = 'retiro · socio';
   if (r.registrado != null) { val = num(r.registrado); lbl = 'registrado'; }
   else if (r.semaforo === 'gris') val = null;
@@ -1001,11 +1279,14 @@ function pintarFranja(){
     + '<div class="fr-n"><div class="l">Sale</div><div class="v">' + usd(s.sale) + '</div><div class="s">esta semana · ' + plural(nPagos, 'pago', 'pagos') + '</div></div>'
     + '<div class="fr-n"><div class="l">Queda</div><div class="v ' + clsQ + '">' + usd(s.queda) + '</div><div class="s">colchón ' + usd(colchon) + '</div></div>'
     + '</div>'
-    + '<div class="fr-ring"><div class="ring-in">' + anillo(val, num(r.obj) || num(p.obj), col, r.semaforo === 'rojo' && r.registrado == null ? 'rgba(213,89,79,.38)' : null)
+    + (B ? '<div class="fr-ring dos"><div class="ringA">' : '<div class="fr-ring">')
+    + '<div class="ring-in">' + anillo(val, num(r.obj) || num(p.obj), col, r.semaforo === 'rojo' && r.registrado == null ? 'rgba(213,89,79,.38)' : null)
     + '<div class="c"><div class="n' + (usd(val).length > 6 ? ' lg' : '') + '">' + usd(val) + '</div><div class="l">' + esc(lbl) + '</div></div></div>'
-    + '<div class="cap">mín ' + usd(r.min != null ? r.min : p.min) + ' · obj ' + usd(r.obj != null ? r.obj : p.obj) + '</div>' + regBtn + '</div>'
+    + '<div class="cap">mín ' + usd(r.min != null ? r.min : p.min) + ' · obj ' + usd(r.obj != null ? r.obj : p.obj) + '</div>' + regBtn
+    + (B ? '</div>' + anilloB(B, num(r.obj) != null ? num(r.obj) : num(p.obj)) : '') + '</div>'
     + pop
-    + '<div class="fr-line"><span class="pg-semaforo ' + dot + '"></span><span>' + lineaLectura() + '</span></div>';
+    + '<div class="fr-line"><span class="pg-semaforo ' + dot + '"></span><span>' + lineaLectura() + '</span></div>'
+    + (B ? '<div class="fr-line b"><span class="pg-semaforo ' + ({verde:'green', ambar:'amber', rojo:'red', gris:'gray'}[B.semaforo] || 'gray') + '"></span><span>' + lineaB() + '</span></div>' : '');
 }
 
 /* ---------- 3 · ingresos ---------- */
@@ -1185,7 +1466,8 @@ function pintarOnda(){
   const colchon = num(p.colchon) != null ? num(p.colchon) : (num(r.colchon) || 0);
   const box = $('cOnda');
   if (!S.length) { box.innerHTML = '<h2>Cuatro semanas <span class="mini">colchón ' + usd(colchon) + '</span></h2><div class="vacio">—</div>'; return; }
-  box.innerHTML = '<h2>Cuatro semanas <span class="mini">colchón ' + usd(colchon) + '</span></h2><div class="onda" id="ondaSvg"></div><div class="sem4" id="sem4"></div>';
+  box.innerHTML = '<h2>Cuatro semanas <span class="mini">colchón ' + usd(colchon) + '</span></h2><div class="onda" id="ondaSvg"></div><div class="sem4" id="sem4"></div><div class="mesln" id="mesLn"></div>';
+  $('mesLn').innerHTML = lineaMes();
   const W = Math.max(300, Math.round($('ondaSvg').clientWidth || 1000)), H = 150, PL = 50, PR = 50, PT = 24, PB = 40;
   const vals = S.map(s => num(s.saldo_fin));
   const ok = vals.filter(v => v != null);
@@ -1543,6 +1825,26 @@ document.addEventListener('click', async e => {
     case 'cerrar-no': UI.confirmar = null; pintarRetiros(); break;
     case 'cerrar-ok': escribir(b, () => SB.rpc('semana_cerrar', { p_semana:D.lunes }), 'Semana cerrada'); break;
     case 'corte': abrirCorte(); break;
+    case 'consol': abrirConsolidado(); break;
+    case 'consol-ok': {
+      if (!CONSOL || !CONSOL.lineas.length) return;
+      const p_lineas = CONSOL.lineas.map(l => ({ orden:l.orden, seccion:l.seccion, estado:l.estado || null, mga:l.mga || null, concepto:l.concepto,
+        monto:l.monto, fecha:l.fecha, confianza:l.confianza, tipo:l.tipo }));
+      const p_texto = ($('consolTxt') || {}).value || '';
+      const ok = await escribir(b, () => SB.schema('portal').rpc('liquidez_consolidado_guardar', { p_lineas, p_texto, p_total_declarado:CONSOL.total_declarado }),
+        'Consolidado guardado: ' + plural(p_lineas.length, 'línea', 'líneas'));
+      if (ok) cerrarModal();
+      break;
+    }
+    case 'consol-quitar': {
+      if (b.dataset.seguro !== '1') {
+        b.dataset.seguro = '1'; b.classList.add('seguro'); b.textContent = '¿Quitar? ✕';
+        setTimeout(() => { if (document.body.contains(b)) { b.dataset.seguro = ''; b.classList.remove('seguro'); b.textContent = 'Quitar'; } }, 4000);
+        return;
+      }
+      escribir(b, () => SB.schema('portal').rpc('liquidez_consolidado_jubilar', { p_nota:'Quitado desde GABI Liquidez' }), 'Consolidado quitado');
+      break;
+    }
     case 'corte-ok': {
       if (!CORTE.filas.length) return;
       const ok = await escribir(b, () => SB.rpc('corte_jeff_cargar', { p_semana:D.lunes, p_filas:CORTE.filas }), 'Corte cargado: ' + plural(CORTE.filas.length, 'fila', 'filas'));
@@ -1569,7 +1871,7 @@ arrancar();
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="gabi-liquidez.html";
-var PGV_VERSION=5; // v5 - 20-oct-2026 CHASE A LA VISTA: en La agencia la tarjeta de la caja trae el saldo de Chase con su fecha y el botón Actualizar Chase (socios; si Chase pasó del límite de días, el campo ya sale abierto) y deja de ser un enlace entero ("Ver Liquidez →" aparte); aviso arriba en las tres pestañas cuando Chase pasó del límite ("Poner el saldo de hoy"); en la franja de Liquidez el ✎ pasa a un botón visible Actualizar con la fecha del saldo debajo; al guardar sale el cuadre de Chase (anterior + ventas que entraron − pagos vencidos = esperado, contra el real); sello de Chase en La agencia. Misma función caja_actualizar_saldo_v2; la base no cambia. | v4 - 14-oct-2026 (auditoría en producción): si la base está ocupada y liquidez_panel falla al entrar, un reintento automático a los 2.5 s antes del aviso; si La agencia ya cargó, se queda a la vista y el aviso habla solo de la liquidez; singular y plural en las tarjetas ("1 negativo", "1 venta", "1 persona"). | v3 - 14-oct-2026 01 LA AGENCIA (solo direccion_total, portal.liquidez_agencia): el macro de dirección en tarjetas con anillos — la franja del mes (entró contra lo que necesita: nómina, fijos y retiro mínimo, con la barrita del "debería ir hoy"), las tres áreas con la cara chiquita de su líder adentro del anillo (Ventas nuevas · Brahian, Renovaciones · Karen, Endosos · Jhon Ramírez), el mes cerrado y el año en dos anillos con el aviso de comisiones de agentes sin cargar, y la caja en una tarjeta chiquita. Abre ahí para dirección; Jorge y los demás siguen en Liquidez y Retiros sin cambios. | v2 - 13-oct-2026 el retiro se lee con la semana contra sí misma (Caja + Entra − Sale de esta semana − colchón, entre los socios, hasta el objetivo); las 4 semanas solo avisan. Lo que vencía antes del último saldo de Chase se da por pagado (pie en Sale). | v1 - 12-oct-2026 GABI LIQUIDEZ EN EL PORTAL: una pantalla de dirección que sale entera de portal.liquidez_panel() — franja (caja, entra, sale, queda y anillo del retiro por socio), ingresos semana/mes, por entrar, la cola de pagos con un clic (liquidez_decidir), cuatro semanas y fijos del mes; pestaña Retiros (registrar, corregir, cerrar la semana) y carga del corte de Jeff. Cero barras, guion cuando no hay dato, sin almacenamiento del navegador.
+var PGV_VERSION=6; // v6 - 20-oct-2026 MODO VER: en Liquidez, solo dirección, la tarjeta "Cortes · tu consolidado" (pegas la tabla de la hoja, la pantalla la lee y muestra Ya en Chase · cada corte · Sin fecha con el ✓ del total; Pegar otro / Quitar; portal.liquidez_consolidado_guardar / _jubilar) y la lectura B del retiro al lado de la A (propuesta: el mismo retiro cada semana hasta el próximo corte sin bajar del colchón; no registra nada). Para todos, el cierre del mes en caja al pie de Cuatro semanas. En el cuadre de Chase, lo que tu consolidado marca como "ya llegó". El retiro oficial no cambia. | v5 - 20-oct-2026 CHASE A LA VISTA: en La agencia la tarjeta de la caja trae el saldo de Chase con su fecha y el botón Actualizar Chase (socios; si Chase pasó del límite de días, el campo ya sale abierto) y deja de ser un enlace entero ("Ver Liquidez →" aparte); aviso arriba en las tres pestañas cuando Chase pasó del límite ("Poner el saldo de hoy"); en la franja de Liquidez el ✎ pasa a un botón visible Actualizar con la fecha del saldo debajo; al guardar sale el cuadre de Chase (anterior + ventas que entraron − pagos vencidos = esperado, contra el real); sello de Chase en La agencia. Misma función caja_actualizar_saldo_v2; la base no cambia. | v4 - 14-oct-2026 (auditoría en producción): si la base está ocupada y liquidez_panel falla al entrar, un reintento automático a los 2.5 s antes del aviso; si La agencia ya cargó, se queda a la vista y el aviso habla solo de la liquidez; singular y plural en las tarjetas ("1 negativo", "1 venta", "1 persona"). | v3 - 14-oct-2026 01 LA AGENCIA (solo direccion_total, portal.liquidez_agencia): el macro de dirección en tarjetas con anillos — la franja del mes (entró contra lo que necesita: nómina, fijos y retiro mínimo, con la barrita del "debería ir hoy"), las tres áreas con la cara chiquita de su líder adentro del anillo (Ventas nuevas · Brahian, Renovaciones · Karen, Endosos · Jhon Ramírez), el mes cerrado y el año en dos anillos con el aviso de comisiones de agentes sin cargar, y la caja en una tarjeta chiquita. Abre ahí para dirección; Jorge y los demás siguen en Liquidez y Retiros sin cambios. | v2 - 13-oct-2026 el retiro se lee con la semana contra sí misma (Caja + Entra − Sale de esta semana − colchón, entre los socios, hasta el objetivo); las 4 semanas solo avisan. Lo que vencía antes del último saldo de Chase se da por pagado (pie en Sale). | v1 - 12-oct-2026 GABI LIQUIDEZ EN EL PORTAL: una pantalla de dirección que sale entera de portal.liquidez_panel() — franja (caja, entra, sale, queda y anillo del retiro por socio), ingresos semana/mes, por entrar, la cola de pagos con un clic (liquidez_decidir), cuatro semanas y fijos del mes; pestaña Retiros (registrar, corregir, cerrar la semana) y carga del corte de Jeff. Cero barras, guion cuando no hay dato, sin almacenamiento del navegador.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;
