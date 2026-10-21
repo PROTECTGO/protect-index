@@ -334,6 +334,28 @@ html.pg-sin-tops #pgVolver{display:inline-flex!important}
 .ag-svg{width:100%;height:auto;display:block}
 .ag-vacio{padding:26px 0;text-align:center;color:var(--pg-muted);font-size:13px}
 @media(max-width:600px){.ag-vida{grid-template-columns:118px 1fr}.ag-big-n{font-size:28px}}
+/* v25 · HISTORIAL DEL AÑO (tira de bolitas bajo los tres anillos de Meta) */
+.hist{margin:22px -8px 0;padding-top:16px;border-top:1px solid rgba(255,255,255,.1)}
+.hist-top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:0 8px}
+.hist-top .hc-lbl{margin:0}
+.hist-top .hint{font-size:11px;color:#8da0ad}
+.hist-lane{overflow-x:auto;-webkit-overflow-scrolling:touch;padding:12px 8px 2px;scrollbar-width:none}
+.hist-lane::-webkit-scrollbar{display:none}
+.hist-row{display:flex;gap:12px;width:max-content;margin:0 auto}
+.hist-m{width:60px;text-align:center;cursor:pointer;border-radius:12px;padding:6px 2px 5px;transition:background .15s;border:1px solid transparent}
+.hist-m:hover,.hist-m.on{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.1)}
+.hist-r{position:relative;width:46px;height:46px;margin:0 auto}
+.hist-r canvas{display:block}
+.hist-v{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--pg-font-num);font-weight:700;font-size:10.5px;color:#fff;letter-spacing:-.4px;pointer-events:none}
+.hist-l{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#8da0ad;margin-top:6px;white-space:nowrap}
+.hist-c{font-family:var(--pg-font-num);font-size:10.5px;color:#a8b7c2;margin-top:3px;white-space:nowrap}
+.hist-c .cxb{width:7px;height:7px;margin:0 3px 0 0}
+.hist-m.lleno .hist-v{color:#1B2D3A}
+.hist-m.va .hist-r{opacity:.72}
+.hist-m.va .hist-l{color:#F0C55A}
+.hist-lee{font-size:12.5px;color:#a8b7c2;font-family:var(--pg-font-num);line-height:1.65;margin:10px 8px 0;text-align:center}
+.hist-lee b{color:#fff;font-weight:700}
+.hist-lee .up{color:#2DBFA3;font-weight:700}.hist-lee .dn{color:#F08A80;font-weight:700}
 </style>
 <script src="pg-novedades.js"></script>
 <script src="pg-llamadas.js?v=3"></script>
@@ -400,6 +422,13 @@ html.pg-sin-tops #pgVolver{display:inline-flex!important}
             <div class="hc-in"><div class="hc-v" id="h-canc">—</div><div class="hc-s" id="h-canc-s">se cayeron antes de 6 meses</div></div></div>
           <div class="hc-pie" id="h-canc-pie"></div>
         </div>
+      </div>
+
+      <!-- v25 · HISTORIAL: una bolita por mes del año (portal.equipo_historial), con la escala del año -->
+      <div class="hist" id="hist">
+        <div class="hist-top"><div class="hc-lbl">Historial · <span id="hist-anio">—</span><button class="hq d" type="button" data-h="historial">?</button></div><div class="hint">toca un mes</div></div>
+        <div class="hist-lane"><div class="hist-row" id="hist-row"></div></div>
+        <div class="hist-lee" id="hist-lee">—</div>
       </div>
 
       <div class="hero-pie"><span class="pg-semaforo red" id="hl-sem"></span><span id="hl-txt">—</span><button class="hq d" type="button" data-h="anillo">?</button></div>
@@ -773,7 +802,7 @@ async function cargarDatos(sb){
 
   return { meses:cerrados.map(lbl), equipo, mes, agentes, brahian,
     enCurso: enCurso ? { mes:ym(enCurso.mes), mc:N(enCurso.mc), fees:N(enCurso.fees), cuentas:(enCurso.cuentas==null?null:N(enCurso.cuentas)) } : null,
-    meta:{ norte_equipo:norteE, ritmo, norte_cabeza:N(M0.norte_plena_mes),
+    meta:{ norte_equipo:norteE, ritmo, norte_cabeza:N(M0.norte_plena_mes), minimo_cabeza:N(M0.minimo_plena_mes),
            personas:agentes.length, prom_cabeza:Math.round(ritmo/agentes.length),
            camada:agentes.filter(a=>a.cam).length, norte_camada:Math.round(N(M0.norte_plena_mes)*0.5) },
     estandar_fee:1500, mediana_fee: equipo.length ? equipo[equipo.length-1].med : 0 };
@@ -937,6 +966,7 @@ function ritmoPal(v,d){ const p=ritmoPct(v,d); return p>=105?'adelante':(p>=95?'
 function ritmoFrase(v,d){ const w=ritmoPal(v,d); return w==='en el ritmo'?'en el ritmo':w+' del ritmo'; }
 
 /* Un solo dibujo de anillo. o = {valor, minima, plena, tick, fondo, centro, plano}
+   v25 · opcionales para las bolitas del historial: tam (px fijos), grosor (px), color (del arco), lleno (disco del color)
    · plano:'color'  -> aro completo de un solo color (los circulos-objetivo del encabezado)
    · centro:false   -> no escribe el % adentro (el texto va en HTML encima) */
 function anillo(el, o){
@@ -945,13 +975,13 @@ function anillo(el, o){
   const osc = o.fondo!=='claro';
   function pinta(){
     const box = el.parentNode ? el.parentNode.getBoundingClientRect() : {width:150,height:130};
-    const w = Math.max(70, box.width||150), h = Math.max(70, box.height||130);
+    const w = o.tam || Math.max(70, box.width||150), h = o.tam || Math.max(70, box.height||130);
     el.style.width=w+'px'; el.style.height=h+'px';
     el.width=Math.round(w*dpr); el.height=Math.round(h*dpr);
     const g=el.getContext('2d'); if(!g) return;
     const x=el.width/2, y=el.height/2;
     const R=Math.min(el.width,el.height)/2 - 3*dpr;
-    const LW=Math.max(7*dpr, R*0.26), r=R-LW/2;
+    const LW=o.grosor ? o.grosor*dpr : Math.max(7*dpr, R*0.26), r=R-LW/2;
     const pl=Number(o.plena)||0, val=Number(o.valor)||0;
     const pct = pl>0 ? val/pl*100 : 0;
     const mp  = pl>0 ? Math.max(0,Math.min(100,(Number(o.minima)||0)/pl*100)) : 0;
@@ -960,12 +990,13 @@ function anillo(el, o){
       g.strokeStyle=col; g.lineWidth=LW; g.lineCap='butt'; g.stroke(); };
     g.clearRect(0,0,el.width,el.height);
     if(o.plano){ arco(0,100,o.plano); return; }
+    if(o.lleno){ g.beginPath(); g.arc(x,y,R,0,Math.PI*2); g.fillStyle=o.color||MINT; g.fill(); return; }
     /* pista por zonas */
     const P = osc?Z_PISTA_OSC:Z_PISTA_CLA;
     arco(0,mp,P.rojo); arco(mp,100,P.ambar);
     /* arco de avance, con el color de la zona donde termina */
     const vacio = osc?'rgba(255,255,255,.16)':'#E7EDF2';
-    const col = val>0 ? colZona(val,o.minima,pl,osc?'oscuro':'claro') : vacio;
+    const col = val>0 ? (o.color || colZona(val,o.minima,pl,osc?'oscuro':'claro')) : vacio;
     arco(0, Math.max(0,Math.min(100,pct)), col);
     /* el "deberia ir hoy": una marca, nunca un color */
     if(o.tick!=null && pl>0){
@@ -1470,6 +1501,7 @@ window.pgV24 = async function(sb){
   const dev = DET.filter(d=>d.cancelada && !d.reescrita).reduce((s,d)=>s+Number(d.devuelto||0),0);
   const pEq = nEq ? cEq/nEq : null;
   const semEq = pEq==null ? 'GRIS' : (pEq>=0.25 || pEq>=2*PCT_AG ? 'ROJO' : (pEq>PCT_AG ? 'AMARILLO' : 'VERDE'));
+  window.__pgCancEq = { pct:pEq, agencia:PCT_AG, base:nEq, caidas:cEq, sem:semEq };   /* v25 · el mes en curso del historial */
   (function(){
     const el = $('ringCanc'); if(!el) return; const dpr = window.devicePixelRatio||1;
     function pinta(){
@@ -1613,6 +1645,114 @@ window.pgV24 = async function(sb){
   verAgente(primera || lista.find(conDatos) || lista[0]);
 };
 
+/* ============================================================
+   v25 · HISTORIAL DEL AÑO (21-oct-2026) · ESTRUCTURA_EQUIPO_COMERCIAL_V25_HISTORIAL_20OCT
+   - Una bolita por mes del año bajo los tres anillos de Meta, de portal.equipo_historial()
+     (portal.equipo_historial_mes: la reescribe un robot cada noche a las 00:20 leyendo el BOS).
+   - Meta plena de cada mes = la suma de las metas de quienes tenían horario ese mes.
+   - Índice de cancelaciones = el del anillo, como estaba el último día de ese mes.
+   - ESCALA DEL AÑO: por debajo de la meta el color gradúa en OKLCH (no en RGB, para que no se ensucie)
+     coral → naranja → ámbar (en el mínimo exigible) → lima → verde; < 50 % coral puro (choque).
+     En la meta la bolita se LLENA: menta 100-109 · lavanda 110-124 · magenta ≥ 125 (récord).
+   - El mes en curso va al final, más tenue, con lo que ya muestran los anillos.
+   Se carga DESPUÉS de pgV24 (no compite con Meta ni con Llamadas) y con un reintento si la base corta.
+   ============================================================ */
+window.pgV25 = async function(sb){
+  const $ = id => document.getElementById(id);
+  const row = $('hist-row'), lee = $('hist-lee'); if(!row || !lee) return;
+  const P1 = x => x==null ? '—' : (Math.round(x*1000)/10).toFixed(1).replace('.',',')+' %';
+  const nMes = MESL.indexOf(MES.nombre), anio = String(MES.anio);
+  const kCur = anio+'-'+String(nMes+1).padStart(2,'0');
+  if($('hist-anio')) $('hist-anio').textContent = anio;
+
+  let FILAS = [];
+  async function traer(){ const r = await sb.schema('portal').rpc('equipo_historial'); if(r.error) throw r.error; FILAS = r.data||[]; }
+  try{ await traer(); }
+  catch(e){ if(!/timeout/i.test(String(e&&e.message))){ console.warn('v25 historial', e); lee.textContent='Sin historial todavía.'; return; }
+    await new Promise(r=>setTimeout(r,2500)); try{ await traer(); }catch(e2){ console.warn('v25 historial', e2); lee.textContent='Sin historial todavía.'; return; } }
+
+  /* --- la escala del año --- */
+  const P_MIN = (M.minimo_cabeza>0 && M.norte_cabeza>0) ? M.minimo_cabeza/M.norte_cabeza*100 : 58000/70000*100;
+  const srgb2lin = c => { c/=255; return c<=0.04045 ? c/12.92 : Math.pow((c+0.055)/1.055,2.4); };
+  const lin2srgb = v => { v=Math.max(0,Math.min(1,v)); return v<=0.0031308 ? 12.92*v : 1.055*Math.pow(v,1/2.4)-0.055; };
+  function hex2oklch(hx){ const r=srgb2lin(parseInt(hx.slice(1,3),16)), g=srgb2lin(parseInt(hx.slice(3,5),16)), b=srgb2lin(parseInt(hx.slice(5,7),16));
+    const l=Math.cbrt(0.4122214708*r+0.5363325363*g+0.0514459929*b), m=Math.cbrt(0.2119034982*r+0.6806995451*g+0.1073969566*b), s2=Math.cbrt(0.0883024619*r+0.2817188376*g+0.6299787005*b);
+    const L=0.2104542553*l+0.7936177850*m-0.0040720468*s2, A=1.9779984951*l-2.4285922050*m+0.4505937099*s2, B=0.0259040371*l+0.7827717662*m-0.8086757660*s2;
+    return {L, C:Math.hypot(A,B), H:(Math.atan2(B,A)*180/Math.PI+360)%360}; }
+  function oklch2hex(o){ const a=o.C*Math.cos(o.H*Math.PI/180), b=o.C*Math.sin(o.H*Math.PI/180);
+    const l_=o.L+0.3963377774*a+0.2158037573*b, m_=o.L-0.1055613458*a-0.0638541728*b, s_=o.L-0.0894841775*a-1.2914855480*b;
+    const l=l_*l_*l_, m=m_*m_*m_, s2=s_*s_*s_;
+    const R=+4.0767416621*l-3.3077115913*m+0.2309699292*s2, G=-1.2684380046*l+2.6097574011*m-0.3413193965*s2, B=-0.0041960863*l-0.7034186147*m+1.7076147010*s2;
+    return '#'+[R,G,B].map(v=>Math.round(lin2srgb(v)*255).toString(16).padStart(2,'0')).join(''); }
+  function mixLCH(h1,h2,t){ const a=hex2oklch(h1), b=hex2oklch(h2); let dh=b.H-a.H; if(dh>180) dh-=360; if(dh<-180) dh+=360;
+    return oklch2hex({L:a.L+(b.L-a.L)*t, C:a.C+(b.C-a.C)*t, H:(a.H+dh*t+360)%360}); }
+  const ESC = [[50,'#F08A80'],[66,'#F6A35C'],[P_MIN,'#F0C55A'],[(P_MIN+100)/2,'#B3D94F'],[100,'#5ED48F']];
+  function colorGrado(pc){
+    if(pc>=125) return {c:'#E879C1', lleno:true, nombre:'récord'};
+    if(pc>=110) return {c:'#8EA0FF', lleno:true, nombre:'lavanda'};
+    if(pc>=100) return {c:'#2DBFA3', lleno:true, nombre:'menta'};
+    if(pc<50)   return {c:'#F08A80', lleno:false, nombre:'coral'};
+    for(let i=1;i<ESC.length;i++){ if(pc<=ESC[i][0]) return {c:mixLCH(ESC[i-1][1],ESC[i][1],(pc-ESC[i-1][0])/(ESC[i][0]-ESC[i-1][0])), lleno:false}; }
+    return {c:'#5ED48F', lleno:false};
+  }
+
+  /* --- los meses: cerrados del registro + el que corre (lo de los anillos) --- */
+  const N0 = v => v==null ? null : Number(v);
+  const semCanc = (p,ag) => p==null ? 'GRIS' : (p>=0.25 || (ag>0 && p>=2*ag) ? 'ROJO' : (p>ag ? 'AMARILLO' : 'VERDE'));
+  const todas = FILAS.map(f=>({ mes:String(f.mes).slice(0,10), personas:N0(f.personas), meta:N0(f.meta_plena), vendido:N0(f.vendido),
+      ventas:N0(f.ventas), cbase:N0(f.canc_base), ccaidas:N0(f.canc_caidas), cpct:N0(f.canc_pct), cag:N0(f.canc_agencia_pct),
+      csem:f.canc_semaforo||'GRIS' })).filter(h=>h.mes.slice(0,7) < kCur);
+  const CE = window.__pgCancEq || null;
+  const cur = { mes:kCur+'-01', personas:M.personas, meta:M.norte_equipo, vendido:MES.mc, ventas:MES.ven, va:true,
+      cbase:CE?CE.base:null, ccaidas:CE?CE.caidas:null, cpct:CE?CE.pct:null, cag:CE?CE.agencia:null, csem:CE?semCanc(CE.pct,CE.agencia):'GRIS' };
+  const H = todas.filter(h=>h.mes.slice(0,4)===anio).concat([cur]);
+  const mi = s => Number(String(s).slice(5,7))-1;
+  const antes = s => { const y=Number(s.slice(0,4)), m=Number(s.slice(5,7)); return (m===1 ? (y-1)+'-12' : y+'-'+String(m-1).padStart(2,'0'))+'-01'; };
+  const previo = i => i>0 ? H[i-1] : (todas.find(x=>x.mes===antes(H[0].mes)) || null);
+  const pctN = h => h.meta>0 ? h.vendido/h.meta*100 : null;
+  const pct = h => { const p=pctN(h); return p==null ? null : Math.round(p); };
+  const pts = n => Math.abs(Math.round(n))+(Math.abs(Math.round(n))===1?' pt':' pts');
+  const pts1 = n => { const a=Math.round(Math.abs(n)*10)/10; return a.toFixed(1).replace('.',',')+(a===1?' pt':' pts'); };
+  const fl  = d => d>0 ? '<span class="up">▲</span>' : (d<0 ? '<span class="dn">▼</span>' : '<span>=</span>');   /* meta: subir es bueno */
+  const flC = d => d<0 ? '<span class="up">▼</span>' : (d>0 ? '<span class="dn">▲</span>' : '<span>=</span>');  /* cancelaciones: bajar es bueno */
+
+  row.innerHTML = '';
+  H.forEach((h,i)=>{
+    const m = mi(h.mes), p = pctN(h), cg = p==null ? null : colorGrado(p);
+    const d = document.createElement('div');
+    d.className = 'hist-m'+(h.va?' va':'')+(cg && cg.lleno?' lleno':''); d.dataset.i = i; d.title = MESL[m];
+    d.innerHTML = '<div class="hist-r"><canvas></canvas><div class="hist-v">'+(p==null?'—':pct(h)+'%')+'</div></div>'
+      + '<div class="hist-l">'+MESN[m].toLowerCase()+(h.va?' · va':'')+'</div>'
+      + '<div class="hist-c"><span class="cxb '+h.csem+'"></span>'+P1(h.cpct)+'</div>';
+    row.appendChild(d);
+    if(p!=null) anillo(d.querySelector('canvas'), {valor:h.vendido, minima:h.meta*P_MIN/100, plena:h.meta, fondo:'oscuro', centro:false,
+                                                    tam:46, grosor:5, color:cg.c, lleno:cg.lleno});
+    d.addEventListener('click', ()=>leer(i));
+  });
+  function leer(i){
+    row.querySelectorAll('.hist-m').forEach(x=>x.classList.toggle('on', Number(x.dataset.i)===i));
+    const h = H[i], pv = previo(i), m = mi(h.mes);
+    if(pct(h)==null){ lee.innerHTML = '<b>'+MESL[m]+'</b> · —'; return; }
+    const dP = (pv && pct(pv)!=null) ? pct(h)-pct(pv) : null;
+    const dC = (pv && h.cpct!=null && pv.cpct!=null) ? (h.cpct-pv.cpct)*100 : null;
+    const vs = pv ? ' vs '+MESL[mi(pv.mes)].toLowerCase() : '';
+    const metaCambio = (pv && pv.meta!=null && pv.meta!==h.meta) ? ' (antes '+k(pv.meta)+')' : '';
+    const persCambio = (pv && pv.personas!=null && pv.personas!==h.personas) ? ' (antes '+pv.personas+')' : '';
+    const record = colorGrado(pctN(h)).nombre==='récord' ? ' · <b>récord</b>' : '';
+    lee.innerHTML = '<b>'+MESL[m]+'</b> '+(h.va?'va en':'cerró en')+' <b>'+pct(h)+' %</b> de la meta plena'+record
+      + ' · '+k(h.vendido)+' de '+k(h.meta)+metaCambio
+      + ' · '+(h.ventas==null?'—':h.ventas)+' ventas · '+(h.personas==null?'—':h.personas)+' personas'+persCambio
+      + (dP==null ? '' : ' · '+fl(dP)+' '+pts(dP)+vs)
+      + ' · cancelaciones <b>'+P1(h.cpct)+'</b>'+(h.cbase!=null ? ' ('+h.ccaidas+' de '+h.cbase+' · agencia '+P1(h.cag)+')' : '')
+      + (dC==null ? '' : ' · '+flC(dC)+' '+pts1(dC)+vs);
+  }
+  leer(H.length>1 ? H.length-2 : H.length-1);   /* abre en el último mes cerrado */
+  /* el carril abre mostrando los últimos meses (en celular); si Meta estaba escondida, al abrirla llega un "resize" */
+  const lane = row.parentNode, alFinal = ()=>{ if(!lane.__tocado) lane.scrollLeft = lane.scrollWidth; };
+  ['pointerdown','touchstart','wheel'].forEach(ev=>lane.addEventListener(ev, ()=>{ lane.__tocado=1; }, {passive:true}));
+  requestAnimationFrame(alFinal); window.addEventListener('resize', alFinal);
+};
+
 /* ===== NAV ===== */
 document.querySelectorAll('.pg-side a[data-go]').forEach(a=>a.onclick=()=>{
   document.querySelectorAll('.pg-side a[data-go]').forEach(x=>x.classList.remove('on'));
@@ -1650,6 +1790,11 @@ const MANUAL=[
  '$'+M.norte_cabeza.toLocaleString('en-US')+' por persona; en curva, la parte que le toque según su mes.',
  'Llegar pinta verde. Es lo normal, no lo extraordinario.',
  'Reconocer a quien llega y mirar qué hace distinto.'],
+['historial','Historial (la tira de bolitas)',
+ 'Cómo cerró cada mes del año: el porcentaje de la meta plena de ese mes y el índice de cancelaciones del equipo tal como estaba el último día de ese mes. El mes en curso va al final, más tenue: todavía no cuenta.',
+ 'Del BOS. Un robot lo vuelve a leer cada noche, así que lo que se registre tarde entra solo. La meta plena de cada mes es la suma de las metas de quienes tenían horario ese mes ($'+M.norte_cabeza.toLocaleString('en-US')+' por persona; en curva, su parte).',
+ 'El color va graduando: coral cuando no se dio, naranja, ámbar al pasar el mínimo exigible ($'+(M.minimo_cabeza||0).toLocaleString('en-US')+' por persona), lima y verde al acercarse. En la meta la bolita se llena: menta; por encima del 110 %, lavanda; desde el 125 %, magenta (récord). Debajo, la bolita chica es el índice de cancelaciones. Toca un mes y abajo sale su lectura, con los puntos que subió o bajó contra el mes anterior.',
+ 'Decir "el mes pasado estábamos en tanto" sin ir al Año. La meta es ver la fila llena.'],
 ['cobra_no_vende','Cobra y no vende',
  'Cobr\u00f3 buen fee pero movi\u00f3 poco premium: el mes se ve bien y no lo es.',
  'Del BOS: fee cobrado del mes contra el premium del mes, por persona.',
@@ -2417,7 +2562,11 @@ async function renderShell(session){
       sb: SB, modo: 'equipo', alAbrir: (ag, cont) => detalleAgente(SB, ag, cont)
     });
     /* v24 · cancelaciones y Agentes: después del Pulso, sin competir con Meta. */
-    setTimeout(() => { if (window.pgV24) window.pgV24(SB).catch(e => console.warn('v24', e)); }, 400);
+    /* v25 · el historial del año, después de v24 (toma de ahí el índice vivo del mes en curso). */
+    setTimeout(() => {
+      const v25 = () => { if (window.pgV25) window.pgV25(SB).catch(e => console.warn('v25', e)); };
+      if (window.pgV24) window.pgV24(SB).catch(e => console.warn('v24', e)).then(v25); else v25();
+    }, 400);
     /* v20: diaEquipo()/actividadEquipo() eran de la pestaña "Equipo", jubilada (template). */
   } catch (e) {
     console.error(e);
@@ -2445,7 +2594,7 @@ boot();
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="gabi-brahian.html";
-var PGV_VERSION=24; // v24 - 13-oct-2026 (estructura ESTRUCTURA_EQUIPO_COMERCIAL_V23_META_LLAMADAS_AGENTES_13OCT, montada como v24 porque la v23 fue un ajuste de rendimiento): Pulso pasa a llamarse Llamadas y Sentarse pasa a Agentes. META: tercer anillo 'Cancelaciones del equipo' (se cayeron antes de 6 meses, portal.equipo_indice_detalle) y bolita del índice al lado de cada nombre. AGENTES: lista de prioridad de siempre + por persona: rentable este mes (lo que deja contra su silla, v_utilidad_por_persona_v2), cancelaciones, fee del mes contra $1.500 y meta; gráfica 'Por encima de su silla' y sus cancelaciones (curva por mes de venta desde 5 ventas + cada póliza con la raya del día 180); la libreta filtrada por la persona. La tabla 'Fee contra el estándar' se jubila en un template y pasa a columna del AÑO, que gana además 'Sobre su silla' e 'Índice canc.'. Manual: Cancelaciones y Su silla. // v23 - 12-oct-2026 RENDIMIENTO: la actividad del equipo (v_actividad_equipo_visible) se pide a la par de Meta en vez de en fila (~1,4 s menos). Mismo orden de pintado: Meta primero, Pulso después. // v22 - 12-oct-2026 pedido de Andrés: Meta vuelve a ser lo primero (primera en el menú y abierta al entrar); carga Meta primero y el Pulso cuando Meta ya pintó. Pulso pasa a segunda. // v21 - 12-oct-2026 ARREGLO de la v20: (0) si Meta se corta por tiempo, un reintento a los 2,5 s; (1) los anillos de Meta se volvían a dibujar a tamaño de reserva porque Meta dejó de ser la pantalla inicial; ahora se re-miden al abrir Meta; (2) el menú responde desde el primer segundo (antes esperaba a que Meta cargara); si ya se abrió otra pestaña, se arma al llegar los datos. // v20 - 12-oct-2026 (+ botón 'Ocultar la barra de tops' en la barra lateral, se recuerda en portal.preferencias_usuario) PULSO + 4 PANTALLAS: el menú queda Pulso · Meta · Sentarse · Año · Qué es cada cosa. PULSO (nuevo, abre aquí) es pg-llamadas.js sobre portal.equipo_llamadas_pulso(): Hoy · Último día hábil · Semana · Mes, cuatro cifras que filtran (Llamadas, +2 min, Positivos, Ventas), "N personas sin llamar" desde las 11:00, franja Día corto (<40% del promedio de 10 días hábiles), y la ficha de equipo_agente_detalle se abre debajo de la fila con Ver su año / Anotar en la libreta. Mismo número que FAM (pestaña Equipo) y Mi proceso. PERSONA deja de ser pestaña: se abre en Meta al tocar a alguien de la lista. BITÁCORA va dentro de Sentarse. La pestaña Equipo (Ayer | Este mes) se jubila en un template (no se pinta ni consulta). Cero cambios de datos de negocio. // v19 - Protect Index: las direcciones internas del sitio pasan a relativas (el sitio ya no depende de como se llame el repo). Las que viajan por correo (recuperar contrasena, fotos de firma, sello de RRHH) quedan absolutas apuntando a protect-index. // v18 - Una persona, una meta: el tablero deja de leer los campos de la meta chica y el piso de direccion; el avance de cada quien y del equipo se mide solo contra la meta de rampa (una sola vara por persona) -- la meta del equipo pasa a ser la suma de las 17, $1,015,000, y se quita la suma de las metas chicas. En la ficha de Persona, al inicio, se suma la franja de curva de aprendizaje (solo si aplica) y su plan corto (1 o 2 tarjetas con que pide), leidos de una sola llamada a SB.rpc('simular_sueno_de'): el mismo numero que la persona ve en su Mi proceso, para que hable con Brahian del mismo plan. Equipo, Bitacora, Ano, Manual y el motor de patrones de Sentarse quedan igual. // v17 - combinada = premium + fee x10 (decision de Andres 14-sep, igual que el reporte de Jeff); el motor ya la manda asi; la alerta cobra-y-no-vende deriva el premium como mc - fee x10. // v16 - Pestana "Hoy" pasa a llamarse EQUIPO: dia-card + act-card + emb-card de la v15 (las tres con la misma lista de 21 nombres) se funden en UNA tabla con interruptor Ayer | Este mes, misma fila de cifras en los dos modos (Llamadas, De +2 min, Positivos, Ventas). Columna Cuentas se elimina; Dias con positivo y Donde se le queda (antes en sus propios cards) pasan a ser columnas del modo Este mes. positivos ahora sale de la columna nueva contactos/contactos_mes (contactos creados), no de positivos_mes; lo que antes se llamaba positivos (negocio mandado a cotizar) se renombra cotizados y vive en la ficha. Ventas ya es CUENTAS (clientes distintos), no polizas -- polizas queda solo para el tooltip. Pestana "El mes" se renombra Meta y se queda solo con anillos/barra/lista de meta (no tenia actividad colada). Ficha de persona (det-card): cuadro llamadas/+2min/solo timbre/minutos/positivos/cotizados/ventas con los nombres de campo correctos del RPC (solo_timbre, no soloTimbre); "Positivos dia a dia" lee pulsoContactos (antes positivosDia); lista nueva "Que positivos monto este mes" con positivosMontados, al lado de "Que registro en el BOS" (paquetes/totalMes, sin cambios, por cuenta). Pie de la tabla de EQUIPO fijo en dos lineas: que es un positivo, y quien no tiene RingCentral. TODO v16: no se re-agrego el pulso "sin una sola senal" ni el senalamiento de "quien mas marca sin cotizar" de la v15 -- se recorto a proposito para cumplir el pie de dos lineas que pidio Andres; si hace falta se puede regresar como una tercera linea opcional. // v15 - La pestana del dia se reorganiza: arriba "El dia que cerro" (public.v_equipo_dia_visible = ultimo dia HABIL antes de hoy) con las cifras del equipo y la tabla persona por persona -- llamadas, de mas de 2 min, mandados a cotizar, ventas y cuantas filas dejo en el BOS. Al tocar una persona se abre su ficha con public.equipo_agente_detalle(nombre): su dia contra su mes y QUE REGISTRO, con el nombre de cada cuenta. Debajo, separado con el rotulo "El mes", quedan los dos cards mensuales; el de "quien esta registrando" ya NO muestra llamadas de hoy (a media manana siempre eran cero) sino solo el mes. // v14 - Llamadas del equipo con el desglose de la casa: la linea de arriba de la tabla y el tooltip de la celda muestran cuantas fueron solo timbre y cuantas pasaron de 2 minutos (v_actividad_equipo ahora trae solo_timbre_mes/hoy y conversaciones_mes/hoy). Card nuevo "De la llamada a la venta" en la pestana Hoy: los cuatro pasos del mes por persona -- llamadas, de mas de 2 min, mandados a cotizar, ventas -- con la columna "Donde se le queda" en palabras y el caso mas fuerte en el pie. Mismos datos de v_actividad_equipo_visible, sin segunda consulta. Sin barras. // v13 - Llamadas por persona: en la tabla de Hoy, "Llamadas hoy" y "Llamadas mes" se vuelven una sola columna combinada (hoy destacado, mes chiquito y gris, con title al pasar el mouse), guion cuando la persona no tiene usuario de RingCentral (nunca 0 ni null); arriba de la tabla, una línea con el total de llamadas de hoy del equipo y la hora de la última sincronización; y sexta alerta "sin llamar hoy" — salta en día hábil desde las 11:00 hora Colombia (UTC-5, calculada aparte de la del navegador) cuando llamadas_hoy da 0 exacto (null no cuenta: sin RingCentral no hay alerta). v_actividad_equipo_visible ahora también se lee, aparte, dentro de cargarDatos() para alimentar esa alerta. // v12 - Quinta alerta: "cobra y no vende". Es la primera del tablero que mira el PREMIUM: salta cuando el fee del mes llega a $2.500 (la puerta de fee del 30 %) pero el premium no llega a $35.000 (la puerta de premium del mismo 30 %), o sea el mes que se ve bien de fee y deja la escala en la base. Las otras cuatro alertas miraban solo el fee. // v11 - v11 - Tablero simple: cinco pestanas de lectura (El mes, Hoy, Alertas, Persona, Ano) + Bitacora + Manual de lectura. Meta minima / Meta plena en toda la pantalla. Anillos y barras con la regla de la casa: avance real contra la meta plena, pista por zonas y tick del deberia ir hoy; el ritmo en palabra. Cero parrafos de explicacion fija fuera del manual.
+var PGV_VERSION=25; // v25 - 21-oct-2026 (estructura ESTRUCTURA_EQUIPO_COMERCIAL_V25_HISTORIAL_20OCT): META gana la tira HISTORIAL bajo los tres anillos: una bolita por mes del año (portal.equipo_historial, que un robot reescribe cada noche a las 00:20 leyendo el BOS) con el % de la meta plena de ese mes (la suma de las metas de quienes tenían horario) y el índice de cancelaciones como estaba al cierre; el mes en curso al final, tenue. Escala del año: coral -> naranja -> ámbar (mínimo exigible) -> lima -> verde en OKLCH, y en la meta la bolita se llena (menta 100-109, lavanda 110-124, magenta >= 125 récord). Toca un mes y abajo sale su lectura (vs el mes anterior). anillo() gana tam/grosor/color/lleno opcionales (los anillos de siempre no cambian). Manual: Historial. // v24 - 13-oct-2026 (estructura ESTRUCTURA_EQUIPO_COMERCIAL_V23_META_LLAMADAS_AGENTES_13OCT, montada como v24 porque la v23 fue un ajuste de rendimiento): Pulso pasa a llamarse Llamadas y Sentarse pasa a Agentes. META: tercer anillo 'Cancelaciones del equipo' (se cayeron antes de 6 meses, portal.equipo_indice_detalle) y bolita del índice al lado de cada nombre. AGENTES: lista de prioridad de siempre + por persona: rentable este mes (lo que deja contra su silla, v_utilidad_por_persona_v2), cancelaciones, fee del mes contra $1.500 y meta; gráfica 'Por encima de su silla' y sus cancelaciones (curva por mes de venta desde 5 ventas + cada póliza con la raya del día 180); la libreta filtrada por la persona. La tabla 'Fee contra el estándar' se jubila en un template y pasa a columna del AÑO, que gana además 'Sobre su silla' e 'Índice canc.'. Manual: Cancelaciones y Su silla. // v23 - 12-oct-2026 RENDIMIENTO: la actividad del equipo (v_actividad_equipo_visible) se pide a la par de Meta en vez de en fila (~1,4 s menos). Mismo orden de pintado: Meta primero, Pulso después. // v22 - 12-oct-2026 pedido de Andrés: Meta vuelve a ser lo primero (primera en el menú y abierta al entrar); carga Meta primero y el Pulso cuando Meta ya pintó. Pulso pasa a segunda. // v21 - 12-oct-2026 ARREGLO de la v20: (0) si Meta se corta por tiempo, un reintento a los 2,5 s; (1) los anillos de Meta se volvían a dibujar a tamaño de reserva porque Meta dejó de ser la pantalla inicial; ahora se re-miden al abrir Meta; (2) el menú responde desde el primer segundo (antes esperaba a que Meta cargara); si ya se abrió otra pestaña, se arma al llegar los datos. // v20 - 12-oct-2026 (+ botón 'Ocultar la barra de tops' en la barra lateral, se recuerda en portal.preferencias_usuario) PULSO + 4 PANTALLAS: el menú queda Pulso · Meta · Sentarse · Año · Qué es cada cosa. PULSO (nuevo, abre aquí) es pg-llamadas.js sobre portal.equipo_llamadas_pulso(): Hoy · Último día hábil · Semana · Mes, cuatro cifras que filtran (Llamadas, +2 min, Positivos, Ventas), "N personas sin llamar" desde las 11:00, franja Día corto (<40% del promedio de 10 días hábiles), y la ficha de equipo_agente_detalle se abre debajo de la fila con Ver su año / Anotar en la libreta. Mismo número que FAM (pestaña Equipo) y Mi proceso. PERSONA deja de ser pestaña: se abre en Meta al tocar a alguien de la lista. BITÁCORA va dentro de Sentarse. La pestaña Equipo (Ayer | Este mes) se jubila en un template (no se pinta ni consulta). Cero cambios de datos de negocio. // v19 - Protect Index: las direcciones internas del sitio pasan a relativas (el sitio ya no depende de como se llame el repo). Las que viajan por correo (recuperar contrasena, fotos de firma, sello de RRHH) quedan absolutas apuntando a protect-index. // v18 - Una persona, una meta: el tablero deja de leer los campos de la meta chica y el piso de direccion; el avance de cada quien y del equipo se mide solo contra la meta de rampa (una sola vara por persona) -- la meta del equipo pasa a ser la suma de las 17, $1,015,000, y se quita la suma de las metas chicas. En la ficha de Persona, al inicio, se suma la franja de curva de aprendizaje (solo si aplica) y su plan corto (1 o 2 tarjetas con que pide), leidos de una sola llamada a SB.rpc('simular_sueno_de'): el mismo numero que la persona ve en su Mi proceso, para que hable con Brahian del mismo plan. Equipo, Bitacora, Ano, Manual y el motor de patrones de Sentarse quedan igual. // v17 - combinada = premium + fee x10 (decision de Andres 14-sep, igual que el reporte de Jeff); el motor ya la manda asi; la alerta cobra-y-no-vende deriva el premium como mc - fee x10. // v16 - Pestana "Hoy" pasa a llamarse EQUIPO: dia-card + act-card + emb-card de la v15 (las tres con la misma lista de 21 nombres) se funden en UNA tabla con interruptor Ayer | Este mes, misma fila de cifras en los dos modos (Llamadas, De +2 min, Positivos, Ventas). Columna Cuentas se elimina; Dias con positivo y Donde se le queda (antes en sus propios cards) pasan a ser columnas del modo Este mes. positivos ahora sale de la columna nueva contactos/contactos_mes (contactos creados), no de positivos_mes; lo que antes se llamaba positivos (negocio mandado a cotizar) se renombra cotizados y vive en la ficha. Ventas ya es CUENTAS (clientes distintos), no polizas -- polizas queda solo para el tooltip. Pestana "El mes" se renombra Meta y se queda solo con anillos/barra/lista de meta (no tenia actividad colada). Ficha de persona (det-card): cuadro llamadas/+2min/solo timbre/minutos/positivos/cotizados/ventas con los nombres de campo correctos del RPC (solo_timbre, no soloTimbre); "Positivos dia a dia" lee pulsoContactos (antes positivosDia); lista nueva "Que positivos monto este mes" con positivosMontados, al lado de "Que registro en el BOS" (paquetes/totalMes, sin cambios, por cuenta). Pie de la tabla de EQUIPO fijo en dos lineas: que es un positivo, y quien no tiene RingCentral. TODO v16: no se re-agrego el pulso "sin una sola senal" ni el senalamiento de "quien mas marca sin cotizar" de la v15 -- se recorto a proposito para cumplir el pie de dos lineas que pidio Andres; si hace falta se puede regresar como una tercera linea opcional. // v15 - La pestana del dia se reorganiza: arriba "El dia que cerro" (public.v_equipo_dia_visible = ultimo dia HABIL antes de hoy) con las cifras del equipo y la tabla persona por persona -- llamadas, de mas de 2 min, mandados a cotizar, ventas y cuantas filas dejo en el BOS. Al tocar una persona se abre su ficha con public.equipo_agente_detalle(nombre): su dia contra su mes y QUE REGISTRO, con el nombre de cada cuenta. Debajo, separado con el rotulo "El mes", quedan los dos cards mensuales; el de "quien esta registrando" ya NO muestra llamadas de hoy (a media manana siempre eran cero) sino solo el mes. // v14 - Llamadas del equipo con el desglose de la casa: la linea de arriba de la tabla y el tooltip de la celda muestran cuantas fueron solo timbre y cuantas pasaron de 2 minutos (v_actividad_equipo ahora trae solo_timbre_mes/hoy y conversaciones_mes/hoy). Card nuevo "De la llamada a la venta" en la pestana Hoy: los cuatro pasos del mes por persona -- llamadas, de mas de 2 min, mandados a cotizar, ventas -- con la columna "Donde se le queda" en palabras y el caso mas fuerte en el pie. Mismos datos de v_actividad_equipo_visible, sin segunda consulta. Sin barras. // v13 - Llamadas por persona: en la tabla de Hoy, "Llamadas hoy" y "Llamadas mes" se vuelven una sola columna combinada (hoy destacado, mes chiquito y gris, con title al pasar el mouse), guion cuando la persona no tiene usuario de RingCentral (nunca 0 ni null); arriba de la tabla, una línea con el total de llamadas de hoy del equipo y la hora de la última sincronización; y sexta alerta "sin llamar hoy" — salta en día hábil desde las 11:00 hora Colombia (UTC-5, calculada aparte de la del navegador) cuando llamadas_hoy da 0 exacto (null no cuenta: sin RingCentral no hay alerta). v_actividad_equipo_visible ahora también se lee, aparte, dentro de cargarDatos() para alimentar esa alerta. // v12 - Quinta alerta: "cobra y no vende". Es la primera del tablero que mira el PREMIUM: salta cuando el fee del mes llega a $2.500 (la puerta de fee del 30 %) pero el premium no llega a $35.000 (la puerta de premium del mismo 30 %), o sea el mes que se ve bien de fee y deja la escala en la base. Las otras cuatro alertas miraban solo el fee. // v11 - v11 - Tablero simple: cinco pestanas de lectura (El mes, Hoy, Alertas, Persona, Ano) + Bitacora + Manual de lectura. Meta minima / Meta plena en toda la pantalla. Anillos y barras con la regla de la casa: avance real contra la meta plena, pista por zonas y tick del deberia ir hoy; el ritmo en palabra. Cero parrafos de explicacion fija fuera del manual.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;
