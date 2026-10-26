@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi statement · ProtectGo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,1,800&family=Montserrat:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="pg-volver.js" defer></script>
+<script src="pg-statement.js"></script>
+<style>
+:root{--pg-ink:#1B2D3A;--pg-ink-2:#162630;--pg-mint:#2DBFA3;--pg-mint-soft:#C4E8DF;--pg-mint-deep:#229A82;--pg-bg:#F4F7FA;--pg-card:#FFFFFF;--pg-line:#E7EDF2;--pg-txt:#28323B;--pg-muted:#6B7D89;--pg-pos:#1F9D6B;--pg-neg:#D5594F;--pg-warn:#D9A520;--pg-font-gabi:"Fraunces",Georgia,serif;--pg-font-title:"Montserrat","Arial Black",sans-serif;--pg-font-body:"Inter",Arial,sans-serif;--pg-font-num:"JetBrains Mono","Courier New",monospace}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--pg-bg);color:var(--pg-txt);font-family:var(--pg-font-body);font-size:14px}
+button{font-family:inherit}
+.num{font-family:var(--pg-font-num);font-variant-numeric:tabular-nums}
+.neg{color:var(--pg-neg)}
+.muted{color:var(--pg-muted)}
+
+/* ── barra delgada ── */
+.topbar{background:var(--pg-ink);color:#fff;padding:12px 18px;display:flex;align-items:center;gap:10px}
+.pg-wordmark{font-family:var(--pg-font-gabi);font-style:italic;font-weight:800;font-size:22px;color:var(--pg-mint)}
+.topbar b{font-family:var(--pg-font-title);font-size:13px;white-space:nowrap}
+.topbar .who{margin-left:auto;color:#8da0ad;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right;min-width:0}
+.wrap{max-width:900px;margin:0 auto;padding:22px 20px 110px;min-width:0}
+.pg-eyebrow{font-size:11px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--pg-mint-deep);margin-bottom:4px}
+h1{font-family:var(--pg-font-title);font-size:26px;font-weight:800;color:var(--pg-ink);margin:0}
+.pg-sub{color:var(--pg-muted);font-size:13.5px;margin-top:3px;overflow-wrap:anywhere}
+.head{margin-bottom:16px}
+
+/* ── aviso de dirección ── */
+.vercomo{background:#FBF3E2;border:1px solid var(--pg-warn);color:#8a6a1d;border-radius:999px;padding:6px 14px;font-size:12.5px;font-weight:700;display:inline-block;margin-bottom:14px;max-width:100%;overflow-wrap:anywhere}
+
+/* ── candado del mes en curso ── */
+.lock{display:flex;gap:12px;align-items:center;background:#fff;border:2px dashed var(--pg-line);border-radius:16px;padding:14px 16px;margin-bottom:16px;color:var(--pg-muted);font-size:13.5px}
+.lock .ic{font-size:24px;line-height:1}
+.lock b{color:var(--pg-ink)}
+
+/* ── franja oscura ── */
+.franja{background:var(--pg-ink);color:#fff;border-radius:20px;padding:22px 24px;margin-bottom:18px}
+.franja.sube{background:linear-gradient(135deg,#1B2D3A,#1f4d4a)}
+.franja .lbl{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#8da0ad;font-weight:700;margin-bottom:8px}
+.franja .big{font-family:var(--pg-font-num);font-size:46px;font-weight:600;line-height:1;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.franja .cop{font-family:var(--pg-font-num);font-size:17px;font-weight:600;color:var(--pg-mint-soft);margin-top:8px}
+.franja .fl{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px;font-size:13px;color:#b9c6d0}
+.franja .vs{margin-top:10px;font-size:13px;color:#b9c6d0}
+.franja .vs b{color:#fff}
+.franja .pg-btn{margin-top:18px;width:100%;max-width:340px}
+.estado{display:inline-block;padding:4px 12px;border-radius:999px;font-size:11.5px;font-weight:800;letter-spacing:.04em;white-space:nowrap}
+.estado.listo{background:var(--pg-mint-soft);color:var(--pg-ink-2)}
+.estado.pagado{background:#E3F4EF;color:var(--pg-pos)}
+.chip{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px;background:#EEF2F5;color:var(--pg-muted);vertical-align:middle;white-space:nowrap}
+.franja .chip{background:rgba(255,255,255,.12);color:#cfdae2}
+
+/* ── botones ── */
+.pg-btn{background:var(--pg-ink);color:#fff;border:none;border-radius:999px;padding:13px 22px;font-size:15px;font-weight:700;cursor:pointer}
+.pg-btn:hover{background:var(--pg-ink-2)}
+.pg-btn.mint{background:var(--pg-mint);color:#0D3040}
+.pg-btn.mint:hover{background:var(--pg-mint-deep);color:#fff}
+.pg-btn.secondary{background:#fff;color:var(--pg-ink);border:2px solid var(--pg-line)}
+.pg-btn.sm{padding:7px 14px;font-size:13px}
+.pg-btn:disabled{opacity:.5;cursor:wait}
+.lk{color:var(--pg-mint-deep);cursor:pointer;font-weight:700;background:none;border:none;padding:4px 0;font-size:13px;font-family:inherit}
+
+/* ── kpis ── */
+.pg-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:18px}
+.pg-kpi{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:14px;padding:14px 16px;position:relative;overflow:hidden;box-shadow:0 1px 3px rgba(27,45,58,.04);min-width:0}
+.pg-kpi::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--pg-mint)}
+.pg-kpi.amb::before{background:var(--pg-warn)}
+.pg-kpi.rojo::before{background:var(--pg-neg)}
+.pg-kpi .lbl{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--pg-muted)}
+.pg-kpi .val{font-family:var(--pg-font-num);font-size:23px;font-weight:600;color:var(--pg-ink);margin:6px 0 2px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.pg-kpi .val.neg{color:var(--pg-neg)}
+.pg-kpi .sub{font-size:12px;color:var(--pg-muted)}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--pg-warn);margin-right:6px;vertical-align:middle;animation:resp 1.8s ease-in-out infinite}
+@keyframes resp{0%,100%{opacity:.45}50%{opacity:1}}
+
+/* ── tarjetas ── */
+.pg-card{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:18px;padding:18px 20px;box-shadow:0 1px 3px rgba(27,45,58,.04);margin-bottom:16px;min-width:0}
+.pg-card h2{font-family:var(--pg-font-title);font-size:17px;font-weight:800;color:var(--pg-ink);margin:0 0 4px}
+.pg-card .h2sub{color:var(--pg-muted);font-size:13px;margin-bottom:10px}
+.dos{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:16px}
+.mov{display:flex;gap:12px;align-items:baseline;padding:10px 0;border-bottom:1px solid var(--pg-line);font-size:13.5px}
+.mov:last-child{border-bottom:none}
+.mov .amt{font-family:var(--pg-font-num);font-weight:600;min-width:92px;text-align:right;white-space:nowrap;color:var(--pg-ink)}
+.mov .amt.neg{color:var(--pg-neg)}
+.mov .t{min-width:0;overflow-wrap:anywhere}
+.curva{display:block;width:100%}
+.cstats{display:flex;gap:8px 20px;flex-wrap:wrap;margin-top:8px;font-size:12.5px}
+.hist{display:flex;align-items:center;gap:8px 12px;padding:11px 0;border-bottom:1px solid var(--pg-line);flex-wrap:wrap;cursor:pointer}
+.hist:last-child{border-bottom:none}
+.hist:hover{background:#F8FBFC}
+.hist .m{font-weight:700;color:var(--pg-ink);flex:1 1 180px;min-width:0}
+.hist .tot{font-family:var(--pg-font-num);font-weight:600;color:var(--pg-ink);min-width:104px;text-align:right;white-space:nowrap}
+.hist .tot.neg{color:var(--pg-neg)}
+.hist .estado{min-width:78px;text-align:center}
+.vacio{border:2px dashed var(--pg-line);border-radius:18px;padding:30px 22px;text-align:center;color:var(--pg-muted);background:#fff}
+.vacio h2{font-family:var(--pg-font-title);color:var(--pg-ink);font-size:18px;margin:8px 0 6px}
+.nota{background:#EEF2F5;color:var(--pg-muted);border-radius:12px;padding:10px 14px;font-size:12.5px;margin-bottom:16px}
+.cargando{padding:60px 0;text-align:center;color:var(--pg-muted)}
+
+/* ── documento ── */
+.docov{position:fixed;inset:0;background:rgba(13,48,64,.92);z-index:85;overflow:auto;padding:18px 14px 110px}
+.docbar{max-width:820px;margin:0 auto 12px;display:flex;gap:10px;justify-content:space-between;align-items:center;flex-wrap:wrap}
+.docnota{max-width:820px;margin:0 auto 12px;background:#FBF3E2;color:#8a6a1d;border-radius:12px;padding:10px 14px;font-size:12.5px}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--pg-ink);color:#fff;padding:11px 18px;border-radius:999px;font-size:13px;z-index:120;box-shadow:0 6px 20px rgba(0,0,0,.25);max-width:calc(100% - 32px);text-align:center}
+.toast.err{background:var(--pg-neg)}
+
+@media print{
+  .topbar,.wrap,.docbar,.docnota,.toast{display:none!important}
+  .docov{position:static;background:#fff;padding:0;overflow:visible}
+  body{background:#fff}
+}
+@media (max-width:760px){
+  .dos{grid-template-columns:minmax(0,1fr);gap:0}
+  .pg-kpis{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+}
+@media (max-width:640px){
+  .wrap{padding:16px 16px 110px}
+  h1{font-size:22px}
+  .franja{padding:18px}
+  .franja .big{font-size:36px}
+  .franja .pg-btn{max-width:none}
+  .pg-kpi{padding:12px 12px 12px 14px}
+  .pg-kpi .lbl{font-size:10px}
+  .pg-kpi .val{font-size:19px}
+  .pg-kpi .sub{font-size:11px}
+  .pg-card{padding:14px}
+  .mov .amt{min-width:80px}
+  .hist .m{flex:1 1 calc(100% - 120px)}
+  .hist .tot{min-width:0}
+  .hist .lk{margin-left:auto}
+}
+</style>
+</head>
+<body>
+
+<div id="app"><div class="wrap"><div class="cargando">Cargando tu statement…</div></div></div>
+<div id="docl"></div>
+
+<script>
+/* ============================================================
+   Mi statement — mi-statement.html
+   Cada persona que comisiona ve su COMMISSION STATEMENT del mes y su
+   historial. Solo lectura. Todo sale de la base por dos RPC del
+   esquema portal (CONTRATO_MI_STATEMENT.md): mi_statements y
+   mi_statement_doc. La pantalla no calcula comisiones: solo muestra.
+   El documento lo dibuja pg-statement.js (el mismo que ve FAM).
+   ?ver_como=correo → vista de dirección/FAM, solo lectura.
+   ============================================================ */
+(function(){
+"use strict";
+var SB_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
+var SB_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
+var SB=window.supabase.createClient(SB_URL,SB_KEY);
+var POR=SB.schema('portal');
+
+var S={D:null,email:'',verComo:null,doc:null,docId:null,abriendo:false};
+
+/* ═════════ utilidades ═════════ */
+function hay(n){return n!==null&&n!==undefined&&n!==''&&!isNaN(+n);}
+function fmt(n,d){if(!hay(n))return '—';d=d==null?2:d;n=+n;var s=Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});return (n<0?'−$':'$')+s;}
+function fmtZ(n,d){return hay(n)&&+n!==0?fmt(n,d):'—';}
+function copTxt(n){return hay(n)&&+n?Math.round(+n).toLocaleString('es-CO')+' COP':'';}
+function esc(s){return s==null?'':String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function $(id){return document.getElementById(id);}
+function toast(m,err){var t=document.createElement('div');t.className='toast'+(err?' err':'');t.textContent=m;document.body.appendChild(t);setTimeout(function(){t.remove();},err?4200:2800);}
+function msg(e){return (e&&(e.message||e.msg||e.error_description))||String(e||'error');}
+function rpc(n,p){return POR.rpc(n,p).then(function(r){if(r&&r.error)throw r.error;return r?r.data:null;});}
+/* "Septiembre 2026" → "Septiembre" / "septiembre" / "Sep" */
+function mesNom(t){return String(t||'').split(' ')[0]||'';}
+function mesMin(t){return mesNom(t).toLowerCase();}
+function mesCorto(t){var m=mesNom(t);return m.slice(0,3);}
+function estadoPill(e){return e==='pagado'?'<span class="estado pagado">PAGADO</span>':'<span class="estado listo">LISTO</span>';}
+
+/* ═════════ pantallas ═════════ */
+function topbar(){
+  var D=S.D||{};
+  return '<div class="topbar"><span class="pg-wordmark">GABI</span><b>Mi statement</b><span class="who">'+esc(D.correo||S.email||'')+'</span></div>';
+}
+function pantalla(html){$('app').innerHTML=topbar()+'<div class="wrap">'+html+'</div>';}
+function bloqueo(titulo,texto,conIndex){
+  $('docl').innerHTML='';
+  pantalla('<div class="vacio" style="margin-top:20px"><div class="pg-eyebrow">Mi statement</div><h2>'+esc(titulo)+'</h2><div>'+esc(texto||'')+'</div>'+
+    (conIndex?'<div style="margin-top:16px"><a class="pg-btn sm" href="index.html" style="text-decoration:none;display:inline-block">Ir al Index</a></div>':'')+'</div>');
+}
+function errCarga(e){
+  var m=msg(e);
+  if(/no autorizado/i.test(m)){
+    if(S.verComo){bloqueo('Esta vista es de dirección y FAM','Con tu cuenta solo puedes ver tu propio statement.',true);return;}
+    bloqueo('No tienes acceso a esta herramienta','Si crees que es un error, avísale a FAM.',true);return;
+  }
+  bloqueo('No pude leer tu statement',m+' · revisa tu conexión y recarga.',false);
+}
+
+function render(){
+  var D=S.D||{};
+  var nombre=D.nombre||D.persona||'';
+  var aviso=D.ver_como?'<div class="vercomo">Vista de dirección · '+esc(nombre||S.verComo||'—')+' · solo lectura</div>':'';
+  var head='<div class="head"><div class="pg-eyebrow">Mi statement</div><h1>'+esc(nombre||'Mi statement')+'</h1>'+(D.rol?'<div class="pg-sub">'+esc(D.rol)+'</div>':'')+'</div>';
+
+  if(!D.persona){
+    pantalla(aviso+'<div class="head"><div class="pg-eyebrow">Mi statement</div><h1>Mi statement</h1></div>'+
+      '<div class="vacio"><div style="font-size:30px">📄</div><h2>Aún no tienes statements</h2><div>FAM los comparte al cierre de cada mes.</div></div>');
+    return;
+  }
+  var U=D.ultimo, H=D.historial||[], C=D.curva||[];
+  var h=aviso+head+enCurso(D.en_curso);
+  if(!U&&!H.length){
+    h+='<div class="vacio"><div style="font-size:30px">📄</div><h2>Aún no tienes statements</h2><div>FAM los comparte al cierre de cada mes.</div></div>';
+    pantalla(h);return;
+  }
+  if(U)h+=franja(U)+kpis(U);
+  var mov=U&&!U.historico?queTeMovio(U):'';
+  var cur=C.length?'<div class="pg-card"><h2>Tu curva</h2><div class="h2sub">Tus statements, mes a mes. La línea punteada es tu promedio.</div><div id="curva"></div>'+curvaStats(C)+'</div>':'';
+  if(mov&&cur)h+='<div class="dos">'+mov+cur+'</div>';else h+=mov+cur;
+  h+=historial(H);
+  pantalla(h);
+  dibujarCurva();
+}
+
+function enCurso(E){
+  if(!E)return '';
+  return '<div class="lock"><span class="ic">🔒</span><div><b>'+esc(E.mes_txt||'—')+'</b> · FAM lo comparte al cierre del mes · se paga el '+esc(E.fecha_pago_txt||'—')+'</div></div>';
+}
+
+function franja(U){
+  var mes=mesNom(U.mes_txt).toUpperCase();
+  var pago=U.estado==='pagado'?'pagado el '+esc(U.pagado_txt||U.fecha_pago_txt||'—'):'se paga el '+esc(U.fecha_pago_txt||'—');
+  var vs='';
+  if(hay(U.vs_anterior_usd)&&U.anterior_mes_txt){
+    var d=+U.vs_anterior_usd,p=hay(U.vs_anterior_pct)?Math.round(+U.vs_anterior_pct):null,ant=esc(mesMin(U.anterior_mes_txt));
+    if(d>0)vs='Subiste <b class="num">'+fmt(d)+'</b>'+(p!=null?' (+'+p+' %)':'')+' frente a '+ant;
+    else if(d<0)vs='Bajaste <b class="num">'+fmt(Math.abs(d))+'</b>'+(p!=null?' ('+String(p).replace('-','−')+' %)':'')+' frente a '+ant;
+    else vs='Igual que '+ant;
+  }
+  var cop=copTxt(U.cop);
+  return '<div class="franja '+(hay(U.vs_anterior_usd)&&+U.vs_anterior_usd>0?'sube':'')+'">'+
+    '<div class="lbl">Tu statement de '+esc(mes)+(U.historico?' <span class="chip">resumen Cal Comm</span>':'')+'</div>'+
+    '<div class="big">'+fmt(U.total_usd)+'</div>'+
+    (cop?'<div class="cop">+ '+esc(cop)+'</div>':'')+
+    '<div class="fl"><span>'+pago+'</span>'+estadoPill(U.estado)+(hay(U.version)&&+U.version>1?'<span class="chip">versión '+esc(U.version)+'</span>':'')+'</div>'+
+    (vs?'<div class="vs">'+vs+'</div>':'')+
+    '<button class="pg-btn mint" data-act="doc" data-id="'+esc(U.statement_id)+'">Ver / imprimir →</button></div>';
+}
+
+function kpi(l,v,cls,sub){
+  var n=hay(v)&&+v!==0;
+  return '<div class="pg-kpi '+(cls||'')+'"><div class="lbl">'+esc(l)+'</div><div class="val '+(n&&+v<0?'neg':'')+'">'+(n?fmt(v):'—')+'</div>'+(sub?'<div class="sub">'+sub+'</div>':'')+'</div>';
+}
+function kpis(U){
+  if(U.historico)return '<div class="nota">Este mes viene de Cal Comm como un total: no trae detalle por póliza.</div>';
+  var K=U.conceptos||{};
+  var aj=hay(K.ajustes)&&+K.ajustes<0;
+  var cam=hay(U.en_camino_usd)&&+U.en_camino_usd!==0;
+  var nC=+U.n_en_camino||0;
+  var camino='<div class="pg-kpi amb"><div class="lbl">En camino</div><div class="val" style="color:var(--pg-warn)">'+(cam?'<span class="dot"></span>'+fmt(U.en_camino_usd):'—')+'</div><div class="sub">'+
+    (cam?(nC===1?'1 venta espera':(nC?nC+' ventas esperan':'espera'))+' statement · no está en el total':'nada espera statement')+'</div></div>';
+  return '<div class="pg-kpis">'+kpi('Ventas nuevas',K.ventas)+kpi('Fees',K.fees)+kpi('Renovaciones',K.renovaciones)+kpi('Endosos y residuales',K.endosos)+
+    kpi('Ajustes / negativos',K.ajustes,aj?'rojo':'')+camino+
+    (hay(K.extras)&&+K.extras!==0?kpi('Líder / 3,5 % / bolsas',K.extras):'')+'</div>';
+}
+
+function queTeMovio(U){
+  var M=(U.que_te_movio||[]).slice(0,3);
+  if(!M.length)return '';
+  return '<div class="pg-card"><h2>Qué te movió</h2><div class="h2sub">Lo que más pesó este mes.</div>'+
+    M.map(function(m){return '<div class="mov"><span class="amt '+(hay(m.monto)&&+m.monto<0?'neg':'')+'">'+fmt(m.monto)+'</span><span class="t">'+esc(m.texto||'—')+'</span></div>';}).join('')+'</div>';
+}
+
+/* ── curva: línea SVG (nunca barras), área suave, promedio punteado ── */
+function curvaVals(C){return C.filter(function(p){return hay(p.total_usd);});}
+function curvaStats(C){
+  var P=curvaVals(C);if(!P.length)return '';
+  var v=P.map(function(p){return +p.total_usd;});
+  var best=Math.max.apply(null,v),prom=v.reduce(function(a,b){return a+b;},0)/v.length;
+  var bm=P[v.indexOf(best)];
+  return '<div class="cstats"><span><span class="muted">Mejor mes</span> <b class="num">'+fmt(best,0)+'</b> <span class="muted">'+esc(mesMin(bm.mes_txt))+'</span></span>'+
+    '<span><span class="muted">Promedio</span> <b class="num">'+fmt(prom,0)+'</b></span><span><span class="muted">Meses</span> <b class="num">'+P.length+'</b></span></div>';
+}
+function dibujarCurva(){
+  var box=$('curva');if(!box||!S.D)return;
+  var P=curvaVals(S.D.curva||[]);
+  if(!P.length){box.innerHTML='<div class="muted">—</div>';return;}
+  var W=Math.max(260,Math.round(box.clientWidth||300)),H=170,px=30,pt=26,pb=26;
+  var v=P.map(function(p){return +p.total_usd;});
+  var max=Math.max.apply(null,v.concat([0])),min=Math.min.apply(null,v.concat([0]));if(max===min)max=min+1;
+  var n=P.length;
+  function x(i){return n===1?W/2:px+i*(W-2*px)/(n-1);}
+  function y(val){return pt+(max-val)/(max-min)*(H-pt-pb);}
+  var prom=v.reduce(function(a,b){return a+b;},0)/n;
+  var d=P.map(function(p,i){return (i?'L':'M')+x(i).toFixed(1)+' '+y(+p.total_usd).toFixed(1);}).join(' ');
+  var base=y(Math.max(min,0)).toFixed(1);
+  var area=n>1?d+' L'+x(n-1).toFixed(1)+' '+base+' L'+x(0).toFixed(1)+' '+base+' Z':'';
+  var step=n>8?Math.ceil(n/6):1;
+  var s='<svg class="curva" width="'+W+'" height="'+H+'" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Tu curva de statements">'+
+    '<defs><linearGradient id="mig" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2DBFA3" stop-opacity=".28"/><stop offset="1" stop-color="#2DBFA3" stop-opacity="0"/></linearGradient></defs>'+
+    (area?'<path d="'+area+'" fill="url(#mig)"/>':'')+
+    '<line x1="'+px+'" x2="'+(W-px)+'" y1="'+y(prom).toFixed(1)+'" y2="'+y(prom).toFixed(1)+'" stroke="#D9A520" stroke-dasharray="5 5" stroke-width="1.5"/>'+
+    (n>1?'<path d="'+d+'" fill="none" stroke="#2DBFA3" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>':'')+
+    P.map(function(p,i){var last=i===n-1,cx=x(i).toFixed(1),cy=y(+p.total_usd);
+      var lbl=(last||i%step===0)?'<text x="'+cx+'" y="'+(H-6)+'" text-anchor="middle" font-size="11" fill="#6B7D89" font-family="Inter,Arial">'+esc(mesCorto(p.mes_txt))+'</text>':'';
+      var val=(last||n<=6)?'<text x="'+cx+'" y="'+Math.max(12,cy-11).toFixed(1)+'" text-anchor="middle" font-size="11" font-weight="600" fill="#1B2D3A" font-family="JetBrains Mono,Courier New,monospace">'+esc(fmt(p.total_usd,0))+'</text>':'';
+      return '<circle cx="'+cx+'" cy="'+cy.toFixed(1)+'" r="'+(last?6:4.5)+'" fill="'+(last?'#1B2D3A':'#2DBFA3')+'" stroke="#fff" stroke-width="2"/>'+lbl+val;}).join('')+'</svg>';
+  box.innerHTML=s;
+}
+var rz=null;window.addEventListener('resize',function(){clearTimeout(rz);rz=setTimeout(dibujarCurva,150);});
+
+function historial(H){
+  if(!H.length)return '';
+  return '<div class="pg-card"><h2>Historial</h2><div class="h2sub">Tus statements. Cada uno se abre y se imprime.</div>'+
+    H.map(function(r){
+      return '<div class="hist" data-act="doc" data-id="'+esc(r.statement_id)+'"><span class="m">'+esc(r.mes_txt||'—')+(r.historico?' <span class="chip">resumen Cal Comm</span>':'')+'</span>'+
+        '<span class="tot '+(hay(r.total_usd)&&+r.total_usd<0?'neg':'')+'">'+fmt(r.total_usd)+(copTxt(r.cop)?'<br><span class="muted" style="font-size:11px;font-weight:500">+ '+esc(copTxt(r.cop))+'</span>':'')+'</span>'+
+        estadoPill(r.estado)+'<button class="lk" data-act="doc" data-id="'+esc(r.statement_id)+'">Imprimir</button></div>';
+    }).join('')+'</div>';
+}
+
+/* ═════════ documento ═════════ */
+function verDoc(id){
+  if(id==null||id===''){toast('Este statement no tiene documento',true);return;}
+  if(S.abriendo)return;S.abriendo=true;
+  rpc('mi_statement_doc',{p_id:isNaN(+id)?id:+id}).then(function(doc){
+    S.abriendo=false;S.doc=doc||{};S.docId=id;
+    var nota='';// la nota histórica la pinta pg-statement.js dentro del documento (también sale al imprimir)
+    $('docl').innerHTML='<div class="docov" data-act="docov"><div class="docbar"><button class="pg-btn secondary sm" data-act="cerrardoc">← volver</button><button class="pg-btn sm" data-act="imprimir">Imprimir / guardar PDF</button></div>'+nota+window.pgStatement.html(S.doc)+'</div>';
+    document.body.style.overflow='hidden';
+  },function(e){S.abriendo=false;toast('No pude abrir el documento: '+msg(e),true);});
+}
+function cerrarDoc(){$('docl').innerHTML='';S.doc=null;document.body.style.overflow='';}
+
+/* ═════════ eventos ═════════ */
+document.addEventListener('click',function(ev){
+  var el=ev.target.closest('[data-act]');if(!el)return;
+  var a=el.getAttribute('data-act');
+  switch(a){
+    case 'doc':ev.stopPropagation();verDoc(el.getAttribute('data-id'));break;
+    case 'cerrardoc':cerrarDoc();break;
+    case 'docov':if(ev.target===el)cerrarDoc();break;
+    case 'imprimir':if(!window.pgStatement.abrir(S.doc||{}))toast('El navegador bloqueó la ventana: permite ventanas emergentes para este sitio',true);break;
+  }
+});
+document.addEventListener('keydown',function(ev){if(ev.key==='Escape'&&$('docl').innerHTML)cerrarDoc();});
+
+/* ═════════ acceso ═════════ */
+try{var q=new URL(location.href).searchParams.get('ver_como');if(q&&/\S+@\S+/.test(q))S.verComo=q.trim().toLowerCase();}catch(e){}
+SB.auth.getSession().then(function(r){
+  var s=r&&r.data&&r.data.session;
+  if(!s){bloqueo('Entra primero al Index con tu cuenta','Después vuelve a abrir Mi statement desde tu tarjeta.',true);return;}
+  S.email=(s.user&&s.user.email)||'';
+  rpc('mi_statements',{p_ver_como:S.verComo}).then(function(d){S.D=d||{};render();},errCarga);
+},function(){bloqueo('Entra primero al Index con tu cuenta','',true);});
+})();
+</script>
+<script src="pg-novedades.js"></script>
+<script>window.addEventListener('DOMContentLoaded',function(){ if(window.pgNovedadesAuto) pgNovedadesAuto('general'); });</script>
+<script>
+(function(){
+"use strict";
+var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
+var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
+var PGV_ARCHIVO="mi-statement.html";
+var PGV_VERSION=1; // v1 - 26-oct-2026 MI STATEMENT: cada persona que comisiona ve su statement del mes (franja, conceptos, qué te movió, curva en línea, historial) y abre/imprime su COMMISSION STATEMENT con pg-statement.js. Solo lectura, desde portal.mi_statements / mi_statement_doc. ?ver_como=correo para dirección/FAM.
+function pgvRun(){
+  try{
+    var c=window.supabase.createClient(PGV_URL,PGV_KEY,{db:{schema:'portal'}});
+    c.from('app_versiones').select('version').eq('archivo',PGV_ARCHIVO).maybeSingle().then(function(r){
+      if(!r||r.error||!r.data)return;
+      if(Number(r.data.version)>PGV_VERSION){try{location.reload(true)}catch(e){location.reload()}}
+    });
+  }catch(e){}
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(pgvRun,400);});
+else setTimeout(pgvRun,400);
+setInterval(pgvRun,600000);
+})();
+</script>
+</body>
+</html>

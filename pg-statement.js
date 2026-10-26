@@ -98,6 +98,7 @@
 
     var h = '<div class="pgst"><style>' + CSS + '</style>';
     if (doc.preliminar) h += '<div class="pgst-prev">VISTA PREVIA · no compartido</div>';
+    if (doc.nota_es) h += '<div class="pgst-prev" style="text-transform:none;letter-spacing:0;font-weight:600">' + esc(doc.nota_es) + '</div>';
 
     h += '<div class="pgst-mb"><div class="pgst-wm">ProtectGo Services LLC<small>COMMERCIAL TRUCKING INSURANCE · VON ORMY, TX</small></div>' +
       '<div class="pgst-r" style="text-align:right"><h1>COMMISSION STATEMENT</h1><div class="pgst-mu" style="font-size:11px">Statement # <b class="pgst-num">' +
