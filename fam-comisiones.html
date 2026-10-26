@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Comisiones · Statement · ProtectGo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,1,800&family=Montserrat:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="pg-volver.js" defer></script>
+<script src="pg-statement.js"></script>
+<style>
+:root{--pg-ink:#1B2D3A;--pg-ink-2:#162630;--pg-mint:#2DBFA3;--pg-mint-soft:#C4E8DF;--pg-mint-deep:#229A82;--pg-bg:#F4F7FA;--pg-card:#FFFFFF;--pg-line:#E7EDF2;--pg-txt:#28323B;--pg-muted:#6B7D89;--pg-pos:#1F9D6B;--pg-neg:#D5594F;--pg-warn:#D9A520;--pg-font-gabi:"Fraunces",Georgia,serif;--pg-font-title:"Montserrat","Arial Black",sans-serif;--pg-font-body:"Inter",Arial,sans-serif;--pg-font-num:"JetBrains Mono","Courier New",monospace}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--pg-bg);color:var(--pg-txt);font-family:var(--pg-font-body);font-size:14px}
+button{font-family:inherit}
+.num{font-family:var(--pg-font-num);font-variant-numeric:tabular-nums}
+.neg{color:var(--pg-neg)}
+.muted{color:var(--pg-muted)}
+.hide{display:none!important}
+.short,.mob{display:none}
+.pg-table td.num{white-space:nowrap}
+
+/* ── shell ── */
+.pg-app{display:flex;min-height:100vh}
+.pg-side{width:236px;background:var(--pg-ink);color:#fff;padding:22px 14px;flex-shrink:0;display:flex;flex-direction:column}
+.pg-brand{display:flex;align-items:center;gap:10px;margin:0 6px 22px}
+.pg-wordmark{font-family:var(--pg-font-gabi);font-style:italic;font-weight:800;font-size:24px;color:var(--pg-mint)}
+.pg-brand small{display:block;color:#8da0ad;font-size:11px;letter-spacing:.1em;text-transform:uppercase}
+.pg-side a{display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:11px;color:#b9c6d0;font-size:14px;font-weight:500;text-decoration:none;margin-bottom:4px;cursor:pointer}
+.pg-side a .n{font-family:var(--pg-font-num);font-size:11px;color:var(--pg-mint);width:22px}
+.pg-side a.on,.pg-side a:hover{background:rgba(45,191,163,.15);color:#fff}
+.pg-foot{margin-top:auto;padding-top:14px;border-top:1px solid rgba(255,255,255,.12);font-size:12px;color:#8da0ad;overflow-wrap:anywhere}
+.pg-main{flex:1;padding:24px 30px 90px;min-width:0}
+.pg-top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+.pg-eyebrow{font-size:11px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--pg-mint-deep);margin-bottom:4px}
+.pg-top h1{font-family:var(--pg-font-title);font-size:26px;font-weight:800;color:var(--pg-ink);margin:0}
+.pg-sub{color:var(--pg-muted);font-size:13.5px;margin-top:3px}
+
+/* ── franja oscura ── */
+.franja{background:var(--pg-ink);color:#fff;border-radius:18px;padding:20px 24px;display:flex;align-items:center;gap:26px;flex-wrap:wrap;margin-bottom:18px}
+.franja .big{font-family:var(--pg-font-num);font-size:40px;font-weight:600;line-height:1;font-variant-numeric:tabular-nums}
+.franja .lbl{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#8da0ad;font-weight:700;margin-bottom:6px}
+.franja .mini{font-family:var(--pg-font-num);font-size:20px;font-weight:600}
+.franja .sep{width:1px;height:48px;background:rgba(255,255,255,.14)}
+.franja .act{margin-left:auto;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.franja .fsub{font-size:12px;margin-top:6px;color:#8da0ad}
+.estado{display:inline-block;padding:4px 12px;border-radius:999px;font-size:11.5px;font-weight:800;letter-spacing:.04em}
+.estado.borrador{background:#FBF3E2;color:#8a6a1d}
+.estado.compartido{background:var(--pg-mint-soft);color:var(--pg-ink-2)}
+.estado.pagado{background:#E3F4EF;color:var(--pg-pos)}
+
+/* ── kpis / cards ── */
+.pg-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:18px}
+.pg-kpi{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:14px;padding:14px 16px;position:relative;overflow:hidden;box-shadow:0 1px 3px rgba(27,45,58,.04);min-width:0}
+.pg-kpi::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--pg-mint)}
+.pg-kpi.amb::before{background:var(--pg-warn)}
+.pg-kpi.rojo::before{background:var(--pg-neg)}
+.pg-kpi .lbl{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--pg-muted)}
+.pg-kpi .val{font-family:var(--pg-font-num);font-size:24px;font-weight:600;color:var(--pg-ink);margin:6px 0 3px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.pg-kpi .val.neg{color:var(--pg-neg)}
+.pg-kpi .val.txt{font-size:17px;line-height:1.3}
+.pg-kpi .sub{font-size:12px;color:var(--pg-muted)}
+.pg-card{background:var(--pg-card);border:1px solid var(--pg-line);border-radius:18px;padding:20px 22px;box-shadow:0 1px 3px rgba(27,45,58,.04);margin-bottom:16px;min-width:0}
+.pg-card h2{font-family:var(--pg-font-title);font-size:17px;font-weight:800;color:var(--pg-ink);margin:0 0 4px}
+.pg-card .h2sub{color:var(--pg-muted);font-size:13px;margin-bottom:12px}
+.pg-warn-box{background:#FBF3E2;border:1px solid #EAD09A;border-radius:12px;padding:12px 16px;color:#8a6a1d;font-size:13px;margin-bottom:16px}
+.pg-warn-box b{color:#8a6a1d}
+.pg-warn-box .it{margin:3px 0}
+.acciones{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 16px}
+.gate{border:2px dashed var(--pg-line);border-radius:18px;padding:26px;text-align:center;color:var(--pg-muted);background:#fff}
+.gate h2{font-family:var(--pg-font-title);color:var(--pg-ink);font-size:18px;margin:6px 0}
+.ro{background:#EEF2F5;color:var(--pg-muted);border-radius:12px;padding:9px 14px;font-size:12.5px;margin-bottom:14px}
+
+/* ── tablas ── */
+.tw{overflow-x:auto}
+.pg-table{width:100%;border-collapse:collapse}
+.pg-table th{text-align:left;font-size:11px;color:var(--pg-muted);text-transform:uppercase;letter-spacing:.05em;padding:9px 8px;border-bottom:2px solid var(--pg-ink);font-weight:700;white-space:nowrap}
+.pg-table td{padding:10px 8px;font-size:13.5px;color:#3a4751;border-bottom:1px solid var(--pg-line);vertical-align:middle}
+.pg-table td.num,.pg-table th.num{text-align:right}
+.pg-table td.num{font-family:var(--pg-font-num);font-variant-numeric:tabular-nums;color:var(--pg-ink);font-weight:600}
+.pg-table td.num.neg{color:var(--pg-neg)}
+.pg-table tr.pers{cursor:pointer}
+.pg-table tr.pers:hover td{background:#F8FBFC}
+.pg-table tr.off td{color:#9aa8b2}
+.pg-table tr.off td.num{color:#9aa8b2}
+.pg-table tr.tot td{border-top:2px solid var(--pg-ink);border-bottom:none;font-weight:800}
+.pg-table tr.grp td{background:#F4F7FA;color:var(--pg-muted);font-size:11px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;padding:7px 8px}
+.av{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;background:var(--pg-mint-soft);color:var(--pg-ink);font-weight:800;font-size:11.5px;margin-right:9px;flex-shrink:0;object-fit:cover}
+.pn{display:flex;align-items:center;min-width:0}
+.pn > div{min-width:0}
+.pn .r{color:var(--pg-muted);font-size:12px;display:block}
+.pg-rank{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:5px 0;border-bottom:1px solid var(--pg-line);font-size:13px}
+.pg-rank:last-child{border-bottom:none}
+.pg-btn{background:var(--pg-ink);color:#fff;border:none;border-radius:999px;padding:11px 20px;font-size:14px;font-weight:600;cursor:pointer}
+.pg-btn:hover{background:var(--pg-ink-2)}
+.pg-btn.mint{background:var(--pg-mint);color:#0D3040}
+.pg-btn.mint:hover{background:var(--pg-mint-deep);color:#fff}
+.pg-btn.secondary{background:transparent;color:var(--pg-ink);border:2px solid var(--pg-line)}
+.pg-btn.secondary:hover{border-color:var(--pg-mint);color:var(--pg-mint-deep)}
+.franja .pg-btn.secondary{color:#fff;border-color:rgba(255,255,255,.25)}
+.pg-btn.sm{padding:6px 12px;font-size:12.5px}
+.pg-btn:disabled{opacity:.45;cursor:not-allowed}
+.lk{color:var(--pg-mint-deep);cursor:pointer;font-weight:600;background:none;border:none;padding:0;font-size:inherit;font-family:inherit}
+.lk.gris{color:var(--pg-muted)}
+.chip{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:999px;margin-left:6px;vertical-align:middle}
+.chip.ed{background:#FBF3E2;color:#8a6a1d}
+.chip.man{background:#EEF2F5;color:var(--pg-muted)}
+.chip.pen{background:#FBF3E2;color:#8a6a1d}
+.chip.err{background:#FCEEEC;color:var(--pg-neg)}
+.chip.jub{background:#EEF2F5;color:var(--pg-muted);text-decoration:line-through}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--pg-warn);margin-right:6px;animation:resp 1.8s ease-in-out infinite}
+@keyframes resp{0%,100%{opacity:.45}50%{opacity:1}}
+select.inl,input.inl{font-family:var(--pg-font-num);font-size:13px;border:1px solid var(--pg-line);border-radius:8px;padding:5px 8px;background:#fff;color:var(--pg-ink);max-width:100%}
+input.inl{width:120px;text-align:right}
+select.mes{font-family:var(--pg-font-body);font-size:13.5px;padding:8px 12px;border-radius:999px;border:1px solid var(--pg-line);background:#fff;color:var(--pg-ink);max-width:100%}
+.meta-t{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.meta-t span{border:1px solid var(--pg-line);border-radius:999px;padding:4px 10px;font-size:12.5px}
+.meta-t span.on{background:var(--pg-mint-soft);border-color:var(--pg-mint);font-weight:700}
+
+/* ── panel persona / modales ── */
+.ov{position:fixed;inset:0;background:rgba(13,48,64,.55);z-index:80;display:flex;justify-content:flex-end}
+.panel{background:var(--pg-bg);width:min(1020px,100%);height:100%;overflow:auto;padding:22px 26px 90px;box-shadow:-10px 0 30px rgba(0,0,0,.25)}
+.panel .head{display:flex;align-items:center;gap:14px;margin-bottom:14px;flex-wrap:wrap}
+.panel .head .av{width:44px;height:44px;font-size:15px}
+.panel h2.pnom{font-family:var(--pg-font-title);font-size:20px;margin:0;color:var(--pg-ink)}
+.defs{display:flex;gap:14px 18px;flex-wrap:wrap;align-items:flex-end;background:#fff;border:1px solid var(--pg-line);border-radius:14px;padding:12px 16px;margin-bottom:14px}
+.defs label{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--pg-muted);display:flex;flex-direction:column;gap:5px}
+.defs .help{font-size:12px;color:var(--pg-muted);flex:1 1 220px}
+.docov{position:fixed;inset:0;background:rgba(13,48,64,.92);z-index:85;overflow:auto;padding:18px 14px 90px}
+.docbar{max-width:820px;margin:0 auto 12px;display:flex;gap:10px;justify-content:space-between;align-items:center;flex-wrap:wrap}
+.modal{position:fixed;inset:0;background:rgba(13,48,64,.55);z-index:90;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal .box{background:#fff;border-radius:18px;padding:22px 24px;width:min(560px,100%);max-height:90vh;overflow:auto}
+.modal h3{font-family:var(--pg-font-title);margin:0 0 6px;color:var(--pg-ink)}
+.modal textarea,.modal input,.modal select{width:100%;border:1px solid var(--pg-line);border-radius:10px;padding:9px 10px;font-family:inherit;font-size:13.5px;margin-top:6px}
+.modal label{font-size:12px;color:var(--pg-muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em;display:block;margin-top:10px}
+.modal .acts{display:flex;gap:10px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap}
+.modal .lista{margin-top:12px;max-height:260px;overflow:auto;border:1px solid var(--pg-line);border-radius:12px;padding:6px 12px}
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--pg-ink);color:#fff;padding:11px 18px;border-radius:999px;font-size:13px;z-index:120;box-shadow:0 6px 20px rgba(0,0,0,.25);max-width:calc(100% - 32px);text-align:center}
+.toast.err{background:var(--pg-neg)}
+.cargando{padding:40px 0;text-align:center;color:var(--pg-muted)}
+
+@media print{
+  .pg-side,.docbar,.toast,.modal,.pg-main,.ov{display:none!important}
+  .docov{position:static;background:#fff;padding:0;overflow:visible}
+  body{background:#fff}
+}
+@media (max-width:900px){
+  .pg-app{flex-direction:column}
+  .pg-side{width:100%;flex-direction:row;flex-wrap:wrap;padding:12px;gap:4px;align-items:center}
+  .pg-brand{margin:0 10px 0 0}
+  .pg-side a{padding:8px 10px;font-size:12.5px;margin:0}
+  .pg-foot{display:none}
+  .pg-main{padding:16px 16px 90px}
+  .franja .big{font-size:30px}
+  .panel{width:100%;padding:16px 16px 90px}
+}
+@media (max-width:640px){
+  .franja{padding:16px;gap:14px 18px}
+  .franja .sep{display:none}
+  .franja > div:first-child{flex:1 1 100%}
+  .franja > div:not(:first-child):not(.act){flex:1 1 40%}
+  .franja .act{margin-left:0;width:100%;flex:1 1 100%}
+  .franja .act .pg-btn{width:100%}
+  .full{display:none}
+  .short{display:inline}
+  .mob{display:inline}
+  .pg-top h1{font-size:22px}
+  .pg-kpis{grid-template-columns:1fr 1fr;gap:10px}
+  .pg-kpi .val{font-size:19px}
+  .pg-card{padding:14px}
+  .acciones .pg-btn{flex:1 1 auto}
+  .panel .head{position:relative;padding-right:44px}
+  .panel .head .pg-btn.vercomo{width:100%}
+  .panel .head .cerrar{position:absolute;top:0;right:0;width:36px;height:36px;padding:0;border-radius:50%;font-size:0}
+  .panel .head .cerrar::after{content:"✕";font-size:15px}
+  .panel .pg-kpi:first-child{grid-column:1/-1}
+  .panel .head h2.pnom{font-size:17px}
+
+  /* ── celular: la barra lateral se vuelve una rejilla de botones ── */
+  .pg-side{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;padding:10px 12px}
+  .pg-brand{grid-column:1/-1;margin:0 0 2px}
+  .pg-brand small{display:none}
+  .pg-side a{padding:10px 10px;font-size:13px;justify-content:center;background:rgba(255,255,255,.06)}
+  .pg-side a .n{width:auto}
+  .pg-top{align-items:stretch}
+  .pg-top > select{width:100%}
+  .franja .mini{font-size:18px}
+  .pg-kpi{padding:12px 12px 12px 14px}
+  .pg-kpi .lbl{font-size:10px}
+  .pg-kpi .sub{font-size:11px}
+
+  /* ── celular: las tablas se vuelven tarjetas (una fila = una tarjeta) ── */
+  table.cards, table.cards tbody, table.cards tr{display:block;width:100%}
+  table.cards thead{display:none}
+  table.cards tr{display:flex;flex-wrap:wrap;align-items:center;gap:2px 8px;padding:10px 0;border-bottom:1px solid var(--pg-line)}
+  table.cards tr:last-child{border-bottom:none}
+  table.cards td{display:block;border:none;padding:0;font-size:13px;min-width:0}
+  table.cards tr.grp{display:block;padding:12px 0 4px;border-bottom:none}
+  table.cards tr.grp td{background:transparent;padding:0;font-size:10.5px}
+  table.cards td.main{flex:1 1 calc(100% - 124px);min-width:0;order:-2;overflow-wrap:anywhere}
+  table.cards td.total{order:-1;flex:0 0 112px;text-align:right;font-size:14px}
+  table.cards td.sub{flex:0 0 auto;font-size:11.5px;color:var(--pg-muted);font-weight:500;text-align:left;padding:2px 0 0;white-space:nowrap}
+  table.cards td.sub.wrap{white-space:normal;flex:1 1 100%}
+  table.cards td.sub::before{content:attr(data-l) " ";font-family:var(--pg-font-body);font-weight:500;color:var(--pg-muted)}
+  table.cards td.sub.empty,table.cards td.sub.dup,table.cards td.desk{display:none}
+  table.cards td.sub.num{color:var(--pg-ink)}
+  table.cards td.sub.num.neg{color:var(--pg-neg)}
+  table.cards td.ctl{flex:0 0 auto;padding-top:4px}
+  table.cards td.ctl.empty{display:none}
+  table.cards td.ctl::before{content:attr(data-l) " ";font-size:11.5px;color:var(--pg-muted);font-weight:500}
+  table.cards tr.tot{background:#F4F7FA;border-radius:12px;padding:10px 12px;margin-top:8px}
+  table.cards tr.tot td.main{font-size:13px}
+  table.cards tr.off td.main{color:#9aa8b2}
+  .tw:has(table.cards){overflow:visible}
+}
+</style>
+</head>
+<body>
+
+<div id="app"><div class="pg-main"><div class="cargando">Cargando comisiones…</div></div></div>
+<div id="layer"></div>
+<div id="docl"></div>
+<div id="modals"></div>
+
+<script>
+/* ============================================================
+   Comisiones FAM · Statement — fam-comisiones.html
+   Herramienta de Jeff (FAM). Toda la plata sale de la base (portal.com_*)
+   por los RPC del contrato CONTRATO_RPC.md. La pantalla no calcula
+   comisiones: solo muestra, pide la nota y manda el cambio.
+   Regla de oro: la línea manda (el % es de cada póliza; el escalón y el
+   fee de la persona son solo el valor por defecto de las líneas nuevas).
+   ============================================================ */
+(function(){
+"use strict";
+var SB_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
+var SB_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
+var SB=window.supabase.createClient(SB_URL,SB_KEY);
+var POR=SB.schema('portal');
+
+var S={mes:null,R:null,sec:1,panel:null,P:null,email:'',ocupado:false};
+
+/* ═════════ utilidades ═════════ */
+function hay(n){return n!==null&&n!==undefined&&n!==''&&!isNaN(+n);}
+function fmt(n,d){if(!hay(n))return '—';d=d==null?2:d;n=+n;var s=Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d});return (n<0?'−$':'$')+s;}
+function fmtZ(n,d){return hay(n)&&+n!==0?fmt(n,d):'—';}
+function fmtCOP(n){return hay(n)&&+n?('$'+Math.round(+n).toLocaleString('es-CO')+' COP'):'—';}
+function pct(p){return hay(p)?(String(+p).replace('.',',')+' %'):'—';}
+function esc(s){return s==null?'':String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function ini(n){return String(n||'?').split(/[\s(]+/).filter(Boolean).slice(0,2).map(function(x){return x[0];}).join('').toUpperCase();}
+function av(p,cls){return p&&p.foto_url?'<img class="av '+(cls||'')+'" src="'+esc(p.foto_url)+'" alt="">':'<span class="av '+(cls||'')+'">'+esc(ini(p&&p.persona))+'</span>';}
+function $(id){return document.getElementById(id);}
+function toast(m,err){var t=document.createElement('div');t.className='toast'+(err?' err':'');t.textContent=m;document.body.appendChild(t);setTimeout(function(){t.remove();},err?4200:2800);}
+function hace(ts){if(!ts)return '—';var d=(Date.now()-new Date(ts).getTime())/60000;if(isNaN(d))return '—';if(d<1)return 'hace un momento';if(d<60)return 'hace '+Math.round(d)+' min';if(d<1440)return 'hace '+Math.round(d/60)+' h';return new Date(ts).toLocaleDateString('es-CO',{day:'numeric',month:'short'});}
+function msg(e){return (e&&(e.message||e.msg||e.error_description))||String(e||'error');}
+function rpc(n,p){return POR.rpc(n,p).then(function(r){if(r&&r.error)throw r.error;return r?r.data:null;});}
+function editable(){return !!(S.R&&S.R.periodo&&S.R.periodo.puede_editar);}
+function estadoTxt(e,v){return e==='pagado'?'PAGADO':e==='compartido'?'COMPARTIDO v'+(v||1):e==='revision'?'EN REVISIÓN':'BORRADOR';}
+function estadoCls(e){return e==='pagado'?'pagado':e==='compartido'?'compartido':'borrador';}
+function mesUrl(m){try{var u=new URL(location.href);u.searchParams.set('mes',m);history.replaceState(null,'',u.toString());}catch(e){}}
+
+/* ═════════ carga ═════════ */
+function bloqueo(titulo,texto,conIndex){
+  $('layer').innerHTML='';$('docl').innerHTML='';$('modals').innerHTML='';
+  $('app').innerHTML='<div class="pg-main" style="max-width:640px;margin:40px auto"><div class="gate"><div class="pg-eyebrow">Comisiones · FAM</div><h2>'+esc(titulo)+'</h2><div>'+esc(texto||'')+'</div>'+(conIndex?'<div style="margin-top:14px"><a class="pg-btn sm" href="index.html" style="text-decoration:none;display:inline-block">Ir al Index</a></div>':'')+'</div></div>';
+}
+function errCarga(e){
+  var m=msg(e);
+  if(/no autorizado/i.test(m)){bloqueo('Esta herramienta es de FAM','Si eres de FAM y ves esto, avísale a Andrés para que revise tu acceso.',true);return;}
+  bloqueo('No pude leer las comisiones',m+' · revisa tu conexión y recarga.',false);
+}
+function mesPorDefecto(meses){
+  var abiertos=(meses||[]).filter(function(m){return m.estado==='borrador'||m.estado==='revision';});
+  var lista=abiertos.length?abiertos:(meses||[]);
+  if(!lista.length)return null;
+  return lista.slice().sort(function(a,b){return a.mes<b.mes?1:-1;})[0].mes;
+}
+function cargar(mes,silencioso){
+  S.mes=mes;
+  if(!silencioso){$('app').innerHTML=shell('<div class="cargando">Cargando '+esc(mes)+'…</div>');}
+  return rpc('com_resumen',{p_mes:mes,p_recalcular:true}).then(function(d){
+    S.R=d||{};mesUrl(mes);render();
+  },function(e){errCarga(e);throw e;});
+}
+function arrancar(){
+  var q=null;try{q=new URL(location.href).searchParams.get('mes');}catch(e){}
+  if(q&&/^\d{4}-\d{2}(-\d{2})?$/.test(q)){if(q.length===7)q+='-01';cargar(q.slice(0,8)+'01').catch(function(){});return;}
+  /* Sin ?mes= la base decide: el mes más antiguo sin compartir (si no hay, el último). */
+  $('app').innerHTML=shell('<div class="cargando">Cargando…</div>');
+  rpc('com_resumen',{p_recalcular:true}).then(function(d){
+    S.R=d||{};S.mes=(d&&d.periodo&&d.periodo.mes)||null;if(S.mes)mesUrl(S.mes);render();
+  }).catch(errCarga);
+}
+
+/* ═════════ shell ═════════ */
+var SECS=[['Statement del mes','Statement'],['Personas y porcentajes','Personas'],['Statements de MGAs','MGAs'],['Historial','Historial']];
+function shell(main){
+  return '<div class="pg-app"><nav class="pg-side"><div class="pg-brand"><span class="pg-wordmark">GABI</span><div><b style="font-family:var(--pg-font-title);font-size:13px">ProtectGo</b><small>Comisiones · FAM</small></div></div>'+
+    SECS.map(function(it,i){return '<a class="'+(S.sec===i+1?'on':'')+'" data-act="sec" data-v="'+(i+1)+'"><span class="n">0'+(i+1)+'</span><span class="full">'+it[0]+'</span><span class="short">'+it[1]+'</span></a>';}).join('')+
+    '<div class="pg-foot">'+esc(S.email||'—')+'<br><button class="lk" data-act="salir" style="color:#8da0ad">Cerrar sesión</button></div></nav><main class="pg-main">'+main+'</main></div>';
+}
+function render(){
+  if(!S.R)return;
+  var main=S.sec===1?secStatement():S.sec===2?secPersonas():S.sec===3?secMGAs():secHistorial();
+  $('app').innerHTML=shell(main);
+}
+function selMes(){
+  var R=S.R,ms=R.meses||[];
+  if(!ms.length)return '';
+  return '<select class="mes" data-act="mes" aria-label="Mes">'+ms.map(function(m){
+    return '<option value="'+esc(m.mes)+'" '+(m.mes===S.mes?'selected':'')+'>'+esc(m.mes_txt)+' · '+esc(estadoTxt(m.estado,m.version).toLowerCase())+' · '+fmt(m.total_usd,0)+'</option>';}).join('')+'</select>';
+}
+function roAviso(){
+  if(editable())return '';
+  var p=S.R.periodo||{};
+  return '<div class="ro">Este mes está <b>'+esc(estadoTxt(p.estado,p.version).toLowerCase())+'</b>: se ve en solo lectura. Lo que se compartió quedó congelado.</div>';
+}
+
+/* celda secundaria: en escritorio es columna; en celular, dato chico con rótulo (se esconde si no hay dato) */
+function sub(label,val,neg,style,dup,desk){return '<td class="num sub '+(val==null?'empty':'')+' '+(neg?'neg':'')+' '+(dup?'dup':'')+' '+(desk?'desk':'')+'" data-l="'+esc(label)+'" '+(style?'style="'+style+'"':'')+'>'+(val==null?'—':val)+'</td>';}
+function kpi(l,v,cls,subtxt,raw){var isN=hay(v)&&!raw;return '<div class="pg-kpi '+(cls||'')+'"><div class="lbl">'+l+'</div><div class="val '+(isN&&+v<0?'neg':'')+'">'+(raw?v:fmt(v,0))+'</div><div class="sub">'+(subtxt||'&nbsp;')+'</div></div>';}
+
+/* ═════════ 01 · Statement del mes ═════════ */
+var GRUPOS=[['asesor','Asesores comerciales'],['lider','Dirección comercial'],['renov','Renovaciones'],['retencion','Retención'],['endorsement','Endorsement'],['kam','KAM'],['otros','Personas que no cobran · sus líneas alimentan a Brahian y a Karen']];
+function secStatement(){
+  var R=S.R,p=R.periodo||{},T=R.totales||{},K=R.kpis||{};
+  var mesTxt=p.mes_txt||S.mes;
+  var vs='';
+  if(hay(T.anterior_usd)){var dlt=(+T.personas_usd||0)-(+T.anterior_usd);vs=(dlt>=0?'+':'')+fmt(dlt,0)+' vs mes anterior ('+fmt(T.anterior_usd,0)+')';}
+  if(hay(T.cop)&&+T.cop)vs+=(vs?' · ':'')+'más '+fmtCOP(T.cop);
+  var acts='';
+  if(p.puede_compartir)acts+='<button class="pg-btn mint" data-act="compartir">'+(+p.version>0?'Compartir de nuevo (v'+(+p.version+1)+')':'Compartir statement →')+'</button>';
+  if(p.estado==='compartido')acts+='<button class="pg-btn secondary" data-act="pagado">Marcar pagado</button>';
+  var franja='<div class="franja"><div><div class="lbl">Total a pagar · '+esc(p.fecha_pago_txt||'—')+'</div><div class="big '+(hay(T.personas_usd)&&+T.personas_usd<0?'neg':'')+'">'+fmt(T.personas_usd)+'</div><div class="fsub">'+(vs||'&nbsp;')+'</div></div>'+
+    '<div class="sep"></div><div><div class="lbl">En camino · no suma</div><div class="mini" style="color:var(--pg-warn)">'+(hay(T.en_camino_usd)&&+T.en_camino_usd?'<span class="dot"></span>':'')+fmtZ(T.en_camino_usd,0)+'</div><div class="fsub">'+(+T.n_en_camino?esc(T.n_en_camino)+' líneas esperan statement':'nada espera statement')+'</div></div>'+
+    '<div class="sep"></div><div><div class="lbl">Estado</div><span class="estado '+estadoCls(p.estado)+'">'+estadoTxt(p.estado,p.version)+'</span><div class="fsub" style="margin-top:8px">última corrida '+esc(hace(p.ultima_corrida))+(hay(p.n_cambios)?' · '+esc(p.n_cambios)+' cambios de FAM':'')+'</div></div>'+
+    (acts?'<div class="act">'+acts+'</div>':'')+'</div>';
+
+  var bar='<div class="acciones">'+
+    (editable()?'<button class="pg-btn secondary sm" data-act="recalcular">↻ Recalcular</button>':'')+
+    '<button class="pg-btn secondary sm" data-act="csv">Exportar pago (CSV)</button>'+
+    (editable()&&p.estado==='borrador'?'<button class="pg-btn secondary sm" data-act="estado" data-v="revision">Pasar a revisión</button>':'')+
+    (editable()&&p.estado==='revision'&&!(+p.version>0)?'<button class="pg-btn secondary sm" data-act="estado" data-v="borrador">Volver a borrador</button>':'')+
+    (p.estado==='compartido'?'<button class="pg-btn secondary sm" data-act="estado" data-v="revision">Reabrir para corregir</button>':'')+
+    '</div>';
+
+  var kpis='<div class="pg-kpis">'+kpi('Asesores',K.asesores)+kpi('Brahian',K.brahian)+kpi('Karen · renovaciones',K.karen)+kpi('Áreas y bolsas',K.areas_bolsas)+kpi('Negativos del mes',K.negativos,'rojo')+kpi('Bono COP','<span style="font-size:17px">'+fmtCOP(K.bono_cop)+'</span>','',null,true)+'</div>';
+
+  /* lo que hay que mirar */
+  var mir=(R.mirar||[]);
+  var mirar=mir.length?'<div class="pg-warn-box"><div style="font-weight:800;margin-bottom:6px">Lo que hay que mirar</div>'+mir.map(function(m){
+    var extra=[];if(hay(m.n)&&+m.n)extra.push(esc(m.n)+(+m.n===1?' línea':' líneas'));if(hay(m.monto)&&+m.monto)extra.push(fmt(m.monto));
+    var abre=m.persona?' <button class="lk" data-act="persona" data-p="'+esc(m.persona)+'">abrir</button>':'';
+    return '<div class="it">· '+(m.tipo==='espera_statement'?'<span class="dot"></span>':'')+esc(m.texto)+(extra.length?' <b class="num">('+extra.join(' · ')+')</b>':'')+abre+'</div>';
+  }).join('')+'</div>':'';
+
+  /* tabla por persona */
+  var ps=R.personas||[];var rows='';var nPag=0;
+  GRUPOS.forEach(function(g){
+    var lst=ps.filter(function(x){return (x.grupo||'otros')===g[0]&&!(g[0]==='otros'&&!+x.n_lineas&&!+x.total);});
+    if(!lst.length)return;
+    rows+='<tr class="grp"><td colspan="8">'+esc(g[1])+'</td></tr>';
+    lst.forEach(function(x){
+      var act=x.activa!==false; if(act&&+x.total)nPag++;
+      var ld=(+x.lider||0)+(+x.renov||0); var bb=(+x.bolsa||0)+(+x.bono_usd||0);
+      rows+='<tr class="pers '+(act?'':'off')+'" data-act="persona" data-p="'+esc(x.persona)+'"><td class="main"><div class="pn">'+av(x)+'<div>'+esc(x.persona)+
+        (+x.n_editadas?' <span class="chip ed">editado</span>':'')+(+x.n_manual?' <span class="chip man">manual</span>':'')+
+        '<span class="r">'+esc(x.rol||'')+(act?'':' · no va este mes')+'</span></div></div></td>'+
+        sub('Asesor',fmtZ(x.asesor)==='—'?null:fmt(x.asesor),+x.asesor<0,null,+x.asesor===+x.total)+
+        sub('Líder',+x.lider?fmt(x.lider):null,+x.lider<0)+
+        sub('3,5 %',+x.renov?fmt(x.renov):null,+x.renov<0)+
+        sub('Bolsa/bono',bb?fmt(bb):null)+
+        sub('COP',+x.bono_cop?fmtCOP(x.bono_cop):null)+
+        '<td class="num total '+(+x.total<0?'neg':'')+'"><b>'+(act&&+x.total?fmt(x.total):'—')+'</b></td>'+
+        sub('En camino',+x.en_camino?'<span class="dot"></span>'+fmt(x.en_camino):null,false,'color:var(--pg-warn)')+'</tr>';
+      void ld;
+    });
+  });
+  var tabla='<div class="pg-card"><h2>Por persona</h2><div class="h2sub">Un toque abre a la persona con sus líneas. ASESOR = sus comisiones · LÍDER = override de Brahian · 3,5 % = renovaciones (K)/(A) de Karen y Angélica · BOLSA = bolsas del área y bonos.</div>'+
+    '<div class="tw"><table class="pg-table cards"><thead><tr><th>Persona</th><th class="num">Asesor</th><th class="num">Líder</th><th class="num">3,5 %</th><th class="num">Bolsa / bono</th><th class="num">Bono COP</th><th class="num">Total</th><th class="num">En camino</th></tr></thead><tbody>'+
+    (rows||'<tr><td colspan="8" class="muted">Sin personas este mes.</td></tr>')+
+    '<tr class="tot"><td class="main">Total a personas · '+nPag+' personas</td>'+sub('Asesor',null)+sub('Líder',null)+sub('3,5 %',null)+sub('Bolsa',null)+sub('COP',hay(T.cop)&&+T.cop?fmtCOP(T.cop):null)+'<td class="num total">'+fmt(T.personas_usd)+'</td>'+sub('En camino',+T.en_camino_usd?fmt(T.en_camino_usd):null,false,'color:var(--pg-warn)')+'</tr></tbody></table></div></div>';
+
+  /* cuentas de área */
+  var ca=R.cuentas_area||[];
+  var areas=ca.length?'<div class="pg-card"><h2>Cuentas de área</h2><div class="h2sub">Se registran, no se pagan a una persona: quedan fuera del total a pagar.</div><div class="tw"><table class="pg-table cards"><thead><tr><th>Cuenta</th><th class="num">Líneas</th><th class="num">Total</th></tr></thead><tbody>'+
+    ca.map(function(a){return '<tr class="pers" data-act="persona" data-p="'+esc(a.persona)+'"><td class="main"><div class="pn">'+av(a)+'<div>'+esc(a.persona)+'<span class="r">cuenta de área</span></div></div></td>'+sub('Líneas',hay(a.n_lineas)?esc(a.n_lineas):null)+'<td class="num total '+(+a.total<0?'neg':'')+'"><span class="muted">'+fmtZ(a.total)+'</span></td></tr>';}).join('')+
+    '<tr class="tot"><td class="main">Total cuentas de área · fuera del total</td>'+sub('Líneas',null)+'<td class="num total">'+fmtZ(T.areas_usd)+'</td></tr></tbody></table></div></div>':'';
+
+  /* bolsas */
+  var bo=R.bolsas||[];
+  var bolsas=bo.length?'<div class="pg-card"><h2>Bolsas del mes</h2><div class="h2sub">Porcentaje de los fees del área, en partes iguales entre los activos.</div><div class="tw"><table class="pg-table cards"><thead><tr><th>Área</th><th class="num">Base</th><th class="num">%</th><th class="num">Bolsa</th><th>Se reparte entre</th><th class="num">Cada uno</th></tr></thead><tbody>'+
+    bo.map(function(b){var m=hay(b.base)&&hay(b.pct)?(+b.base)*(+b.pct)/100:null;var mb=(b.miembros||[]);
+      return '<tr><td class="main">'+esc(b.area)+'</td>'+sub('Base',fmt(b.base))+sub('%',pct(b.pct))+sub('Bolsa',m==null?null:fmt(m))+'<td class="sub wrap" data-l="Entre" style="white-space:normal">'+(mb.length?mb.map(esc).join(', '):'<span class="muted">nadie activo</span>')+'</td><td class="num total">'+(mb.length?fmtZ(b.monto_c_u)+'<span class="muted" style="font-size:11px;font-weight:500"> c/u</span>':'—')+'</td></tr>';}).join('')+
+    '</tbody></table></div></div>':'';
+
+  /* meta cumplida */
+  var M=R.meta_cumplida;
+  var meta=M?'<div class="pg-card"><h2>Meta Cumplida</h2><div class="h2sub">Bono de líder de Brahian por la meta del equipo.</div><div class="pg-kpis" style="margin-bottom:6px">'+
+    kpi('Cumplimiento',hay(M.pct)?String((+M.pct).toFixed(1)).replace('.',',')+' %':'—','',hay(M.cumplida_usd)?fmt(M.cumplida_usd,0)+' de '+fmt(M.meta_usd,0):'',true)+
+    kpi('Asesores activos',hay(M.n_activos)?esc(M.n_activos):'—','','con meta este mes',true)+
+    kpi('Bono de líder',+M.bono_usd?fmt(M.bono_usd,0):'—','',+M.bono_usd?'ya suma en Brahian':'no alcanza el escalón',true)+'</div>'+
+    '<div class="meta-t">'+(M.tabla||[]).map(function(t){var on=hay(M.pct)&&+M.pct>=+t[0];return '<span class="'+(on?'on':'')+'">≥ '+esc(t[0])+' % → <b class="num">'+fmt(t[1],0)+'</b></span>';}).join('')+'</div></div>':'';
+
+  return '<div class="pg-top"><div><div class="pg-eyebrow">01 · Statement del mes</div><h1>Comisiones · '+esc(mesTxt)+'</h1><div class="pg-sub">Producción de '+esc(String(mesTxt).toLowerCase())+' · se paga el '+esc(p.fecha_pago_txt||'—')+' · se arma solo desde el BOS, FAM revisa</div></div>'+selMes()+'</div>'+
+    roAviso()+franja+bar+kpis+mirar+tabla+areas+bolsas+meta;
+}
+
+/* ═════════ 02 · Personas ═════════ */
+function opts(vals,cur){var v=vals.slice();if(hay(cur)&&v.indexOf(+cur)<0)v.push(+cur);v.sort(function(a,b){return a-b;});return v.map(function(x){return '<option value="'+x+'" '+(+cur===x?'selected':'')+'>'+String(x).replace('.',',')+' %</option>';}).join('');}
+function secPersonas(){
+  var R=S.R,ed=editable(),dis=ed?'':' disabled';
+  var ps=(R.personas||[]);
+  var rows=ps.map(function(x){var act=x.activa!==false;var p=esc(x.persona);
+    return '<tr class="'+(act?'':'off')+'"><td class="main"><div class="pn">'+av(x)+'<div>'+p+'<span class="r">'+esc(x.rol||'')+'</span></div></div></td>'+
+      '<td class="ctl" data-l=""><label style="display:flex;align-items:center;gap:6px;cursor:pointer"><input type="checkbox" data-act="set-activa" data-p="'+p+'" '+(act?'checked':'')+dis+'> '+(act?'activa':'no va')+'</label></td>'+
+      '<td class="ctl" data-l="Escalón"><select class="inl" data-act="set-esc" data-p="'+p+'"'+dis+'>'+opts([10,15],x.escalon)+'</select></td>'+
+      '<td class="ctl" data-l="Fee"><select class="inl" data-act="set-fee" data-p="'+p+'"'+dis+'>'+opts([20,25,30],x.pct_fee)+'</select></td>'+
+      (x.grupo==='endorsement'?'<td class="ctl" data-l="Bono COP"><input class="inl" type="number" step="50000" min="0" data-act="set-cop" data-p="'+p+'" value="'+(hay(x.bono_cop)?+x.bono_cop:'')+'" placeholder="—"'+dis+'></td>':'<td class="ctl empty" data-l=""><span class="muted">—</span></td>')+
+      '<td class="muted sub wrap '+((x.bolsas||[]).length?'':'empty')+'" data-l="Bolsas" style="font-size:12px">'+((x.bolsas||[]).map(esc).join(', ')||'—')+'</td>'+
+      '<td class="num total '+(+x.total<0?'neg':'')+'">'+(act?fmtZ(x.total):'—')+'</td></tr>';}).join('');
+  return '<div class="pg-top"><div><div class="pg-eyebrow">02 · Personas y porcentajes</div><h1>Quién cobra y con qué valor por defecto</h1><div class="pg-sub">Escalón por defecto y Fee % por defecto: aplica a las líneas nuevas; cada póliza puede ir distinto. Las líneas editadas a mano no se tocan.</div></div>'+selMes()+'</div>'+
+    roAviso()+
+    '<div class="pg-card"><h2>Personas</h2><div class="tw"><table class="pg-table cards"><thead><tr><th>Persona</th><th>Este mes</th><th>Escalón por defecto</th><th>Fee % por defecto</th><th>Bono COP</th><th>Bolsas</th><th class="num">Total</th></tr></thead><tbody>'+
+    (rows||'<tr><td colspan="7" class="muted">Sin personas.</td></tr>')+'</tbody></table></div></div>';
+}
+
+/* ═════════ 03 · MGAs ═════════ */
+function secMGAs(){
+  return '<div class="pg-top"><div><div class="pg-eyebrow">03 · Statements de MGAs</div><h1>Lo que pagaron las aseguradoras</h1><div class="pg-sub">Residuales y comisiones que no caen en una fila del BOS.</div></div></div>'+
+    '<div class="gate"><div class="pg-eyebrow">Próximamente</div><h2>Registrar statements de MGAs</h2><div>Aquí FAM va a pegar las líneas del statement y el motor las casa con el asesor por cliente. Mientras tanto, las líneas sueltas se agregan como <b>línea manual</b> en la persona.</div></div>';
+}
+
+/* ═════════ 04 · Historial ═════════ */
+function secHistorial(){
+  var ms=S.R.meses||[];
+  var rows=ms.map(function(m){
+    return '<tr class="pers" data-act="abrir-mes" data-v="'+esc(m.mes)+'"><td class="main"><b>'+esc(m.mes_txt)+'</b>'+(m.mes===S.mes?' <span class="chip man">abierto</span>':'')+'</td><td class="num total">'+fmt(m.total_usd)+'</td>'+
+      '<td class="sub" data-l=""><span class="estado '+estadoCls(m.estado)+'">'+esc(estadoTxt(m.estado,m.version))+'</span></td>'+sub('Versión',+m.version?'v'+esc(m.version):null)+
+      '<td class="sub" data-l=""><span class="lk">abrir</span></td></tr>';}).join('');
+  return '<div class="pg-top"><div><div class="pg-eyebrow">04 · Historial</div><h1>Meses</h1><div class="pg-sub">Cada mes con su estado y sus versiones. Los compartidos y pagados abren en solo lectura. Nada se borra.</div></div></div>'+
+    '<div class="pg-card"><div class="tw"><table class="pg-table cards"><thead><tr><th>Mes</th><th class="num">Total</th><th>Estado</th><th class="num">Versión</th><th></th></tr></thead><tbody>'+(rows||'<tr><td colspan="5" class="muted">Sin meses.</td></tr>')+'</tbody></table></div></div>';
+}
+
+/* ═════════ panel de la persona ═════════ */
+function abrirPersona(n){
+  S.panel=n;
+  $('layer').innerHTML='<div class="ov" data-act="ov"><div class="panel"><div class="cargando">Cargando a '+esc(n)+'…</div></div></div>';
+  return recargarPersona();
+}
+function recargarPersona(){
+  var n=S.panel;if(!n)return Promise.resolve();
+  return rpc('com_persona',{p_mes:S.mes,p_persona:n}).then(function(d){if(S.panel!==n)return;S.P=d||{};renderPanel();},function(e){toast('No pude abrir a '+n+': '+msg(e),true);cerrarPanel();});
+}
+function cerrarPanel(){S.panel=null;S.P=null;$('layer').innerHTML='';}
+function renderPanel(){
+  var D=S.P||{},x=D.persona||{persona:S.panel},ls=D.lineas||[],ed=editable(),dis=ed?'':' disabled';
+  var old=document.querySelector('#layer .panel');var top=old?old.scrollTop:0;
+  var nombre=x.persona||S.panel;var esArea=(S.R.cuentas_area||[]).some(function(a){return a.persona===nombre;});
+  var personas=(S.R.personas||[]).map(function(p){return p.persona;}).concat((S.R.cuentas_area||[]).map(function(a){return a.persona;}));
+  var rows=ls.map(function(l){
+    var jub=!!l.jubilada,esp=l.estado==='espera_statement',sp=l.estado==='sin_persona',sr=l.estado==='sin_regla';
+    var pot=esp&&hay(l.com_agencia)&&hay(l.pct_asesor)?(+l.com_agencia)*(+l.pct_asesor)/100:null;
+    var chips=(l.origen==='manual'?'<span class="chip man">manual</span>':'')+(l.editada?'<span class="chip ed" title="'+esc(l.nota||'')+'">editado</span>':'')+
+      (esp?'<span class="chip pen">espera statement</span>':'')+(sr?'<span class="chip err">sin regla</span>':'')+(sp?'<span class="chip err">sin persona</span>':'')+(jub?'<span class="chip jub">jubilada</span>':'');
+    var nota=(l.nota||l.motivo)?'<div class="muted" style="font-size:11.5px;margin-top:2px">'+esc(jub&&l.motivo?'Motivo: '+l.motivo:l.nota)+'</div>':'';
+    var pA=ed&&!jub?'<button class="lk" data-act="edit" data-id="'+esc(l.id)+'" data-c="as" title="cambiar %">'+pct(l.pct_asesor)+' ✎</button>':'<span>'+pct(l.pct_asesor)+'</span>';
+    var pL=l.pct_lider==null?'<span class="muted">—</span>':(ed&&!jub?'<button class="lk" data-act="edit" data-id="'+esc(l.id)+'" data-c="lid">'+pct(l.pct_lider)+' ✎</button>':'<span>'+pct(l.pct_lider)+'</span>')+'<span class="mob muted"> · '+fmt(l.monto_lider)+'</span>';
+    var accion='';
+    if(ed){
+      accion=jub?'<button class="lk" data-act="desjubilar" data-id="'+esc(l.id)+'">volver</button>':'<button class="lk gris" data-act="jubilar" data-id="'+esc(l.id)+'">jubilar</button>';
+      if(sp)accion+=' <select class="inl" data-act="asignar" data-id="'+esc(l.id)+'" style="font-family:var(--pg-font-body);margin-left:6px"><option value="">Asignar persona…</option>'+personas.filter(function(p){return p!==nombre;}).map(function(p){return '<option value="'+esc(p)+'">'+esc(p)+'</option>';}).join('')+'</select>';
+    }
+    return '<tr class="'+(jub?'off':'')+'"><td class="muted sub" data-l="" style="white-space:nowrap">'+esc(l.mes_label||l.origen||'')+'</td><td class="main">'+esc(l.cliente)+chips+nota+'</td><td class="muted sub" data-l="·">'+esc(l.mga||'—')+'</td><td class="sub" data-l="·">'+esc(l.trans||'—')+'</td>'+
+      sub('Valor',fmt(l.base),+l.base<0,null,false,true)+sub('%',pct(l.pct_agencia),false,null,false,true)+sub('Agencia',fmt(l.com_agencia),+l.com_agencia<0)+
+      '<td class="num ctl" data-l="% asesor">'+pA+'</td>'+
+      '<td class="num total '+(+l.monto_asesor<0?'neg':'')+'">'+(esp&&pot!=null?'<span class="muted" title="en camino · no suma">'+fmt(pot)+'</span>':fmt(l.monto_asesor))+'</td>'+
+      '<td class="num ctl '+(l.pct_lider==null?'empty':'')+'" data-l="líder">'+pL+'</td>'+sub('Líder',+l.monto_lider?fmt(l.monto_lider):null,+l.monto_lider<0,null,false,true)+
+      sub('3,5 %',+l.monto_renov?fmt(l.monto_renov):(hay(l.pct_renov)?pct(l.pct_renov):null))+
+      '<td class="sub '+(accion?'':'empty')+'" data-l="" style="white-space:nowrap">'+accion+'</td></tr>';
+  }).join('');
+  var camino=+x.en_camino||ls.reduce(function(s,l){return s+(l.estado==='espera_statement'&&!l.jubilada&&hay(l.com_agencia)?(+l.com_agencia)*(+l.pct_asesor||0)/100:0);},0);
+  var nPend=+x.n_en_camino||ls.filter(function(l){return l.estado==='espera_statement'&&!l.jubilada;}).length;
+  var desg=[];if(+x.asesor)desg.push('asesor '+fmt(x.asesor));if(+x.lider)desg.push('líder '+fmt(x.lider));if(+x.renov)desg.push('3,5 % '+fmt(x.renov));if(+x.bolsa)desg.push('bolsa '+fmt(x.bolsa));if(+x.bono_usd)desg.push('bono '+fmt(x.bono_usd));if(+x.bono_cop)desg.push(fmtCOP(x.bono_cop));
+  var defs=esArea?'':'<div class="defs"><label>Escalón por defecto<select class="inl" data-act="def-esc"'+dis+'>'+opts([10,15],x.escalon)+'</select></label><label>Fee % por defecto<select class="inl" data-act="def-fee"'+dis+'>'+opts([20,25,30],x.pct_fee)+'</select></label><div class="help">aplica a las líneas nuevas; cada póliza puede ir distinto. Las líneas editadas a mano se quedan como están.</div></div>';
+  $('layer').innerHTML='<div class="ov" data-act="ov"><div class="panel">'+
+    '<div class="head">'+av(x)+'<div style="flex:1;min-width:0"><h2 class="pnom">'+esc(nombre)+'</h2><div class="muted">'+esc(x.rol||(esArea?'Cuenta de área':''))+(x.activa===false?' · <span class="neg">no va este mes</span>':'')+(x.correo?' · '+esc(x.correo):'')+'</div></div>'+
+    (esArea?'':'<button class="pg-btn secondary sm vercomo" data-act="vercomo">Ver como lo verá '+esc(String(nombre).split(' ')[0])+' →</button>')+'<button class="pg-btn sm cerrar" data-act="cerrar">Cerrar</button></div>'+
+    roAviso()+defs+
+    '<div class="pg-kpis"><div class="pg-kpi"><div class="lbl">Total</div><div class="val '+(+x.total<0?'neg':'')+'">'+fmt(x.total)+'</div><div class="sub">'+(desg.join(' · ')||'&nbsp;')+'</div></div>'+
+    '<div class="pg-kpi amb"><div class="lbl">En camino</div><div class="val" style="color:var(--pg-warn)">'+(camino?fmt(camino):'—')+'</div><div class="sub">'+(nPend?nPend+' línea(s) esperan statement':'nada pendiente de statement')+'</div></div>'+
+    '<div class="pg-kpi"><div class="lbl">Líneas</div><div class="val">'+ls.length+'</div><div class="sub">'+(+x.n_editadas||0)+' editadas · '+(+x.n_manual||0)+' manuales</div></div></div>'+
+    '<div class="pg-card"><h2>Líneas · '+ls.length+'</h2><div class="h2sub">En el orden de Cal Comm. '+(ed?'Toca un % para cambiar esa póliza (pide nota). Jubilar no borra. <button class="lk" data-act="manual">+ línea manual</button>':'Solo lectura.')+'</div>'+
+    '<div class="tw"><table class="pg-table cards"><thead><tr><th>Origen</th><th>Cliente</th><th>MGA</th><th>Trans</th><th class="num">Valor</th><th class="num">%</th><th class="num">Agencia</th><th class="num">% asesor</th><th class="num">Asesor</th><th class="num">% líder</th><th class="num">Líder</th><th class="num">3,5 %</th><th></th></tr></thead><tbody>'+
+    (rows||'<tr><td colspan="13" class="muted">Sin líneas este mes.</td></tr>')+'</tbody></table></div></div></div></div>';
+  var nw=document.querySelector('#layer .panel');if(nw&&top)nw.scrollTop=top;
+}
+function lineaPorId(id){return ((S.P&&S.P.lineas)||[]).filter(function(l){return String(l.id)===String(id);})[0];}
+
+/* ═════════ modales ═════════ */
+function modal(html,onOk,okTxt){
+  $('modals').innerHTML='<div class="modal" id="mdl"><div class="box">'+html+'<div class="acts"><button class="pg-btn secondary" data-act="mcancel">Cancelar</button><button class="pg-btn mint" id="mdlOk">'+esc(okTxt||'Guardar')+'</button></div></div></div>';
+  var b=$('mdlOk');
+  b.onclick=function(){if(b.disabled)return;var r=onOk();if(r&&r.then){b.disabled=true;r.then(function(){},function(){b.disabled=false;});}};
+  var f=document.querySelector('#mdl input,#mdl textarea,#mdl select');if(f)try{f.focus();}catch(e){}
+}
+function cerrarModal(){$('modals').innerHTML='';}
+function val(id){var e=$(id);return e?String(e.value).trim():'';}
+
+/* después de escribir: se relee el mes (la base recalcula) y la persona abierta */
+function refrescar(){
+  return cargar(S.mes,true).then(function(){if(S.panel)return recargarPersona();}).catch(function(){});
+}
+function escribir(nombre,params,okMsg){
+  return rpc(nombre,params).then(function(d){
+    cerrarModal();
+    var m=typeof okMsg==='function'?okMsg(d||{}):okMsg;if(m)toast(m);
+    return refrescar().then(function(){return d;});
+  },function(e){toast(msg(e),true);throw e;});
+}
+
+function editarLinea(id,campo){
+  var l=lineaPorId(id);if(!l)return;
+  var esA=campo==='as',actual=esA?l.pct_asesor:l.pct_lider;
+  modal('<h3>'+(esA?'% del asesor':'% del líder')+' · '+esc(l.cliente)+'</h3><div class="muted">'+esc(l.trans||'')+' · '+esc(l.mga||'')+' · agencia '+fmt(l.com_agencia)+' · hoy '+pct(actual)+'</div>'+
+    '<div class="muted" style="font-size:12px;margin-top:4px">Cambia solo esta póliza; las demás líneas no se mueven.</div>'+
+    '<label for="mPct">Nuevo %</label><input id="mPct" type="number" step="0.5" inputmode="decimal" value="'+(hay(actual)?+actual:'')+'"><label for="mNota">Nota (obligatoria)</label><textarea id="mNota" rows="2" placeholder="Por qué cambia"></textarea>',
+    function(){
+      var v=parseFloat(String(val('mPct')).replace(',','.')),nota=val('mNota');
+      if(isNaN(v)){toast('Falta el %',true);return;} if(!nota){toast('La nota es obligatoria',true);return;}
+      return escribir('com_linea_editar',{p_id:l.id,p_pct_asesor:esA?v:null,p_pct_lider:esA?null:v,p_nota:nota},'Línea editada · '+pct(v));
+    },'Guardar');
+}
+function jubilar(id){
+  var l=lineaPorId(id);if(!l)return;
+  modal('<h3>Jubilar línea · '+esc(l.cliente)+'</h3><div class="muted">Deja de sumar, pero no se borra. Se puede volver.</div><label for="mNota">Motivo (obligatorio)</label><textarea id="mNota" rows="2"></textarea>',
+    function(){var m=val('mNota');if(!m){toast('Falta el motivo',true);return;}return escribir('com_linea_jubilar',{p_id:l.id,p_motivo:m},'Línea jubilada');},'Jubilar');
+}
+function desjubilar(id){return escribir('com_linea_desjubilar',{p_id:+id||id},'La línea vuelve a sumar').catch(function(){});}
+function lineaManual(){
+  var n=S.panel;
+  modal('<h3>Línea manual · '+esc(n)+'</h3>'+
+    '<label for="mT">Tipo</label><select id="mT"><option>Negativo</option><option>Ajuste</option><option>Residual</option><option>Fees</option><option>Regulatory</option></select>'+
+    '<label for="mC">Concepto / cliente</label><input id="mC" placeholder="Ej. Negativo · reporte de agosto">'+
+    '<label for="mG">MGA (opcional)</label><input id="mG" placeholder="—">'+
+    '<label for="mB">Base · comisión de la agencia (negativo si descuenta)</label><input id="mB" type="number" step="0.01" inputmode="decimal">'+
+    '<label for="mP">% del asesor</label><input id="mP" type="number" step="0.5" value="100" inputmode="decimal">'+
+    '<label for="mN">Nota (obligatoria)</label><textarea id="mN" rows="2"></textarea>',
+    function(){
+      var t=val('mT'),c=val('mC'),g=val('mG'),b=parseFloat(val('mB').replace(',','.')),p=parseFloat(val('mP').replace(',','.')),nt=val('mN');
+      if(!c||isNaN(b)||isNaN(p)){toast('Faltan datos: concepto, base y %',true);return;} if(!nt){toast('La nota es obligatoria',true);return;}
+      return escribir('com_linea_manual',{p_mes:S.mes,p_persona:n,p_trans:t,p_cliente:c,p_base:b,p_pct_asesor:p,p_nota:nt,p_mga:g||null},'Línea agregada');
+    },'Agregar');
+}
+function asignar(id,persona,sel){
+  var l=lineaPorId(id);if(!l||!persona)return;
+  modal('<h3>Asignar persona · '+esc(l.cliente)+'</h3><div class="muted">La línea pasa a <b>'+esc(persona)+'</b> y empieza a sumar con sus valores por defecto.</div><label for="mNota">Nota (obligatoria)</label><textarea id="mNota" rows="2" placeholder="Ej. cliente de ella en el BOS"></textarea>',
+    function(){var nt=val('mNota');if(!nt){toast('La nota es obligatoria',true);return;}return escribir('com_linea_asignar_persona',{p_id:l.id,p_persona:persona,p_nota:nt},'Línea asignada a '+persona);},'Asignar');
+  if(sel)sel.value='';
+}
+function setPersona(persona,campo,valor){
+  var p={p_mes:S.mes,p_persona:persona};p[campo]=valor;
+  return escribir('com_persona_mes_set',p,function(d){
+    if(campo==='p_escalon'||campo==='p_pct_fee')return (+d.cambiadas||0)+' líneas cambiaron · '+(+d.editadas_quietas||0)+' editadas se quedaron';
+    if(campo==='p_activa')return persona+' · '+(valor?'activa este mes':'no va este mes');
+    return persona+' · guardado';
+  }).catch(function(){render();if(S.panel)renderPanel();});
+}
+function verComo(){
+  var n=S.panel;if(!n)return;
+  rpc('com_statement_doc',{p_mes:S.mes,p_persona:n}).then(function(doc){
+    S.doc=doc;
+    $('docl').innerHTML='<div class="docov" data-act="docov"><div class="docbar"><button class="pg-btn secondary sm" data-act="cerrardoc" style="background:#fff">← volver</button><button class="pg-btn sm" data-act="imprimir">Imprimir / guardar PDF</button></div>'+window.pgStatement.html(doc||{})+'</div>';
+  },function(e){toast('No pude armar el documento: '+msg(e),true);});
+}
+function compartir(){
+  var R=S.R,p=R.periodo||{},T=R.totales||{};var v=(+p.version||0)+1;
+  var ps=(R.personas||[]).filter(function(x){return x.activa!==false&&hay(x.total)&&+x.total!==0;});
+  var no=(R.personas||[]).filter(function(x){return ps.indexOf(x)<0&&(+x.n_lineas||x.activa===false);});
+  modal('<h3>Compartir statement · '+esc(p.mes_txt||S.mes)+' · v'+v+'</h3><div class="muted">Vas a compartir <b>'+esc(p.mes_txt||'')+' (v'+v+')</b> con <b>'+ps.length+' personas</b>. Se congela una foto por persona y a cada una le cae su novedad personal. Se paga el '+esc(p.fecha_pago_txt||'—')+'.'+(v>1?' Los cambios desde la v'+(v-1)+' quedan marcados.':'')+'</div>'+
+    '<div class="lista">'+ps.map(function(x){return '<div class="pg-rank"><span>'+esc(x.persona)+'</span><span class="num '+(+x.total<0?'neg':'')+'" style="font-weight:600">'+fmt(x.total)+(+x.bono_cop?' <span class="muted" style="font-weight:500">+ '+fmtCOP(x.bono_cop)+'</span>':'')+'</span></div>';}).join('')+'</div>'+
+    (no.length?'<div class="muted" style="font-size:12px;margin-top:8px">No reciben (sin plata o no van este mes): '+no.map(function(x){return esc(x.persona);}).join(', ')+'</div>':'')+
+    '<div style="margin-top:10px;font-weight:700">'+ps.length+' personas · <span class="num">'+fmt(T.personas_usd)+'</span>'+(+T.cop?' + '+fmtCOP(T.cop):'')+'</div>',
+    function(){return escribir('com_compartir',{p_mes:S.mes},function(d){return 'Statement compartido · v'+(d.version||v)+' · '+(hay(d.n_personas)?d.n_personas:ps.length)+' personas';});},'Compartir ahora');
+}
+function marcarPagado(){
+  var p=S.R.periodo||{};
+  modal('<h3>Marcar pagado · '+esc(p.mes_txt||S.mes)+'</h3><label for="mF">Fecha de pago</label><input id="mF" type="date" value="'+esc(p.fecha_pago||'')+'"><label for="mN">Nota</label><input id="mN" placeholder="Transferencias enviadas">',
+    function(){var f=val('mF');if(!f){toast('Falta la fecha',true);return;}return escribir('com_marcar_pagado',{p_mes:S.mes,p_fecha:f,p_nota:val('mN')||null},(p.mes_txt||S.mes)+' marcado como pagado');},'Pagado');
+}
+function cambiarEstado(e){
+  var t=e==='revision'?(S.R.periodo.estado==='compartido'?'Reabrir para corregir':'Pasar a revisión'):'Volver a borrador';
+  modal('<h3>'+esc(t)+' · '+esc(S.R.periodo.mes_txt||S.mes)+'</h3><div class="muted">'+(S.R.periodo.estado==='compartido'?'Lo compartido queda guardado como está. Al terminar de corregir, el botón dice "Compartir de nuevo".':'Solo cambia el estado del mes.')+'</div>',
+    function(){return escribir('com_estado',{p_mes:S.mes,p_estado:e},'Estado: '+estadoTxt(e).toLowerCase());},'Confirmar');
+}
+function csvCell(v,texto){if(v==null)return '';var s=String(v);if(texto&&/^[=+\-@\t\r]/.test(s))s="'"+s;return /[",\r\n;]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;}
+function exportar(){
+  rpc('com_export_pago',{p_mes:S.mes}).then(function(d){
+    var rows=(d||[]);
+    var out=[['persona','correo','total_usd','cop']].concat(rows.map(function(r){return [csvCell(r.persona,true),csvCell(r.correo,true),hay(r.total_usd)?(+r.total_usd).toFixed(2):'',hay(r.cop)&&+r.cop?Math.round(+r.cop):''];}));
+    var csv=out.map(function(r){return r.join(',');}).join('\r\n');
+    var blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
+    var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='pago-comisiones-'+String(S.mes).slice(0,7)+'.csv';
+    document.body.appendChild(a);a.click();setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},1500);
+    toast('CSV listo · '+rows.length+' personas');
+  },function(e){toast('No pude exportar: '+msg(e),true);});
+}
+
+/* ═════════ eventos (delegados: nada de nombres dentro de onclick) ═════════ */
+document.addEventListener('click',function(ev){
+  var el=ev.target.closest('[data-act]');if(!el)return;
+  var a=el.getAttribute('data-act');
+  if(el.tagName==='SELECT'||(el.tagName==='INPUT'&&el.type!=='button'))return;
+  switch(a){
+    case 'sec':S.sec=+el.getAttribute('data-v');render();window.scrollTo(0,0);break;
+    case 'persona':abrirPersona(el.getAttribute('data-p'));break;
+    case 'ov':if(ev.target===el)cerrarPanel();break;
+    case 'cerrar':cerrarPanel();break;
+    case 'edit':editarLinea(el.getAttribute('data-id'),el.getAttribute('data-c'));break;
+    case 'jubilar':jubilar(el.getAttribute('data-id'));break;
+    case 'desjubilar':desjubilar(el.getAttribute('data-id'));break;
+    case 'manual':lineaManual();break;
+    case 'vercomo':verComo();break;
+    case 'cerrardoc':$('docl').innerHTML='';break;
+    case 'docov':if(ev.target===el)$('docl').innerHTML='';break;
+    case 'imprimir':if(!window.pgStatement.abrir(S.doc||{}))toast('El navegador bloqueó la ventana: permite ventanas emergentes para este sitio',true);break;
+    case 'compartir':compartir();break;
+    case 'pagado':marcarPagado();break;
+    case 'estado':cambiarEstado(el.getAttribute('data-v'));break;
+    case 'recalcular':cargar(S.mes,true).then(function(){toast('Recalculado');}).catch(function(){});break;
+    case 'csv':exportar();break;
+    case 'abrir-mes':S.sec=1;cargar(el.getAttribute('data-v')).catch(function(){});break;
+    case 'mcancel':cerrarModal();if(S.panel)renderPanel();break;
+    case 'salir':SB.auth.signOut().then(function(){location.href='index.html';},function(){location.href='index.html';});break;
+  }
+});
+document.addEventListener('change',function(ev){
+  var el=ev.target;if(!el||!el.getAttribute)return;var a=el.getAttribute('data-act');if(!a)return;
+  var p=el.getAttribute('data-p');
+  switch(a){
+    case 'mes':cerrarPanel();cargar(el.value).catch(function(){});break;
+    case 'set-activa':setPersona(p,'p_activa',!!el.checked);break;
+    case 'set-esc':setPersona(p,'p_escalon',+el.value);break;
+    case 'set-fee':setPersona(p,'p_pct_fee',+el.value);break;
+    case 'set-cop':var v=el.value===''?0:+el.value;if(isNaN(v)||v<0){toast('Bono COP inválido',true);return;}setPersona(p,'p_bono_cop',v);break;
+    case 'def-esc':setPersona(S.panel,'p_escalon',+el.value);break;
+    case 'def-fee':setPersona(S.panel,'p_pct_fee',+el.value);break;
+    case 'asignar':asignar(el.getAttribute('data-id'),el.value,el);break;
+  }
+});
+document.addEventListener('keydown',function(ev){
+  if(ev.key!=='Escape')return;
+  if($('modals').innerHTML){cerrarModal();return;}
+  if($('docl').innerHTML){$('docl').innerHTML='';return;}
+  if(S.panel)cerrarPanel();
+});
+
+/* ═════════ acceso ═════════ */
+SB.auth.getSession().then(function(r){
+  var s=r&&r.data&&r.data.session;
+  if(!s){bloqueo('Entra primero al Index con tu cuenta','Después vuelve a abrir Comisiones desde tu tarjeta.',true);return;}
+  S.email=(s.user&&s.user.email)||'';
+  arrancar();
+},function(){bloqueo('Entra primero al Index con tu cuenta','',true);});
+})();
+</script>
+<script src="pg-novedades.js"></script>
+<script>window.addEventListener('DOMContentLoaded',function(){ if(window.pgNovedadesAuto) pgNovedadesAuto('fam'); });</script>
+<script>
+(function(){
+"use strict";
+var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
+var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
+var PGV_ARCHIVO="fam-comisiones.html";
+var PGV_VERSION=1; // v1 - 23-oct-2026 COMISIONES FAM (Jeff): statement del mes desde portal.com_* (com_resumen/com_persona/com_statement_doc), "la línea manda" (% por póliza con nota), escalón y fee por defecto, línea manual, jubilar, asignar persona, compartir con versión, marcar pagado, CSV de pago, documento COMMISSION STATEMENT con pg-statement.js.
+function pgvRun(){
+  try{
+    var c=window.supabase.createClient(PGV_URL,PGV_KEY,{db:{schema:'portal'}});
+    c.from('app_versiones').select('version').eq('archivo',PGV_ARCHIVO).maybeSingle().then(function(r){
+      if(!r||r.error||!r.data)return;
+      if(Number(r.data.version)>PGV_VERSION){try{location.reload(true)}catch(e){location.reload()}}
+    });
+  }catch(e){}
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(pgvRun,400);});
+else setTimeout(pgvRun,400);
+setInterval(pgvRun,600000);
+})();
+</script>
+</body>
+</html>
