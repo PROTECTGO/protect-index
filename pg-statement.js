@@ -1,6 +1,7 @@
 /* ============================================================
-   GABI · pg-statement.js v1 — el documento COMMISSION STATEMENT.
-   23-oct-2026. Lo usan Comisiones FAM (fam-comisiones.html) y, después,
+   GABI · pg-statement.js v2 — el documento COMMISSION STATEMENT.
+   23-oct-2026 · v2 (R5, 26-oct): pinta por BLOQUES de cargo (doc.bloques) y la tabla
+   Goal achieved (doc.meta). Sin bloques, o con un solo bloque 'asesor', el dibujo es el de v1. Lo usan Comisiones FAM (fam-comisiones.html) y, después,
    Mi statement (gabi-asesor.html). Un solo dibujo para los dos lados:
    lo que Jeff ve en "Ver como lo verá X" es exactamente lo que recibe
    la persona.
@@ -78,13 +79,107 @@
     '.pgst ol li{margin-bottom:5px}' +
     '.pgst-es{background:#F4F7FA;border-radius:10px;padding:10px 12px;margin-top:10px;font-size:11.5px}' +
     '.pgst-pie{margin-top:16px;border-top:1px solid #E7EDF2;padding-top:8px;font-size:10.5px;color:#6B7D89;display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px}' +
+    '.pgst-blk{margin:6px 0 4px}' +
+    '.pgst-bh{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;background:#F4F7FA;border-left:4px solid #229A82;border-radius:6px;padding:7px 10px;margin:14px 0 6px;page-break-after:avoid;break-after:avoid}' +
+    '.pgst-bh b{font-family:"Montserrat","Arial Black",sans-serif;font-size:12.5px;letter-spacing:.04em;color:#1B2D3A}' +
+    '.pgst-bh .pgst-bes{font-size:10.5px;color:#6B7D89;font-weight:500}' +
+    '.pgst-bh .pgst-bn{font-size:10.5px;color:#6B7D89}.pgst-bh .pgst-bn b{font-family:"JetBrains Mono","Courier New",monospace;font-size:11.5px;color:#1B2D3A}.pgst-bh .pgst-bn b.pgst-neg{color:#D5594F}' +
+    '.pgst-bt{width:auto!important;margin:0 0 12px!important;min-width:240px}' +
+    '.pgst-bt th{border-bottom:1px solid #1B2D3A}' +
+    '.pgst-bt caption{caption-side:top;text-align:left;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#6B7D89;padding:2px 6px;font-weight:700}' +
+    '.pgst-goal td.pgst-ok{color:#229A82;font-weight:800}' +
+    '.pgst-goal td.pgst-no{color:#6B7D89}' +
+    '.pgst-tier{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}' +
+    '.pgst-tier span{border:1px solid #E7EDF2;border-radius:999px;padding:3px 10px;font-size:11px;color:#6B7D89;white-space:nowrap}' +
+    '.pgst-tier span.on{border-color:#D9A520;background:#FBF3E2;color:#1B2D3A;font-weight:800}' +
     '@media (max-width:900px){.pgst{padding:18px}.pgst-meta{grid-template-columns:repeat(2,minmax(0,1fr))}}' +
     '@media (max-width:640px){.pgst-mb{flex-direction:column;gap:8px}.pgst-mb .pgst-r{text-align:left!important}' +
     '.pgst-meta{grid-template-columns:1fr}.pgst-tot{flex-wrap:wrap;gap:8px}.pgst-tot .pgst-v{font-size:22px}' +
     '.pgst-tw td,.pgst-tw th{white-space:nowrap}}' +
     '@media print{.pgst{box-shadow:none;border-radius:0;max-width:none;padding:0}.pgst-tw{overflow:visible}' +
-    '.pgst tr{page-break-inside:avoid}.pgst-prev{border-width:1px}}' +
+    '.pgst tr{page-break-inside:avoid;break-inside:avoid}.pgst thead{display:table-header-group}.pgst tfoot{display:table-footer-group}' +
+    '.pgst-bt,.pgst-goal,.pgst-tier{page-break-inside:avoid;break-inside:avoid}.pgst-big{page-break-before:always;break-before:page}' +
+    '.pgst-bes,.pgst-screen{display:none!important}.pgst-prev{border-width:1px}}' +
     '@page{size:letter;margin:.45in}';
+
+  /* ---- R5 · bloques por cargo ---- */
+  function usaBloques(doc) {
+    var b = doc && doc.bloques;
+    if (!b || !b.length) return false;
+    if (b.length > 1) return true;
+    return b[0] && b[0].cargo !== 'asesor';
+  }
+  function filas(b) {
+    var L = b.lineas || [], c = b.cargo;
+    if (c === 'bolsas') {
+      return { head: '<th>Area</th><th class="n">Base</th><th class="n">Rate</th><th class="n">Shares</th><th class="n">Amount</th>',
+        body: L.map(function (l) {
+          return '<tr><td>' + txt(l.area) + '</td><td class="n' + neg(l.base) + '">' + money(l.base) + '</td><td class="n">' + rate(l.pct) +
+            '</td><td class="n">' + (hay(l.partes) ? esc(l.partes) : '—') + '</td><td class="n' + neg(l.monto) + '">' + money(l.monto) + '</td></tr>';
+        }).join(''), cols: 5 };
+    }
+    if (c === 'bono') {
+      return { head: '<th>Item</th><th>Rule</th><th class="n">Amount</th>',
+        body: L.map(function (l) {
+          return '<tr><td>' + txt(l.concepto) + '</td><td>' + txt(l.regla) + '</td><td class="n' + neg(l.monto) + '">' + money(l.monto) + '</td></tr>';
+        }).join(''), cols: 3 };
+    }
+    return { head: '<th>Date</th><th>Client</th><th>MGA</th><th>Type</th><th class="n">Agency comm.</th><th>Seller</th><th>Role</th><th class="n">Rate</th><th class="n">Amount</th>',
+      body: L.map(function (l) {
+        return '<tr><td>' + txt(l.fecha) + '</td><td>' + txt(l.cliente) + '</td><td>' + txt(l.mga) + '</td><td>' + txt(l.trans) +
+          '</td><td class="n' + neg(l.base) + '">' + money(l.base) + '</td><td>' + txt(l.vendedor) + '</td><td>' + txt(l.cargo) +
+          '</td><td class="n">' + rate(l.pct) + '</td><td class="n' + neg(l.monto) + '">' + money(l.monto) + '</td></tr>';
+      }).join(''), cols: 9 };
+  }
+  function bloque(b) {
+    var L = b.lineas || [];
+    var f = filas(b);
+    var h = '<div class="pgst-blk' + (L.length > 14 ? ' pgst-big' : '') + '">' +
+      '<div class="pgst-bh"><div><b>' + txt(b.titulo) + '</b>' +
+      (b.titulo_es ? ' <span class="pgst-bes pgst-screen">· ' + esc(b.titulo_es) + '</span>' : '') + '</div>' +
+      '<span class="pgst-bn">' + L.length + ' item' + (L.length === 1 ? '' : 's') + ' · <b class="pgst-num' + neg(b.subtotal) + '">' + money(b.subtotal) + '</b></span></div>';
+    if (L.length) {
+      h += '<div class="pgst-tw"><table><thead><tr>' + f.head + '</tr></thead><tbody>' + f.body +
+        '<tr class="pgst-t"><td colspan="' + (f.cols - 1) + '">SUBTOTAL · ' + txt(b.titulo) + '</td><td class="n' + neg(b.subtotal) + '">' + money(b.subtotal) + '</td></tr>' +
+        '</tbody></table></div>';
+    } else {
+      h += '<div class="pgst-mu" style="margin:0 0 6px">—</div>' +
+        '<table><tbody><tr class="pgst-t"><td>SUBTOTAL · ' + txt(b.titulo) + '</td><td class="n">' + money(b.subtotal) + '</td></tr></tbody></table>';
+    }
+    var pt = (b.por_tipo || []).filter(function (t) { return hay(t.monto) && +t.monto !== 0; });
+    if (pt.length) {
+      h += '<table class="pgst-bt"><caption>By type</caption><thead><tr><th>Type</th><th class="n">Amount</th></tr></thead><tbody>' +
+        pt.map(function (t) { return '<tr><td>' + txt(t.tipo) + '</td><td class="n' + neg(t.monto) + '">' + money(t.monto) + '</td></tr>'; }).join('') +
+        '</tbody></table>';
+    }
+    return h + '</div>';
+  }
+  function metaHtml(m) {
+    var A = m.asesores || [];
+    var h = '<div class="pgst-sec">Goal achieved</div>';
+    if (A.length) {
+      h += '<div class="pgst-tw"><table class="pgst-goal"><thead><tr><th>Advisor</th><th>Goal met?</th><th>Goal type</th><th class="n">Premium</th><th class="n">Combined</th></tr></thead><tbody>' +
+        A.map(function (a) {
+          return '<tr><td>' + txt(a.asesor) + '</td><td class="' + (a.cumplio ? 'pgst-ok' : 'pgst-no') + '">' + (a.cumplio ? 'Yes' : 'No') +
+            (a.forzado ? ' <span class="pgst-mu" style="font-weight:500">(manual)</span>' : '') + '</td><td>' + txt(a.tipo) +
+            '</td><td class="n">' + money(a.premium) + '</td><td class="n">' + money(a.combinada) + '</td></tr>';
+        }).join('') + '</tbody></table></div>';
+    }
+    h += '<table><tbody>' +
+      '<tr><td>Goal (' + (hay(m.n_activos) ? esc(m.n_activos) : '—') + ' active advisors)</td><td class="n">' + money(m.meta_usd) + '</td></tr>' +
+      '<tr><td>Achieved</td><td class="n">' + money(m.cumplida_usd) + '</td></tr>' +
+      '<tr><td>% achieved</td><td class="n">' + (hay(m.pct) ? (+m.pct).toLocaleString('en-US', { maximumFractionDigits: 1 }) + '%' : '—') + '</td></tr>' +
+      '<tr class="pgst-t"><td>Bonus</td><td class="n">' + money(m.bono_usd) + '</td></tr></tbody></table>';
+    var T = m.tabla || [];
+    if (T.length) {
+      var pct = hay(m.pct) ? +m.pct : -1, on = -1;
+      T.forEach(function (r, i) { if (pct >= +r[0]) on = i; });
+      h += '<div class="pgst-tier">' + T.map(function (r, i) {
+        return '<span' + (i === on ? ' class="on"' : '') + '>' + esc(r[0]) + '% → ' + money(r[1]) + '</span>';
+      }).join('') + '</div>';
+    }
+    return h;
+  }
 
   function html(doc) {
     doc = doc || {};
@@ -117,23 +212,31 @@
       (hay(doc.cop) && +doc.cop ? 'Plus ' + cop(doc.cop) + ' endorsement bonus, paid in COP.' : 'Calculated on commissions and fees received by the agency.') +
       '</div></div><div class="pgst-v">' + money(doc.total_usd) + '</div></div>';
 
-    h += '<div class="pgst-sec">Summary</div><table><tbody>' +
+    var resumenHtml = '<div class="pgst-sec">Summary</div><table><tbody>' +
       resumen.map(function (r) {
         return '<tr><td>' + esc(r.concepto) + '</td><td class="n' + neg(r.monto) + '">' + money(r.monto) + '</td></tr>';
       }).join('') +
       '<tr class="pgst-t"><td>TOTAL</td><td class="n' + neg(doc.total_usd) + '">' + money(doc.total_usd) + '</td></tr></tbody></table>';
 
-    h += '<div class="pgst-sec">Detail · ' + lineas.length + ' item' + (lineas.length === 1 ? '' : 's') + '</div>';
-    if (lineas.length) {
-      h += '<div class="pgst-tw"><table><thead><tr><th>Date</th><th>Client</th><th>MGA / Carrier</th><th>Type</th>' +
-        '<th class="n">Agency comm.</th><th class="n">Rate</th><th class="n">Amount</th></tr></thead><tbody>' +
-        lineas.map(function (l) {
-          return '<tr><td>' + txt(l.fecha) + '</td><td>' + txt(l.cliente) + '</td><td>' + txt(l.mga) + '</td><td>' + txt(l.trans) +
-            '</td><td class="n' + neg(l.base) + '">' + money(l.base) + '</td><td class="n">' + rate(l.pct) +
-            '</td><td class="n' + neg(l.monto) + '">' + money(l.monto) + '</td></tr>';
-        }).join('') + '</tbody></table></div>';
+    if (usaBloques(doc)) {
+      /* R5: por bloques de cargo → goal achieved → resumen y TOTAL */
+      h += '<div class="pgst-sec">Detail by role</div>' + doc.bloques.map(bloque).join('');
+      if (doc.meta) h += metaHtml(doc.meta);
+      h += resumenHtml;
     } else {
-      h += '<div class="pgst-mu" style="margin-bottom:14px">—</div>';
+      h += resumenHtml;
+      h += '<div class="pgst-sec">Detail · ' + lineas.length + ' item' + (lineas.length === 1 ? '' : 's') + '</div>';
+      if (lineas.length) {
+        h += '<div class="pgst-tw"><table><thead><tr><th>Date</th><th>Client</th><th>MGA / Carrier</th><th>Type</th>' +
+          '<th class="n">Agency comm.</th><th class="n">Rate</th><th class="n">Amount</th></tr></thead><tbody>' +
+          lineas.map(function (l) {
+            return '<tr><td>' + txt(l.fecha) + '</td><td>' + txt(l.cliente) + '</td><td>' + txt(l.mga) + '</td><td>' + txt(l.trans) +
+              '</td><td class="n' + neg(l.base) + '">' + money(l.base) + '</td><td class="n">' + rate(l.pct) +
+              '</td><td class="n' + neg(l.monto) + '">' + money(l.monto) + '</td></tr>';
+          }).join('') + '</tbody></table></div>';
+      } else {
+        h += '<div class="pgst-mu" style="margin-bottom:14px">—</div>';
+      }
     }
 
     if (camino.length) {

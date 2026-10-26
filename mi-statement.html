@@ -8,7 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,1,800&family=Montserrat:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="pg-volver.js" defer></script>
-<script src="pg-statement.js"></script>
+<script src="pg-statement.js?v=r5"></script>
 <style>
 :root{--pg-ink:#1B2D3A;--pg-ink-2:#162630;--pg-mint:#2DBFA3;--pg-mint-soft:#C4E8DF;--pg-mint-deep:#229A82;--pg-bg:#F4F7FA;--pg-card:#FFFFFF;--pg-line:#E7EDF2;--pg-txt:#28323B;--pg-muted:#6B7D89;--pg-pos:#1F9D6B;--pg-neg:#D5594F;--pg-warn:#D9A520;--pg-font-gabi:"Fraunces",Georgia,serif;--pg-font-title:"Montserrat","Arial Black",sans-serif;--pg-font-body:"Inter",Arial,sans-serif;--pg-font-num:"JetBrains Mono","Courier New",monospace}
 *{box-sizing:border-box}
@@ -156,7 +156,8 @@ var SB_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var SB=window.supabase.createClient(SB_URL,SB_KEY);
 var POR=SB.schema('portal');
 
-var S={D:null,email:'',verComo:null,doc:null,docId:null,abriendo:false};
+var S={D:null,email:'',verComo:null,doc:null,docId:null,abriendo:false,verTodo:{curva:false,hist:false}};
+var N6=6;/* por defecto se ven los últimos 6 meses; el resto con "Ver todo" */
 
 /* ═════════ utilidades ═════════ */
 function hay(n){return n!==null&&n!==undefined&&n!==''&&!isNaN(+n);}
@@ -213,7 +214,8 @@ function render(){
   }
   if(U)h+=franja(U)+kpis(U);
   var mov=U&&!U.historico?queTeMovio(U):'';
-  var cur=C.length?'<div class="pg-card"><h2>Tu curva</h2><div class="h2sub">Tus statements, mes a mes. La línea punteada es tu promedio.</div><div id="curva"></div>'+curvaStats(C)+'</div>':'';
+  var CV=curvaVis(C);
+  var cur=C.length?'<div class="pg-card"><h2>Tu curva</h2><div class="h2sub">'+(S.verTodo.curva||C.length<=N6?'Tus statements, mes a mes.':'Tus últimos '+N6+' meses.')+' La línea punteada es tu promedio.</div><div id="curva"></div>'+curvaStats(CV)+toggle('curva',C.length)+'</div>':'';
   if(mov&&cur)h+='<div class="dos">'+mov+cur+'</div>';else h+=mov+cur;
   h+=historial(H);
   pantalla(h);
@@ -271,6 +273,12 @@ function queTeMovio(U){
 
 /* ── curva: línea SVG (nunca barras), área suave, promedio punteado ── */
 function curvaVals(C){return C.filter(function(p){return hay(p.total_usd);});}
+/* últimos 6 por defecto (la curva viene del más viejo al más nuevo) */
+function curvaVis(C){C=C||[];return S.verTodo.curva||C.length<=N6?C:C.slice(C.length-N6);}
+function toggle(k,n){
+  if(n<=N6)return '';
+  return '<div style="margin-top:10px"><button class="lk" data-act="vertodo" data-k="'+k+'">'+(S.verTodo[k]?'Ver menos':'Ver todo ('+n+')')+'</button></div>';
+}
 function curvaStats(C){
   var P=curvaVals(C);if(!P.length)return '';
   var v=P.map(function(p){return +p.total_usd;});
@@ -281,7 +289,7 @@ function curvaStats(C){
 }
 function dibujarCurva(){
   var box=$('curva');if(!box||!S.D)return;
-  var P=curvaVals(S.D.curva||[]);
+  var P=curvaVals(curvaVis(S.D.curva||[]));
   if(!P.length){box.innerHTML='<div class="muted">—</div>';return;}
   var W=Math.max(260,Math.round(box.clientWidth||300)),H=170,px=30,pt=26,pb=26;
   var v=P.map(function(p){return +p.total_usd;});
@@ -309,12 +317,13 @@ var rz=null;window.addEventListener('resize',function(){clearTimeout(rz);rz=setT
 
 function historial(H){
   if(!H.length)return '';
-  return '<div class="pg-card"><h2>Historial</h2><div class="h2sub">Tus statements. Cada uno se abre y se imprime.</div>'+
-    H.map(function(r){
+  var tot=H.length,V=S.verTodo.hist||tot<=N6?H:H.slice(0,N6);/* H viene del más nuevo al más viejo */
+  return '<div class="pg-card"><h2>Historial</h2><div class="h2sub">Tus statements'+(V.length<tot?' · los últimos '+N6:'')+'. Cada uno se abre y se imprime.</div>'+
+    V.map(function(r){
       return '<div class="hist" data-act="doc" data-id="'+esc(r.statement_id)+'"><span class="m">'+esc(r.mes_txt||'—')+(r.historico?' <span class="chip">resumen Cal Comm</span>':'')+'</span>'+
         '<span class="tot '+(hay(r.total_usd)&&+r.total_usd<0?'neg':'')+'">'+fmt(r.total_usd)+(copTxt(r.cop)?'<br><span class="muted" style="font-size:11px;font-weight:500">+ '+esc(copTxt(r.cop))+'</span>':'')+'</span>'+
         estadoPill(r.estado)+'<button class="lk" data-act="doc" data-id="'+esc(r.statement_id)+'">Imprimir</button></div>';
-    }).join('')+'</div>';
+    }).join('')+toggle('hist',tot)+'</div>';
 }
 
 /* ═════════ documento ═════════ */
@@ -337,6 +346,7 @@ document.addEventListener('click',function(ev){
   var a=el.getAttribute('data-act');
   switch(a){
     case 'doc':ev.stopPropagation();verDoc(el.getAttribute('data-id'));break;
+    case 'vertodo':var k=el.getAttribute('data-k');if(k==='curva'||k==='hist'){S.verTodo[k]=!S.verTodo[k];render();}break;
     case 'cerrardoc':cerrarDoc();break;
     case 'docov':if(ev.target===el)cerrarDoc();break;
     case 'imprimir':if(!window.pgStatement.abrir(S.doc||{}))toast('El navegador bloqueó la ventana: permite ventanas emergentes para este sitio',true);break;
@@ -362,7 +372,7 @@ SB.auth.getSession().then(function(r){
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="mi-statement.html";
-var PGV_VERSION=2; // v2 - 26-oct-2026 encabezado ProtectGo Services LLC · Statement; ?previa=1 (piloto de FAM: así lo verá la persona antes de compartir, mi_statements_previa); lo compartido sigue visible si FAM reabre el mes. | v1 - 26-oct-2026 MI STATEMENT: cada persona que comisiona ve su statement del mes (franja, conceptos, qué te movió, curva en línea, historial) y abre/imprime su COMMISSION STATEMENT con pg-statement.js. Solo lectura, desde portal.mi_statements / mi_statement_doc. ?ver_como=correo para dirección/FAM.
+var PGV_VERSION=3; // v3 - 26-oct-2026 R5: Historial y Tu curva muestran por defecto los últimos 6 meses con 'Ver todo (N)' / 'Ver menos'; el documento pinta por bloques de cargo (líder/3,5 %/bolsas/bono + Goal achieved) con pg-statement.js v2. | v2 - 26-oct-2026 encabezado ProtectGo Services LLC · Statement; ?previa=1 (piloto de FAM: así lo verá la persona antes de compartir, mi_statements_previa); lo compartido sigue visible si FAM reabre el mes. | v1 - 26-oct-2026 MI STATEMENT: cada persona que comisiona ve su statement del mes (franja, conceptos, qué te movió, curva en línea, historial) y abre/imprime su COMMISSION STATEMENT con pg-statement.js. Solo lectura, desde portal.mi_statements / mi_statement_doc. ?ver_como=correo para dirección/FAM.
 function pgvRun(){
   try{
     var c=window.supabase.createClient(PGV_URL,PGV_KEY,{db:{schema:'portal'}});
