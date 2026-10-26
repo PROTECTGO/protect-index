@@ -294,7 +294,7 @@ function arrancar(){
 }
 
 /* ═════════ shell ═════════ */
-var SECS=[['Statement del mes','Statement'],['Personas y porcentajes','Personas'],['Statements de MGAs','MGAs'],['Historial','Historial']];
+var SECS=[['Statement del mes','Statement'],['Personas y porcentajes','Personas'],['Statements de MGAs','MGAs'],['Historial','Historial'],['Lo que hizo FAM','Bitácora']];
 function shell(main){
   return '<div class="pg-app"><nav class="pg-side"><div class="pg-brand"><span class="pg-wordmark">GABI</span><div><b style="font-family:var(--pg-font-title);font-size:13px">ProtectGo</b><small>Statement · FAM</small></div></div>'+
     SECS.map(function(it,i){return '<a class="'+(S.sec===i+1?'on':'')+'" data-act="sec" data-v="'+(i+1)+'"><span class="n">0'+(i+1)+'</span><span class="full">'+it[0]+'</span><span class="short">'+it[1]+'</span></a>';}).join('')+
@@ -302,7 +302,7 @@ function shell(main){
 }
 function render(){
   if(!S.R)return;
-  var main=S.sec===1?secStatement():S.sec===2?secPersonas():S.sec===3?secMGAs():secHistorial();
+  var main=S.sec===1?secStatement():S.sec===2?secPersonas():S.sec===3?secMGAs():S.sec===5?secBitacora():secHistorial();
   $('app').innerHTML=shell(main);
 }
 function selMes(){
@@ -334,7 +334,7 @@ function secStatement(){
   if(p.estado==='compartido')acts+='<button class="pg-btn secondary" data-act="pagado">Marcar pagado</button>';
   var franja='<div class="franja"><div><div class="lbl">Total a pagar · '+esc(p.fecha_pago_txt||'—')+'</div><div class="big '+(hay(T.personas_usd)&&+T.personas_usd<0?'neg':'')+'">'+fmt(T.personas_usd)+'</div><div class="fsub">'+(vs||'&nbsp;')+'</div></div>'+
     '<div class="sep"></div><div><div class="lbl">En camino · no suma</div><div class="mini" style="color:var(--pg-warn)">'+(hay(T.en_camino_usd)&&+T.en_camino_usd?'<span class="dot"></span>':'')+fmtZ(T.en_camino_usd,0)+'</div><div class="fsub">'+(+T.n_en_camino?esc(T.n_en_camino)+' líneas esperan statement':'nada espera statement')+'</div></div>'+
-    '<div class="sep"></div><div><div class="lbl">Estado</div><span class="estado '+estadoCls(p.estado)+'">'+estadoTxt(p.estado,p.version)+'</span><div class="fsub" style="margin-top:8px">última corrida '+esc(hace(p.ultima_corrida))+(hay(p.n_cambios)?' · '+esc(p.n_cambios)+' cambios de FAM':'')+'</div></div>'+
+    '<div class="sep"></div><div><div class="lbl">Estado</div><span class="estado '+estadoCls(p.estado)+'">'+estadoTxt(p.estado,p.version)+'</span><div class="fsub" style="margin-top:8px">última corrida '+esc(hace(p.ultima_corrida))+(hay(p.n_cambios)?' · <a class="lk" data-act="sec" data-v="5" style="color:inherit;text-decoration:underline;cursor:pointer">'+esc(p.n_cambios)+' cambios de FAM</a>':'')+'</div></div>'+
     (acts?'<div class="act">'+acts+'</div>':'')+'</div>';
 
   var bar='<div class="acciones">'+
@@ -443,6 +443,33 @@ function secHistorial(){
     '<div class="pg-card"><div class="tw"><table class="pg-table cards"><thead><tr><th>Mes</th><th class="num">Total</th><th>Estado</th><th class="num">Versión</th><th></th></tr></thead><tbody>'+(rows||'<tr><td colspan="5" class="muted">Sin meses.</td></tr>')+'</tbody></table></div></div>';
 }
 
+
+/* ═════════ 05 · Lo que hizo FAM (bitácora) ═════════ */
+function pctTxt(o){if(!o)return '';var k=[];if(o.pct_asesor!=null)k.push('asesor '+o.pct_asesor+' %');if(o.pct_lider!=null)k.push('líder '+o.pct_lider+' %');if(o.escalon!=null)k.push('escalón '+o.escalon+' %');if(o.pct_fee!=null)k.push('fee '+o.pct_fee+' %');if(o.activa!=null)k.push(o.activa?'activa':'no va');if(o.bono_cop!=null)k.push('bono '+fmtCOP(o.bono_cop));if(o.estado)k.push(o.estado);if(o.persona)k.push(o.persona);if(o.base!=null)k.push('monto '+fmt(o.base));if(o.version!=null)k.push('v'+o.version);if(o.n!=null)k.push(o.n+' personas');if(o.total!=null)k.push(fmt(o.total));if(o.fecha)k.push(o.fecha);if(o.motivo)k.push(o.motivo);return k.join(' · ');}
+function secBitacora(){
+  var key=S.bitTodos?'todos':S.mes;S.B=S.B||{};
+  var head='<div class="pg-top"><div><div class="pg-eyebrow">05 · Lo que hizo FAM</div><h1>Bitácora'+(S.bitTodos?' · todos los meses':' · '+esc((S.R.periodo||{}).mes_txt||''))+'</h1><div class="pg-sub">Cada cambio queda con quién, cuándo, qué tocó, de cuánto a cuánto y por qué. Nada se borra.</div></div>'+
+    '<div><button class="pg-btn secondary sm" data-act="bit-todos">'+(S.bitTodos?'Solo este mes':'Ver todos los meses')+'</button> <button class="pg-btn secondary sm" data-act="bit-recargar">↻</button></div></div>';
+  if(!S.B[key]){
+    S.B[key]='cargando';
+    rpc('com_bitacora',{p_mes:S.bitTodos?null:S.mes,p_limite:500}).then(function(d){S.B[key]=d||[];if(S.sec===5)render();},function(e){S.B[key]=null;toast('No pude leer la bitácora: '+msg(e),true);});
+  }
+  var L=S.B[key];
+  if(L==='cargando'||!L)return head+'<div class="pg-card"><div class="cargando">Cargando la bitácora…</div></div>';
+  if(!L.length)return head+'<div class="pg-card"><div class="muted" style="padding:6px 2px">Todavía no hay cambios de FAM en este mes. Cuando Jeff cambie un %, agregue o jubile una línea, comparta o marque pagado, sale aquí.</div></div>';
+  var rows=L.map(function(c){
+    var cuando=new Date(c.cuando);var ct=isNaN(cuando)?'—':cuando.toLocaleString('es-CO',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+    var linea=c.cliente?esc([c.cliente,c.trans,c.mga].filter(Boolean).join(' · ')):'';
+    var de=pctTxt(c.antes),a=pctTxt(c.despues);
+    return '<tr><td class="sub" data-l="" style="white-space:nowrap">'+esc(ct)+(S.bitTodos?' · '+esc(c.mes_txt||''):'')+'</td>'+
+      '<td class="main"><b>'+esc(c.que)+'</b> · <span class="muted">'+esc(String(c.quien||'—').split('@')[0])+'</span></td>'+
+      '<td class="sub" data-l="Persona">'+esc(c.persona||'—')+'</td>'+
+      '<td class="sub" data-l="Póliza">'+(linea||'—')+'</td>'+
+      '<td class="sub" data-l="Cambio">'+(de||a?esc(de||'—')+' → <b>'+esc(a||'—')+'</b>':'—')+'</td>'+
+      '<td class="sub" data-l="Nota">'+esc(c.nota||'—')+'</td></tr>';}).join('');
+  return head+'<div class="pg-card"><div class="tw"><table class="pg-table cards"><thead><tr><th>Cuándo</th><th>Qué</th><th>Persona</th><th>Póliza</th><th>De → a</th><th>Nota</th></tr></thead><tbody>'+rows+'</tbody></table></div></div>';
+}
+
 /* ═════════ panel de la persona ═════════ */
 function abrirPersona(n){
   S.panel=n;
@@ -515,7 +542,7 @@ function refrescar(){
 }
 function escribir(nombre,params,okMsg){
   return rpc(nombre,params).then(function(d){
-    cerrarModal();
+    S.B={};cerrarModal();
     var m=typeof okMsg==='function'?okMsg(d||{}):okMsg;if(m)toast(m);
     return refrescar().then(function(){return d;});
   },function(e){toast(msg(e),true);throw e;});
@@ -631,6 +658,8 @@ document.addEventListener('click',function(ev){
     case 'estado':cambiarEstado(el.getAttribute('data-v'));break;
     case 'recalcular':cargar(S.mes,true).then(function(){toast('Recalculado');}).catch(function(){});break;
     case 'csv':exportar();break;
+    case 'bit-todos':S.bitTodos=!S.bitTodos;render();break;
+    case 'bit-recargar':S.B={};render();break;
     case 'abrir-mes':S.sec=1;cargar(el.getAttribute('data-v')).catch(function(){});break;
     case 'mcancel':cerrarModal();if(S.panel)renderPanel();break;
     case 'salir':SB.auth.signOut().then(function(){location.href='index.html';},function(){location.href='index.html';});break;
@@ -674,7 +703,7 @@ SB.auth.getSession().then(function(r){
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="fam-comisiones.html";
-var PGV_VERSION=3; // v3 - 26-oct-2026 nombre Statement · FAM; en la persona, botón Piloto: su pantalla ↗ (mi-statement.html?previa=1, así lo verá antes de compartir). | v2 - 26-oct-2026 el panel de la persona y el pie de la barra bajan para que los botones no queden debajo de las pastillas SAMU/Bonos ni de Volver al Index. | v1 - 23-oct-2026 COMISIONES FAM (Jeff): statement del mes desde portal.com_* (com_resumen/com_persona/com_statement_doc), "la línea manda" (% por póliza con nota), escalón y fee por defecto, línea manual, jubilar, asignar persona, compartir con versión, marcar pagado, CSV de pago, documento COMMISSION STATEMENT con pg-statement.js.
+var PGV_VERSION=4; // v4 - 26-oct-2026 sección 05 Lo que hizo FAM (bitácora: quién, cuándo, qué, de → a, nota; portal.com_bitacora) y el contador de cambios abre la bitácora. | v3 - 26-oct-2026 nombre Statement · FAM; en la persona, botón Piloto: su pantalla ↗ (mi-statement.html?previa=1, así lo verá antes de compartir). | v2 - 26-oct-2026 el panel de la persona y el pie de la barra bajan para que los botones no queden debajo de las pastillas SAMU/Bonos ni de Volver al Index. | v1 - 23-oct-2026 COMISIONES FAM (Jeff): statement del mes desde portal.com_* (com_resumen/com_persona/com_statement_doc), "la línea manda" (% por póliza con nota), escalón y fee por defecto, línea manual, jubilar, asignar persona, compartir con versión, marcar pagado, CSV de pago, documento COMMISSION STATEMENT con pg-statement.js.
 function pgvRun(){
   try{
     var c=window.supabase.createClient(PGV_URL,PGV_KEY,{db:{schema:'portal'}});
