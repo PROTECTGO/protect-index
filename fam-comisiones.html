@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Comisiones · Statement · ProtectGo</title>
+<title>Statement · FAM · ProtectGo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,1,800&family=Montserrat:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -263,7 +263,7 @@ function mesUrl(m){try{var u=new URL(location.href);u.searchParams.set('mes',m);
 /* ═════════ carga ═════════ */
 function bloqueo(titulo,texto,conIndex){
   $('layer').innerHTML='';$('docl').innerHTML='';$('modals').innerHTML='';
-  $('app').innerHTML='<div class="pg-main" style="max-width:640px;margin:40px auto"><div class="gate"><div class="pg-eyebrow">Comisiones · FAM</div><h2>'+esc(titulo)+'</h2><div>'+esc(texto||'')+'</div>'+(conIndex?'<div style="margin-top:14px"><a class="pg-btn sm" href="index.html" style="text-decoration:none;display:inline-block">Ir al Index</a></div>':'')+'</div></div>';
+  $('app').innerHTML='<div class="pg-main" style="max-width:640px;margin:40px auto"><div class="gate"><div class="pg-eyebrow">Statement · FAM</div><h2>'+esc(titulo)+'</h2><div>'+esc(texto||'')+'</div>'+(conIndex?'<div style="margin-top:14px"><a class="pg-btn sm" href="index.html" style="text-decoration:none;display:inline-block">Ir al Index</a></div>':'')+'</div></div>';
 }
 function errCarga(e){
   var m=msg(e);
@@ -296,7 +296,7 @@ function arrancar(){
 /* ═════════ shell ═════════ */
 var SECS=[['Statement del mes','Statement'],['Personas y porcentajes','Personas'],['Statements de MGAs','MGAs'],['Historial','Historial']];
 function shell(main){
-  return '<div class="pg-app"><nav class="pg-side"><div class="pg-brand"><span class="pg-wordmark">GABI</span><div><b style="font-family:var(--pg-font-title);font-size:13px">ProtectGo</b><small>Comisiones · FAM</small></div></div>'+
+  return '<div class="pg-app"><nav class="pg-side"><div class="pg-brand"><span class="pg-wordmark">GABI</span><div><b style="font-family:var(--pg-font-title);font-size:13px">ProtectGo</b><small>Statement · FAM</small></div></div>'+
     SECS.map(function(it,i){return '<a class="'+(S.sec===i+1?'on':'')+'" data-act="sec" data-v="'+(i+1)+'"><span class="n">0'+(i+1)+'</span><span class="full">'+it[0]+'</span><span class="short">'+it[1]+'</span></a>';}).join('')+
     '<div class="pg-foot">'+esc(S.email||'—')+'<br><button class="lk" data-act="salir" style="color:#8da0ad">Cerrar sesión</button></div></nav><main class="pg-main">'+main+'</main></div>';
 }
@@ -403,7 +403,7 @@ function secStatement(){
     kpi('Bono de líder',+M.bono_usd?fmt(M.bono_usd,0):'—','',+M.bono_usd?'ya suma en Brahian':'no alcanza el escalón',true)+'</div>'+
     '<div class="meta-t">'+(M.tabla||[]).map(function(t){var on=hay(M.pct)&&+M.pct>=+t[0];return '<span class="'+(on?'on':'')+'">≥ '+esc(t[0])+' % → <b class="num">'+fmt(t[1],0)+'</b></span>';}).join('')+'</div></div>':'';
 
-  return '<div class="pg-top"><div><div class="pg-eyebrow">01 · Statement del mes</div><h1>Comisiones · '+esc(mesTxt)+'</h1><div class="pg-sub">Producción de '+esc(String(mesTxt).toLowerCase())+' · se paga el '+esc(p.fecha_pago_txt||'—')+' · se arma solo desde el BOS, FAM revisa</div></div>'+selMes()+'</div>'+
+  return '<div class="pg-top"><div><div class="pg-eyebrow">01 · Statement del mes</div><h1>Statement · '+esc(mesTxt)+'</h1><div class="pg-sub">Producción de '+esc(String(mesTxt).toLowerCase())+' · se paga el '+esc(p.fecha_pago_txt||'—')+' · se arma solo desde el BOS, FAM revisa</div></div>'+selMes()+'</div>'+
     roAviso()+franja+bar+kpis+mirar+tabla+areas+bolsas+meta;
 }
 
@@ -486,7 +486,8 @@ function renderPanel(){
   var defs=esArea?'':'<div class="defs"><label>Escalón por defecto<select class="inl" data-act="def-esc"'+dis+'>'+opts([10,15],x.escalon)+'</select></label><label>Fee % por defecto<select class="inl" data-act="def-fee"'+dis+'>'+opts([20,25,30],x.pct_fee)+'</select></label><div class="help">aplica a las líneas nuevas; cada póliza puede ir distinto. Las líneas editadas a mano se quedan como están.</div></div>';
   $('layer').innerHTML='<div class="ov" data-act="ov"><div class="panel">'+
     '<div class="head">'+av(x)+'<div style="flex:1;min-width:0"><h2 class="pnom">'+esc(nombre)+'</h2><div class="muted">'+esc(x.rol||(esArea?'Cuenta de área':''))+(x.activa===false?' · <span class="neg">no va este mes</span>':'')+(x.correo?' · '+esc(x.correo):'')+'</div></div>'+
-    (esArea?'':'<button class="pg-btn secondary sm vercomo" data-act="vercomo">Ver como lo verá '+esc(String(nombre).split(' ')[0])+' →</button>')+'<button class="pg-btn sm cerrar" data-act="cerrar">Cerrar</button></div>'+
+    (esArea?'':'<button class="pg-btn secondary sm vercomo" data-act="vercomo">Ver como lo verá '+esc(String(nombre).split(' ')[0])+' →</button>')+
+    (esArea||!x.correo?'':'<a class="pg-btn secondary sm vercomo" target="_blank" rel="noopener" title="Abre la pantalla Mi statement tal como la verá esta persona" href="mi-statement.html?ver_como='+encodeURIComponent(x.correo)+(editable()?'&previa=1':'')+'">'+(editable()?'Piloto: su pantalla ↗':'Su pantalla ↗')+'</a>')+'<button class="pg-btn sm cerrar" data-act="cerrar">Cerrar</button></div>'+
     roAviso()+defs+
     '<div class="pg-kpis"><div class="pg-kpi"><div class="lbl">Total</div><div class="val '+(+x.total<0?'neg':'')+'">'+fmt(x.total)+'</div><div class="sub">'+(desg.join(' · ')||'&nbsp;')+'</div></div>'+
     '<div class="pg-kpi amb"><div class="lbl">En camino</div><div class="val" style="color:var(--pg-warn)">'+(camino?fmt(camino):'—')+'</div><div class="sub">'+(nPend?nPend+' línea(s) esperan statement':'nada pendiente de statement')+'</div></div>'+
@@ -659,7 +660,7 @@ document.addEventListener('keydown',function(ev){
 /* ═════════ acceso ═════════ */
 SB.auth.getSession().then(function(r){
   var s=r&&r.data&&r.data.session;
-  if(!s){bloqueo('Entra primero al Index con tu cuenta','Después vuelve a abrir Comisiones desde tu tarjeta.',true);return;}
+  if(!s){bloqueo('Entra primero al Index con tu cuenta','Después vuelve a abrir Statement · FAM desde tu tarjeta.',true);return;}
   S.email=(s.user&&s.user.email)||'';
   arrancar();
 },function(){bloqueo('Entra primero al Index con tu cuenta','',true);});
@@ -673,7 +674,7 @@ SB.auth.getSession().then(function(r){
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="fam-comisiones.html";
-var PGV_VERSION=2; // v2 - 26-oct-2026 el panel de la persona y el pie de la barra bajan para que los botones no queden debajo de las pastillas SAMU/Bonos ni de Volver al Index. | v1 - 23-oct-2026 COMISIONES FAM (Jeff): statement del mes desde portal.com_* (com_resumen/com_persona/com_statement_doc), "la línea manda" (% por póliza con nota), escalón y fee por defecto, línea manual, jubilar, asignar persona, compartir con versión, marcar pagado, CSV de pago, documento COMMISSION STATEMENT con pg-statement.js.
+var PGV_VERSION=3; // v3 - 26-oct-2026 nombre Statement · FAM; en la persona, botón Piloto: su pantalla ↗ (mi-statement.html?previa=1, así lo verá antes de compartir). | v2 - 26-oct-2026 el panel de la persona y el pie de la barra bajan para que los botones no queden debajo de las pastillas SAMU/Bonos ni de Volver al Index. | v1 - 23-oct-2026 COMISIONES FAM (Jeff): statement del mes desde portal.com_* (com_resumen/com_persona/com_statement_doc), "la línea manda" (% por póliza con nota), escalón y fee por defecto, línea manual, jubilar, asignar persona, compartir con versión, marcar pagado, CSV de pago, documento COMMISSION STATEMENT con pg-statement.js.
 function pgvRun(){
   try{
     var c=window.supabase.createClient(PGV_URL,PGV_KEY,{db:{schema:'portal'}});

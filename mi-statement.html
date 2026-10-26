@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Mi statement · ProtectGo</title>
+<title>Mi statement · ProtectGo Services LLC</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,1,800&family=Montserrat:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -177,7 +177,7 @@ function estadoPill(e){return e==='pagado'?'<span class="estado pagado">PAGADO</
 /* ═════════ pantallas ═════════ */
 function topbar(){
   var D=S.D||{};
-  return '<div class="topbar"><span class="pg-wordmark">GABI</span><b>Mi statement</b><span class="who">'+esc(D.correo||S.email||'')+'</span></div>';
+  return '<div class="topbar"><b style="font-family:var(--pg-font-title);letter-spacing:.02em">ProtectGo Services LLC</b><b style="opacity:.75;font-weight:600">· Statement</b><span class="who">'+esc(D.correo||S.email||'')+'</span></div>';
 }
 function pantalla(html){$('app').innerHTML=topbar()+'<div class="wrap">'+html+'</div>';}
 function bloqueo(titulo,texto,conIndex){
@@ -197,7 +197,7 @@ function errCarga(e){
 function render(){
   var D=S.D||{};
   var nombre=D.nombre||D.persona||'';
-  var aviso=D.ver_como?'<div class="vercomo">Vista de dirección · '+esc(nombre||S.verComo||'—')+' · solo lectura</div>':'';
+  var aviso=S.previa?'<div class="vercomo">VISTA PREVIA DE FAM · así lo verá '+esc(nombre||S.verComo||'—')+' cuando compartas · nadie más lo ve todavía</div>':(D.ver_como?'<div class="vercomo">Vista de dirección · '+esc(nombre||S.verComo||'—')+' · solo lectura</div>':'');
   var head='<div class="head"><div class="pg-eyebrow">Mi statement</div><h1>'+esc(nombre||'Mi statement')+'</h1>'+(D.rol?'<div class="pg-sub">'+esc(D.rol)+'</div>':'')+'</div>';
 
   if(!D.persona){
@@ -319,6 +319,7 @@ function historial(H){
 
 /* ═════════ documento ═════════ */
 function verDoc(id){
+  if((id==null||id===''||id==='null')&&S.D&&S.D.ultimo&&S.D.ultimo.doc){S.doc=S.D.ultimo.doc;S.docId=null;$('docl').innerHTML='<div class="docov" data-act="docov"><div class="docbar"><button class="pg-btn secondary sm" data-act="cerrardoc">← volver</button><button class="pg-btn sm" data-act="imprimir">Imprimir / guardar PDF</button></div>'+window.pgStatement.html(S.doc)+'</div>';document.body.style.overflow='hidden';return;}
   if(id==null||id===''){toast('Este statement no tiene documento',true);return;}
   if(S.abriendo)return;S.abriendo=true;
   rpc('mi_statement_doc',{p_id:isNaN(+id)?id:+id}).then(function(doc){
@@ -344,12 +345,12 @@ document.addEventListener('click',function(ev){
 document.addEventListener('keydown',function(ev){if(ev.key==='Escape'&&$('docl').innerHTML)cerrarDoc();});
 
 /* ═════════ acceso ═════════ */
-try{var q=new URL(location.href).searchParams.get('ver_como');if(q&&/\S+@\S+/.test(q))S.verComo=q.trim().toLowerCase();}catch(e){}
+try{var u0=new URL(location.href);var q=u0.searchParams.get('ver_como');if(q&&/\S+@\S+/.test(q))S.verComo=q.trim().toLowerCase();S.previa=!!S.verComo&&u0.searchParams.get('previa')==='1';}catch(e){}
 SB.auth.getSession().then(function(r){
   var s=r&&r.data&&r.data.session;
   if(!s){bloqueo('Entra primero al Index con tu cuenta','Después vuelve a abrir Mi statement desde tu tarjeta.',true);return;}
   S.email=(s.user&&s.user.email)||'';
-  rpc('mi_statements',{p_ver_como:S.verComo}).then(function(d){S.D=d||{};render();},errCarga);
+  (S.previa?rpc('mi_statements_previa',{p_ver_como:S.verComo}):rpc('mi_statements',{p_ver_como:S.verComo})).then(function(d){S.D=d||{};render();},errCarga);
 },function(){bloqueo('Entra primero al Index con tu cuenta','',true);});
 })();
 </script>
@@ -361,7 +362,7 @@ SB.auth.getSession().then(function(r){
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="mi-statement.html";
-var PGV_VERSION=1; // v1 - 26-oct-2026 MI STATEMENT: cada persona que comisiona ve su statement del mes (franja, conceptos, qué te movió, curva en línea, historial) y abre/imprime su COMMISSION STATEMENT con pg-statement.js. Solo lectura, desde portal.mi_statements / mi_statement_doc. ?ver_como=correo para dirección/FAM.
+var PGV_VERSION=2; // v2 - 26-oct-2026 encabezado ProtectGo Services LLC · Statement; ?previa=1 (piloto de FAM: así lo verá la persona antes de compartir, mi_statements_previa); lo compartido sigue visible si FAM reabre el mes. | v1 - 26-oct-2026 MI STATEMENT: cada persona que comisiona ve su statement del mes (franja, conceptos, qué te movió, curva en línea, historial) y abre/imprime su COMMISSION STATEMENT con pg-statement.js. Solo lectura, desde portal.mi_statements / mi_statement_doc. ?ver_como=correo para dirección/FAM.
 function pgvRun(){
   try{
     var c=window.supabase.createClient(PGV_URL,PGV_KEY,{db:{schema:'portal'}});

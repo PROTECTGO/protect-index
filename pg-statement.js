@@ -101,7 +101,7 @@
     if (doc.nota_es) h += '<div class="pgst-prev" style="text-transform:none;letter-spacing:0;font-weight:600">' + esc(doc.nota_es) + '</div>';
 
     h += '<div class="pgst-mb"><div class="pgst-wm">ProtectGo Services LLC<small>COMMERCIAL TRUCKING INSURANCE · VON ORMY, TX</small></div>' +
-      '<div class="pgst-r" style="text-align:right"><h1>COMMISSION STATEMENT</h1><div class="pgst-mu" style="font-size:11px">Statement # <b class="pgst-num">' +
+      '<div class="pgst-r" style="text-align:right"><h1>STATEMENT</h1><div class="pgst-mu" style="font-size:11px">Statement # <b class="pgst-num">' +
       txt(doc.numero) + '</b>' + (hay(doc.version) && +doc.version > 0 ? ' · v' + esc(doc.version) : '') + '</div></div></div>';
 
     h += '<div class="pgst-meta">' +
@@ -159,7 +159,7 @@
   function abrir(doc) {
     var w = window.open('', '_blank');
     if (!w) return false;
-    var titulo = 'Commission Statement ' + ((doc && doc.numero) || '');
+    var titulo = 'Statement · ProtectGo Services LLC ' + ((doc && doc.numero) || '');
     w.document.open();
     w.document.write('<!doctype html><html lang="en"><head><meta charset="utf-8">' +
       '<meta name="viewport" content="width=device-width, initial-scale=1">' +
