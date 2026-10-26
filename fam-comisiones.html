@@ -30,7 +30,7 @@ button{font-family:inherit}
 .pg-side a{display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:11px;color:#b9c6d0;font-size:14px;font-weight:500;text-decoration:none;margin-bottom:4px;cursor:pointer}
 .pg-side a .n{font-family:var(--pg-font-num);font-size:11px;color:var(--pg-mint);width:22px}
 .pg-side a.on,.pg-side a:hover{background:rgba(45,191,163,.15);color:#fff}
-.pg-foot{margin-top:auto;padding-top:14px;border-top:1px solid rgba(255,255,255,.12);font-size:12px;color:#8da0ad;overflow-wrap:anywhere}
+.pg-foot{margin-top:auto;padding-top:14px;padding-bottom:52px;border-top:1px solid rgba(255,255,255,.12);font-size:12px;color:#8da0ad;overflow-wrap:anywhere}
 .pg-main{flex:1;padding:24px 30px 90px;min-width:0}
 .pg-top{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;margin-bottom:18px;flex-wrap:wrap}
 .pg-eyebrow{font-size:11px;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--pg-mint-deep);margin-bottom:4px}
@@ -120,7 +120,7 @@ select.mes{font-family:var(--pg-font-body);font-size:13.5px;padding:8px 12px;bor
 
 /* ── panel persona / modales ── */
 .ov{position:fixed;inset:0;background:rgba(13,48,64,.55);z-index:80;display:flex;justify-content:flex-end}
-.panel{background:var(--pg-bg);width:min(1020px,100%);height:100%;overflow:auto;padding:22px 26px 90px;box-shadow:-10px 0 30px rgba(0,0,0,.25)}
+.panel{background:var(--pg-bg);width:min(1020px,100%);height:100%;overflow:auto;padding:68px 26px 90px;box-shadow:-10px 0 30px rgba(0,0,0,.25)}
 .panel .head{display:flex;align-items:center;gap:14px;margin-bottom:14px;flex-wrap:wrap}
 .panel .head .av{width:44px;height:44px;font-size:15px}
 .panel h2.pnom{font-family:var(--pg-font-title);font-size:20px;margin:0;color:var(--pg-ink)}
@@ -153,7 +153,7 @@ select.mes{font-family:var(--pg-font-body);font-size:13.5px;padding:8px 12px;bor
   .pg-foot{display:none}
   .pg-main{padding:16px 16px 90px}
   .franja .big{font-size:30px}
-  .panel{width:100%;padding:16px 16px 90px}
+  .panel{width:100%;padding:64px 16px 90px}
 }
 @media (max-width:640px){
   .franja{padding:16px;gap:14px 18px}
@@ -673,7 +673,7 @@ SB.auth.getSession().then(function(r){
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="fam-comisiones.html";
-var PGV_VERSION=1; // v1 - 23-oct-2026 COMISIONES FAM (Jeff): statement del mes desde portal.com_* (com_resumen/com_persona/com_statement_doc), "la línea manda" (% por póliza con nota), escalón y fee por defecto, línea manual, jubilar, asignar persona, compartir con versión, marcar pagado, CSV de pago, documento COMMISSION STATEMENT con pg-statement.js.
+var PGV_VERSION=2; // v2 - 26-oct-2026 el panel de la persona y el pie de la barra bajan para que los botones no queden debajo de las pastillas SAMU/Bonos ni de Volver al Index. | v1 - 23-oct-2026 COMISIONES FAM (Jeff): statement del mes desde portal.com_* (com_resumen/com_persona/com_statement_doc), "la línea manda" (% por póliza con nota), escalón y fee por defecto, línea manual, jubilar, asignar persona, compartir con versión, marcar pagado, CSV de pago, documento COMMISSION STATEMENT con pg-statement.js.
 function pgvRun(){
   try{
     var c=window.supabase.createClient(PGV_URL,PGV_KEY,{db:{schema:'portal'}});
