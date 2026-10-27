@@ -388,6 +388,97 @@ a.area:focus-visible,a.liqc:focus-visible{outline:3px solid var(--pg-mint);outli
 @media(max-width:980px){ .cortes-card .cortes{grid-template-columns:1fr 1fr} }
 @media(max-width:760px){ .fr .fr-ring.dos{justify-content:center} }
 @media(max-width:420px){ .cortes-card .cortes{grid-template-columns:1fr} .fr .fr-ring.dos .ringA{width:auto} }
+
+/* v7 · retiro de la semana (regla C) · la tarjeta "Esta semana" de 03 Retiros (solo dirección; los demás ven la franja).
+   Todo con prefijo .rs-. Mismo sistema: tokens --pg-*, ámbar #D9A520, cero barras, guion cuando no hay dato. */
+#cRetSem [hidden]{display:none!important}
+.rs-err{display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:12.5px;color:var(--pg-muted);line-height:1.45;padding:2px 2px 14px}
+.rs-franja{background:var(--pg-ink);border-radius:18px;padding:26px 24px 22px;margin-bottom:18px;color:#fff;text-align:center;transition:opacity .15s}
+.rs-franja.rs-pend{opacity:.65}
+.rs-lbl{font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#8da0ad;margin-bottom:10px}
+.rs-valor{font-family:var(--pg-font-num);font-size:52px;font-weight:600;line-height:1;font-variant-numeric:tabular-nums;color:#fff}
+.rs-linea{font-size:13px;color:#b9c6d0;margin:12px auto 0;max-width:780px;line-height:1.55}
+.rs-linea b{font-family:var(--pg-font-num);font-weight:600;color:#fff}
+.rs-linea b.rs-neg{color:#F08A80}
+.rs-franja .rs-osc{display:inline-block;background:transparent;border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:8px;padding:8px 14px;font:700 12px var(--pg-font-body);cursor:pointer;margin-top:12px}
+.rs-franja .rs-osc:hover{background:rgba(255,255,255,.1)}
+.rs-sem{display:inline-block;padding:4px 12px;border-radius:14px;font-size:11.5px;font-weight:800;letter-spacing:.03em;line-height:1.35;margin-top:14px}
+.rs-sem.verde{background:#E3F4EF;color:var(--pg-pos)} .rs-sem.ambar{background:#FBF3E2;color:#8a6a1d}
+.rs-sem.rojo{background:#FCEEEC;color:var(--pg-neg)} .rs-sem.gris{background:#EEF2F5;color:var(--pg-muted)}
+.rs-reg{font-size:12px;color:#8da0ad;margin-top:10px}
+.rs-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px;align-items:start}
+.rs-grid{margin-bottom:18px}
+.rs-card{position:relative;min-width:0;margin-bottom:0}
+.rs-sub{font-size:12.5px;color:var(--pg-muted);line-height:1.5;margin:-4px 0 10px}
+.rs-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--pg-line)}
+.rs-row:last-child{border-bottom:none}
+.rs-l{flex:1 1 160px;min-width:0;font-size:13.5px;line-height:1.35;color:var(--pg-txt)}
+.rs-inp{position:relative;flex:0 0 150px}
+.rs-dolar{position:absolute;left:11px;top:50%;transform:translateY(-50%);font-family:var(--pg-font-num);font-size:13px;color:var(--pg-muted);pointer-events:none}
+.rs-inp input{display:block;width:100%;text-align:right;font-family:var(--pg-font-num);font-size:13.5px;font-variant-numeric:tabular-nums;color:var(--pg-ink);background:#fff;border:1px solid var(--pg-line);border-radius:9px;padding:8px 10px 8px 24px}
+.rs-inp input[aria-invalid="true"]{border-color:var(--pg-neg);background:#FCEEEC}
+.rs-inp input:focus-visible,.rs-card textarea:focus-visible{outline:3px solid var(--pg-mint);outline-offset:1px;border-color:var(--pg-mint)}
+.rs-inp input[aria-invalid="true"]:focus-visible{outline-color:var(--pg-neg);border-color:var(--pg-neg)}
+.rs-chase{align-items:flex-start}
+.rs-chase-der{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex:0 1 auto;min-width:0}
+.rs-chase-top{display:flex;align-items:center;gap:10px}
+.rs-chase-val{font-family:var(--pg-font-num);font-size:15px;font-weight:700;color:var(--pg-ink)}
+.rs-chase-val.warn{color:#8a6a1d}
+.rs-chase-nota{font-size:11.5px;color:var(--pg-muted);line-height:1.4;text-align:right}
+.rs-card textarea{display:block;width:100%;min-height:230px;font-family:var(--pg-font-num);font-size:12.5px;line-height:1.5;color:var(--pg-ink);background:#fff;border:1px solid var(--pg-line);border-radius:12px;padding:10px 12px;resize:vertical;white-space:pre;overflow:auto}
+.rs-sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.rs-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.rs-chip{font-size:12px;line-height:1.35;color:var(--pg-txt);background:var(--pg-bg);border:1px solid var(--pg-line);border-radius:14px;padding:5px 10px;max-width:100%;overflow-wrap:anywhere}
+.rs-chip b{font-family:var(--pg-font-num);font-weight:600;color:var(--pg-ink)}
+.rs-chip.ok{background:#E3F4EF;color:var(--pg-pos);border-color:#C4E8DF}
+.rs-chip.ok b{color:var(--pg-pos)}
+.rs-chip.warn{background:#FBF3E2;color:#8a6a1d;border-color:#EAD09A}
+.rs-chip.warn b{color:#8a6a1d}
+.rs-chip.off{color:var(--pg-muted)}
+.rs-mut{color:var(--pg-muted)}
+.rs-barra{display:flex;align-items:center;justify-content:space-between;gap:10px 16px;flex-wrap:wrap;background:var(--pg-card);border:1px solid var(--pg-line);border-radius:16px;padding:12px 16px;margin-bottom:14px;box-shadow:0 1px 3px rgba(27,45,58,.04)}
+.rs-estado{flex:1 1 240px;min-width:0;font-size:12.5px;line-height:1.45;color:var(--pg-muted);overflow-wrap:anywhere}
+.rs-estado.rs-sucio{color:#8a6a1d;font-weight:700}
+.rs-estado.rs-mal,.rs-estado.rs-fallo{color:var(--pg-neg);font-weight:700}
+.rs-acc{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+#cRetSem .pg-btn:focus-visible{outline:3px solid var(--pg-mint);outline-offset:2px}
+.rs-det{margin-bottom:10px}
+.rs-det>summary{cursor:pointer;list-style:none;font-size:13px;font-weight:700;color:var(--pg-mint-deep);padding:8px 2px;border-radius:8px}
+.rs-det>summary::-webkit-details-marker{display:none}
+.rs-det>summary::before{content:"▸";display:inline-block;width:16px}
+.rs-det[open]>summary::before{content:"▾"}
+.rs-det>summary:focus-visible{outline:3px solid var(--pg-mint);outline-offset:2px}
+.rs-det>.pg-card{margin:4px 0 8px}
+.rs-casc{width:100%;border-collapse:collapse}
+.rs-casc td{padding:8px 6px;font-size:13px;line-height:1.4;color:#3a4751;border-bottom:1px solid var(--pg-line);vertical-align:top}
+.rs-casc td.num{font-family:var(--pg-font-num);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap;color:var(--pg-ink);font-weight:600}
+.rs-casc td.num.pos{color:var(--pg-pos)} .rs-casc td.num.neg{color:var(--pg-neg)}
+.rs-casc tr.rs-ind td:first-child{color:var(--pg-muted);font-size:12.5px;padding-left:14px}
+.rs-casc tr.rs-tot td{border-top:2px solid var(--pg-ink);border-bottom:none;font-weight:800;color:var(--pg-ink)}
+@media(max-width:1020px){
+  .rs-grid{grid-template-columns:minmax(0,1fr)}
+}
+@media(max-width:760px){
+  .rs-franja{padding:22px 16px 18px}
+  .rs-valor{font-size:46px}
+  .rs-barra{padding:12px 14px}
+}
+@media(max-width:520px){
+  .rs-valor{font-size:40px}
+  .rs-linea{font-size:12.5px}
+  .rs-row{flex-direction:column;align-items:stretch;gap:6px}
+  .rs-l{flex:0 0 auto}
+  .rs-inp{flex:0 0 auto;width:100%}
+  .rs-inp input{min-height:44px;font-size:16px}
+  .rs-chase-der{align-items:flex-start;width:100%}
+  .rs-chase-nota{text-align:left}
+  .rs-card textarea{min-height:170px}
+  .rs-acc{width:100%}
+  .rs-acc .pg-btn{flex:1 1 auto}
+  #cRetSem .pg-btn,.rs-franja .rs-osc{min-height:44px}
+  .rs-det>summary{display:flex;align-items:center;min-height:44px}
+  .rs-casc td{padding:8px 4px;font-size:12.5px}
+}
 </style>
 <script src="pg-novedades.js"></script>
 </head>
@@ -491,10 +582,11 @@ a.area:focus-visible,a.liqc:focus-visible{outline:3px solid var(--pg-mint);outli
   <!-- ================= 02 · RETIROS ================= -->
   <section class="pg-section" id="s-ret">
    <div class="pg-top"><div><div class="pg-eyebrow">Socios</div><h1>Retiros</h1></div><div id="retTop"></div></div>
+   <div id="cRetSem" hidden></div>
    <div class="pg-card" id="cRet"><div class="skel"></div><div class="skel"></div><div class="skel" style="width:70%"></div></div>
   </section>
 
-  <div class="pg-footnote">GABI · Liquidez v6 · ProtectGo Services LLC</div>
+  <div class="pg-footnote">GABI · Liquidez v7 · ProtectGo Services LLC</div>
  </main>
 </div>
 
@@ -608,6 +700,7 @@ async function cargar(intento){
   $('acceso').innerHTML = '';
   pintar();
   decidirInicio();
+  cargarRetiroSemana();
 }
 function sinAcceso(){
   $('main').classList.add('sin-acceso');
@@ -1535,7 +1628,7 @@ function pintarRetiros(){
     const corta = nota.length > 60 ? nota.slice(0, 59) + '…' : nota;
     let estado = '', acc = '';
     if (!tiene) {
-      estado = actual ? '<span class="pg-pill warn">sugerido ' + usd(r.semaforo === 'gris' ? null : r.sugerido) + '</span>' : '<span class="pg-pill due">sin registrar</span>';
+      estado = actual ? '<span class="pg-pill warn">sugerido ' + sugeridoRetTxt() + '</span>' : '<span class="pg-pill due">sin registrar</span>';
       if (pu.socio) acc = '<button class="pg-btn ' + (actual ? 'mint' : 'sec') + ' sm" type="button" data-act="rt-reg" data-l="' + esc(w.lunes) + '">Registrar</button>';
     } else {
       estado = nota ? '<small title="' + esc(nota) + '">' + esc(corta) + '</small>' : '';
@@ -1548,7 +1641,7 @@ function pintarRetiros(){
       + '<td style="text-align:right">' + acc + '</td></tr>';
     const F = UI.retForm;
     if (F && ((F.tipo === 'reg' && F.lunes === w.lunes && !tiene) || (F.tipo === 'corr' && F.id === w.id))) {
-      const pre = F.tipo === 'corr' ? (num(w.por_socio) == null ? '' : num(w.por_socio)) : (actual && num(r.sugerido) ? num(r.sugerido) : '');
+      const pre = F.tipo === 'corr' ? (num(w.por_socio) == null ? '' : num(w.por_socio)) : (actual && num(sugeridoRet()) ? num(sugeridoRet()) : '');
       h += '<tr class="frm"><td colspan="5"><div class="fx"><span class="mini">' + (F.tipo === 'corr' ? 'corregir ' : 'registrar ') + fCorta(w.lunes) + '</span>'
         + '<input type="number" step="0.01" min="0" id="inRt" data-ok="bRt" value="' + pre + '" placeholder="por socio" style="width:120px" aria-label="Monto por socio">'
         + (F.tipo === 'corr' ? '<input type="text" id="inRtNota" data-ok="bRt" placeholder="por qué" style="width:180px;font-family:var(--pg-font-body)" aria-label="Nota">' : '')
@@ -1560,6 +1653,357 @@ function pintarRetiros(){
     ? '<table class="pg-table"><thead><tr><th>Semana</th><th class="num">Por socio</th><th class="num c-tot">Entre los tres</th><th class="c-nota"></th><th></th></tr></thead><tbody>' + filas + '</tbody></table>'
     : '<div class="vacio">—</div>';
 }
+
+/* =====================================================================
+   v7 · RETIRO DE LA SEMANA (regla C) — la tarjeta "Esta semana" de 03 Retiros.
+   Sale entera de la base: portal.retiro_semana_panel() (leer), retiro_semana_calcular() (vista previa, no guarda)
+   y retiro_semana_guardar() (guarda la semana; la anterior se jubila). Aquí no se calcula nada del retiro: se muestra,
+   se deja escribir lo poco que cambia cada semana y se pega el cuadro de Jeff. El "sugerido" de la fila de la semana
+   y el monto que precarga Registrar salen de esta tarjeta; si la tarjeta no se ve, la tabla queda exactamente como en v6.
+   ===================================================================== */
+let RS = null;   // panel leído (visible) + RS.dirty (hay cambios sin guardar); null = sin leer, no visible o con error de lectura
+const RSUI = { modo:'', seq:0, pseq:0, timer:null, pend:false, vista:null, previaErr:'', errLectura:'', abiertos:{ casc:false, ds:false } };
+const RS_MONTOS = [['rsSas', 'sas'], ['rsCom', 'comisiones'], ['rsOtr', 'otros'], ['rsBa', 'batch_antes']];
+const RS_DS = [['rsDsVen', 'ventas'], ['rsDsRes', 'residuales'], ['rsDsNom', 'nomina'], ['rsDsFij', 'fijos'], ['rsDsGir', 'giros']];
+const rsVistaDe = P => ({ chase:P.chase || null, lectura:P.lectura || null, calculo:P.calculo || null });
+const rsOk = ts => !!ts && !isNaN(Date.parse(ts));
+const rsDia = ts => fCorta(new Date(Date.parse(ts) - 5 * 3600e3).toISOString().slice(0, 10));
+
+/* El cálculo que manda en la fila de la semana en curso: el de la vista previa si hay borrador, o el del servidor.
+   Solo cuando la tarjeta se ve (completa o reducida), es la misma semana y no hubo error de lectura. */
+function rsCalculoVigente(){
+  if (!RS || RS.visible !== true || RSUI.errLectura || !D || RS.lunes !== D.lunes) return null;
+  return (RSUI.vista && RSUI.vista.calculo) || null;
+}
+function sugeridoRet(){   // lo que precarga Registrar
+  const c = rsCalculoVigente();
+  if (c) return num(c.por_socio);   // puede ser null: se difiere, Chase viejo o falta el cuadro
+  const r = D && D.retiro;
+  return r ? r.sugerido : null;     // sin tarjeta: v6 tal cual (el precargado nunca miró el semáforo)
+}
+/* lo que dice la píldora. Regla C: múltiplos de 25 centavos, se muestran con centavos. Sin tarjeta: v6 tal cual (sin centavos, gris = guion) */
+function sugeridoRetTxt(){
+  if (rsCalculoVigente()) return usd2(sugeridoRet());
+  const r = (D && D.retiro) || {};
+  return usd(r.semaforo === 'gris' ? null : r.sugerido);
+}
+const rsClaveTabla = () => sugeridoRetTxt() + '|' + sugeridoRet();
+function rsSyncTabla(k0){ if (D && !UI.retForm && rsClaveTabla() !== k0) pintarRetiros(); }   // nunca pisa el formulario de Registrar abierto
+
+/* La nota de Registrar: si el monto es el de la tarjeta (ya guardada y sin cambios), la nota lo deja escrito. */
+function notaRegistroRet(v){
+  const base = 'GABI Liquidez';
+  try {
+    if (!RS || RS.visible !== true || !RS.puede || RS.puede.editar !== true || RS.dirty || !RS.guardado || !D || RS.lunes !== D.lunes) return base;
+    if (UI.retForm && UI.retForm.lunes && UI.retForm.lunes !== RS.lunes) return base;   // otra semana: no es la de la tarjeta
+    const c = RS.calculo || {};
+    if (c.estado !== 'ok' || num(c.por_socio) == null || num(v) == null || !(Math.abs(num(v) - num(c.por_socio)) < 0.005)) return base;
+    return base + ' · regla C · aguanta ' + usd(c.aguanta) + ' · cuadro de Jeff del ' + rsDia(RS.guardado.creado_en);
+  } catch (e) { return base; }
+}
+
+/* ---------- montos: texto tolerante ("$27,000.50", "27,000", "27000", espacios); vacío = 0; negativo o no numérico = inválido ---------- */
+const rsFmt = v => { const n = num(v); return n == null ? '' : n.toLocaleString('en-US', { minimumFractionDigits:0, maximumFractionDigits:2 }); };
+function rsLeerMonto(t){
+  const s = String(t == null ? '' : t).replace(/[$\s ]/g, '');
+  if (s === '') return { v:0 };
+  if (!/^(?:\d+|\d{1,3}(?:,\d{3})+)(?:\.\d*)?$|^\.\d+$/.test(s)) return { mal:true };
+  const v = Number(s.replace(/,/g, ''));
+  return isFinite(v) ? { v } : { mal:true };
+}
+const rsIgual = (a, b) => Math.abs((num(a) || 0) - (num(b) || 0)) < 0.005;
+const rsLF = s => String(s == null ? '' : s).replace(/\r\n?/g, '\n');
+function rsCampos(){
+  const C = { ok:true, malos:[], v:{}, ds:{}, txt:'' };
+  RS_MONTOS.forEach(([id, k]) => { const r = rsLeerMonto(($(id) || {}).value); if (r.mal) { C.ok = false; C.malos.push(id); } else C.v[k] = r.v; });
+  RS_DS.forEach(([id, k]) => { const r = rsLeerMonto(($(id) || {}).value); if (r.mal) { C.ok = false; C.malos.push(id); } else C.ds[k] = r.v; });
+  C.txt = ($('rsTxt') || {}).value || '';
+  return C;
+}
+/* ¿lo escrito difiere de lo del servidor? (un monto inválido cuenta como cambio) */
+function rsDifiere(C, P){
+  const E = (P && P.entradas) || {}, S = (P && P.de_siempre) || {};
+  if (!C.ok) return true;
+  if (rsLF(C.txt) !== rsLF(E.cuadro_texto)) return true;
+  return RS_MONTOS.some(([, k]) => !rsIgual(C.v[k], E[k])) || RS_DS.some(([, k]) => !rsIgual(C.ds[k], S[k]));
+}
+const rsArgs = C => ({ p_sas:C.v.sas, p_comisiones:C.v.comisiones, p_otros:C.v.otros, p_batch_antes:C.v.batch_antes, p_cuadro_texto:C.txt,
+  p_de_siempre:{ ventas:C.ds.ventas, residuales:C.ds.residuales, nomina:C.ds.nomina, fijos:C.ds.fijos, giros:C.ds.giros } });
+/* pone en los campos lo del servidor; un campo con el cursor adentro que ya vale lo mismo se deja como lo escribió la persona */
+function rsPonerCampos(P){
+  const E = P.entradas || {}, S = P.de_siempre || {};
+  const poner = (id, v) => {
+    const el = $(id); if (!el) return;
+    const t = num(v) ? rsFmt(v) : '';
+    if (el.value === t) return;
+    if (document.activeElement === el) { const r = rsLeerMonto(el.value); if (!r.mal && rsIgual(r.v, v)) return; }
+    el.value = t;
+  };
+  RS_MONTOS.forEach(([id, k]) => poner(id, E[k]));
+  RS_DS.forEach(([id, k]) => poner(id, S[k]));
+  const ta = $('rsTxt'), t = rsLF(E.cuadro_texto);
+  if (ta && ta.value !== t) ta.value = t;
+}
+function rsMarcar(C){
+  RS_MONTOS.concat(RS_DS).forEach(([id]) => {
+    const el = $(id); if (!el) return;
+    if (C.malos.indexOf(id) >= 0) el.setAttribute('aria-invalid', 'true'); else el.removeAttribute('aria-invalid');
+  });
+}
+/* ---------- pintar: franja, fila de Chase, chips, cascada y barra de acciones (todo lo que trae la base pasa por esc) ---------- */
+function rsSet(el, html){ if (el && el._rs !== html) { el.innerHTML = html; el._rs = html; } }   // si no cambió, no se toca el DOM (aria-live no repite)
+function rsFranjaHtml(P, V){
+  const c = (V && V.calculo) || P.calculo || {}, ch = (V && V.chase) || P.chase || {};
+  const completo = !!(P.puede && P.puede.editar === true);
+  const val = num(c.por_socio), n = num(c.socios);
+  const entre = val == null ? '' : usd2(c.total) + (n != null ? ' entre ' + esc(n) : '');
+  const sem = ['verde', 'ambar', 'rojo', 'gris'].indexOf(c.semaforo) >= 0 ? c.semaforo : 'gris';
+  let linea, btn = '';
+  if (!completo) linea = val == null ? 'Semana del ' + esc(fCorta(P.lunes)) + '.' : entre + ' · semana del ' + esc(fCorta(P.lunes));
+  else if (c.estado === 'stale') {
+    linea = num(ch.saldo) == null ? 'Chase no tiene saldo.' : 'Último saldo de Chase: <b>' + usd(ch.saldo) + '</b>' + (rsOk(ch.actualizado) ? ' del ' + esc(rsDia(ch.actualizado)) : '') + '.';
+    btn = '<div><button class="rs-osc" type="button" data-act="saldo-aviso">Poner el saldo de hoy</button></div>';
+  } else if (c.estado === 'sin_cuadro') linea = 'Chase <b>' + usd(ch.saldo) + '</b>. Falta el cuadro de Jeff: sin él no se cuentan diferidos, batch ni cortes de MGAs.';
+  else {
+    const dA = c.corte ? 'el ' + esc(fCorta(c.corte)) : 'el corte', dB = c.corte_siguiente ? 'el ' + esc(fCorta(c.corte_siguiente)) : 'el próximo corte';
+    linea = (val == null ? '' : entre + ' · ') + 'Chase cierra ' + dA + ' en <b>' + usd(c.cierre_corte) + '</b> y ' + dB + ' en <b' + (num(c.cierre_siguiente) < 0 ? ' class="rs-neg"' : '') + '>' + usd(c.cierre_siguiente) + '</b>, antes del retiro de esa semana';
+  }
+  const reg = (P.registrado && num(P.registrado.por_socio) != null) ? '<div class="rs-reg" id="rsRegistrado">Ya registrado esta semana: ' + usd2(P.registrado.por_socio) + ' por socio.</div>' : '';
+  return '<div class="rs-lbl">Retiro por socio esta semana</div><div class="rs-valor" id="rsValor">' + (val == null ? '—' : usd2(val)) + '</div>'
+    + '<div class="rs-linea" id="rsLinea">' + linea + '</div>' + btn
+    + '<div><span class="rs-sem ' + sem + '" id="rsSem">' + esc(c.texto || '—') + '</span></div>' + reg;
+}
+function rsChaseHtml(ch){
+  ch = ch || {};
+  const cuando = rsOk(ch.actualizado) ? 'saldo del ' + esc(rsDia(ch.actualizado)) + ' ' + esc(horaBog(ch.actualizado)) : 'sin fecha del saldo';
+  const nd = num(ch.dias) == null ? null : Math.round(num(ch.dias));
+  return '<span class="rs-l">Chase hoy</span><span class="rs-chase-der"><span class="rs-chase-top"><span class="rs-chase-val' + (ch.stale ? ' warn' : '') + '">' + usd(ch.saldo) + '</span>'
+    + '<button class="pg-btn sec sm" type="button" data-act="saldo-aviso">Actualizar</button></span>'
+    + '<span class="rs-chase-nota">' + cuando + (ch.stale && nd != null ? ' · <b>' + esc(plural(nd, 'día', 'días')) + ' sin actualizar</b>' : '') + '</span></span>';
+}
+/* qué se leyó del cuadro: se arma con lectura + cálculo, nunca con el texto crudo */
+function rsChips(V){
+  const L = V && V.lectura, c = V && V.calculo, out = [];
+  if (!L || !c) return out;
+  const g = x => num(x) || 0;
+  if (g(L.n) === 0) { out.push(['warn', 'Pega el cuadro de Jeff: sin él no se cuentan diferidos, batch ni cortes de MGAs']); return out; }
+  const ba = g(c.entra) - g(L.entra_a), bd = g(L.batch) - ba;
+  const otA = g(L.entra_a) - g(L.dif_a), otB = g(L.entra_b) - g(L.dif_b);
+  out.push(['', 'Este corte: <b>' + (L.corte_a ? esc(fCorta(L.corte_a)) : 'sin fecha') + '</b>' + (L.corte_b ? ' · próximo: <b>' + esc(fCorta(L.corte_b)) + '</b>' : '')]);
+  out.push(['', 'Entra antes del corte <b>' + usd(c.entra) + '</b> <span class="rs-mut">(diferidos ' + usd(L.dif_a) + ' · batch ' + usd(ba) + (otA > 0.005 ? ' · otros ' + usd(otA) : '') + ')</span>']);
+  out.push(['', 'Sale este corte a MGAs <b>' + usd(c.no_nuestro) + '</b>']);
+  out.push(['', 'Próximo corte: entra <b>' + usd(g(L.entra_b) + bd) + '</b> <span class="rs-mut">(diferidos ' + usd(L.dif_b) + ' · batch ' + usd(bd) + (otB > 0.005 ? ' · otros ' + usd(otB) : '') + ')</span> · sale <b>' + usd(L.sale_b) + '</b>']);
+  if (g(L.llego) > 0) out.push(['off', 'Ya llegó ' + usd(L.llego) + ' · ya está en Chase, no se suma']);
+  if (g(L.sin_fecha) > 0) out.push(['off', 'Sin fecha ' + usd(L.sin_fecha) + ' · no cuenta']);
+  if (g(L.entra_c) + g(L.sale_c) > 0) out.push(['off', 'Después del próximo corte ' + usd(g(L.entra_c) - g(L.sale_c)) + ' · no cuenta']);
+  if (g(L.ignora) > 0) out.push(['warn', 'No se entendió ' + usd(L.ignora) + ': ponle fecha o sección']);
+  if (L.cuadra === true) out.push(['ok', '✓ Cuadra con el total de Jeff ' + usd2(L.total)]);
+  else if (L.cuadra === false) out.push(['warn', 'Total de Jeff ' + usd2(L.total) + ' · lo leído suma ' + usd2(L.suma) + ': revisa el cuadro']);
+  return out;
+}
+/* "Ver cómo se calculó": la cascada, con los números de la base */
+function rsCascHtml(c){
+  const dB = c.corte_siguiente ? esc(fCorta(c.corte_siguiente)) : 'el próximo corte';
+  const f = (k, l, v, cls, tipo) => '<tr data-k="' + k + '"' + (tipo ? ' class="' + tipo + '"' : '') + '><td>' + l + '</td><td class="num' + (cls ? ' ' + cls : '') + '">' + v + '</td></tr>';
+  const sale = x => num(x) == null ? '—' : usd2(-num(x));
+  const pos = x => num(x) > 0 ? 'pos' : '', sal = x => num(x) > 0 ? 'neg' : '', ng = x => num(x) < 0 ? 'neg' : '';
+  return f('chase', 'Chase hoy', usd2(c.chase), '', '')
+    + f('entra', '+ Entra antes del corte (diferidos y batch)', usd2(c.entra), pos(c.entra), 'rs-ind')
+    + f('no_nuestro', '− Cortes de MGAs esta semana (cuadro de Jeff)', sale(c.no_nuestro), sal(c.no_nuestro), 'rs-ind')
+    + f('operar', '− Operar hasta el corte (SAS, comisiones, otros pagos)', sale(c.operar), sal(c.operar), 'rs-ind')
+    + f('al_corte', '= Chase al ' + (c.corte ? esc(fCorta(c.corte)) : 'corte') + ', antes de retiros', usd2(c.al_corte), ng(c.al_corte), 'rs-tot')
+    + f('aguanta_semana', 'Aguanta esta semana, por socio (sobre el colchón)', usd2(c.aguanta_semana), ng(c.aguanta_semana), 'rs-ind')
+    + f('entra_b', '+ Entra hasta ' + dB + ' (diferidos, batch, fees y comisión, residuales)', usd2(c.entra_b), pos(c.entra_b), 'rs-ind')
+    + f('sale_b', '− Sale hasta ' + dB + ' (nómina, fijos, MGAs, giros, UEC)', sale(c.sale_b), sal(c.sale_b), 'rs-ind')
+    + f('aguanta_corte', 'Aguanta el próximo corte, por socio (pagando también el suyo)', usd2(c.aguanta_corte), ng(c.aguanta_corte), 'rs-ind')
+    + f('aguanta', 'Aguanta (el menor de los dos)', usd2(c.aguanta), '', 'rs-tot')
+    + f('por_socio', '= Retiro por socio', num(c.por_socio) == null ? '—' : usd2(c.por_socio), '', 'rs-tot');
+}
+/* el estado de la barra: uno solo, por prioridad */
+function rsEstadoInfo(C){
+  const P = RS;
+  if (!C.ok) return { t:'Revisa los montos marcados', c:'rs-mal' };
+  if (RSUI.previaErr) return { t:'No pudimos calcular: ' + RSUI.previaErr, c:'rs-fallo' + (P.dirty ? ' rs-sucio' : '') };
+  if (P.dirty) return { t:'Cambios sin guardar', c:'rs-sucio' };
+  const g = P.guardado;
+  if (g && rsOk(g.creado_en)) return { t:'Guardado el ' + rsDia(g.creado_en) + ' ' + horaBog(g.creado_en) + (g.creado_email ? ' · ' + g.creado_email : '') + (g.version != null ? ' · versión ' + g.version : ''), c:'' };
+  if (P.es_propuesta) return { t:'Propuesta: esta semana todavía no se ha guardado', c:'' };
+  return { t:'', c:'' };
+}
+const rsFila = (id, l) => '<div class="rs-row"><label class="rs-l" for="' + id + '">' + l + '</label><div class="rs-inp"><span class="rs-dolar" aria-hidden="true">$</span>'
+  + '<input type="text" inputmode="decimal" autocomplete="off" id="' + id + '" placeholder="0"></div></div>';
+/* la estructura se arma una sola vez por modo; después solo se tocan las partes que cambian (así no se pierde foco ni cursor) */
+function rsEstructura(modo){
+  const el = $('cRetSem'); RSUI.modo = modo;
+  if (modo === 'completo') el.innerHTML = '<div id="rsErr"></div><div class="rs-franja" id="rsFranja" aria-live="polite"></div>'
+    + '<div class="rs-grid">'
+    +   '<div class="pg-card rs-card" id="rsCardSem"><h2>Esta semana</h2><div class="rs-sub" id="rsSub"></div><div class="rs-row rs-chase" id="rsChase"></div>'
+    +     rsFila('rsSas', 'Giro a la SAS (nómina + operativos)') + rsFila('rsCom', 'Comisiones del corte') + rsFila('rsOtr', 'Otros pagos de la semana (tarjetas)')
+    +     rsFila('rsBa', 'Del batch de ePay, lo que alcanza a entrar antes del corte') + '</div>'
+    +   '<div class="pg-card rs-card" id="rsCardCuadro"><h2>Cuadro de Jeff</h2>'
+    +     '<div class="rs-sub">Pega aquí las celdas de su hoja, de "Ya llegó" a "Total" (nombre y valor por línea). Lo que ya llegó y lo que no tiene fecha no cuentan; lo demás se reparte solo entre este corte y el próximo.</div>'
+    +     '<label class="rs-sr" for="rsTxt">Cuadro de Jeff</label><textarea id="rsTxt" spellcheck="false" autocomplete="off" placeholder="Pega aquí las celdas de la hoja de Jeff"></textarea><div class="rs-chips" id="rsChips"></div></div>'
+    + '</div>'
+    + '<div class="rs-barra" id="rsBarra"><div class="rs-estado" id="rsEstado" role="status"></div><div class="rs-acc">'
+    +   '<button class="pg-btn sec sm" type="button" id="rsDescartar" data-act="rs-descartar" hidden>Descartar cambios</button>'
+    +   '<button class="pg-btn mint" type="button" id="rsGuardar" data-act="rs-guardar" disabled>Guardar la semana</button></div></div>'
+    + '<details class="rs-det" id="rsDetCasc"' + (RSUI.abiertos.casc ? ' open' : '') + '><summary>Ver cómo se calculó</summary><div class="pg-card"><table class="rs-casc" id="rsCasc"></table></div></details>'
+    + '<details class="rs-det" id="rsDetDs"' + (RSUI.abiertos.ds ? ' open' : '') + '><summary>Lo de siempre entre un corte y el otro (cambia poco)</summary><div class="pg-card">'
+    +   '<div class="rs-sub">Entre un corte y el otro siempre entra lo de las pólizas (fees y comisión) y los residuales, y siempre sale la nómina y los fijos. Se cuenta aunque no esté en el cuadro de Jeff.</div>'
+    +   rsFila('rsDsVen', 'Entra: fees y comisión de lo que se vende (dos semanas)') + rsFila('rsDsRes', 'Entra: residuales (Star Mutual)') + rsFila('rsDsNom', 'Sale: nómina del próximo corte')
+    +   rsFila('rsDsFij', 'Sale: fijos hasta el próximo corte') + rsFila('rsDsGir', 'Sale: giros por póliza que no están en el cuadro (XPT, Trinity)') + '</div></details>';
+  else if (modo === 'reducido') el.innerHTML = '<div id="rsErr"></div><div class="rs-franja" id="rsFranja" aria-live="polite"></div>';
+  else el.innerHTML = '<div id="rsErr"></div>';
+}
+function rsPintarErr(){
+  rsSet($('rsErr'), RSUI.errLectura ? '<div class="rs-err"><span>No pudimos leer el retiro de la semana.</span><button class="pg-btn sec sm" type="button" data-act="rs-reintentar">Reintentar</button></div>' : '');
+}
+/* repinta lo que cambia con los números (nunca los campos de escritura) */
+function rsRefrescar(){
+  rsPintarErr();
+  if (!RS || !RSUI.modo || RSUI.modo === 'error') return;
+  const V = RSUI.vista || rsVistaDe(RS), c = V.calculo || {};
+  const fr = $('rsFranja');
+  rsSet(fr, rsFranjaHtml(RS, V));
+  fr.classList.toggle('rs-pend', !!RSUI.pend);
+  if (RSUI.pend) fr.setAttribute('aria-busy', 'true'); else fr.removeAttribute('aria-busy');
+  if (RSUI.modo !== 'completo') return;
+  rsSet($('rsSub'), 'Semana del ' + esc(fCorta(RS.lunes)) + '. ' + (c.corte ? 'Hasta el ' + esc(fCorta(c.corte)) + '.' : 'Hasta el corte.') + ' Lo que ya llegó no se escribe: ya está en Chase.');
+  rsSet($('rsChase'), rsChaseHtml(V.chase || RS.chase));
+  rsSet($('rsChips'), rsChips(V).map(x => '<div class="rs-chip' + (x[0] ? ' ' + x[0] : '') + '">' + x[1] + '</div>').join(''));
+  rsSet($('rsCasc'), c.al_corte != null ? rsCascHtml(c) : '');
+  const C = rsCampos(); rsMarcar(C);
+  const E = rsEstadoInfo(C), est = $('rsEstado');
+  est.textContent = E.t; est.className = 'rs-estado' + (E.c ? ' ' + E.c : '');
+  $('rsDescartar').hidden = !RS.dirty;
+  $('rsGuardar').disabled = !(C.ok && (RS.dirty || (RS.guardado == null && num((V.lectura || {}).n) > 0)));
+}
+/* ---------- leer el panel (se llama sin await desde cargar(); solo la última respuesta manda) ---------- */
+function rsOculto(){
+  clearTimeout(RSUI.timer); RSUI.timer = null; RSUI.pseq++; RSUI.pend = false;
+  RS = null; RSUI.vista = null; RSUI.modo = ''; RSUI.errLectura = ''; RSUI.previaErr = '';
+  const el = $('cRetSem'); el.hidden = true; el.innerHTML = '';
+}
+function rsError(m){
+  RSUI.errLectura = m || 'Error';
+  if (RS && RSUI.modo === 'completo' && RS.dirty) { rsRefrescar(); return; }   // hay borrador: se conserva, y arriba sale el aviso con Reintentar
+  clearTimeout(RSUI.timer); RSUI.timer = null; RSUI.pseq++; RSUI.pend = false;
+  RS = null; RSUI.vista = null; RSUI.previaErr = '';
+  rsEstructura('error'); rsPintarErr(); $('cRetSem').hidden = false;
+}
+function rsRecibir(d){
+  const modo = (d.puede && d.puede.editar === true) ? 'completo' : 'reducido';
+  RSUI.errLectura = '';
+  RS = Object.assign({}, d, { dirty:false });
+  if (RSUI.modo !== modo || (modo === 'completo' && !$('rsSas'))) {          // primera vez o cambió el modo: se arma con lo del servidor
+    clearTimeout(RSUI.timer); RSUI.timer = null; RSUI.pseq++; RSUI.pend = false;
+    rsEstructura(modo);
+    if (modo === 'completo') rsPonerCampos(RS);
+    RSUI.vista = rsVistaDe(RS); RSUI.previaErr = '';
+  } else if (modo === 'completo' && rsDifiere(rsCampos(), RS)) {
+    /* hay borrador: no se pisa lo escrito; se actualiza lo que viene del servidor (Chase, guardado, registrado) y se pide una vista previa nueva */
+    RS.dirty = true;
+    clearTimeout(RSUI.timer); RSUI.timer = null;
+    if (rsCampos().ok) { RSUI.pend = true; RSUI.timer = setTimeout(rsPrevia, 0); }
+  } else {
+    clearTimeout(RSUI.timer); RSUI.timer = null; RSUI.pseq++; RSUI.pend = false;
+    if (modo === 'completo') rsPonerCampos(RS);
+    RSUI.vista = rsVistaDe(RS); RSUI.previaErr = '';
+  }
+  $('cRetSem').hidden = false;
+  rsRefrescar();
+}
+async function cargarRetiroSemana(){
+  const mi = ++RSUI.seq, el = $('cRetSem');
+  if (!el) return;
+  let r;
+  try { r = await SB.schema('portal').rpc('retiro_semana_panel'); } catch (e) { r = { data:null, error:e }; }
+  try {
+    if (mi !== RSUI.seq) return;                      // llegó una lectura más nueva: solo la última manda
+    const k0 = rsClaveTabla();
+    if (r.error || !r.data) {
+      const m = errMsg(r.error || 'Sin respuesta');
+      if (/no_autorizado/i.test(m)) rsOculto(); else rsError(m);   // sin permiso = como si no hubiera tarjeta, sin aviso
+    } else if (r.data.visible !== true) rsOculto();
+    else rsRecibir(r.data);
+    rsSyncTabla(k0);
+  } catch (e) {
+    console.error('retiro de la semana:', e);
+    try { rsError(errMsg(e)); } catch (e2) {}
+  } finally { el.dataset.listo = '1'; el.dataset.corridas = String((+el.dataset.corridas || 0) + 1); }
+}
+
+/* ---------- vista previa en vivo: 350 ms después de la última tecla; solo la última respuesta se pinta ---------- */
+async function rsPrevia(){
+  RSUI.timer = null;
+  if (!RS || RSUI.modo !== 'completo') { RSUI.pend = false; return; }
+  const C = rsCampos();
+  if (!C.ok || !rsDifiere(C, RS)) { RSUI.pend = false; rsRefrescar(); return; }
+  const mi = ++RSUI.pseq;
+  RSUI.pend = true; rsRefrescar();
+  let r;
+  try { r = await SB.schema('portal').rpc('retiro_semana_calcular', rsArgs(C)); } catch (e) { r = { data:null, error:e }; }
+  if (mi !== RSUI.pseq || !RS) return;                // llegó tarde: hay una más nueva (o se descartó)
+  const k0 = rsClaveTabla();
+  RSUI.pend = !!RSUI.timer;                           // sigue ocupada si ya hay otra programada
+  if (r.error || !r.data || !r.data.calculo) RSUI.previaErr = errMsg(r.error || 'Sin respuesta');   // la franja conserva el último valor bueno
+  else { RSUI.previaErr = ''; RSUI.vista = { chase:r.data.chase || RS.chase || null, lectura:r.data.lectura || null, calculo:r.data.calculo }; }
+  rsRefrescar(); rsSyncTabla(k0);
+}
+function rsAlEscribir(){
+  if (!RS || RSUI.modo !== 'completo') return;
+  const k0 = rsClaveTabla();
+  clearTimeout(RSUI.timer); RSUI.timer = null;
+  const C = rsCampos();
+  RS.dirty = rsDifiere(C, RS);
+  RSUI.previaErr = '';
+  if (RS.dirty && C.ok) { RSUI.pend = true; RSUI.timer = setTimeout(rsPrevia, 350); }
+  else {
+    RSUI.pseq++; RSUI.pend = false;                   // inválido o igual a lo guardado: lo que venga en vuelo ya no se pinta
+    if (!RS.dirty) RSUI.vista = rsVistaDe(RS);        // volvió al valor original: otra vez los números del servidor
+  }
+  rsRefrescar(); rsSyncTabla(k0);
+}
+function rsAlSalir(inp){                              // al salir del campo se reformatea ($ y comas); el valor no cambia
+  const r = rsLeerMonto(inp.value); if (r.mal) return;
+  const t = r.v ? rsFmt(r.v) : '';
+  if (inp.value !== t) inp.value = t;
+}
+
+/* ---------- guardar, descartar ---------- */
+function rsGuardar(btn){
+  clearTimeout(RSUI.timer); RSUI.timer = null;
+  const C = rsCampos();
+  if (!RS || !C.ok) { toast('Revisa los montos marcados', true); return; }
+  RSUI.pseq++; RSUI.pend = false; rsRefrescar();      // una vista previa en vuelo ya no se pinta
+  const a = rsArgs(C);
+  escribir(btn, async () => {
+    const r = await SB.schema('portal').rpc('retiro_semana_guardar', a);
+    if (!r.error && RS) RS.dirty = false;
+    return r;
+  }, 'Semana guardada');                              // escribir() ya hace await cargar(), que vuelve a leer el panel
+}
+function rsDescartar(){
+  if (!RS || RSUI.modo !== 'completo') return;
+  const k0 = rsClaveTabla(), enBoton = document.activeElement === $('rsDescartar');
+  clearTimeout(RSUI.timer); RSUI.timer = null; RSUI.pseq++; RSUI.pend = false;
+  rsPonerCampos(RS);
+  RS.dirty = false; RSUI.vista = rsVistaDe(RS); RSUI.previaErr = '';
+  rsRefrescar(); rsSyncTabla(k0);
+  if (enBoton && $('rsSas')) $('rsSas').focus();      // el botón se esconde: el foco no se pierde
+}
+
+/* ---------- los escuchadores propios de la tarjeta (input, blur y toggle no burbujean todos: captura en el contenedor) ---------- */
+(function(){
+  const el = $('cRetSem'); if (!el) return;
+  const esCampo = t => !!(t && /^rs(?:Sas|Com|Otr|Ba|Txt|Ds(?:Ven|Res|Nom|Fij|Gir))$/.test(t.id || ''));
+  el.addEventListener('input', e => { if (esCampo(e.target)) rsAlEscribir(); });
+  el.addEventListener('blur', e => { if (esCampo(e.target) && e.target.id !== 'rsTxt') rsAlSalir(e.target); }, true);
+  el.addEventListener('toggle', e => {
+    const d = e.target; if (!d || !d.id) return;
+    if (d.id === 'rsDetCasc') RSUI.abiertos.casc = !!d.open; else if (d.id === 'rsDetDs') RSUI.abiertos.ds = !!d.open;
+  }, true);
+})();
 
 function pintarPie(){
   const pu = P(), p = D.params || {};
@@ -1814,7 +2258,7 @@ document.addEventListener('click', async e => {
       const F = UI.retForm; if (!F) return;
       const v = num(($('inRt') || {}).value);
       if (v == null || v < 0) { toast('Escribe el monto por socio', true); return; }
-      if (F.tipo === 'reg') escribir(b, () => SB.rpc('retiro_registrar', { p_fecha:F.lunes, p_monto_por_socio:v, p_notas:'GABI Liquidez' }), 'Retiro registrado');
+      if (F.tipo === 'reg') escribir(b, () => SB.rpc('retiro_registrar', { p_fecha:F.lunes, p_monto_por_socio:v, p_notas: notaRegistroRet(v) }), 'Retiro registrado');
       else {
         const nota = (($('inRtNota') || {}).value || '').trim() || 'Corregido desde GABI Liquidez';
         escribir(b, () => SB.rpc('retiro_corregir', { p_retiro_id:F.id, p_monto_por_socio:v, p_notas:nota }), 'Retiro corregido');
@@ -1824,6 +2268,9 @@ document.addEventListener('click', async e => {
     case 'cerrar': UI.confirmar = 'cerrar'; pintarRetiros(); break;
     case 'cerrar-no': UI.confirmar = null; pintarRetiros(); break;
     case 'cerrar-ok': escribir(b, () => SB.rpc('semana_cerrar', { p_semana:D.lunes }), 'Semana cerrada'); break;
+    case 'rs-guardar': rsGuardar(b); break;
+    case 'rs-descartar': rsDescartar(); break;
+    case 'rs-reintentar': cargarRetiroSemana(); break;
     case 'corte': abrirCorte(); break;
     case 'consol': abrirConsolidado(); break;
     case 'consol-ok': {
@@ -1871,7 +2318,7 @@ arrancar();
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="gabi-liquidez.html";
-var PGV_VERSION=6; // v6 - 20-oct-2026 MODO VER: en Liquidez, solo dirección, la tarjeta "Cortes · tu consolidado" (pegas la tabla de la hoja, la pantalla la lee y muestra Ya en Chase · cada corte · Sin fecha con el ✓ del total; Pegar otro / Quitar; portal.liquidez_consolidado_guardar / _jubilar) y la lectura B del retiro al lado de la A (propuesta: el mismo retiro cada semana hasta el próximo corte sin bajar del colchón; no registra nada). Para todos, el cierre del mes en caja al pie de Cuatro semanas. En el cuadre de Chase, lo que tu consolidado marca como "ya llegó". El retiro oficial no cambia. | v5 - 20-oct-2026 CHASE A LA VISTA: en La agencia la tarjeta de la caja trae el saldo de Chase con su fecha y el botón Actualizar Chase (socios; si Chase pasó del límite de días, el campo ya sale abierto) y deja de ser un enlace entero ("Ver Liquidez →" aparte); aviso arriba en las tres pestañas cuando Chase pasó del límite ("Poner el saldo de hoy"); en la franja de Liquidez el ✎ pasa a un botón visible Actualizar con la fecha del saldo debajo; al guardar sale el cuadre de Chase (anterior + ventas que entraron − pagos vencidos = esperado, contra el real); sello de Chase en La agencia. Misma función caja_actualizar_saldo_v2; la base no cambia. | v4 - 14-oct-2026 (auditoría en producción): si la base está ocupada y liquidez_panel falla al entrar, un reintento automático a los 2.5 s antes del aviso; si La agencia ya cargó, se queda a la vista y el aviso habla solo de la liquidez; singular y plural en las tarjetas ("1 negativo", "1 venta", "1 persona"). | v3 - 14-oct-2026 01 LA AGENCIA (solo direccion_total, portal.liquidez_agencia): el macro de dirección en tarjetas con anillos — la franja del mes (entró contra lo que necesita: nómina, fijos y retiro mínimo, con la barrita del "debería ir hoy"), las tres áreas con la cara chiquita de su líder adentro del anillo (Ventas nuevas · Brahian, Renovaciones · Karen, Endosos · Jhon Ramírez), el mes cerrado y el año en dos anillos con el aviso de comisiones de agentes sin cargar, y la caja en una tarjeta chiquita. Abre ahí para dirección; Jorge y los demás siguen en Liquidez y Retiros sin cambios. | v2 - 13-oct-2026 el retiro se lee con la semana contra sí misma (Caja + Entra − Sale de esta semana − colchón, entre los socios, hasta el objetivo); las 4 semanas solo avisan. Lo que vencía antes del último saldo de Chase se da por pagado (pie en Sale). | v1 - 12-oct-2026 GABI LIQUIDEZ EN EL PORTAL: una pantalla de dirección que sale entera de portal.liquidez_panel() — franja (caja, entra, sale, queda y anillo del retiro por socio), ingresos semana/mes, por entrar, la cola de pagos con un clic (liquidez_decidir), cuatro semanas y fijos del mes; pestaña Retiros (registrar, corregir, cerrar la semana) y carga del corte de Jeff. Cero barras, guion cuando no hay dato, sin almacenamiento del navegador.
+var PGV_VERSION=7; // v7 - 27-oct-2026 03 RETIROS · tarjeta "Esta semana" (solo dirección): el retiro por socio de la semana con la regla C — una franja con el valor, el semáforo y dónde cierra Chase en cada corte; lo poco que se escribe cada semana (giro a la SAS, comisiones del corte, otros pagos, lo que alcanza a entrar del batch); el cuadro de Jeff pegado tal cual, con chips que dicen cómo se leyó y si cuadra con su total; "Ver cómo se calculó" y "Lo de siempre entre un corte y el otro"; vista previa en vivo sin guardar y Guardar la semana (portal.retiro_semana_panel / retiro_semana_calcular / retiro_semana_guardar). Los demás socios ven solo la franja. La fila de la semana en la tabla (sugerido) y el monto que precarga Registrar salen de esa tarjeta; si Registrar coincide con ella, la nota lo deja escrito. 01 La agencia y 02 Liquidez no cambian. | v6 - 20-oct-2026 MODO VER: en Liquidez, solo dirección, la tarjeta "Cortes · tu consolidado" (pegas la tabla de la hoja, la pantalla la lee y muestra Ya en Chase · cada corte · Sin fecha con el ✓ del total; Pegar otro / Quitar; portal.liquidez_consolidado_guardar / _jubilar) y la lectura B del retiro al lado de la A (propuesta: el mismo retiro cada semana hasta el próximo corte sin bajar del colchón; no registra nada). Para todos, el cierre del mes en caja al pie de Cuatro semanas. En el cuadre de Chase, lo que tu consolidado marca como "ya llegó". El retiro oficial no cambia. | v5 - 20-oct-2026 CHASE A LA VISTA: en La agencia la tarjeta de la caja trae el saldo de Chase con su fecha y el botón Actualizar Chase (socios; si Chase pasó del límite de días, el campo ya sale abierto) y deja de ser un enlace entero ("Ver Liquidez →" aparte); aviso arriba en las tres pestañas cuando Chase pasó del límite ("Poner el saldo de hoy"); en la franja de Liquidez el ✎ pasa a un botón visible Actualizar con la fecha del saldo debajo; al guardar sale el cuadre de Chase (anterior + ventas que entraron − pagos vencidos = esperado, contra el real); sello de Chase en La agencia. Misma función caja_actualizar_saldo_v2; la base no cambia. | v4 - 14-oct-2026 (auditoría en producción): si la base está ocupada y liquidez_panel falla al entrar, un reintento automático a los 2.5 s antes del aviso; si La agencia ya cargó, se queda a la vista y el aviso habla solo de la liquidez; singular y plural en las tarjetas ("1 negativo", "1 venta", "1 persona"). | v3 - 14-oct-2026 01 LA AGENCIA (solo direccion_total, portal.liquidez_agencia): el macro de dirección en tarjetas con anillos — la franja del mes (entró contra lo que necesita: nómina, fijos y retiro mínimo, con la barrita del "debería ir hoy"), las tres áreas con la cara chiquita de su líder adentro del anillo (Ventas nuevas · Brahian, Renovaciones · Karen, Endosos · Jhon Ramírez), el mes cerrado y el año en dos anillos con el aviso de comisiones de agentes sin cargar, y la caja en una tarjeta chiquita. Abre ahí para dirección; Jorge y los demás siguen en Liquidez y Retiros sin cambios. | v2 - 13-oct-2026 el retiro se lee con la semana contra sí misma (Caja + Entra − Sale de esta semana − colchón, entre los socios, hasta el objetivo); las 4 semanas solo avisan. Lo que vencía antes del último saldo de Chase se da por pagado (pie en Sale). | v1 - 12-oct-2026 GABI LIQUIDEZ EN EL PORTAL: una pantalla de dirección que sale entera de portal.liquidez_panel() — franja (caja, entra, sale, queda y anillo del retiro por socio), ingresos semana/mes, por entrar, la cola de pagos con un clic (liquidez_decidir), cuatro semanas y fijos del mes; pestaña Retiros (registrar, corregir, cerrar la semana) y carga del corte de Jeff. Cero barras, guion cuando no hay dato, sin almacenamiento del navegador.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;
