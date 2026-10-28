@@ -1,5 +1,6 @@
 /* ============================================================
-   GABI · pg-statement.js v2 — el documento COMMISSION STATEMENT.
+   GABI · pg-statement.js v3 — el documento COMMISSION STATEMENT.
+   28-oct-2026 · v3: el documento muestra el PREMIUM de la póliza (o el fee / monto recibido) y la comisión como % SOBRE EL PREMIUM (1 % / 1.5 %…), en vez de la comisión de agencia y el % sobre ella; se quita la columna Role (va en el título del bloque); Achieved de la meta en US$ también en meses de Cal Comm.
    23-oct-2026 · v2 (R5, 26-oct): pinta por BLOQUES de cargo (doc.bloques) y la tabla
    Goal achieved (doc.meta). Sin bloques, o con un solo bloque 'asesor', el dibujo es el de v1. Lo usan Comisiones FAM (fam-comisiones.html) y, después,
    Mi statement (gabi-asesor.html). Un solo dibujo para los dos lados:
@@ -102,6 +103,17 @@
     '.pgst-bes,.pgst-screen{display:none!important}.pgst-prev{border-width:1px}}' +
     '@page{size:letter;margin:.45in}';
 
+  /* v3: la prima (o el fee) de la póliza y, debajo en chico, el % que paga la MGA. Docs viejos sin prima: guion. */
+  function prima(l) { return hay(l.prima) ? money(l.prima) : (hay(l.base) ? money(l.base) : '—'); }
+  /* % sobre el premium (o sobre el fee / monto recibido): lo que cobra la persona dividido por la prima. 10 % de una comisión del 10 % = 1 %. */
+  function tasa(l) {
+    if (hay(l.prima) && +l.prima !== 0 && hay(l.monto)) {
+      var r = Math.abs(+l.monto / +l.prima * 100);
+      return r.toLocaleString('en-US', { maximumFractionDigits: 2 }) + '%';
+    }
+    return rate(l.pct);
+  }
+
   /* ---- R5 · bloques por cargo ---- */
   function usaBloques(doc) {
     var b = doc && doc.bloques;
@@ -124,12 +136,12 @@
           return '<tr><td>' + txt(l.concepto) + '</td><td>' + txt(l.regla) + '</td><td class="n' + neg(l.monto) + '">' + money(l.monto) + '</td></tr>';
         }).join(''), cols: 3 };
     }
-    return { head: '<th>Date</th><th>Client</th><th>MGA</th><th>Type</th><th class="n">Agency comm.</th><th>Seller</th><th>Role</th><th class="n">Rate</th><th class="n">Amount</th>',
+    return { head: '<th>Date</th><th>Client</th><th>MGA</th><th>Type</th><th class="n">Premium</th><th>Seller</th><th class="n">Rate on premium</th><th class="n">Amount</th>',
       body: L.map(function (l) {
         return '<tr><td>' + txt(l.fecha) + '</td><td>' + txt(l.cliente) + '</td><td>' + txt(l.mga) + '</td><td>' + txt(l.trans) +
-          '</td><td class="n' + neg(l.base) + '">' + money(l.base) + '</td><td>' + txt(l.vendedor) + '</td><td>' + txt(l.cargo) +
-          '</td><td class="n">' + rate(l.pct) + '</td><td class="n' + neg(l.monto) + '">' + money(l.monto) + '</td></tr>';
-      }).join(''), cols: 9 };
+          '</td><td class="n' + neg(l.prima) + '">' + prima(l) + '</td><td>' + txt(l.vendedor) +
+          '</td><td class="n">' + tasa(l) + '</td><td class="n' + neg(l.monto) + '">' + money(l.monto) + '</td></tr>';
+      }).join(''), cols: 8 };
   }
   function bloque(b) {
     var L = b.lineas || [];
@@ -228,10 +240,10 @@
       h += '<div class="pgst-sec">Detail · ' + lineas.length + ' item' + (lineas.length === 1 ? '' : 's') + '</div>';
       if (lineas.length) {
         h += '<div class="pgst-tw"><table><thead><tr><th>Date</th><th>Client</th><th>MGA / Carrier</th><th>Type</th>' +
-          '<th class="n">Agency comm.</th><th class="n">Rate</th><th class="n">Amount</th></tr></thead><tbody>' +
+          '<th class="n">Premium</th><th class="n">Rate on premium</th><th class="n">Amount</th></tr></thead><tbody>' +
           lineas.map(function (l) {
             return '<tr><td>' + txt(l.fecha) + '</td><td>' + txt(l.cliente) + '</td><td>' + txt(l.mga) + '</td><td>' + txt(l.trans) +
-              '</td><td class="n' + neg(l.base) + '">' + money(l.base) + '</td><td class="n">' + rate(l.pct) +
+              '</td><td class="n' + neg(l.prima) + '">' + prima(l) + '</td><td class="n">' + tasa(l) +
               '</td><td class="n' + neg(l.monto) + '">' + money(l.monto) + '</td></tr>';
           }).join('') + '</tbody></table></div>';
       } else {

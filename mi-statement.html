@@ -8,7 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,1,800&family=Montserrat:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="pg-volver.js" defer></script>
-<script src="pg-statement.js?v=r5"></script>
+<script src="pg-statement.js?v=r6"></script>
 <style>
 :root{--pg-ink:#1B2D3A;--pg-ink-2:#162630;--pg-mint:#2DBFA3;--pg-mint-soft:#C4E8DF;--pg-mint-deep:#229A82;--pg-bg:#F4F7FA;--pg-card:#FFFFFF;--pg-line:#E7EDF2;--pg-txt:#28323B;--pg-muted:#6B7D89;--pg-pos:#1F9D6B;--pg-neg:#D5594F;--pg-warn:#D9A520;--pg-font-gabi:"Fraunces",Georgia,serif;--pg-font-title:"Montserrat","Arial Black",sans-serif;--pg-font-body:"Inter",Arial,sans-serif;--pg-font-num:"JetBrains Mono","Courier New",monospace}
 *{box-sizing:border-box}
@@ -372,7 +372,7 @@ SB.auth.getSession().then(function(r){
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="mi-statement.html";
-var PGV_VERSION=3; // v3 - 26-oct-2026 R5: Historial y Tu curva muestran por defecto los últimos 6 meses con 'Ver todo (N)' / 'Ver menos'; el documento pinta por bloques de cargo (líder/3,5 %/bolsas/bono + Goal achieved) con pg-statement.js v2. | v2 - 26-oct-2026 encabezado ProtectGo Services LLC · Statement; ?previa=1 (piloto de FAM: así lo verá la persona antes de compartir, mi_statements_previa); lo compartido sigue visible si FAM reabre el mes. | v1 - 26-oct-2026 MI STATEMENT: cada persona que comisiona ve su statement del mes (franja, conceptos, qué te movió, curva en línea, historial) y abre/imprime su COMMISSION STATEMENT con pg-statement.js. Solo lectura, desde portal.mi_statements / mi_statement_doc. ?ver_como=correo para dirección/FAM.
+var PGV_VERSION=4; // v4 - 28-oct-2026: documento con columna Premium (pg-statement.js v3: prima y % de la MGA antes de Agency comm.; Achieved de la meta en US$). | v3 - 26-oct-2026 R5: Historial y Tu curva muestran por defecto los últimos 6 meses con 'Ver todo (N)' / 'Ver menos'; el documento pinta por bloques de cargo (líder/3,5 %/bolsas/bono + Goal achieved) con pg-statement.js v2. | v2 - 26-oct-2026 encabezado ProtectGo Services LLC · Statement; ?previa=1 (piloto de FAM: así lo verá la persona antes de compartir, mi_statements_previa); lo compartido sigue visible si FAM reabre el mes. | v1 - 26-oct-2026 MI STATEMENT: cada persona que comisiona ve su statement del mes (franja, conceptos, qué te movió, curva en línea, historial) y abre/imprime su COMMISSION STATEMENT con pg-statement.js. Solo lectura, desde portal.mi_statements / mi_statement_doc. ?ver_como=correo para dirección/FAM.
 function pgvRun(){
   try{
     var c=window.supabase.createClient(PGV_URL,PGV_KEY,{db:{schema:'portal'}});

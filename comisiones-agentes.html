@@ -8,7 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,1,800&family=Montserrat:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="pg-volver.js" defer></script>
-<script src="pg-statement.js"></script>
+<script src="pg-statement.js?v=r6"></script>
 <style>
 :root{--pg-ink:#1B2D3A;--pg-ink-2:#162630;--pg-mint:#2DBFA3;--pg-mint-soft:#C4E8DF;--pg-mint-deep:#229A82;--pg-bg:#F4F7FA;--pg-card:#FFFFFF;--pg-line:#E7EDF2;--pg-txt:#28323B;--pg-muted:#6B7D89;--pg-pos:#1F9D6B;--pg-neg:#D5594F;--pg-warn:#D9A520;--pg-font-gabi:"Fraunces",Georgia,serif;--pg-font-title:"Montserrat","Arial Black",sans-serif;--pg-font-body:"Inter",Arial,sans-serif;--pg-font-num:"JetBrains Mono","Courier New",monospace}
 *{box-sizing:border-box}
@@ -620,7 +620,7 @@ SB.auth.getSession().then(function(r){
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="comisiones-agentes.html";
-var PGV_VERSION=1; // v1 (R5, 26-oct-2026: columna '6 meses' con tira de puntos por persona, chips de 6 meses en el panel y 'Exportar 6 meses (CSV)'; sigue en v1 porque aún no se había publicado) -  26-oct-2026 COMISIONES AGENTES: vista de dirección (socios / director), solo lectura. Total del mes, figuras (personas, en camino, cuentas de área), tarjetas por grupo, desglose persona por persona con subtotales y TOTAL = personas_usd, panel con pólizas y statement (pg-statement.js), CSV. Desde portal.com_agentes / com_persona / com_statement_doc. ?mes=YYYY-MM-01.
+var PGV_VERSION=2; // v2 - 28-oct-2026: documento con columna Premium (pg-statement.js v3). | v1 (R5, 26-oct-2026: columna '6 meses' con tira de puntos por persona, chips de 6 meses en el panel y 'Exportar 6 meses (CSV)'; sigue en v1 porque aún no se había publicado) -  26-oct-2026 COMISIONES AGENTES: vista de dirección (socios / director), solo lectura. Total del mes, figuras (personas, en camino, cuentas de área), tarjetas por grupo, desglose persona por persona con subtotales y TOTAL = personas_usd, panel con pólizas y statement (pg-statement.js), CSV. Desde portal.com_agentes / com_persona / com_statement_doc. ?mes=YYYY-MM-01.
 function pgvRun(){
   try{
     var c=window.supabase.createClient(PGV_URL,PGV_KEY,{db:{schema:'portal'}});
