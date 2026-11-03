@@ -1,5 +1,6 @@
 /* ============================================================================
- * pg-novedades.js  ·  Widget lector de Novedades ProtectGo  ·  v4.11
+ * pg-novedades.js  ·  Widget lector de Novedades ProtectGo  ·  v4.12
+ * v4.12 (3-nov-2026): felicitación SIN logro (pieza de grupo) va a la tarjeta héroe con la imagen completa; con logro sigue el retrato por persona.
  * v4.11 (3-nov-2026): la foto de la felicitación se ve completa (contain, hasta 960px de ancho), sin recorte. Nada más cambia.
  * v4.10 (7-oct-2026): las direcciones web del cuerpo salen como enlace tocable (nueva pestaña)
  * v4.9 (6-oct-2026): carga pg-bonos.js v1 (la pastilla de bonos del mes, arriba a la derecha)
@@ -1507,8 +1508,10 @@
         p.filas.forEach(function (f) { grid.appendChild(tarjetaMosaico(f)); });
         caja.appendChild(grid);
 
-      } else if (t === 'felicitacion' && (n.logro || CFG.modo === 'persona')) {
-        /* Una persona por pantalla (lo aprobado por Andrés). */
+      } else if (t === 'felicitacion' && n.logro) {
+        /* Una persona por pantalla (lo aprobado por Andrés). v4.12 (3-nov): solo cuando hay
+           logro (retrato de una persona). Sin logro —p. ej. una pieza con varios ganadores—
+           va a la tarjeta héroe de abajo, que muestra la imagen completa. */
         var per = bloquePersona(n);
         caja.appendChild(CLARO ? envolverPanel(per) : per);
 
