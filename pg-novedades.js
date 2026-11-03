@@ -1,5 +1,6 @@
 /* ============================================================================
- * pg-novedades.js  ·  Widget lector de Novedades ProtectGo  ·  v4.10
+ * pg-novedades.js  ·  Widget lector de Novedades ProtectGo  ·  v4.11
+ * v4.11 (3-nov-2026): la foto de la felicitación se ve completa (contain, hasta 960px de ancho), sin recorte. Nada más cambia.
  * v4.10 (7-oct-2026): las direcciones web del cuerpo salen como enlace tocable (nueva pestaña)
  * v4.9 (6-oct-2026): carga pg-bonos.js v1 (la pastilla de bonos del mes, arriba a la derecha)
  * v4.8 (2-oct-2026): carga también pg-destellos.js v1 (lo personal no leído, destacado al abrir)
@@ -335,10 +336,12 @@
          caracteres serían un renglón larguísimo. */
       + '.t-felicitacion .pgnov-cue{font-size:clamp(17px,2.1vw,27px);line-height:1.5;'
       + 'max-width:var(--medida-hero);}'
+      /* v4.11 (3-nov): la foto se muestra COMPLETA (contain), nunca recortada — sirve igual
+         para el retrato de una persona que para una pieza ancha con varios ganadores. */
       + '.t-felicitacion .pgnov-fel-foto{border-radius:22px;overflow:hidden;'
       + 'border:2px solid rgba(45,191,163,.55);box-shadow:0 24px 70px rgba(0,0,0,.5),'
-      + '0 0 0 10px rgba(45,191,163,.08);background:rgba(45,191,163,.08);max-width:min(660px,92%);}'
-      + '.t-felicitacion .pgnov-fel-foto img{display:block;width:100%;height:min(46vh,430px);object-fit:cover;}'
+      + '0 0 0 10px rgba(45,191,163,.08);background:rgba(45,191,163,.08);width:min(960px,92%);max-width:min(960px,92%);line-height:0;}'
+      + '.t-felicitacion .pgnov-fel-foto img{display:block;width:100%;height:auto;max-height:min(52vh,560px);object-fit:contain;}'
       + '.t-felicitacion .pgnov-pie{color:var(--mint);}'
       /* Confeti sutil, sin librerías y sin tapar el contenido. */
       + '.pgnov-confeti{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0;}'
