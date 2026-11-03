@@ -1,6 +1,9 @@
 /* ============================================================
-   GABI · pg-bonos.js v3 — la pastilla dorada "BONOS OCT · hasta $850.000" que acompaña a la
+   GABI · pg-bonos.js v4 — la pastilla dorada "BONOS NOV · hasta $1.000.000" que acompaña a la
    persona por todas las herramientas del portal.  6-oct-2026.
+
+   v4 (3-nov): el extra puede pedir también fee cobrado (condiciones.fee_min);
+   el texto del extra lo dice y muestra cuánto fee falta. Nada más cambia.
 
    Pieza hermana de pg-sombra.js: mismo estilo (IIFE, candado global,
    cliente compartido, CSS inyectado con id, todo texto de la base con
@@ -297,8 +300,10 @@
       var e = b.extra, ec = e.condiciones || {}, ye = y && y.extra;
       var ex = el('div', 'pgb-extra' + (ye && ye.cumple ? ' ok' : ''));
       ex.appendChild(el('b', null, '+' + cop(e.monto_cop)));
-      var t = ye && ye.cumple ? 'Extra ganado'
-            : ('si además llegas a ' + usd(ec.combinada_min) + ' de combinada' + (ye ? ' (te faltan ' + usd(ye.falta_mc) + ')' : ''));
+      /* v4 (3-nov): el extra puede pedir también fee cobrado (condiciones.fee_min). */
+      var partes = ['si además llegas a ' + usd(ec.combinada_min) + ' de combinada' + (ye && Number(ye.falta_mc) > 0 ? ' (te faltan ' + usd(ye.falta_mc) + ')' : '')];
+      if (Number(ec.fee_min) > 0) partes.push('y a ' + usd(ec.fee_min) + ' de fee cobrado' + (ye && Number(ye.falta_fee) > 0 ? ' (te faltan ' + usd(ye.falta_fee) + ')' : ''));
+      var t = ye && ye.cumple ? 'Extra ganado' : partes.join(' ');
       ex.appendChild(el('span', null, t));
       cu.appendChild(ex);
     }
