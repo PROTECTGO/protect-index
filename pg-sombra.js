@@ -1,6 +1,20 @@
 /* ============================================================
-   GABI · pg-sombra.js v6 — la columna que sigue a la persona por todas
-   las herramientas del portal.  6-oct-2026.
+   GABI · pg-sombra.js v7 — la columna que sigue a la persona por todas
+   las herramientas del portal.  3-nov-2026.
+
+   v7 (3-nov, pedido de Andrés): la columna SE PUEDE OCULTAR, pero SOLO en
+   las herramientas administrativas: GABI Liquidez (gabi-liquidez.html),
+   Renovaciones (renovaciones.html) y Equipo comercial (gabi-brahian.html)
+   — lista SE_OCULTA. En todas las demás sigue fija como siempre. Abajo de
+   la columna hay un botón chiquito (⌄) que la recoge; queda solo el volver
+   y un botón "TOP" para sacarla otra vez. En teléfono, una bolita "TOP"
+   abajo a la derecha. Se recuerda POR PERSONA Y POR HERRAMIENTA en
+   portal.preferencias_usuario (clave "ocultar_tops@<pagina>"); en
+   gabi-brahian.html usa la clave de siempre ("ocultar_tops") y el mismo
+   botón de su barra lateral, así las dos quedan sincronizadas. La columna
+   no aparece hasta saber la preferencia (máx. 1,5 s) para no parpadear.
+   Nada en localStorage. Lo demás de la v6 no cambia (el top sigue con su
+   regla: 3 primeros días hábiles el mes cerrado, luego el mes en curso).
 
    v6 (6-oct, carga inmediata): el top y la bolita salen de portal.rapido()
    (lo último calculado, ~10 ms) y se repintan solos si portal.refrescar()
@@ -79,6 +93,7 @@
   var DESTINO  = raiz() + 'gabi-asesor.html';   // relativa a la página: las herramientas viven en la raíz (amazon-relay con ../)
   var EXTERNOS = ['gerencia@leonis-go.com', 'quoteautocomercial@gmail.com'];
   var ROJO = '#E0523F', AMBAR = '#D9A520', MINT = '#2DBFA3', PISTA = '#35566A';
+  var SE_OCULTA  = /^(gabi-liquidez|renovaciones|gabi-brahian)\.html$/i;   // v7: solo aquí se puede ocultar la columna
   var SIN_VOLVER = /^(index\.html|recuperar\.html|firma-protectgo\.html)$/i;   // donde no va el volver
   function pagina() { try { return global.location.pathname.split('/').pop() || 'index.html'; } catch (e) { return ''; } }
   function compacto(n) {                // $28,400 -> $28.4k  ·  $111,787 -> $112k
@@ -252,6 +267,35 @@
         '#pgSombra .pgs-mini small.rojo{color:#F08B7F;}' +
         '#pgSombra .pgs-mini small.alerta{color:#F0C55A;}' +
       '}' +
+      /* ===== v7: ocultar / mostrar ===== */
+      '#pgMuelle .pgs-ocultar{display:flex;align-items:center;justify-content:center;background:none;border:0;color:#7E95A4;' +
+        'cursor:pointer;padding:0;transition:color .15s ease,background .15s ease;}' +
+      '#pgMuelle .pgs-ocultar:hover{color:#fff;background:rgba(255,255,255,.08);}' +
+      '#pgMuelle .pgs-ocultar:focus-visible,#pgMuelle .pgs-mostrar:focus-visible{outline:2px solid ' + MINT + ';outline-offset:2px;}' +
+      '#pgMuelle .pgs-ocultar svg{width:14px;height:14px;display:block;}' +
+      '#pgMuelle .pgs-mostrar{display:none;flex-direction:column;align-items:center;justify-content:center;gap:2px;cursor:pointer;' +
+        'background:#0D3040;color:#fff;border:1px solid rgba(255,255,255,.14);font:800 9px/1 Montserrat,Inter,system-ui,sans-serif;' +
+        'letter-spacing:.14em;padding:0;transition:background .15s ease;}' +
+      '#pgMuelle .pgs-mostrar:hover{background:#1E5069;}' +
+      '#pgMuelle .pgs-mostrar svg{width:12px;height:12px;display:block;color:' + MINT + ';}' +
+      '#pgMuelle .pgs-mostrar i{font-style:normal;color:' + AMBAR + ';}' +
+      '#pgMuelle.pgs-oculta .pgs-top,#pgMuelle.pgs-oculta #pgSombra,#pgMuelle.pgs-oculta #pgsPanel,' +
+        '#pgMuelle.pgs-oculta .pgs-ocultar{display:none!important;}' +
+      '#pgMuelle.pgs-oculta .pgs-mostrar{display:flex;}' +
+      '@media (max-width:640px){' +
+        '#pgMuelle .pgs-ocultar{position:absolute;top:-14px;right:-4px;width:24px;height:24px;border-radius:50%;background:#24404F;color:#fff;' +
+          'box-shadow:0 0 0 2px #0D3040;z-index:3;}' +
+        '#pgMuelle .pgs-ocultar:hover{background:#35566A;}' +
+        '#pgMuelle.pgs-oculta{left:auto;}' +
+        '#pgMuelle .pgs-top:has(+ .pgs-mostrar){border-radius:16px;border-bottom:0;}' +   /* sin bolita: la barrita sola, redonda */
+        '#pgMuelle .pgs-mostrar{width:48px;height:48px;border-radius:50%;}' +
+      '}' +
+      '@media (min-width:641px){' +
+        '#pgMuelle .pgs-ocultar{width:34px;height:20px;margin-top:6px;border-radius:8px;}' +
+        '#pgMuelle .pgs-mostrar{width:44px;height:44px;border-radius:14px;background:#163F54;}' +
+        '#pgMuelle.pgs-oculta{padding:10px 0;}' +
+        '#pgMuelle.pgs-oculta .pgs-sep{margin:8px 0;}' +
+      '}' +
       '@media (prefers-reduced-motion:reduce){#pgMuelle{transition:none;}}' +
       '@media print{#pgMuelle{display:none!important;}}';
     (document.head || document.documentElement).appendChild(st);
@@ -289,12 +333,79 @@
       m.appendChild(v);
       m.appendChild(el('span', 'pgs-sep'));
     }
+    /* v7: mostrar (solo se ve con la columna oculta) y ocultar (siempre al final) — solo en las herramientas de SE_OCULTA */
+    if (SE_OCULTA.test(pagina())) {
+    var mo = el('button', 'pgs-mostrar'); mo.type = 'button';
+    mo.title = 'Mostrar el top y la meta'; mo.setAttribute('aria-label', 'Mostrar el top y la meta');
+    mo.innerHTML = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 10 8 5.5l4.5 4.5"/></svg>';
+    mo.appendChild(el('i', null, 'TOP'));
+    mo.addEventListener('click', function () { ponerOculto(false, true); });
+    m.appendChild(mo);
+    var oc = el('button', 'pgs-ocultar'); oc.type = 'button';
+    oc.title = 'Ocultar el top y la meta'; oc.setAttribute('aria-label', 'Ocultar el top y la meta');
+    oc.innerHTML = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>';
+    oc.addEventListener('click', function (e) { try { e.stopPropagation(); } catch (x) {} ponerOculto(true, true); });
+    m.appendChild(oc);
+    }
+    if (oculto) m.classList.add('pgs-oculta');
     document.body.appendChild(m);
     correrSiHayBarra(m);
     function entrar() { m.classList.add('pgs-in'); m.style.opacity = '1'; m.style.transform = 'translateY(0)'; }
-    try { requestAnimationFrame(entrar); } catch (e) { entrar(); }
-    setTimeout(entrar, 120);
+    alSaberPref(function () { try { requestAnimationFrame(entrar); } catch (e) { entrar(); } setTimeout(entrar, 120); });
     return m;
+  }
+  /* v7: mete una pieza en la columna justo antes del botón de ocultar (que va siempre al final) */
+  function meter(m, nodo, antesDe) {
+    var ref = (antesDe && antesDe.parentNode === m) ? antesDe : m.querySelector(':scope > .pgs-ocultar');
+    if (ref) m.insertBefore(nodo, ref); else m.appendChild(nodo);
+  }
+
+  /* ---------- v7: ocultar / mostrar, recordado por persona y herramienta ---------- */
+  var oculto = false, prefLista = !SE_OCULTA.test(pagina()), colaPref = [], CLI = null, UID = null;
+  function clavePref() {
+    var p = String(pagina() || 'index.html').toLowerCase();
+    return p === 'gabi-brahian.html' ? 'ocultar_tops' : 'ocultar_tops@' + p;   // Equipo comercial: la clave de siempre
+  }
+  function alSaberPref(fn) {
+    if (prefLista) { fn(); return; }
+    colaPref.push(fn);
+  }
+  function prefSabida() {
+    if (prefLista) return;
+    prefLista = true;
+    var c = colaPref; colaPref = [];
+    c.forEach(function (f) { try { f(); } catch (e) {} });
+  }
+  function ponerOculto(si, guardar) {
+    oculto = !!si;
+    var m = document.getElementById('pgMuelle');
+    if (oculto) cerrarPanel();
+    if (m) m.classList.toggle('pgs-oculta', oculto);
+    if (pagina().toLowerCase() === 'gabi-brahian.html') {   // su barra lateral ya tenía el botón: que digan lo mismo
+      try {
+        document.documentElement.classList.toggle('pg-sin-tops', oculto);
+        var bt = document.getElementById('btnTops');
+        if (bt) bt.textContent = oculto ? 'Mostrar la barra de tops' : 'Ocultar la barra de tops';
+      } catch (e) {}
+    }
+    if (!guardar || !CLI || !UID) return;
+    try {
+      CLI.schema('portal').from('preferencias_usuario')
+        .upsert({ user_id: UID, clave: clavePref(), valor: oculto, actualizado: new Date().toISOString() }, { onConflict: 'user_id,clave' })
+        .then(function () {}, function () {});
+    } catch (e) { /* si no guarda, igual queda oculta en esta pantalla */ }
+  }
+  function leerPref(cli, s) {
+    if (!SE_OCULTA.test(pagina())) return;             // en las demás herramientas la columna no se oculta
+    CLI = cli; UID = s && s.user ? s.user.id : null;
+    setTimeout(prefSabida, 1500);                       // la base lenta nunca deja la columna escondida
+    try {
+      cli.schema('portal').from('preferencias_usuario').select('valor').eq('clave', clavePref()).maybeSingle()
+        .then(function (r) {
+          if (!prefLista && r && !r.error && r.data && (r.data.valor === true || r.data.valor === 'true')) ponerOculto(true, false);
+          prefSabida();
+        }, prefSabida);
+    } catch (e) { prefSabida(); }
   }
 
   /* ---------- 1) la barrita del top ---------- */
@@ -351,9 +462,7 @@
     bar.appendChild(grupo('fee', 'Top fee', fee, 'pos_fee', t));
     bar.appendChild(grupo('prem', 'Top premium', prem, 'pos_premium', t));
     var m = muelle();
-    var ref = document.getElementById('pgSombra');
-    if (ref && ref.parentNode === m) m.insertBefore(bar, ref);   // arriba de la bolita
-    else m.appendChild(bar);                                    // (el volver y la línea quedan arriba)
+    meter(m, bar, document.getElementById('pgSombra'));          // arriba de la bolita (el volver y la línea quedan arriba)
   }
 
   /* ---------- 1b) el desplegable: la lista completa del mes ---------- */
@@ -493,7 +602,7 @@
       } catch (e) { /* la medición nunca estorba el clic */ }
       global.location.href = DESTINO;
     });
-    muelle().appendChild(b);               // siempre debajo de la barrita
+    meter(muelle(), b);                    // siempre debajo de la barrita (y encima del ocultar)
   }
 
   /* ---------- cliente y arranque ---------- */
@@ -538,6 +647,7 @@
     if (!cli) return;
     conSesion(cli, function (s) {
       if (EXTERNOS.indexOf(String(s.user.email || '').toLowerCase()) >= 0) return;
+      leerPref(cli, s);                                     // v7: ¿esta persona la tiene oculta en esta herramienta?
       /* las dos piezas se piden a la vez */
       rapido(cli, 'top_mes_vigente', function () {
         try { cli.schema('portal').rpc('top_mes_vigente').then(function (res) {
