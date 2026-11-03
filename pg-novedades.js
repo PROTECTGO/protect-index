@@ -1,5 +1,6 @@
 /* ============================================================================
- * pg-novedades.js  ·  Widget lector de Novedades ProtectGo  ·  v4.12
+ * pg-novedades.js  ·  Widget lector de Novedades ProtectGo  ·  v4.13
+ * v4.13 (3-nov-2026): el cuerpo del muro usa "safe center" (no corta por arriba cuando no cabe) y la foto héroe baja a 44vh.
  * v4.12 (3-nov-2026): felicitación SIN logro (pieza de grupo) va a la tarjeta héroe con la imagen completa; con logro sigue el retrato por persona.
  * v4.11 (3-nov-2026): la foto de la felicitación se ve completa (contain, hasta 960px de ancho), sin recorte. Nada más cambia.
  * v4.10 (7-oct-2026): las direcciones web del cuerpo salen como enlace tocable (nueva pestaña)
@@ -258,7 +259,9 @@
       + 'font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1,"lnum" 1;}'
 
       /* ---------- Cuerpo centrado ---------- */
-      + '.pgnov-body{flex:1;min-height:0;overflow-y:auto;display:flex;align-items:center;'
+      /* v4.13 (3-nov): "safe center" también aquí — si el contenido no cabe, se baja con
+         scroll y NO se corta por arriba (pasaba con la pieza ancha de los ganadores). */
+      + '.pgnov-body{flex:1;min-height:0;overflow-y:auto;display:flex;align-items:flex-start;align-items:safe center;'
       + 'justify-content:center;text-align:center;padding:6px 0;}'
       + '.pgnov-body::-webkit-scrollbar{width:8px;}'
       + '.pgnov-body::-webkit-scrollbar-thumb{background:rgba(255,255,255,.16);border-radius:99px;}'
@@ -342,7 +345,7 @@
       + '.t-felicitacion .pgnov-fel-foto{border-radius:22px;overflow:hidden;'
       + 'border:2px solid rgba(45,191,163,.55);box-shadow:0 24px 70px rgba(0,0,0,.5),'
       + '0 0 0 10px rgba(45,191,163,.08);background:rgba(45,191,163,.08);width:min(960px,92%);max-width:min(960px,92%);line-height:0;}'
-      + '.t-felicitacion .pgnov-fel-foto img{display:block;width:100%;height:auto;max-height:min(52vh,560px);object-fit:contain;}'
+      + '.t-felicitacion .pgnov-fel-foto img{display:block;width:100%;height:auto;max-height:min(44vh,560px);object-fit:contain;}'
       + '.t-felicitacion .pgnov-pie{color:var(--mint);}'
       /* Confeti sutil, sin librerías y sin tapar el contenido. */
       + '.pgnov-confeti{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0;}'
