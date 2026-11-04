@@ -504,6 +504,32 @@ a.area:focus-visible,a.liqc:focus-visible{outline:3px solid var(--pg-mint);outli
 .pop .pf span small.falta{color:#8a6a1d;font-weight:700}
 .pg-pill[role=button]{cursor:pointer}
 #mgaPista .pg-pill{display:block;white-space:normal;line-height:1.4;border-radius:10px;padding:6px 10px}
+/* ===== v9 · histórico: la onda por Semana · 4 semanas · Mes · Año ===== */
+.ondatb{margin:-2px 0 6px}
+.ondaley{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center;font-size:11.5px;color:var(--pg-muted);margin:2px 0 6px;line-height:1.45}
+.ondaley .lr{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.ondaley .sw{display:inline-block;width:18px;height:0;border-top:3px solid #2DBFA3;border-radius:2px}
+.ondaley .sw.e{border-top:3px dashed #D9A520}
+.ondaley .sw.c{border-top:2px dashed #C9D4DC}
+.ondaley .sw.p{width:8px;height:8px;border:none;border-radius:50%;background:#1B2D3A}
+.ondaerr{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:14px 0}
+.dias,.anio{display:grid;gap:8px;margin-top:10px}
+.dias{grid-template-columns:repeat(auto-fill,minmax(96px,1fr))}
+.anio{grid-template-columns:repeat(auto-fill,minmax(108px,1fr))}
+.dias .s,.anio .s{background:#F9FBFC;border:1px solid var(--pg-line);border-radius:12px;padding:8px 10px;min-width:0}
+.dias .s .k,.anio .s .k{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--pg-muted)}
+.dias .s .v,.anio .s .v{font-family:var(--pg-font-num);font-size:15px;font-weight:700;color:var(--pg-ink);margin-top:3px;overflow-wrap:anywhere}
+.dias .s .v.neg{color:var(--pg-neg)} .dias .s .v.warn{color:#8a6a1d}
+.dias .s .t,.anio .s .t{font-size:10.5px;color:var(--pg-muted);margin-top:2px;font-family:var(--pg-font-num);line-height:1.35}
+.anio .s .t.ok{color:var(--pg-mint-deep)} .anio .s .t.warn{color:#8a6a1d} .anio .s .t.neg{color:var(--pg-neg)}
+.dias .s.hoy,.anio .s.hoy,.sem4 .s.hoy{border-color:var(--pg-mint)}
+.sem4.mesw{grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}
+.tres{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:12px;border-top:1px solid var(--pg-line);padding-top:10px}
+.tres .c{min-width:0}
+.tres .c .k{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--pg-muted)}
+.tres .c .v{font-family:var(--pg-font-num);font-size:18px;font-weight:700;color:var(--pg-ink);margin-top:2px;overflow-wrap:anywhere}
+.tres .c .t{font-size:11px;color:var(--pg-muted);margin-top:2px;line-height:1.35}
+@media(max-width:420px){ .tres{grid-template-columns:1fr} .sem4.mesw{grid-template-columns:1fr 1fr} .ondatb .pg-toggle button{padding:7px 11px} }
 </style>
 <script src="pg-novedades.js"></script>
 </head>
@@ -611,7 +637,7 @@ a.area:focus-visible,a.liqc:focus-visible{outline:3px solid var(--pg-mint);outli
    <div class="pg-card" id="cRet"><div class="skel"></div><div class="skel"></div><div class="skel" style="width:70%"></div></div>
   </section>
 
-  <div class="pg-footnote">GABI · Liquidez v8 · ProtectGo Services LLC</div>
+  <div class="pg-footnote">GABI · Liquidez v9 · ProtectGo Services LLC</div>
  </main>
 </div>
 
@@ -672,7 +698,7 @@ let D = null;            // respuesta de liquidez_panel()
 let EMAIL = '';
 let OCUPADO = false;     // una escritura a la vez
 const UI = { per:'sem', vista:'sem', abiertos:new Set(), aplazar:null, edit:null, confirmar:null, retForm:null, peq:false, tab:'liq', prog:'', inicio:false, navego:false, cuadre:null,
-  salio:null, sf:false, sfDesc:false };   /* v8 · salio = casilla «¿cuándo salió?» abierta · sf = bloque de DPs sin fecha de pago */
+  salio:null, sf:false, sfDesc:false, onda:'4' };   /* v8 · salio = casilla «¿cuándo salió?» abierta · sf = bloque de DPs sin fecha de pago · v9 · onda = Semana / 4 semanas / Mes / Año */
 /* v3 · La agencia: portal.liquidez_agencia() (solo direccion_total; a los demás {puede:false}). */
 let AG = null;            // respuesta de liquidez_agencia()
 let AG_ESTADO = 'cargando';  // cargando | si | no | error
@@ -729,6 +755,7 @@ async function cargar(intento){
   cargarRetiroSemana();
   cargarSinFecha();      /* v8 · E1 */
   cargarMgaSinCorte();   /* v8 · E5 */
+  if (HIS_EST !== 'no') cargarHistorico();   /* v9 · si ya se abrió el histórico, se lee otra vez */
 }
 function sinAcceso(){
   $('main').classList.add('sin-acceso');
@@ -1811,12 +1838,12 @@ function mgaRefrescar(){
 }
 
 /* ---------- 6 · cuatro semanas (onda, cero barras) ---------- */
-function pintarOnda(){
+function pintarOnda4(){   /* v9 · la vista «4 semanas»: igual que antes, con el selector debajo del título */
   const S = D.semanas || [], p = D.params || {}, r = D.retiro || {};
   const colchon = num(p.colchon) != null ? num(p.colchon) : (num(r.colchon) || 0);
   const box = $('cOnda');
-  if (!S.length) { box.innerHTML = '<h2>Cuatro semanas <span class="mini">colchón ' + usd(colchon) + '</span></h2><div class="vacio">—</div>'; return; }
-  box.innerHTML = '<h2>Cuatro semanas <span class="mini">colchón ' + usd(colchon) + '</span></h2><div class="onda" id="ondaSvg"></div><div class="sem4" id="sem4"></div><div class="mesln" id="mesLn"></div>';
+  if (!S.length) { box.innerHTML = '<h2>Cuatro semanas <span class="mini">colchón ' + usd(colchon) + '</span></h2>' + tbOnda() + '<div class="vacio">—</div>'; return; }
+  box.innerHTML = '<h2>Cuatro semanas <span class="mini">colchón ' + usd(colchon) + '</span></h2>' + tbOnda() + '<div class="onda" id="ondaSvg"></div><div class="sem4" id="sem4"></div><div class="mesln" id="mesLn"></div>';
   $('mesLn').innerHTML = lineaMes();
   const W = Math.max(300, Math.round($('ondaSvg').clientWidth || 1000)), H = 150, PL = 50, PR = 50, PT = 24, PB = 40;
   const vals = S.map(s => num(s.saldo_fin));
@@ -1855,6 +1882,240 @@ function pintarOnda(){
       + '<div class="v ' + cls + '">' + usd(v) + '</div>'
       + '<div class="t">' + conSigno(s.entra, '+') + ' · ' + conSigno(s.sale, '−') + ' · ' + conSigno(ret, '−') + '</div></div>';
   }).join('');
+}
+
+/* =====================================================================
+   v9 · «HISTÓRICO» — la onda con Semana · 4 semanas · Mes · Año (E8).
+   Todo se lee: portal.liquidez_panel() (esta semana y las cuatro semanas) y portal.liquidez_historico()
+   (la salud de cada mes —la misma de 01 La agencia—, las fotos de Chase y los retiros registrados).
+   Verde = real · ámbar punteado = estimado. Cero barras. «4 semanas» queda igual que antes.
+   ===================================================================== */
+let HIS = null, HIS_EST = 'no', HIS_MSG = '', HIS_SEQ = 0;   // portal.liquidez_historico()   (SEQ: solo vale la lectura más reciente)
+async function cargarHistorico(){
+  const mi = ++HIS_SEQ;
+  if (!HIS) { HIS_EST = 'cargando'; if (UI.onda !== '4') pintarOnda(); }   /* si ya hay datos, se quedan a la vista mientras llega lo nuevo */
+  let r;
+  try { r = await SB.schema('portal').rpc('liquidez_historico'); } catch (e) { r = { data:null, error:e }; }
+  if (mi !== HIS_SEQ) return;
+  if (r.error || !r.data) { HIS_EST = 'error'; HIS_MSG = errMsg(r.error || 'Sin respuesta'); }
+  else { HIS = r.data; HIS_EST = 'si'; HIS_MSG = ''; }
+  if (D && UI.tab === 'liq' && UI.onda !== '4') pintarOnda();
+}
+const ONDA_V = [['sem', 'Semana'], ['4', '4 semanas'], ['mes', 'Mes'], ['anio', 'Año']];
+function tbOnda(){
+  return '<div class="tb ondatb"><div class="pg-toggle" role="group" aria-label="Ver la onda por">'
+    + ONDA_V.map(([v, t]) => '<button type="button" data-act="onda" data-v="' + v + '" class="' + (UI.onda === v ? 'on' : '') + '" aria-pressed="' + (UI.onda === v) + '">' + t + '</button>').join('')
+    + '</div></div>';
+}
+/* al volver a pintar (llega el histórico, se cambia el tamaño, se guarda algo) el foco del teclado se queda en el selector */
+function pintarOnda(){
+  const ae = document.activeElement, foco = ae && ae.closest && ae.closest('#cOnda .ondatb') ? ae.dataset.v : null;
+  pintarOndaVista();
+  if (foco) { const t = document.querySelector('#cOnda .ondatb [data-v="' + foco + '"]'); if (t) t.focus(); }
+}
+function pintarOndaVista(){
+  const v = UI.onda || '4';
+  if (v === '4' || !D) return pintarOnda4();
+  const box = $('cOnda');
+  const tit = v === 'sem' ? 'Esta semana' : v === 'mes' ? Mayus(mesNom(D.hoy)) : String((fISO(D.hoy) || {}).y || 'Año');
+  const sub = v === 'anio' ? '<span class="mini">cómo entra la plata a la agencia</span>' : '<span class="mini">colchón ' + usd(colchonDe()) + '</span>';
+  const cab = '<h2>' + esc(tit) + ' ' + sub + '</h2>' + tbOnda();
+  if (v !== 'sem' && !HIS) {   /* Mes y Año necesitan el histórico; si una lectura posterior falla, se quedan con lo último que llegó */
+    box.innerHTML = cab + (HIS_EST === 'error'
+      ? '<div class="ondaerr"><span class="mini">No pudimos leer el histórico (' + esc(HIS_MSG) + ')</span><button class="pg-btn sec sm" type="button" data-act="onda-reintentar">Reintentar</button></div>'
+      : '<div class="skel" style="height:150px" aria-label="Cargando"></div>');
+    if (HIS_EST === 'no') cargarHistorico();
+    return;
+  }
+  box.innerHTML = cab + '<div class="onda" id="ondaSvg"></div><div class="ondaley" id="ondaLey"></div><div id="ondaCel"></div><div class="tres" id="ondaTres"></div>';
+  if (v === 'sem') ondaSemana(); else if (v === 'mes') ondaMes(); else ondaAnio();
+  if (v === 'sem' && HIS_EST === 'no') cargarHistorico();   /* la semana se pinta ya con el panel; las fotos de Chase de días anteriores llegan después */
+}
+const colchonDe = () => { const p = D.params || {}, r = D.retiro || {}; return num(p.colchon) != null ? num(p.colchon) : (num(r.colchon) || 0); };
+const lunesDe = iso => addDias(iso, -((new Date(utc(iso)).getUTCDay() + 6) % 7));
+const finMesDe = iso => { const f = fISO(iso); return f ? f.y + '-' + String(f.m).padStart(2, '0') + '-' + String(new Date(Date.UTC(f.y, f.m, 0)).getUTCDate()).padStart(2, '0') : null; };
+const DIA_C = ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'];
+const diaC = iso => DIA_C[new Date(utc(iso)).getUTCDay()];
+/* la última foto de Chase dentro de [desde, hasta] (fotos del histórico; si aún no llega, la del panel) */
+function fotoEntre(desde, hasta){
+  const xs = ((HIS && HIS.fotos) || []).filter(f => f.dia >= desde && f.dia <= hasta);
+  if (xs.length) return xs[xs.length - 1];
+  const c = D.caja || {}, d = c.actualizado ? diaBog(c.actualizado) : null;
+  return (d && d >= desde && d <= hasta && num(c.saldo) != null) ? { dia:d, en:c.actualizado, saldo:num(c.saldo) } : null;
+}
+/* el cierre del mes en Chase después de los retiros (lo mismo que dice la línea del mes) */
+function cierreMes(){
+  const M = D.mes; if (!M || num(M.saldo_antes_retiros) == null) return null;
+  const r = D.retiro || {}, p = D.params || {};
+  const socios = num(r.socios) || num(p.socios) || 3;
+  const R = r.registrado != null ? num(r.registrado) : (r.sugerido != null ? num(r.sugerido) : num(r.min != null ? r.min : p.min));
+  const N = num(M.retiros_semanas) || 0, X = num(M.saldo_antes_retiros);
+  return { fin:M.fin, antes:X, despues:X - N * socios * (R || 0), retiros:N * socios * (R || 0) };
+}
+
+/* ---------- la onda genérica: series de puntos {pos 0..1, v}; real = verde sólido, estimado = ámbar punteado ---------- */
+function svgOnda(series, o){
+  const box = $('ondaSvg'); if (!box) return;
+  const W = Math.max(300, Math.round(box.clientWidth || 1000)), H = 150, PL = 50, PR = 50, PT = 24, PB = 40;
+  const vals = [];
+  series.forEach(s => s.pts.forEach(p => { if (p.v != null) vals.push(p.v); }));
+  (o.extra || []).forEach(p => { if (p.v != null) vals.push(p.v); });
+  if (!vals.length) { box.innerHTML = '<div class="vacio">—</div>'; return; }
+  if (o.colchon != null) vals.push(o.colchon);
+  let lo = Math.min(0, ...vals), hi = Math.max(0, ...vals);
+  const pad = (hi - lo) * 0.08 || 1000; lo -= pad; hi += pad;
+  const x = q => PL + Math.max(0, Math.min(1, q)) * (W - PL - PR);
+  const y = v => PT + (H - PT - PB) * (hi - v) / (hi - lo);
+  const col = o.colchon;
+  const txtDe = v => (col == null || v >= col) ? '#1B2D3A' : v >= 0 ? '#8a6a1d' : '#D5594F';
+  let g = '';
+  if (lo < 0 && hi > 0) g += '<line x1="' + PL + '" y1="' + y(0).toFixed(1) + '" x2="' + (W - PR) + '" y2="' + y(0).toFixed(1) + '" stroke="#E7EDF2" stroke-width="1.5"/>';
+  if (col != null) g += '<line x1="' + PL + '" y1="' + y(col).toFixed(1) + '" x2="' + (W - PR) + '" y2="' + y(col).toFixed(1) + '" stroke="#C9D4DC" stroke-width="2" stroke-dasharray="5 5"/>';
+  const medio = (PT + H - PB) / 2, etq = [];
+  series.forEach(s => {
+    const pts = s.pts.filter(p => p.v != null);
+    if (!pts.length) return;
+    /* con los puntos muy juntos (celular) se rotulan solo el más alto, el más bajo y el último: los demás están en los recuadros de abajo */
+    const conLbl = pts.filter(p => p.lbl);
+    if (conLbl.length > 2 && (W - PL - PR) / (conLbl.length - 1) < 64) {
+      const vs = conLbl.map(p => p.v), mx = Math.max(...vs), mn = Math.min(...vs), deja = new Set([conLbl[vs.indexOf(mx)], conLbl[vs.indexOf(mn)], conLbl[conLbl.length - 1]]);
+      conLbl.forEach(p => { if (!deja.has(p)) p.lbl = false; });
+    }
+    const d = pts.map((p, j) => (j ? 'L' : 'M') + x(p.pos).toFixed(1) + ' ' + y(p.v).toFixed(1)).join(' ');
+    if (s.area && pts.length > 1) {
+      const base = y(Math.max(lo, 0)).toFixed(1);
+      g += '<path d="' + d + ' L' + x(pts[pts.length - 1].pos).toFixed(1) + ' ' + base + ' L' + x(pts[0].pos).toFixed(1) + ' ' + base + ' Z" fill="' + s.color + '" fill-opacity=".10" stroke="none"/>';
+    }
+    if (pts.length > 1) g += '<path d="' + d + '" fill="none" stroke="' + s.color + '" stroke-width="' + (s.real ? '2.6' : '2.2') + '"' + (s.real ? '' : ' stroke-dasharray="6 5"') + ' stroke-linejoin="round" stroke-linecap="round"/>';
+    pts.forEach((p, j) => {
+      if (p.sinPunto) return;
+      const X = x(p.pos), Y = y(p.v);
+      g += '<circle cx="' + X.toFixed(1) + '" cy="' + Y.toFixed(1) + '" r="4.5" fill="' + (p.hueco ? '#fff' : s.color) + '" stroke="' + s.color + '" stroke-width="' + (p.hueco ? 2 : 0) + '">' + (p.titulo ? '<title>' + esc(p.titulo) + '</title>' : '') + '</circle>';
+      if (p.lbl) {
+        const sig = pts[j + 1] ? y(pts[j + 1].v) : null;
+        const abajo = (Y > medio && (sig == null || sig <= Y + 4)) || Y - 11 < 12;
+        etq.push('<text x="' + X.toFixed(1) + '" y="' + (abajo ? Y + 18 : Y - 10).toFixed(1) + '" text-anchor="middle" font-size="11" fill="' + txtDe(p.v) + '" font-family="JetBrains Mono,Courier New,monospace" font-weight="700" stroke="#fff" stroke-width="4" stroke-linejoin="round" paint-order="stroke">' + usd(p.v) + '</text>');
+      }
+    });
+  });
+  (o.extra || []).forEach(p => { if (p.v != null) g += '<circle cx="' + x(p.pos).toFixed(1) + '" cy="' + y(p.v).toFixed(1) + '" r="3.4" fill="#1B2D3A"><title>' + esc(p.titulo || '') + '</title></circle>'; });
+  g += etq.join('');
+  (o.ejes || []).forEach(e => { g += '<text x="' + x(e.pos).toFixed(1) + '" y="' + (H - 6) + '" text-anchor="middle" font-size="10" fill="' + (e.hoy ? '#1B2D3A' : '#6B7D89') + '" font-weight="' + (e.hoy ? 700 : 400) + '" font-family="Inter,Arial">' + esc(e.txt) + '</text>'; });
+  box.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="' + W + '" height="' + H + '" role="img" aria-label="' + esc(o.aria || '') + '">' + g + '</svg>';
+}
+const ley = (txt) => { const el = $('ondaLey'); if (el) el.innerHTML = txt; };
+const tres = (xs) => { const el = $('ondaTres'); if (el) el.innerHTML = xs.map(c => '<div class="c"><div class="k">' + c[0] + '</div><div class="v' + (c[2] ? ' ' + c[2] : '') + '">' + c[1] + '</div>' + (c[3] ? '<div class="t">' + c[3] + '</div>' : '') + '</div>').join(''); };
+const LEY_RE = '<span class="lr"><i class="sw r"></i>Chase real</span><span class="lr"><i class="sw e"></i>estimado</span><span class="lr"><i class="sw c"></i>colchón</span>';
+
+/* ---------- Semana: la caja al cierre de cada día (lo de antes de hoy, con fotos de Chase) ---------- */
+function ondaSemana(){
+  const L = D.lunes, hoy = D.hoy, dias = [0, 1, 2, 3, 4, 5, 6].map(i => addDias(L, i)), fin7 = dias[6];
+  const c = D.caja || {}, saldo = num(c.saldo), chDia = c.actualizado ? diaBog(c.actualizado) : null;
+  /* los mismos movimientos que suma la semana del motor: Sale pendiente o vencido, Entra pendiente, ya entró o proyectado; lo atrasado, hoy;
+     lo marcado después del Chase, hoy (lo programado con «Sale el…», el día en que sale) */
+  const mov = {}; dias.forEach(d => { mov[d] = { e:0, s:0 }; });
+  (D.items || []).forEach(it => {
+    const cuenta = it.sentido === 'entra' ? (it.estado === 'pendiente' || it.estado === 'ya_entro' || it.estado === 'proyeccion') : (it.estado === 'pendiente' || it.estado === 'vencido');
+    if (!cuenta || !(it.fecha <= fin7)) return;
+    const d = it.fecha < hoy ? hoy : it.fecha;
+    if (mov[d]) mov[d][it.sentido === 'entra' ? 'e' : 's'] += num(it.monto) || 0;
+  });
+  (D.ajustes || []).forEach(a => {
+    const dA = esProgramado(a) ? diaBog(a.pagado_en) : null, d = (dA && dA > hoy && dA <= fin7) ? dA : hoy;
+    if (mov[d]) mov[d][a.sentido === 'entra' ? 'e' : 's'] += num(a.monto) || 0;
+  });
+  const ret = retiroSemana0();
+  let acc = saldo;
+  const est = dias.map((d, i) => {
+    if (d < hoy || acc == null) return { pos:i / 6, v:null };
+    acc += mov[d].e - mov[d].s;
+    const v = d === fin7 && ret != null ? acc - ret : acc;
+    return { pos:i / 6, v, lbl:true, titulo:fCorta(d) + ' · estimado' };
+  });
+  const reales = dias.map((d, i) => { const f = d < hoy || d === chDia ? fotoEntre(d, d) : null; return { pos:i / 6, v:f ? num(f.saldo) : null, titulo:f ? 'Chase del ' + fCorta(d) + ': ' + usd(f.saldo) : '' }; });
+  /* el punteado sale de la última foto real (si es de un día anterior) */
+  const iHoy = dias.indexOf(hoy), fotoHoy = iHoy >= 0 && reales[iHoy].v != null;
+  const ult = fotoHoy ? null : reales.map((p, i) => ({ p, i })).filter(z => z.p.v != null && dias[z.i] < hoy).pop();
+  const estPts = (ult ? [{ pos:ult.p.pos, v:ult.p.v, sinPunto:true }] : []).concat(est);
+  svgOnda([{ pts:reales, color:'#2DBFA3', real:true }, { pts:estPts, color:'#D9A520', real:false }],
+    { colchon:colchonDe(), ejes:dias.map((d, i) => ({ pos:i / 6, txt:diaC(d) + ' ' + (fISO(d) || {}).d, hoy:d === hoy })), aria:'Caja al cierre de cada día de esta semana' });
+  const viejo = c.stale ? ' (Chase viejo)' : '';
+  ley(LEY_RE + '<span class="mini">Parte del Chase del ' + esc(chDia ? fCorta(chDia) : '—') + ' (' + usd(saldo) + ')' + viejo + '; el domingo ya resta el retiro de la semana.</span>');
+  $('ondaCel').innerHTML = '<div class="dias">' + dias.map((d, i) => {
+    const r = reales[i], e = est[i], m = mov[d];
+    const v = e.v != null ? e.v : r.v;
+    const cls = v == null ? '' : v < 0 ? 'neg' : v < colchonDe() ? 'warn' : '';
+    const t = e.v != null
+      ? (m.e || m.s ? conSigno(m.e, '+') + ' · ' + conSigno(m.s, '−') : 'sin movimientos') + (d === fin7 && ret ? ' · retiro ' + conSigno(ret, '−') : '')
+      : (r.v != null ? 'Chase real' : 'sin foto de Chase');
+    return '<div class="s' + (d === hoy ? ' hoy' : '') + '"><div class="k">' + esc(diaC(d) + ' ' + fCorta(d)) + '</div><div class="v ' + cls + '">' + (v == null ? '—' : usd(v)) + '</div><div class="t">' + t + '</div></div>';
+  }).join('') + '</div>';
+  const S0 = (D.semanas || [])[0] || {};
+  tres([['Entra', usd(S0.entra)], ['Sale', usd(S0.sale)], ['Retiro', ret == null ? '—' : usd(ret), '', 'de la semana, los ' + esc(String(num((D.retiro || {}).socios) || num((D.params || {}).socios) || 3)) + ' socios']]);
+}
+
+/* ---------- Mes: la caja al cierre de cada semana del mes (las pasadas con fotos de Chase) ---------- */
+function ondaMes(){
+  const hoy = D.hoy, f = fISO(hoy), m0 = f.y + '-' + String(f.m).padStart(2, '0') + '-01', mFin = finMesDe(hoy);
+  const sems = []; for (let l = lunesDe(m0); l <= mFin; l = addDias(l, 7)) sems.push(l);
+  const S = D.semanas || [], n = Math.max(1, sems.length - 1), cm = cierreMes();
+  const filas = sems.map((l, i) => {
+    const dom = addDias(l, 6), k = Math.round(difDias(l, D.lunes) / 7), pos = sems.length === 1 ? 0.5 : i / n;
+    if (dom < D.lunes) { const ft = fotoEntre(l, dom); return { l, pos, real:ft ? num(ft.saldo) : null, ft }; }
+    const s = S.find(z => Number(z.k) === k);
+    if (s) return { l, pos, est:num(s.saldo_fin), s };
+    if (cm && mFin >= l && mFin <= dom) return { l, pos, est:cm.despues, cierre:true };
+    return { l, pos };
+  });
+  const reales = filas.map(z => ({ pos:z.pos, v:z.real != null ? z.real : null, lbl:z.real != null, titulo:z.ft ? 'Chase del ' + fCorta(z.ft.dia) + ': ' + usd(z.ft.saldo) : '' }));
+  const ultReal = filas.filter(z => z.real != null).pop();
+  const est = (ultReal ? [{ pos:ultReal.pos, v:ultReal.real, sinPunto:true }] : []).concat(filas.filter(z => z.est != null).map(z => ({ pos:z.pos, v:z.est, lbl:true, titulo:(z.cierre ? 'Cierre del mes' : 'Semana del ' + fCorta(z.l)) + ' · estimado' })));
+  svgOnda([{ pts:reales, color:'#2DBFA3', real:true }, { pts:est, color:'#D9A520', real:false }],
+    { colchon:colchonDe(), ejes:filas.map(z => ({ pos:z.pos, txt:fCorta(z.l), hoy:z.l === D.lunes })), aria:'Caja al cierre de cada semana de ' + mesNom(hoy) });
+  ley(LEY_RE + '<span class="mini">Las semanas que ya pasaron, con la última foto de Chase de cada una; las que vienen, como en «4 semanas».</span>');
+  $('ondaCel').innerHTML = '<div class="sem4 mesw">' + filas.map(z => {
+    const v = z.real != null ? z.real : z.est;
+    const cls = v == null ? '' : v < 0 ? 'neg' : v < colchonDe() ? 'warn' : '';
+    let t;
+    if (z.s) { const ret = Number(z.s.k) === 0 ? retiroSemana0() : num(z.s.retiro_plan); t = conSigno(z.s.entra, '+') + ' · ' + conSigno(z.s.sale, '−') + ' · ' + conSigno(ret, '−'); }
+    else if (z.cierre) t = 'cierre del ' + fCorta(cm.fin) + ' · con los retiros';
+    else if (z.ft) t = 'Chase del ' + fCorta(z.ft.dia);
+    else t = z.l < D.lunes ? 'sin foto de Chase' : 'fuera de las 4 semanas';
+    return '<div class="s' + (z.l === D.lunes ? ' hoy' : '') + '"><div class="k">' + esc(fCorta(z.l)) + '</div><div class="v ' + cls + '">' + (v == null ? '—' : usd(v)) + '</div><div class="t">' + t + '</div></div>';
+  }).join('') + '</div>';
+  const mesH = ((HIS && HIS.meses) || []).find(x => String(x.mes).slice(0, 7) === m0.slice(0, 7));
+  const retM = ((HIS && HIS.retiros) || []).filter(r => String(r.fecha).slice(0, 7) === m0.slice(0, 7)).reduce((s, r) => s + (num(r.total) || 0), 0);
+  const hayRet = ((HIS && HIS.retiros) || []).some(r => String(r.fecha).slice(0, 7) === m0.slice(0, 7));
+  tres([['Entró a la agencia', mesH ? usd(mesH.entro) : '—', '', mesH && mesH.en_curso ? 'va en el mes (fees y comisiones)' : 'fees y comisiones'],
+        ['Cuesta operar', mesH ? usd(mesH.costo) : '—', '', 'nómina, fijos y comisiones a agentes'],
+        ['Retiros', hayRet ? usd(retM) : '—', '', hayRet ? 'registrados en el mes' : (cm ? 'sin registrar · plan ' + usd(cm.retiros) : 'sin registrar')]]);
+}
+
+/* ---------- Año: lo que entró a la agencia cada mes contra lo que cuesta operar, y las fotos de Chase ---------- */
+function ondaAnio(){
+  const H = HIS || {}, y = num(H.anio) || (fISO(D.hoy) || {}).y, M = H.meses || [];
+  const pos = iso => { const f = fISO(iso); return f ? (f.m - 1) / 11 : null; };
+  const posDia = iso => { const f = fISO(iso); if (!f) return null; const dim = new Date(Date.UTC(f.y, f.m, 0)).getUTCDate(); return (f.m - 1 + (f.d - 1) / dim) / 11; };
+  const entro = M.map(m => ({ pos:pos(m.mes), v:num(m.entro), hueco:!!m.en_curso, titulo:Mayus(mesNom(m.mes)) + ': entró ' + usd(m.entro) + (m.en_curso ? ' (va en el mes)' : '') }));
+  const costo = M.map(m => ({ pos:pos(m.mes), v:num(m.costo), titulo:Mayus(mesNom(m.mes)) + ': cuesta operar ' + usd(m.costo) }));
+  const fotos = (H.fotos || []).filter(ft => fISO(ft.dia) && fISO(ft.dia).y === y).map(ft => ({ pos:posDia(ft.dia), v:num(ft.saldo), titulo:'Chase del ' + fCorta(ft.dia) + ': ' + usd(ft.saldo) }));
+  const MC = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+  svgOnda([{ pts:entro, color:'#2DBFA3', real:true, area:true }, { pts:costo, color:'#D9A520', real:false }],
+    { extra:fotos, ejes:MC.map((t, i) => ({ pos:i / 11, txt:t, hoy:i + 1 === (fISO(D.hoy) || {}).m })), aria:'Lo que entró a la agencia cada mes de ' + y + ' contra lo que cuesta operar' });
+  ley('<span class="lr"><i class="sw r"></i>entró a la agencia</span><span class="lr"><i class="sw e"></i>cuesta operar</span><span class="lr"><i class="sw p"></i>fotos de Chase</span><span class="mini">Del BOS y de la salud del mes (lo mismo de La agencia). El mes en curso va en blanco.</span>');
+  const ESTC = { verde:'ok', ambar:'warn', rojo:'neg' };
+  $('ondaCel').innerHTML = M.length ? '<div class="anio">' + M.map(m => {
+    const q = num(m.quedo);
+    return '<div class="s' + (m.en_curso ? ' hoy' : '') + '"><div class="k">' + esc(Mayus(mesNom(m.mes))) + (m.en_curso ? ' · va' : '') + '</div>'
+      + '<div class="v">' + usd(m.entro) + '</div>'
+      + '<div class="t ' + (ESTC[m.estado] || '') + '">quedó ' + (q == null ? '—' : (q < 0 ? '−' : '+') + n0(q)) + '</div></div>';
+  }).join('') + '</div>' : '<div class="vacio">—</div>';
+  const sum = k => M.reduce((s, m) => s + (num(m[k]) || 0), 0);
+  const retA = (H.retiros || []).filter(r => (fISO(r.fecha) || {}).y === y);
+  const totRet = retA.reduce((s, r) => s + (num(r.total) || 0), 0), ultRet = retA.filter(r => num(r.total) > 0).pop();
+  tres([['Entró a la agencia', M.length ? usd(sum('entro')) : '—', '', 'en ' + y + ' (fees y comisiones)'],
+        ['Cuesta operar', M.length ? usd(sum('costo')) : '—', '', 'nómina, fijos y comisiones a agentes'],
+        ['Retiros registrados', retA.length ? usd(totRet) : '—', '', ultRet ? 'el último, la semana del ' + fCorta(ultRet.fecha) : 'ninguno registrado']]);
 }
 
 /* ---------- 7 · fijos del mes ---------- */
@@ -2419,7 +2680,8 @@ function abrirAyuda(){
     + '<p>El retiro de la semana = lo que <b>Queda</b> esta semana menos el colchón de <b>' + usd(p.colchon) + '</b>, entre <b>' + esc(p.socios == null ? '—' : p.socios) + '</b>, nunca por encima del objetivo (' + usd(p.obj) + '). Las <b>' + esc(p.horizonte == null ? '—' : p.horizonte) + ' semanas</b> no lo recortan: si más adelante la caja baja del colchón, la línea de abajo avisa.</p>'
     + '<p>Lo que vencía antes del último saldo de Chase se da por pagado: ya está reflejado en el banco. La deuda con las MGAs se marca a mano.</p>'
     + '<p>Al marcar un pago en <b>Sale</b> se pregunta cuándo salió: <b>Ya salió</b> (ahora), <b>Sale el…</b> (un día de esta semana: sigue restando de Chase hasta que pongas un saldo posterior a esa fecha) o <b>Salió antes del último Chase</b> (el saldo ya lo trae). En un down payment, <b>Aún no se depositó</b> registra al cliente que pagó por ACH: su plata entra el día del depósito y el DP sale el día del giro.</p>'
-    + '<p>Los <b>DPs sin fecha de pago</b> (al pie de Sale) no son deuda y no suman: FAM les pone la fecha en el BOS. <b>Se debe</b> cuenta uno desde hoy; ✕ lo descarta y queda en «Descartados».</p>';
+    + '<p>Los <b>DPs sin fecha de pago</b> (al pie de Sale) no son deuda y no suman: FAM les pone la fecha en el BOS. <b>Se debe</b> cuenta uno desde hoy; ✕ lo descarta y queda en «Descartados».</p>'
+    + '<p>La onda se ve por <b>Semana</b> (la caja al cierre de cada día; el domingo ya resta el retiro), <b>4 semanas</b>, <b>Mes</b> (cada semana del mes: las que pasaron, con su última foto de Chase) y <b>Año</b> (lo que entró a la agencia cada mes contra lo que cuesta operar —lo mismo de La agencia— y las fotos de Chase). Verde es real; ámbar punteado, estimado.</p>';
   abrirModal();
 }
 function abrirModal(){ $('modal').hidden = false; }
@@ -2654,6 +2916,9 @@ document.addEventListener('click', async e => {
       if (ok) cerrarModal();
       break;
     }
+    /* ===== v9 · la onda: Semana · 4 semanas · Mes · Año ===== */
+    case 'onda': UI.onda = b.dataset.v; pintarOnda(); { const t = document.querySelector('#cOnda [data-act=onda][data-v="' + UI.onda + '"]'); if (t) t.focus(); } break;
+    case 'onda-reintentar': cargarHistorico(); break;
   }
 });
 /* v8 · lo que se calcula mientras se escribe: el monto del corte de MGA y el ACH */
@@ -2681,7 +2946,7 @@ arrancar();
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="gabi-liquidez.html";
-var PGV_VERSION=8; // v8 - 3-nov-2026 MOTOR HONESTO (ronda 1): al pie de Sale, el bloque plegable «DPs sin fecha de pago» (con la fila del BOS, MGA, cliente, vendedor, edad y monto por girar; NO suman a Sale; Se debe / No va / Deshacer; portal.liquidez_dp_sin_fecha); las casillas de pago preguntan cuándo salió (Ya salió · Sale el… · Salió antes del último Chase) y lo programado lleva la píldora «sale el …» y sigue restando; en un down payment, «Aún no se depositó» (ACH: la plata del cliente entra el día del depósito y el DP sale el día del giro; portal.liquidez_ach_registrar); aviso «N DPs sin corte» y formulario «Cargar corte de MGA» (public.deuda_corte_guardar, portal.liquidez_mga_sin_corte); el lector del corte de Jeff entiende 8.688,69 · 8,688.69 · 8688.69 y muestra el total leído; alerta «Falta el mínimo» en las tarjetas (con mínimo y vencimiento editables); el cierre del mes llega siempre al último día y los DPs por póliza que el último Chase ya trae se dan por pagados (la base: _liq_movimientos_v y liquidez_panel, aditivo y con reversa). 01 La agencia y 03 Retiros no cambian. | v7 - 27-oct-2026 03 RETIROS · tarjeta "Esta semana" (solo dirección): el retiro por socio de la semana con la regla C — una franja con el valor, el semáforo y dónde cierra Chase en cada corte; lo poco que se escribe cada semana (giro a la SAS, comisiones del corte, otros pagos, lo que alcanza a entrar del batch); el cuadro de Jeff pegado tal cual, con chips que dicen cómo se leyó y si cuadra con su total; "Ver cómo se calculó" y "Lo de siempre entre un corte y el otro"; vista previa en vivo sin guardar y Guardar la semana (portal.retiro_semana_panel / retiro_semana_calcular / retiro_semana_guardar). Los demás socios ven solo la franja. La fila de la semana en la tabla (sugerido) y el monto que precarga Registrar salen de esa tarjeta; si Registrar coincide con ella, la nota lo deja escrito. 01 La agencia y 02 Liquidez no cambian. | v6 - 20-oct-2026 MODO VER: en Liquidez, solo dirección, la tarjeta "Cortes · tu consolidado" (pegas la tabla de la hoja, la pantalla la lee y muestra Ya en Chase · cada corte · Sin fecha con el ✓ del total; Pegar otro / Quitar; portal.liquidez_consolidado_guardar / _jubilar) y la lectura B del retiro al lado de la A (propuesta: el mismo retiro cada semana hasta el próximo corte sin bajar del colchón; no registra nada). Para todos, el cierre del mes en caja al pie de Cuatro semanas. En el cuadre de Chase, lo que tu consolidado marca como "ya llegó". El retiro oficial no cambia. | v5 - 20-oct-2026 CHASE A LA VISTA: en La agencia la tarjeta de la caja trae el saldo de Chase con su fecha y el botón Actualizar Chase (socios; si Chase pasó del límite de días, el campo ya sale abierto) y deja de ser un enlace entero ("Ver Liquidez →" aparte); aviso arriba en las tres pestañas cuando Chase pasó del límite ("Poner el saldo de hoy"); en la franja de Liquidez el ✎ pasa a un botón visible Actualizar con la fecha del saldo debajo; al guardar sale el cuadre de Chase (anterior + ventas que entraron − pagos vencidos = esperado, contra el real); sello de Chase en La agencia. Misma función caja_actualizar_saldo_v2; la base no cambia. | v4 - 14-oct-2026 (auditoría en producción): si la base está ocupada y liquidez_panel falla al entrar, un reintento automático a los 2.5 s antes del aviso; si La agencia ya cargó, se queda a la vista y el aviso habla solo de la liquidez; singular y plural en las tarjetas ("1 negativo", "1 venta", "1 persona"). | v3 - 14-oct-2026 01 LA AGENCIA (solo direccion_total, portal.liquidez_agencia): el macro de dirección en tarjetas con anillos — la franja del mes (entró contra lo que necesita: nómina, fijos y retiro mínimo, con la barrita del "debería ir hoy"), las tres áreas con la cara chiquita de su líder adentro del anillo (Ventas nuevas · Brahian, Renovaciones · Karen, Endosos · Jhon Ramírez), el mes cerrado y el año en dos anillos con el aviso de comisiones de agentes sin cargar, y la caja en una tarjeta chiquita. Abre ahí para dirección; Jorge y los demás siguen en Liquidez y Retiros sin cambios. | v2 - 13-oct-2026 el retiro se lee con la semana contra sí misma (Caja + Entra − Sale de esta semana − colchón, entre los socios, hasta el objetivo); las 4 semanas solo avisan. Lo que vencía antes del último saldo de Chase se da por pagado (pie en Sale). | v1 - 12-oct-2026 GABI LIQUIDEZ EN EL PORTAL: una pantalla de dirección que sale entera de portal.liquidez_panel() — franja (caja, entra, sale, queda y anillo del retiro por socio), ingresos semana/mes, por entrar, la cola de pagos con un clic (liquidez_decidir), cuatro semanas y fijos del mes; pestaña Retiros (registrar, corregir, cerrar la semana) y carga del corte de Jeff. Cero barras, guion cuando no hay dato, sin almacenamiento del navegador.
+var PGV_VERSION=9; // v9 - 4-nov-2026 HISTÓRICO (la ronda de las gráficas): la onda de Cuatro semanas trae un selector Semana · 4 semanas · Mes · Año. Semana: la caja al cierre de cada día con los mismos movimientos de la semana del motor (el domingo ya resta el retiro y cuadra con la primera semana de las 4); los días anteriores, con la foto de Chase. Mes: cada semana del mes (las que pasaron, con su última foto de Chase; las que vienen, como en 4 semanas; el cierre del mes al final). Año: lo que entró a la agencia cada mes contra lo que cuesta operar (nómina, fijos y comisiones a agentes: la misma salud del mes de La agencia) y las fotos de Chase como puntos. Debajo, tres cifras del periodo. Verde real, ámbar punteado estimado, cero barras (portal.liquidez_historico, solo lectura). «4 semanas» queda igual. | v8 - 3-nov-2026 MOTOR HONESTO (ronda 1): al pie de Sale, el bloque plegable «DPs sin fecha de pago» (con la fila del BOS, MGA, cliente, vendedor, edad y monto por girar; NO suman a Sale; Se debe / No va / Deshacer; portal.liquidez_dp_sin_fecha); las casillas de pago preguntan cuándo salió (Ya salió · Sale el… · Salió antes del último Chase) y lo programado lleva la píldora «sale el …» y sigue restando; en un down payment, «Aún no se depositó» (ACH: la plata del cliente entra el día del depósito y el DP sale el día del giro; portal.liquidez_ach_registrar); aviso «N DPs sin corte» y formulario «Cargar corte de MGA» (public.deuda_corte_guardar, portal.liquidez_mga_sin_corte); el lector del corte de Jeff entiende 8.688,69 · 8,688.69 · 8688.69 y muestra el total leído; alerta «Falta el mínimo» en las tarjetas (con mínimo y vencimiento editables); el cierre del mes llega siempre al último día y los DPs por póliza que el último Chase ya trae se dan por pagados (la base: _liq_movimientos_v y liquidez_panel, aditivo y con reversa). 01 La agencia y 03 Retiros no cambian. | v7 - 27-oct-2026 03 RETIROS · tarjeta "Esta semana" (solo dirección): el retiro por socio de la semana con la regla C — una franja con el valor, el semáforo y dónde cierra Chase en cada corte; lo poco que se escribe cada semana (giro a la SAS, comisiones del corte, otros pagos, lo que alcanza a entrar del batch); el cuadro de Jeff pegado tal cual, con chips que dicen cómo se leyó y si cuadra con su total; "Ver cómo se calculó" y "Lo de siempre entre un corte y el otro"; vista previa en vivo sin guardar y Guardar la semana (portal.retiro_semana_panel / retiro_semana_calcular / retiro_semana_guardar). Los demás socios ven solo la franja. La fila de la semana en la tabla (sugerido) y el monto que precarga Registrar salen de esa tarjeta; si Registrar coincide con ella, la nota lo deja escrito. 01 La agencia y 02 Liquidez no cambian. | v6 - 20-oct-2026 MODO VER: en Liquidez, solo dirección, la tarjeta "Cortes · tu consolidado" (pegas la tabla de la hoja, la pantalla la lee y muestra Ya en Chase · cada corte · Sin fecha con el ✓ del total; Pegar otro / Quitar; portal.liquidez_consolidado_guardar / _jubilar) y la lectura B del retiro al lado de la A (propuesta: el mismo retiro cada semana hasta el próximo corte sin bajar del colchón; no registra nada). Para todos, el cierre del mes en caja al pie de Cuatro semanas. En el cuadre de Chase, lo que tu consolidado marca como "ya llegó". El retiro oficial no cambia. | v5 - 20-oct-2026 CHASE A LA VISTA: en La agencia la tarjeta de la caja trae el saldo de Chase con su fecha y el botón Actualizar Chase (socios; si Chase pasó del límite de días, el campo ya sale abierto) y deja de ser un enlace entero ("Ver Liquidez →" aparte); aviso arriba en las tres pestañas cuando Chase pasó del límite ("Poner el saldo de hoy"); en la franja de Liquidez el ✎ pasa a un botón visible Actualizar con la fecha del saldo debajo; al guardar sale el cuadre de Chase (anterior + ventas que entraron − pagos vencidos = esperado, contra el real); sello de Chase en La agencia. Misma función caja_actualizar_saldo_v2; la base no cambia. | v4 - 14-oct-2026 (auditoría en producción): si la base está ocupada y liquidez_panel falla al entrar, un reintento automático a los 2.5 s antes del aviso; si La agencia ya cargó, se queda a la vista y el aviso habla solo de la liquidez; singular y plural en las tarjetas ("1 negativo", "1 venta", "1 persona"). | v3 - 14-oct-2026 01 LA AGENCIA (solo direccion_total, portal.liquidez_agencia): el macro de dirección en tarjetas con anillos — la franja del mes (entró contra lo que necesita: nómina, fijos y retiro mínimo, con la barrita del "debería ir hoy"), las tres áreas con la cara chiquita de su líder adentro del anillo (Ventas nuevas · Brahian, Renovaciones · Karen, Endosos · Jhon Ramírez), el mes cerrado y el año en dos anillos con el aviso de comisiones de agentes sin cargar, y la caja en una tarjeta chiquita. Abre ahí para dirección; Jorge y los demás siguen en Liquidez y Retiros sin cambios. | v2 - 13-oct-2026 el retiro se lee con la semana contra sí misma (Caja + Entra − Sale de esta semana − colchón, entre los socios, hasta el objetivo); las 4 semanas solo avisan. Lo que vencía antes del último saldo de Chase se da por pagado (pie en Sale). | v1 - 12-oct-2026 GABI LIQUIDEZ EN EL PORTAL: una pantalla de dirección que sale entera de portal.liquidez_panel() — franja (caja, entra, sale, queda y anillo del retiro por socio), ingresos semana/mes, por entrar, la cola de pagos con un clic (liquidez_decidir), cuatro semanas y fijos del mes; pestaña Retiros (registrar, corregir, cerrar la semana) y carga del corte de Jeff. Cero barras, guion cuando no hay dato, sin almacenamiento del navegador.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;
