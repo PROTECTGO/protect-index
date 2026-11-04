@@ -479,6 +479,31 @@ a.area:focus-visible,a.liqc:focus-visible{outline:3px solid var(--pg-mint);outli
   .rs-det>summary{display:flex;align-items:center;min-height:44px}
   .rs-casc td{padding:8px 4px;font-size:12.5px}
 }
+/* ===== v8 · motor honesto: casillas con dos tiempos, ACH, DPs sin fecha, cortes de MGA, tarjetas ===== */
+.apl.salio{justify-content:flex-start}
+.apln{padding:0 0 8px;text-align:right}
+.achf{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px 10px;align-items:end;padding:6px 0 10px;border-bottom:1px solid var(--pg-line)}
+.achf label{display:flex;flex-direction:column;gap:3px;font-size:11px;font-weight:700;color:var(--pg-muted);min-width:0}
+.achf input,.frmx input,.frmx select{border:1px solid var(--pg-line);border-radius:8px;padding:7px 9px;font-family:var(--pg-font-num);font-size:13px;color:var(--pg-ink);background:#fff;width:100%;min-width:0}
+.achf .achb{display:flex;gap:6px;justify-content:flex-end;grid-column:1/-1}
+.achf .achn{grid-column:1/-1;line-height:1.5}
+.achf .conf{grid-column:1/-1;margin:0}
+@media(max-width:520px){.achf{grid-template-columns:minmax(0,1fr) minmax(0,1fr)} .achf label:first-child{grid-column:1/-1}}
+.sfb{margin-top:16px;border-top:2px solid var(--pg-ink)}
+.sfb>.fila.grupo{border-bottom:1px solid var(--pg-line)}
+.sfb .sfn{padding:8px 0 6px;line-height:1.5}
+.mgab{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:8px 0 4px;padding:8px 10px;border:1px dashed var(--pg-line);border-radius:12px}
+.mgab .mini{flex:1 1 220px;min-width:0;overflow-wrap:anywhere}
+.mgab.warn{background:#FBF3E2;border:1px solid #EAD09A;color:#8a6a1d;font-size:12.5px}
+.mgab.warn .t{flex:1 1 220px;min-width:0;line-height:1.45}
+.mgab.warn .t b{font-family:var(--pg-font-num)}
+.mgab.warn .t small{display:block;font-size:11px;color:#8a6a1d;opacity:.85}
+.frmx{display:grid;gap:10px}
+.frmx label{display:flex;flex-direction:column;gap:4px;font-size:11.5px;font-weight:700;color:var(--pg-muted)}
+.pop .tl{display:flex;flex-direction:column;gap:2px;font-size:10.5px;font-weight:700;color:var(--pg-muted)}
+.pop .pf span small.falta{color:#8a6a1d;font-weight:700}
+.pg-pill[role=button]{cursor:pointer}
+#mgaPista .pg-pill{display:block;white-space:normal;line-height:1.4;border-radius:10px;padding:6px 10px}
 </style>
 <script src="pg-novedades.js"></script>
 </head>
@@ -586,7 +611,7 @@ a.area:focus-visible,a.liqc:focus-visible{outline:3px solid var(--pg-mint);outli
    <div class="pg-card" id="cRet"><div class="skel"></div><div class="skel"></div><div class="skel" style="width:70%"></div></div>
   </section>
 
-  <div class="pg-footnote">GABI · Liquidez v7 · ProtectGo Services LLC</div>
+  <div class="pg-footnote">GABI · Liquidez v8 · ProtectGo Services LLC</div>
  </main>
 </div>
 
@@ -646,7 +671,8 @@ const toastErr = (e, pre) => toast((pre || '') + errMsg(e), true);
 let D = null;            // respuesta de liquidez_panel()
 let EMAIL = '';
 let OCUPADO = false;     // una escritura a la vez
-const UI = { per:'sem', vista:'sem', abiertos:new Set(), aplazar:null, edit:null, confirmar:null, retForm:null, peq:false, tab:'liq', prog:'', inicio:false, navego:false, cuadre:null };
+const UI = { per:'sem', vista:'sem', abiertos:new Set(), aplazar:null, edit:null, confirmar:null, retForm:null, peq:false, tab:'liq', prog:'', inicio:false, navego:false, cuadre:null,
+  salio:null, sf:false, sfDesc:false };   /* v8 · salio = casilla «¿cuándo salió?» abierta · sf = bloque de DPs sin fecha de pago */
 /* v3 · La agencia: portal.liquidez_agencia() (solo direccion_total; a los demás {puede:false}). */
 let AG = null;            // respuesta de liquidez_agencia()
 let AG_ESTADO = 'cargando';  // cargando | si | no | error
@@ -701,6 +727,8 @@ async function cargar(intento){
   pintar();
   decidirInicio();
   cargarRetiroSemana();
+  cargarSinFecha();      /* v8 · E1 */
+  cargarMgaSinCorte();   /* v8 · E5 */
 }
 function sinAcceso(){
   $('main').classList.add('sin-acceso');
@@ -986,9 +1014,10 @@ function cuadreDe(v){
   const ventas = suma(it.filter(x => x.estado === 'ya_entro'));
   const venc = it.filter(x => x.sentido === 'sale' && x.estado === 'vencido' && x.tipo !== 'deuda_mga');
   const vencidos = suma(venc);
-  const ajE = suma(aj.filter(a => a.sentido === 'entra')), ajS = suma(aj.filter(a => a.sentido === 'sale'));
+  /* v8 · lo programado («Sale el…») todavía no salió: el Chase de hoy lo trae completo, así que no se resta del esperado (se muestra aparte) */
+  const ajE = suma(aj.filter(a => a.sentido === 'entra')), ajS = suma(aj.filter(a => a.sentido === 'sale' && !esProgramado(a))), ajP = suma(aj.filter(esProgramado));
   const esperado = (num(c.saldo) || 0) + ventas - vencidos + ajE - ajS;
-  return { anterior:num(c.saldo), dia:fechaChase(c).dia, ventas, vencidos, nVenc:venc.length, ajE, ajS, esperado, real:v, dif:v - esperado };
+  return { anterior:num(c.saldo), dia:fechaChase(c).dia, ventas, vencidos, nVenc:venc.length, ajE, ajS, ajP, esperado, real:v, dif:v - esperado };
 }
 function pintarCuadreChase(){
   const el = $('cuadreChase'); if (!el) return;
@@ -1006,6 +1035,7 @@ function pintarCuadreChase(){
     + fila('+ Ventas y endosos que entraron', '+' + sin(q.ventas), '', 'DP que todavía están en el banco + fees (BOS)')
     + fila('− Pagos que vencieron', '−' + sin(q.vencidos), '', q.nVenc ? plural(q.nVenc, 'pago sin marcar: se da por pagado', 'pagos sin marcar: se dan por pagados') : 'ninguno')
     + ((q.ajE || q.ajS) ? fila('± Marcados después del saldo anterior', (q.ajE - q.ajS < 0 ? '−' : '+') + sin(q.ajE - q.ajS), '', 'entró ' + usd2(q.ajE) + ' · salió ' + usd2(q.ajS)) : '')
+    + (q.ajP ? fila('Programados que aún no salen', usd2(q.ajP), '', 'no se restan: el Chase de hoy todavía los trae') : '')
     + fila('= Chase esperado', usd2(q.esperado), 'tot')
     + fila('Chase de hoy', usd2(q.real))
     + fila('Diferencia', (q.dif < 0 ? '−' : '+') + sin(q.dif))
@@ -1333,7 +1363,7 @@ function pintarFranja(){
       + '<button class="pg-btn mint sm" type="button" id="bSaldo" data-act="saldo-ok">Guardar</button><button class="x" type="button" data-act="cerrar-edit" aria-label="Cancelar">✕</button></div>';
   } else vCaja = '<div class="v' + (c.stale ? ' warn' : '') + '">' + usd(c.saldo) + '</div>';
   const txtT = 'tarjetas deben ' + usd(deuda);
-  const sCaja = (pu.operar && tarj.length) ? '<button class="lnk" type="button" data-act="tarjetas">' + esc(txtT) + '</button>' : esc(txtT);
+  const sCaja = ((pu.operar && tarj.length) ? '<button class="lnk" type="button" data-act="tarjetas">' + esc(txtT) + '</button>' : esc(txtT)) + alertaTarjetasHtml(tarj);   /* v8 */
   /* v5 · el ✎ pasa a ser un botón visible, y debajo del saldo va su fecha */
   const lapiz = pu.socio && UI.edit !== 'saldo' ? '<button class="btn-osc" type="button" data-act="saldo" title="Poner el saldo de Chase">Actualizar</button>' : '';
   const fch = fechaChase(c);
@@ -1359,8 +1389,11 @@ function pintarFranja(){
   let pop = '';
   if (UI.edit === 'tarjetas') {
     pop = '<div class="pop">' + tarj.map(t =>
-      '<div class="pf"><span>' + esc(t.nombre) + '<small>cupo ' + usd(t.cupo) + (t.vence ? ' · vence ' + fCorta(t.vence) : '') + '</small></span>'
-      + '<input type="number" step="0.01" min="0" id="td-' + esc(t.id) + '" data-ok="tb-' + esc(t.id) + '" value="' + (num(t.deuda) == null ? '' : num(t.deuda)) + '" aria-label="Deuda ' + esc(t.nombre) + '">'
+      '<div class="pf"><span>' + esc(t.nombre) + '<small>cupo ' + usd(t.cupo) + (t.vence ? ' · vence ' + fCorta(t.vence) : '') + '</small>'
+      + (alertaTarjeta(t) ? '<small class="falta">' + (num(t.pago_minimo) > 0 ? 'Falta el mínimo de este mes' : 'Falta el mínimo') + ' · ' + esc(alertaTarjeta(t).join(' · ')) + '</small>' : '') + '</span>'
+      + '<label class="tl">Deuda<input type="number" step="0.01" min="0" id="td-' + esc(t.id) + '" data-ok="tb-' + esc(t.id) + '" value="' + (num(t.deuda) == null ? '' : num(t.deuda)) + '" aria-label="Deuda ' + esc(t.nombre) + '"></label>'
+      + '<label class="tl">Mínimo<input type="number" step="0.01" min="0" id="tm-' + esc(t.id) + '" data-ok="tb-' + esc(t.id) + '" value="' + (num(t.pago_minimo) > 0 ? num(t.pago_minimo) : '') + '" placeholder="—" aria-label="Pago mínimo ' + esc(t.nombre) + '"></label>'
+      + '<label class="tl">Vence<input type="date" id="tv-' + esc(t.id) + '" data-ok="tb-' + esc(t.id) + '" value="' + esc(t.vence || '') + '" aria-label="Vencimiento ' + esc(t.nombre) + '"></label>'
       + '<button class="pg-btn sm" type="button" id="tb-' + esc(t.id) + '" data-act="tarj-ok" data-id="' + esc(t.id) + '">Guardar</button></div>').join('')
       + '<div class="pf" style="justify-content:flex-end"><button class="pg-btn sec sm" type="button" data-act="cerrar-edit">Cerrar</button></div></div>';
   }
@@ -1439,12 +1472,19 @@ function filaItem(it, i, opt){
   const bts = opt.entra ? (String(it.clave).startsWith('pc:') ? botones(it, i, ['pagado', 'aplazado']) : '') : botones(it, i);
   return '<div class="fila' + (it.estado === 'vencido' ? ' venc' : '') + '"><div class="d">' + esc(it.concepto || '—') + (small ? '<small>' + esc(small) + '</small>' : '') + '</div>'
     + '<div class="m">' + usd(it.monto) + '</div><div class="acts">' + pills + bts + '</div></div>'
-    + (UI.aplazar === keyOf(it) ? formAplazar(it, i) : '');
+    + (UI.aplazar === keyOf(it) ? formAplazar(it, i) : '')
+    + (UI.salio && UI.salio.key === keyOf(it) ? formSalio(it, i) : '');   /* v8 · E4 */
 }
 function filaAjuste(a){
   const entra = a.sentido === 'entra';
-  return '<div class="fila"><div class="d">' + esc(a.concepto || '—') + (a.pagado_en ? '<small>' + esc(fCorta(String(a.pagado_en).slice(0, 10))) + '</small>' : '') + '</div>'
-    + '<div class="m">' + usd(a.monto) + '</div><div class="acts"><span class="pg-pill ok">' + (entra ? 'entró' : 'pagado') + '</span></div></div>';
+  /* v8 · E4 · lo programado («Sale el…») sigue restando y lo dice: la fecha se lee en hora de Bogotá, no en UTC */
+  const prog = esProgramado(a);
+  const dia = a.pagado_en ? diaBog(a.pagado_en) : '';
+  return '<div class="fila"><div class="d">' + esc(a.concepto || '—') + (a.pagado_en ? '<small>' + esc(fCorta(dia)) + '</small>' : '') + '</div>'
+    + '<div class="m">' + usd(a.monto) + '</div><div class="acts">'
+    + (prog ? '<span class="pg-pill warn" title="Sigue restando de Chase hasta que pongas un saldo posterior a esa fecha">sale el ' + esc(fCorta(dia)) + '</span>'
+            : '<span class="pg-pill ok">' + (entra ? 'entró' : 'pagado') + '</span>')
+    + '</div></div>';
 }
 
 /* ---------- 4 · por entrar ---------- */
@@ -1543,14 +1583,231 @@ function pintarSale(){
     + '<button type="button" data-act="vista" data-v="4" class="' + (UI.vista === '4' ? 'on' : '') + '">4 semanas</button></div>'
     + (UI.confirmar === 'venc' ? '' : barra) + '</div>'
     + (UI.confirmar === 'venc' ? barra : '')
+    + '<div id="mgaBox">' + htmlCortesMga() + '</div>'      /* v8 · E5 */
     + (cuerpo || '<div class="vacio">—</div>')
-    + pieDadosPorPagados();
+    + pieDadosPorPagados()
+    + '<div id="sfBox">' + htmlSinFecha() + '</div>';       /* v8 · E1 */
+  achRefrescar();   /* v8 · si el formulario del ACH estaba abierto, vuelve a calcular su texto con lo que ya había escrito */
 }
 function pieDadosPorPagados(){
   const d = D.dados_por_pagados || {}, n = num(d.n);
   if (!n) return '';
   return '<div class="mini" style="margin-top:12px">Lo anterior al saldo del ' + esc(fCorta(d.hasta)) + ' se da por pagado: '
     + plural(n, 'pago', 'pagos') + ' · ' + usd(d.monto) + '.</div>';
+}
+
+/* =====================================================================
+   v8 · RONDA 1 · «MOTOR HONESTO» — lo nuevo de la pantalla. Todo sale de lo que la base ya entrega:
+   E1 DPs sin fecha de pago (se ven, NO suman) · E4 casillas con dos tiempos · D22 ACH que aún no se deposita ·
+   E5 cortes de MGA (aviso + cargar) · E6 lector de montos · alerta de tarjetas.
+   Nada de esto cambia el cálculo: el motor es uno solo (portal.liquidez_panel).
+   ===================================================================== */
+const diaBog = ts => { try { return new Intl.DateTimeFormat('en-CA', { timeZone:'America/Bogota' }).format(new Date(ts)); } catch (e) { return String(ts || '').slice(0, 10); } };
+/* una salida «programada» (Sale el…) tiene su hora en el futuro. Margen de 5 min: el reloj de este equipo puede ir adelantado al del servidor
+   y un «Ya salió» recién marcado no debe verse como programado */
+const esProgramado = a => !!a && a.sentido === 'sale' && !!a.pagado_en && !isNaN(Date.parse(a.pagado_en)) && Date.parse(a.pagado_en) > ahora() + 300000;
+/* una fecha escrita en un campo: AAAA-MM-DD completa (un año a medio escribir o de 5 cifras no pasa) */
+const fechaValida = v => /^\d{4}-\d{2}-\d{2}$/.test(String(v || '')) && !isNaN(Date.parse(String(v) + 'T12:00:00Z'));
+
+/* ---------- E6 · un monto escrito de cualquier forma: 8.688,69 · 8,688.69 · 8688.69 · 8688,69 · 8.688 · 8,688 ---------- */
+function numDinero(s){
+  s = String(s == null ? '' : s).trim();
+  if (/^[1-9]\d{0,2}(\.\d{3})+(,\d{1,2})?$/.test(s)) return Number(s.replace(/\./g, '').replace(',', '.'));   // punto de miles, coma decimal
+  if (/^\d{1,3}(,\d{3})+(\.\d+)?$/.test(s)) return Number(s.replace(/,/g, ''));                              // coma de miles, punto decimal
+  if (/^\d+,\d{1,2}$/.test(s)) return Number(s.replace(',', '.'));                                           // coma decimal sola
+  if (/^\d+(\.\d+)?$/.test(s)) return Number(s);
+  return null;
+}
+/* un monto escrito a mano en un campo (con $, espacios, paréntesis o signo) */
+function montoDe(txt){
+  let t = String(txt == null ? '' : txt).replace(/usd/ig, '').replace(/[$\s]/g, '');
+  if (!t) return null;
+  const neg = /^[-−(]/.test(t);
+  t = t.replace(/^[-−(]+/, '').replace(/\)$/, '');
+  const v = numDinero(t);
+  return v == null ? null : (neg ? -v : v);
+}
+
+/* ---------- alerta de tarjetas: con deuda y mínimo en $0, o con el vencimiento ya pasado (solo avisa) ---------- */
+function alertaTarjeta(t){
+  if (!(num(t.deuda) > 0)) return null;
+  const m = [];
+  if (!(num(t.pago_minimo) > 0)) m.push('mínimo en $0');
+  if (t.vence && D && D.hoy && String(t.vence) < D.hoy) m.push('el vencimiento (' + fCorta(t.vence) + ') ya pasó');
+  return m.length ? m : null;
+}
+function alertaTarjetasHtml(tarj){
+  const xs = (tarj || []).map(t => ({t, m:alertaTarjeta(t)})).filter(x => x.m);
+  if (!xs.length) return '';
+  const tit = xs.map(x => x.t.nombre + ': ' + x.m.join(' · ')).join(' | ');
+  return ' <span class="pg-pill warn" title="' + esc(tit) + '"' + (P().operar ? ' role="button" tabindex="0" data-act="tarjetas"' : '') + '>Falta el mínimo</span>';
+}
+
+/* ---------- E4 · «¿Cuándo salió?» — cuelga de la fila de Sale ---------- */
+/* lo que se va escribiendo en el formulario se guarda en UI.salio.v: si la lista se vuelve a pintar (otro clic, una lectura nueva), no se pierde */
+function formSalio(it, i){
+  const S = UI.salio, V = S.v || {}, libro = /^(pp|pc|deuda):/.test(String(it.clave)), esDP = String(it.clave).startsWith('dp:');
+  const fin7 = addDias(D.lunes, 6);
+  const cancelar = '<button class="pg-btn sec sm" type="button" data-act="salio-no" data-i="' + i + '" aria-label="Cancelar">✕</button>';
+  if (S.modo === 'fecha') {
+    const hoy = D.hoy, d0 = maxISO(hoy, it.fecha), def = d0 > fin7 ? fin7 : d0;
+    return '<div class="apl"><span class="mini">sale el</span><input type="date" id="salioF" data-ok="bSalioF" min="' + esc(hoy) + '" max="' + esc(fin7) + '" value="' + esc(V.salioF || def) + '" aria-label="Día en que sale">'
+      + '<button class="pg-btn sm" type="button" id="bSalioF" data-act="salio-fecha-ok" data-i="' + i + '">Guardar</button>'
+      + cancelar + '</div>'
+      + '<div class="mini apln">Sigue restando de Chase hasta que pongas un saldo posterior a esa fecha.</div>';
+  }
+  if (S.modo === 'ach') {
+    const dep = V.achDep || addDias(D.hoy, 2), giro = V.achGiro || dep;
+    /* el mismo cliente aunque uno lleve «LLC» y el otro no («Evergreen Group · ACH del cliente…» vs «Evergreen Group LLC»); solo cuenta el que sigue por entrar */
+    const nomCli = s => String(s || '').toLowerCase().replace(/\s*[·(].*$/, '').replace(/[.,]/g, '').replace(/\s+(llc|inc|corp|co|ltd)$/, '').trim();
+    const ya = (D.items || []).filter(x => x.sentido === 'entra' && x.estado === 'pendiente' && /ACH del cliente/.test(String(x.concepto || '')) && nomCli(x.concepto) !== '' && nomCli(x.concepto) === nomCli(it.concepto));
+    return '<div class="achf" id="achF">'
+      + (ya.length ? '<div class="conf"><span>Ya hay un ACH de este cliente en Por entrar (<b>' + usd(ya[0].monto) + '</b> el ' + esc(fCorta(ya[0].fecha)) + '). Si registras otro, se suma.</span></div>' : '')
+      + '<label>Pagó el cliente<input type="number" step="0.01" min="0" id="achMonto" data-ok="bAch" placeholder="$ total del cliente" value="' + esc(V.achMonto == null ? '' : V.achMonto) + '" aria-label="Lo que pagó el cliente"></label>'
+      + '<label>Se deposita el<input type="date" id="achDep" data-ok="bAch" min="' + esc(D.hoy) + '" max="' + esc(addDias(D.hoy, 60)) + '" value="' + esc(dep) + '" aria-label="Día en que se deposita"></label>'
+      + '<label>El giro sale el<input type="date" id="achGiro" data-ok="bAch" min="' + esc(dep) + '" max="' + esc(addDias(dep, 60)) + '" value="' + esc(giro) + '" aria-label="Día en que sale el giro"></label>'
+      + '<div class="mini achn">El cliente pagó por ACH y la plata aún no está en Chase: entra el día del depósito y el DP de <b>' + usd(it.monto) + '</b> sale el día del giro. <span id="achFee"></span></div>'
+      + '<div class="achb">' + cancelar + '<button class="pg-btn sm" type="button" id="bAch" data-act="ach-ok" data-i="' + i + '">Registrar</button></div></div>';
+  }
+  const ch = (D.caja || {}).actualizado;
+  return '<div class="apl salio"><span class="mini">¿Cuándo salió?</span>'
+    + '<button class="pg-btn sm" type="button" data-act="salio-ya" data-i="' + i + '" title="' + (it.estado === 'vencido' ? 'Se marca en su fecha de vencimiento' : 'Con la hora de ahora') + '">Ya salió</button>'
+    + (libro ? '' : '<button class="pg-btn sec sm" type="button" data-act="salio-fecha" data-i="' + i + '" title="Sale un día de esta semana: sigue restando hasta un Chase posterior">Sale el…</button>')
+    + (ch ? '<button class="pg-btn sec sm" type="button" data-act="salio-chase" data-i="' + i + '" title="El saldo de Chase del ' + esc(fCorta(diaBog(ch))) + ' ya lo trae">Salió antes del último Chase</button>' : '')
+    + (esDP ? '<button class="pg-btn sec sm" type="button" data-act="salio-ach" data-i="' + i + '" title="El cliente pagó por ACH y la plata aún no está en Chase">Aún no se depositó</button>' : '')
+    + cancelar + '</div>';
+}
+function achRefrescar(id){
+  const S = UI.salio; if (!S || S.modo !== 'ach') return;
+  const mon = num(($('achMonto') || {}).value), dep = ($('achDep') || {}).value, g = $('achGiro');
+  if (g && fechaValida(dep)) {
+    g.min = dep < D.hoy ? D.hoy : dep; g.max = addDias(g.min, 60);
+    if (!g.value || g.value < g.min) g.value = g.min;
+    S.v = S.v || {}; S.v.achGiro = g.value;
+  }
+  const fee = $('achFee');
+  if (fee) fee.innerHTML = (mon != null && mon > 0 && num(S.monto) != null)
+    ? (mon >= num(S.monto) ? 'La agencia se queda con <b>' + usd2(mon - num(S.monto)) + '</b> (lo que pagó el cliente menos el DP).' : '<span class="pg-pill due">El cliente pagó menos que el DP</span>')
+    : '';
+}
+
+/* ---------- E1 · DPs sin fecha de pago: se ven, NO suman a Sale ---------- */
+let SF = null, SF_EST = 'cargando', SF_MSG = '', SF_SEQ = 0;      // portal.liquidez_dp_sin_fecha()   (SEQ: solo vale la lectura más reciente)
+let MGAC = null, MGAC_EST = 'cargando', MGAC_MSG = '', MGAC_SEQ = 0;   // portal.liquidez_mga_sin_corte()
+const sfFila = k => ((SF && SF.filas) || []).find(f => f.clave === k);
+const SF_ETQ = { aplazado:'se debe', pagado:'pagado', tarjeta:'con tarjeta', no_va:'no va' };
+async function cargarSinFecha(){
+  const mi = ++SF_SEQ;
+  if (!P().operar) { SF = null; SF_EST = 'no'; pintarSfBox(); return; }
+  let r;
+  try { r = await SB.schema('portal').rpc('liquidez_dp_sin_fecha'); } catch (e) { r = { data:null, error:e }; }
+  if (mi !== SF_SEQ) return;     /* llegó una lectura más nueva mientras esta viajaba: esta ya es vieja */
+  if (r.error || !r.data) { SF_EST = 'error'; SF_MSG = errMsg(r.error || 'Sin respuesta'); }
+  else { SF = r.data; SF_EST = 'si'; SF_MSG = ''; }
+  pintarSfBox();
+}
+function pintarSfBox(){ const el = $('sfBox'); if (el) el.innerHTML = htmlSinFecha(); }
+function filaSF(f){
+  const dec = (f.decision && f.decision !== 'deshacer') ? f.decision : null;
+  const small = ['Fila ' + (f.sheet_row == null ? '—' : f.sheet_row) + ' del BOS', f.vendedor, f.edad == null ? null : 'hace ' + f.edad + ' d', f.poliza].filter(Boolean).join(' · ');
+  const k = esc(f.clave);
+  const acts = dec
+    ? '<span class="pg-pill ' + (dec === 'aplazado' ? 'warn' : 'muted') + '">' + esc(SF_ETQ[dec] || dec) + '</span><button type="button" data-act="sf-deshacer" data-k="' + k + '" title="Volver a como estaba">Deshacer</button>'
+    : '<button type="button" data-act="sf-debe" data-k="' + k + '" title="Si de verdad no se giró: cuenta en Sale desde hoy">Se debe</button>'
+      + '<button type="button" data-act="sf-nova" data-k="' + k + '" title="No se va a pagar" aria-label="No va">✕</button>';
+  return '<div class="fila"><div class="d">' + esc(f.cliente || '—') + '<small>' + esc(small) + '</small></div><div class="m">' + usd(f.por_girar) + '</div><div class="acts">' + acts + '</div></div>';
+}
+function htmlSinFecha(){
+  if (!P().operar) return '';
+  if (SF_EST === 'error') return '<div class="sfb"><div class="mini" style="padding-top:10px">No pudimos leer los DPs sin fecha de pago (' + esc(SF_MSG) + ') <button class="pg-btn sec sm" type="button" data-act="sf-reintentar">Reintentar</button></div></div>';
+  if (!SF) return '';
+  const filas = SF.filas || [];
+  const vis = filas.filter(f => f.decision !== 'no_va'), nov = filas.filter(f => f.decision === 'no_va');
+  if (!vis.length && !nov.length) return '';
+  const V = SF.visibles || {}, C = SF.cuentan || {}, X = SF.descartados || {};
+  const abierto = UI.sf;
+  let h = '<div class="sfb"><div class="fila grupo"><div class="d">DPs sin fecha de pago (' + (num(V.n) || 0) + ')<small>no cuentan en Sale · FAM les pone la fecha en el BOS</small></div>'
+    + '<div class="m">' + usd(V.monto) + '</div><div class="acts">'
+    + (num(C.n) > 0 ? '<span class="pg-pill warn">' + plural(num(C.n), 'cuenta', 'cuentan') + ' · ' + usd(C.monto) + '</span>' : '<span class="pg-pill muted">no cuentan</span>')
+    + '<button type="button" data-act="sf-abrir" aria-expanded="' + abierto + '" title="' + (abierto ? 'Plegar' : 'Ver la lista') + '">' + (abierto ? '▾' : '▸') + '</button></div></div>';
+  if (abierto) {
+    h += '<div class="mini sfn">No son deuda y no suman a Sale. Marca <b>Se debe</b> solo el que de verdad no se giró (cuenta desde hoy); <b>✕</b> si no se va a pagar.</div>';
+    const grupos = {}, orden = [];
+    vis.forEach(f => { const g = f.mga || 'Sin MGA'; if (!grupos[g]) { grupos[g] = []; orden.push(g); } grupos[g].push(f); });
+    orden.forEach(g => {
+      const xs = grupos[g], tot = xs.reduce((s, f) => s + (num(f.por_girar) || 0), 0), key = 'sf|' + g, ab = UI.abiertos.has(key);
+      const regs = xs.map(f => f.registro).filter(Boolean).sort();
+      const rango = regs.length ? (regs[0] === regs[regs.length - 1] ? fCorta(regs[0]) : fCorta(regs[0]) + ' a ' + fCorta(regs[regs.length - 1])) : '';
+      h += '<div class="fila grupo"><div class="d">' + esc(g) + ' (' + xs.length + ')' + (rango ? '<small>registrados ' + esc(rango) + '</small>' : '') + '</div><div class="m">' + usd(tot) + '</div>'
+        + '<div class="acts"><button type="button" data-act="sf-mga" data-g="' + esc(key) + '" aria-expanded="' + ab + '" title="' + (ab ? 'Plegar' : 'Ver cada una') + '">' + (ab ? '▾' : '▸') + '</button></div></div>'
+        + (ab ? '<div class="sub">' + xs.map(filaSF).join('') + '</div>' : '');
+    });
+    if (nov.length) {
+      h += '<div class="fila grupo"><div class="d">Descartados (' + nov.length + ')<small>marcados «no va»</small></div><div class="m">' + usd(X.monto) + '</div>'
+        + '<div class="acts"><button type="button" data-act="sf-desc" aria-expanded="' + UI.sfDesc + '" title="' + (UI.sfDesc ? 'Plegar' : 'Ver cada una') + '">' + (UI.sfDesc ? '▾' : '▸') + '</button></div></div>'
+        + (UI.sfDesc ? '<div class="sub">' + nov.map(filaSF).join('') + '</div>' : '');
+    }
+  }
+  return h + '</div>';
+}
+
+/* ---------- E5 · cortes de MGA: aviso y «Cargar corte de MGA» ---------- */
+async function cargarMgaSinCorte(){
+  const mi = ++MGAC_SEQ;
+  if (!P().operar) { MGAC = null; MGAC_EST = 'no'; pintarMgaBox(); return; }
+  let r;
+  try { r = await SB.schema('portal').rpc('liquidez_mga_sin_corte'); } catch (e) { r = { data:null, error:e }; }
+  if (mi !== MGAC_SEQ) return;   /* ídem */
+  if (r.error || !r.data) { MGAC = null; MGAC_EST = 'error'; MGAC_MSG = errMsg(r.error || 'Sin respuesta'); }
+  else { MGAC = r.data; MGAC_EST = 'si'; MGAC_MSG = ''; }
+  pintarMgaBox();
+}
+function pintarMgaBox(){ const el = $('mgaBox'); if (el) el.innerHTML = htmlCortesMga(); }
+const nombreMga = x => String(x.nombre_corte || x.mga || '').replace(/\s+(inc|llc|corp)\.?$/i, '');
+function htmlCortesMga(){
+  if (!P().operar) return '';
+  if (MGAC_EST === 'error') return '<div class="mgab"><span class="mini">No pudimos revisar los cortes de MGA (' + esc(MGAC_MSG) + ')</span><button class="pg-btn sec sm" type="button" data-act="mga-reintentar">Reintentar</button></div>';
+  if (!MGAC) return '';
+  const xs = MGAC.mgas || [], con = xs.filter(x => (num(x.n) || 0) > 0);
+  const btn = '<button class="pg-btn sec sm" type="button" data-act="mga-corte">Cargar corte de MGA</button>';
+  if (con.length) {
+    return '<div class="mgab warn"><div class="t">' + con.map(x => '<b>' + esc(nombreMga(x)) + '</b>: ' + plural(num(x.n), 'DP', 'DPs') + ' sin corte · <b>' + usd(x.monto) + '</b>'
+        + '<small>' + (x.ultimo_corte ? 'registrados después del corte del ' + esc(fCorta(x.ultimo_corte)) + ' (' + usd(x.ultimo_monto) + ')' : 'no hay ningún corte cargado') + '</small>').join('') + '</div>' + btn + '</div>';
+  }
+  return '<div class="mgab"><span class="mini">Cortes de MGA al día'
+    + (xs.length ? ' · ' + xs.map(x => esc(nombreMga(x)) + (x.ultimo_corte ? ': ' + esc(fCorta(x.ultimo_corte)) + ' ' + usd(x.ultimo_monto) : ': sin corte')).join(' · ') : '') + '</span>' + btn + '</div>';
+}
+function abrirCorteMga(){
+  const L = MGAC || {}, mgas = [];
+  (L.mgas || []).forEach(x => { const n = x.nombre_corte || x.mga; if (n && !mgas.includes(n)) mgas.push(n); });
+  if ((L.nombres || []).includes('Otras MGA') && !mgas.includes('Otras MGA')) mgas.push('Otras MGA');
+  if (!mgas.length) { toast('No hay MGAs que se paguen por corte', true); return; }
+  const f = fISO(D.hoy), ult = new Date(Date.UTC(f.y, f.m, 0)).getUTCDate();
+  const def = f.y + '-' + String(f.m).padStart(2, '0') + '-' + String(f.d <= 15 ? 15 : ult).padStart(2, '0');
+  $('modalBody').innerHTML = '<h3>Cargar corte de MGA</h3>'
+    + '<div class="mini" style="margin:-6px 0 10px">Lo que se le debe a la aseguradora por el corte. Si ya hay un corte con esa fecha, se reemplaza el monto.</div>'
+    + '<div class="frmx">'
+    + '<label>MGA<select id="mgaN" data-ok="bMga">' + mgas.map(n => '<option>' + esc(n) + '</option>').join('') + '</select></label>'
+    + '<label>Fecha del corte<input type="date" id="mgaF" data-ok="bMga" min="' + esc(addDias(D.hoy, -400)) + '" max="' + esc(addDias(D.hoy, 400)) + '" value="' + esc(def) + '"></label>'
+    + '<label>Monto<input type="text" inputmode="decimal" id="mgaM" data-ok="bMga" placeholder="15,000" autocomplete="off"><span class="mini" id="mgaMv">—</span></label>'
+    + '<label>Nota (opcional)<input type="text" id="mgaNota" data-ok="bMga" placeholder="Corte del cuadro de Jeff" autocomplete="off"></label>'
+    + '</div><div id="mgaPista" style="margin-top:8px"></div>'
+    + '<div class="row"><button class="pg-btn sec" type="button" data-act="modal-x">Cancelar</button><button class="pg-btn mint" type="button" id="bMga" data-act="mga-ok" disabled>Guardar corte</button></div>';
+  abrirModal();
+  mgaRefrescar();
+  const m = $('mgaM'); if (m) m.focus();
+}
+/* la fecha del corte: completa y dentro de un año largo alrededor de hoy (un «0026» o un «20260» es un error de dedo, no un corte) */
+const fechaCorteOk = f => fechaValida(f) && f >= addDias(D.hoy, -400) && f <= addDias(D.hoy, 400);
+function mgaRefrescar(){
+  const v = montoDe(($('mgaM') || {}).value), b = $('bMga'), mga = ($('mgaN') || {}).value, fch = ($('mgaF') || {}).value;
+  const fok = fechaCorteOk(fch);
+  const ya = fok ? ((MGAC || {}).cortes || []).find(c => c.mga === mga && String(c.fecha_corte).slice(0, 10) === fch) : null;
+  const raw = (($('mgaM') || {}).value || '').trim();
+  if ($('mgaMv')) $('mgaMv').textContent = (v != null && v > 0) ? 'Se guardará como ' + usd2(v) : (raw ? 'No entendí el monto' : '—');
+  if ($('mgaPista')) $('mgaPista').innerHTML = (fch && !fok) ? '<span class="pg-pill due">La fecha del corte no parece correcta: revisa el año</span>'
+    : (ya ? '<span class="pg-pill warn">Ya hay un corte de ' + esc(mga) + ' del ' + esc(fCorta(fch)) + ' por ' + usd2(ya.monto) + ': se reemplaza el monto</span>' : '');
+  if (b) b.disabled = !(v != null && v > 0 && fok && mga);
 }
 
 /* ---------- 6 · cuatro semanas (onda, cero barras) ---------- */
@@ -2022,7 +2279,7 @@ async function escribir(btn, fn, okMsg){
   try {
     const r = await fn();
     if (r && r.error) throw r.error;
-    UI.aplazar = null; UI.edit = null; UI.confirmar = null; UI.retForm = null;
+    UI.aplazar = null; UI.edit = null; UI.confirmar = null; UI.retForm = null; UI.salio = null;
     toast(okMsg || 'Listo');
     await cargar();
     return true;
@@ -2033,12 +2290,12 @@ async function escribir(btn, fn, okMsg){
   } finally { ocupado(false); }
 }
 const pagadoEn = it => it.estado === 'vencido' ? it.fecha + 'T12:00:00-05:00' : new Date().toISOString();
-function decidir(btn, it, accion, extra){
+function decidir(btn, it, accion, extra, msgOk){
   const args = Object.assign({ p_clave:it.clave, p_fecha_original:it.fecha_original, p_accion:accion, p_monto:null,
     p_fecha_nueva:null, p_pagado_en:null, p_concepto:it.concepto, p_nota:null }, extra || {});
   const msg = { pagado: it.sentido === 'entra' ? 'Marcado: entró' : 'Marcado: pagado', aplazado:'Aplazado al ' + fCorta(args.p_fecha_nueva),
     tarjeta:'Marcado: con tarjeta', no_va:'Marcado: no va' }[accion];
-  return escribir(btn, () => SB.schema('portal').rpc('liquidez_decidir', args), msg);
+  return escribir(btn, () => SB.schema('portal').rpc('liquidez_decidir', args), msgOk || msg);
 }
 async function todoVencido(){
   const V = vencidosMasivo();
@@ -2091,13 +2348,18 @@ function parseCorte(txt, lunesISO){
       s = s.replace(hit[0], ' ');
     }
     /* 2) monto: el número más grande con decimales, comas o $ */
-    const re = /(\()?\s*(-)?\s*(\$)?\s*(-)?(\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?)\s*(\))?/g;
+    /* v8 · E6 · el monto puede venir como 8.688,69 · 8,688.69 · 8688.69 · 8688,69 · 8.688 · 8,688 (antes «8.688,69» se leía 8.69).
+       Cuidado con lo que NO es un monto: una coma decimal sola exige 2 decimales y que no siga otro grupo de miles ni un punto decimal (así «2026,29,975.40» y «2026,12.50» no se confunden),
+       un grupo de miles no puede seguir con más dígitos («1.2345») y un número seguido de % es una tasa, no plata */
+    const re = /(\()?\s*(-)?\s*(\$)?\s*(-)?([1-9]\d{0,2}(?:\.\d{3})+(?:,\d{1,2}(?!\d))?(?!\d)|\d{1,3}(?:,\d{3})+(?:\.\d+)?(?!\d)|\d+,\d{2}(?!\d|,\d{3}|\.\d)|\d+(?:\.\d+)?)\s*(\))?/g;
     const cands = []; let mm;
     while ((mm = re.exec(s))) {
+      if (/^\s*%/.test(s.slice(re.lastIndex))) continue;
       const raw = mm[0], nstr = mm[5];
       const fmt = /[,\.]/.test(nstr) || !!mm[3];
       const neg = !!(mm[1] && mm[6]) || !!mm[2] || !!mm[4];
-      cands.push({raw, v:parseFloat(nstr.replace(/,/g, '')), fmt, neg});
+      const vn = numDinero(nstr);
+      cands.push({raw, v:vn == null ? parseFloat(nstr.replace(/,/g, '')) : vn, fmt, neg});
     }
     let pick = null;
     const conFmt = cands.filter(c => c.fmt);
@@ -2130,6 +2392,7 @@ function abrirCorte(){
     + '<div class="mini" style="margin:-6px 0 10px">semana del ' + esc(fCorta(D.lunes)) + '</div>'
     + (yaEsta ? '<div style="margin:-4px 0 10px"><span class="pg-pill warn" id="corteYa">Ya hay un corte de esta semana · si cargas otro, se suma al anterior</span></div>' : '')
     + '<textarea id="corteTxt" rows="7" spellcheck="false" placeholder="Diferidos de clientes&#9;15-sep&#9;$8,962.30&#10;Geico · comisión · 5,651.00&#10;CoverWhale | aprox 30-oct | 5,036.45"></textarea>'
+    + '<div class="mini" style="margin-top:6px">Los montos pueden venir como 8.688,69 · 8,688.69 · 8688.69.</div>'
     + '<div class="prev" id="cortePrev"></div>'
     + '<div class="row"><button class="pg-btn sec" type="button" data-act="modal-x">Cancelar</button><button class="pg-btn mint" type="button" id="bCorte" data-act="corte-ok" disabled>Cargar</button></div>';
   abrirModal();
@@ -2142,7 +2405,7 @@ function previewCorte(){
   const f = CORTE.filas, tot = f.reduce((s, x) => s + x.monto, 0);
   $('cortePrev').innerHTML = (f.length ? '<table class="pg-table"><thead><tr><th>Descripción</th><th>Fecha</th><th class="num">Monto</th><th>Tipo</th></tr></thead><tbody>'
       + f.map(x => '<tr><td>' + esc(x.descripcion) + '</td><td>' + (x.fecha ? esc(fCorta(x.fecha)) : '<span class="pg-pill warn">sin fecha</span>') + '</td><td class="num">' + usd2(x.monto) + '</td><td><small>' + (x.tipo === 'diferido' ? 'diferido' : 'comisión') + ' · ' + (x.confianza === 'firme' ? 'firme' : 'especulativo') + '</small></td></tr>').join('')
-      + '<tr><td colspan="2"><b>' + plural(f.length, 'fila', 'filas') + '</b></td><td class="num"><b>' + usd2(tot) + '</b></td><td></td></tr></tbody></table>' : '')
+      + '<tr><td colspan="2"><b>' + plural(f.length, 'fila', 'filas') + '</b> · total leído (cuádralo con tu cuadro)</td><td class="num"><b>' + usd2(tot) + '</b></td><td></td></tr></tbody></table>' : '')
     + (CORTE.malas.length ? '<div class="malas">' + plural(CORTE.malas.length, 'línea ignorada', 'líneas ignoradas') + ' (' + esc([...new Set(CORTE.malas.map(m => m.motivo))].join(', ')) + ')</div>' : '');
   const b = $('bCorte'); b.disabled = !f.length; b.textContent = f.length ? 'Cargar ' + plural(f.length, 'fila', 'filas') : 'Cargar';
 }
@@ -2154,7 +2417,9 @@ function abrirAyuda(){
     + '<p>Todo lo que está en pesos se pasa a dólares con la TRM de trabajo: <b>' + n0(p.trm) + '</b>.</p>'
     + '<p>Lo estimado cuenta a <b>' + peso + '</b> para el retiro.</p>'
     + '<p>El retiro de la semana = lo que <b>Queda</b> esta semana menos el colchón de <b>' + usd(p.colchon) + '</b>, entre <b>' + esc(p.socios == null ? '—' : p.socios) + '</b>, nunca por encima del objetivo (' + usd(p.obj) + '). Las <b>' + esc(p.horizonte == null ? '—' : p.horizonte) + ' semanas</b> no lo recortan: si más adelante la caja baja del colchón, la línea de abajo avisa.</p>'
-    + '<p>Lo que vencía antes del último saldo de Chase se da por pagado: ya está reflejado en el banco. La deuda con las MGAs se marca a mano.</p>';
+    + '<p>Lo que vencía antes del último saldo de Chase se da por pagado: ya está reflejado en el banco. La deuda con las MGAs se marca a mano.</p>'
+    + '<p>Al marcar un pago en <b>Sale</b> se pregunta cuándo salió: <b>Ya salió</b> (ahora), <b>Sale el…</b> (un día de esta semana: sigue restando de Chase hasta que pongas un saldo posterior a esa fecha) o <b>Salió antes del último Chase</b> (el saldo ya lo trae). En un down payment, <b>Aún no se depositó</b> registra al cliente que pagó por ACH: su plata entra el día del depósito y el DP sale el día del giro.</p>'
+    + '<p>Los <b>DPs sin fecha de pago</b> (al pie de Sale) no son deuda y no suman: FAM les pone la fecha en el BOS. <b>Se debe</b> cuenta uno desde hoy; ✕ lo descarta y queda en «Descartados».</p>';
   abrirModal();
 }
 function abrirModal(){ $('modal').hidden = false; }
@@ -2195,12 +2460,14 @@ document.addEventListener('click', async e => {
     case 'dec': {
       if (!it) return;
       const a = b.dataset.a;
-      if (a === 'aplazado') { UI.aplazar = keyOf(it); it.sentido === 'entra' ? pintarEntra() : pintarSale(); { const f = $('aplF'); if (f) f.focus(); } return; }
+      if (a === 'aplazado') { UI.aplazar = keyOf(it); UI.salio = null; pintarEntra(); pintarSale(); { const f = $('aplF'); if (f) f.focus(); } return; }
       if (a === 'no_va' && b.dataset.seguro !== '1') {
-        b.dataset.seguro = '1'; b.classList.add('seguro'); b.textContent = '¿No va? ✕';
-        setTimeout(() => { if (document.body.contains(b)) { b.dataset.seguro = ''; b.classList.remove('seguro'); b.textContent = '✕'; } }, 4000);
+        b.dataset.seguro = '1'; b.classList.add('seguro'); b.textContent = '¿No va? ✕'; b.setAttribute('aria-label', 'Confirmar: no va');
+        setTimeout(() => { if (document.body.contains(b)) { b.dataset.seguro = ''; b.classList.remove('seguro'); b.textContent = '✕'; b.setAttribute('aria-label', 'No va'); } }, 4000);
         return;
       }
+      /* v8 · E4 · en «Sale», ✓ ya no decide solo: pregunta cuándo salió (lo que entra sigue igual) */
+      if (a === 'pagado' && it.sentido === 'sale') { UI.aplazar = null; UI.salio = { key:keyOf(it), modo:'menu' }; pintarEntra(); pintarSale(); { const f = document.querySelector('#cSale [data-act=salio-ya]'); if (f) f.focus(); } return; }
       if (a === 'pagado') decidir(b, it, 'pagado', { p_monto:it.monto, p_pagado_en:pagadoEn(it) });
       else if (a === 'tarjeta') decidir(b, it, 'tarjeta', { p_monto:it.monto });
       else if (a === 'no_va') decidir(b, it, 'no_va');
@@ -2242,7 +2509,13 @@ document.addEventListener('click', async e => {
     case 'tarj-ok': {
       const id = b.dataset.id, v = num(($('td-' + id) || {}).value);
       if (v == null || v < 0) { toast('Escribe la deuda de la tarjeta', true); return; }
-      escribir(b, () => SB.rpc('tarjeta_actualizar', { p_tarjeta_id:id, p_deuda:v }), 'Tarjeta actualizada');
+      /* v8 · mínimo y vencimiento solo viajan si se escribieron (la base conserva lo anterior si van vacíos) */
+      const mi = num(($('tm-' + id) || {}).value), ve = ($('tv-' + id) || {}).value || '';
+      if (mi != null && mi < 0) { toast('El mínimo no puede ser negativo', true); return; }
+      const args = { p_tarjeta_id:id, p_deuda:v };
+      if (mi != null) args.p_minimo = mi;
+      if (ve) args.p_vence = ve;
+      escribir(b, () => SB.rpc('tarjeta_actualizar', args), 'Tarjeta actualizada');
       break;
     }
     case 'ret-ok': {
@@ -2298,7 +2571,97 @@ document.addEventListener('click', async e => {
       if (ok) cerrarModal();
       break;
     }
+    /* ===== v8 · E4 · casillas con dos tiempos ===== */
+    case 'salio-ya': if (!it) return; decidir(b, it, 'pagado', { p_monto:it.monto, p_pagado_en:pagadoEn(it) }, 'Marcado: ya salió'); break;
+    case 'salio-fecha': if (!it) return; UI.salio = { key:keyOf(it), modo:'fecha' }; pintarSale(); { const f = $('salioF'); if (f) f.focus(); } break;
+    case 'salio-fecha-ok': {
+      if (!it) return;
+      const v = ($('salioF') || {}).value, fin7 = addDias(D.lunes, 6);
+      if (!v) { toast('Escoge la fecha', true); return; }
+      if (v < D.hoy) { toast('Escoge una fecha de hoy en adelante.', true); return; }
+      if (v > fin7) { toast('La fecha es de esta semana (hasta el ' + fCorta(fin7) + '). Si sale después, déjalo pendiente.', true); return; }
+      /* sale ese día (hasta las 11:59 p. m. de Bogotá): sigue restando hasta que un Chase POSTERIOR a esa fecha lo absorba */
+      decidir(b, it, 'pagado', { p_monto:it.monto, p_pagado_en:v + 'T23:59:00-05:00', p_nota:'Sale el ' + fCorta(v) + ' (programado desde GABI Liquidez)' }, 'Programado: sale el ' + fCorta(v));
+      break;
+    }
+    case 'salio-chase': {
+      if (!it) return;
+      const ch = (D.caja || {}).actualizado;
+      if (!ch || isNaN(Date.parse(ch))) { toast('No hay un saldo de Chase al cual referirse', true); return; }
+      /* un minuto antes del último saldo: el Chase ya lo trae, no se resta otra vez */
+      decidir(b, it, 'pagado', { p_monto:it.monto, p_pagado_en:new Date(Date.parse(ch) - 60000).toISOString(), p_nota:'Salió antes del último Chase (' + fCorta(diaBog(ch)) + ')' },
+        'Marcado: ya estaba en el Chase del ' + fCorta(diaBog(ch)));
+      break;
+    }
+    case 'salio-ach': if (!it) return; UI.salio = { key:keyOf(it), modo:'ach', monto:it.monto }; pintarSale(); { const f = $('achMonto'); if (f) f.focus(); } break;
+    case 'salio-no': {
+      const i = b.dataset.i;
+      UI.salio = null; pintarSale();
+      { const f = i == null ? null : document.querySelector('#cSale [data-act=dec][data-a=pagado][data-i="' + i + '"]'); if (f) f.focus(); }   /* el foco vuelve al ✓ de esa fila */
+      break;
+    }
+    case 'ach-ok': {
+      if (!it) return;
+      const monto = num(($('achMonto') || {}).value), dep = ($('achDep') || {}).value, giro = ($('achGiro') || {}).value;
+      if (monto == null || monto <= 0) { toast('Escribe lo que pagó el cliente', true); return; }
+      if (!fechaValida(dep) || dep < D.hoy) { toast('La fecha del depósito es de hoy en adelante', true); return; }
+      if (dep > addDias(D.hoy, 60)) { toast('El depósito es dentro de los próximos 60 días. Si es más tarde, regístralo cuando se acerque.', true); return; }
+      if (!fechaValida(giro) || giro < dep) { toast('El giro sale el día del depósito o después', true); return; }
+      if (giro > addDias(dep, 60)) { toast('El giro sale como máximo 60 días después del depósito', true); return; }
+      escribir(b, () => SB.schema('portal').rpc('liquidez_ach_registrar', { p_dp_clave:it.clave, p_monto_cliente:monto, p_fecha_deposito:dep, p_fecha_giro:giro, p_cliente:it.concepto, p_nota:null }),
+        'ACH registrado: entra el ' + fCorta(dep) + ' y el giro sale el ' + fCorta(giro));
+      break;
+    }
+    /* ===== v8 · E1 · DPs sin fecha de pago ===== */
+    case 'sf-abrir': UI.sf = !UI.sf; pintarSfBox(); break;
+    case 'sf-mga': { const k = b.dataset.g; UI.abiertos.has(k) ? UI.abiertos.delete(k) : UI.abiertos.add(k); pintarSfBox(); break; }
+    case 'sf-desc': UI.sfDesc = !UI.sfDesc; pintarSfBox(); break;
+    case 'sf-reintentar': cargarSinFecha(); break;
+    case 'sf-debe': {
+      const f = sfFila(b.dataset.k); if (!f) return;
+      escribir(b, () => SB.schema('portal').rpc('liquidez_decidir', { p_clave:f.clave, p_fecha_original:'2000-01-01', p_accion:'aplazado', p_monto:null, p_fecha_nueva:D.hoy,
+        p_pagado_en:null, p_concepto:f.cliente || null, p_nota:'Se debe: DP sin fecha de pago (GABI Liquidez)' }), 'Se debe: cuenta en Sale desde hoy');
+      break;
+    }
+    case 'sf-nova': {
+      const f = sfFila(b.dataset.k); if (!f) return;
+      if (b.dataset.seguro !== '1') {
+        b.dataset.seguro = '1'; b.classList.add('seguro'); b.textContent = '¿No va? ✕'; b.setAttribute('aria-label', 'Confirmar: no va');
+        setTimeout(() => { if (document.body.contains(b)) { b.dataset.seguro = ''; b.classList.remove('seguro'); b.textContent = '✕'; b.setAttribute('aria-label', 'No va'); } }, 4000);
+        return;
+      }
+      escribir(b, () => SB.schema('portal').rpc('liquidez_decidir', { p_clave:f.clave, p_fecha_original:'2000-01-01', p_accion:'no_va', p_monto:null, p_fecha_nueva:null,
+        p_pagado_en:null, p_concepto:f.cliente || null, p_nota:'No va: DP sin fecha de pago (GABI Liquidez)' }), 'Marcado: no va');
+      break;
+    }
+    case 'sf-deshacer': {
+      const f = sfFila(b.dataset.k); if (!f) return;
+      escribir(b, () => SB.schema('portal').rpc('liquidez_decidir', { p_clave:f.clave, p_fecha_original:'2000-01-01', p_accion:'deshacer', p_monto:null, p_fecha_nueva:null,
+        p_pagado_en:null, p_concepto:f.cliente || null, p_nota:'Deshecho (GABI Liquidez)' }), 'Deshecho');
+      break;
+    }
+    /* ===== v8 · E5 · cortes de MGA ===== */
+    case 'mga-reintentar': cargarMgaSinCorte(); break;
+    case 'mga-corte': abrirCorteMga(); break;
+    case 'mga-ok': {
+      const mga = ($('mgaN') || {}).value, fch = ($('mgaF') || {}).value, monto = montoDe(($('mgaM') || {}).value), nota = (($('mgaNota') || {}).value || '').trim();
+      if (!mga) { toast('Escoge la MGA', true); return; }
+      if (!fch) { toast('Escoge la fecha del corte', true); return; }
+      if (!fechaCorteOk(fch)) { toast('La fecha del corte no parece correcta: revisa el año', true); return; }
+      if (monto == null || monto <= 0) { toast('Escribe el monto del corte', true); return; }
+      const ok = await escribir(b, () => SB.rpc('deuda_corte_guardar', { p_mga:mga, p_fecha_corte:fch, p_monto:monto, p_fecha_plan:null, p_nota:nota || 'Cargado desde GABI Liquidez' }),
+        'Corte cargado: ' + mga + ' · ' + usd2(monto) + ' el ' + fCorta(fch));
+      if (ok) cerrarModal();
+      break;
+    }
   }
+});
+/* v8 · lo que se calcula mientras se escribe: el monto del corte de MGA y el ACH */
+document.addEventListener('input', e => {
+  const id = e.target && e.target.id;
+  if (UI.salio && (id === 'achMonto' || id === 'achDep' || id === 'achGiro' || id === 'salioF')) { UI.salio.v = UI.salio.v || {}; UI.salio.v[id] = e.target.value; }   /* lo escrito sobrevive a un nuevo pintado */
+  if (id === 'mgaM' || id === 'mgaN' || id === 'mgaF') mgaRefrescar();
+  if (id === 'achMonto' || id === 'achDep') achRefrescar(id);
 });
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && !$('modal').hidden) { cerrarModal(); return; }
@@ -2318,7 +2681,7 @@ arrancar();
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="gabi-liquidez.html";
-var PGV_VERSION=7; // v7 - 27-oct-2026 03 RETIROS · tarjeta "Esta semana" (solo dirección): el retiro por socio de la semana con la regla C — una franja con el valor, el semáforo y dónde cierra Chase en cada corte; lo poco que se escribe cada semana (giro a la SAS, comisiones del corte, otros pagos, lo que alcanza a entrar del batch); el cuadro de Jeff pegado tal cual, con chips que dicen cómo se leyó y si cuadra con su total; "Ver cómo se calculó" y "Lo de siempre entre un corte y el otro"; vista previa en vivo sin guardar y Guardar la semana (portal.retiro_semana_panel / retiro_semana_calcular / retiro_semana_guardar). Los demás socios ven solo la franja. La fila de la semana en la tabla (sugerido) y el monto que precarga Registrar salen de esa tarjeta; si Registrar coincide con ella, la nota lo deja escrito. 01 La agencia y 02 Liquidez no cambian. | v6 - 20-oct-2026 MODO VER: en Liquidez, solo dirección, la tarjeta "Cortes · tu consolidado" (pegas la tabla de la hoja, la pantalla la lee y muestra Ya en Chase · cada corte · Sin fecha con el ✓ del total; Pegar otro / Quitar; portal.liquidez_consolidado_guardar / _jubilar) y la lectura B del retiro al lado de la A (propuesta: el mismo retiro cada semana hasta el próximo corte sin bajar del colchón; no registra nada). Para todos, el cierre del mes en caja al pie de Cuatro semanas. En el cuadre de Chase, lo que tu consolidado marca como "ya llegó". El retiro oficial no cambia. | v5 - 20-oct-2026 CHASE A LA VISTA: en La agencia la tarjeta de la caja trae el saldo de Chase con su fecha y el botón Actualizar Chase (socios; si Chase pasó del límite de días, el campo ya sale abierto) y deja de ser un enlace entero ("Ver Liquidez →" aparte); aviso arriba en las tres pestañas cuando Chase pasó del límite ("Poner el saldo de hoy"); en la franja de Liquidez el ✎ pasa a un botón visible Actualizar con la fecha del saldo debajo; al guardar sale el cuadre de Chase (anterior + ventas que entraron − pagos vencidos = esperado, contra el real); sello de Chase en La agencia. Misma función caja_actualizar_saldo_v2; la base no cambia. | v4 - 14-oct-2026 (auditoría en producción): si la base está ocupada y liquidez_panel falla al entrar, un reintento automático a los 2.5 s antes del aviso; si La agencia ya cargó, se queda a la vista y el aviso habla solo de la liquidez; singular y plural en las tarjetas ("1 negativo", "1 venta", "1 persona"). | v3 - 14-oct-2026 01 LA AGENCIA (solo direccion_total, portal.liquidez_agencia): el macro de dirección en tarjetas con anillos — la franja del mes (entró contra lo que necesita: nómina, fijos y retiro mínimo, con la barrita del "debería ir hoy"), las tres áreas con la cara chiquita de su líder adentro del anillo (Ventas nuevas · Brahian, Renovaciones · Karen, Endosos · Jhon Ramírez), el mes cerrado y el año en dos anillos con el aviso de comisiones de agentes sin cargar, y la caja en una tarjeta chiquita. Abre ahí para dirección; Jorge y los demás siguen en Liquidez y Retiros sin cambios. | v2 - 13-oct-2026 el retiro se lee con la semana contra sí misma (Caja + Entra − Sale de esta semana − colchón, entre los socios, hasta el objetivo); las 4 semanas solo avisan. Lo que vencía antes del último saldo de Chase se da por pagado (pie en Sale). | v1 - 12-oct-2026 GABI LIQUIDEZ EN EL PORTAL: una pantalla de dirección que sale entera de portal.liquidez_panel() — franja (caja, entra, sale, queda y anillo del retiro por socio), ingresos semana/mes, por entrar, la cola de pagos con un clic (liquidez_decidir), cuatro semanas y fijos del mes; pestaña Retiros (registrar, corregir, cerrar la semana) y carga del corte de Jeff. Cero barras, guion cuando no hay dato, sin almacenamiento del navegador.
+var PGV_VERSION=8; // v8 - 3-nov-2026 MOTOR HONESTO (ronda 1): al pie de Sale, el bloque plegable «DPs sin fecha de pago» (con la fila del BOS, MGA, cliente, vendedor, edad y monto por girar; NO suman a Sale; Se debe / No va / Deshacer; portal.liquidez_dp_sin_fecha); las casillas de pago preguntan cuándo salió (Ya salió · Sale el… · Salió antes del último Chase) y lo programado lleva la píldora «sale el …» y sigue restando; en un down payment, «Aún no se depositó» (ACH: la plata del cliente entra el día del depósito y el DP sale el día del giro; portal.liquidez_ach_registrar); aviso «N DPs sin corte» y formulario «Cargar corte de MGA» (public.deuda_corte_guardar, portal.liquidez_mga_sin_corte); el lector del corte de Jeff entiende 8.688,69 · 8,688.69 · 8688.69 y muestra el total leído; alerta «Falta el mínimo» en las tarjetas (con mínimo y vencimiento editables); el cierre del mes llega siempre al último día y los DPs por póliza que el último Chase ya trae se dan por pagados (la base: _liq_movimientos_v y liquidez_panel, aditivo y con reversa). 01 La agencia y 03 Retiros no cambian. | v7 - 27-oct-2026 03 RETIROS · tarjeta "Esta semana" (solo dirección): el retiro por socio de la semana con la regla C — una franja con el valor, el semáforo y dónde cierra Chase en cada corte; lo poco que se escribe cada semana (giro a la SAS, comisiones del corte, otros pagos, lo que alcanza a entrar del batch); el cuadro de Jeff pegado tal cual, con chips que dicen cómo se leyó y si cuadra con su total; "Ver cómo se calculó" y "Lo de siempre entre un corte y el otro"; vista previa en vivo sin guardar y Guardar la semana (portal.retiro_semana_panel / retiro_semana_calcular / retiro_semana_guardar). Los demás socios ven solo la franja. La fila de la semana en la tabla (sugerido) y el monto que precarga Registrar salen de esa tarjeta; si Registrar coincide con ella, la nota lo deja escrito. 01 La agencia y 02 Liquidez no cambian. | v6 - 20-oct-2026 MODO VER: en Liquidez, solo dirección, la tarjeta "Cortes · tu consolidado" (pegas la tabla de la hoja, la pantalla la lee y muestra Ya en Chase · cada corte · Sin fecha con el ✓ del total; Pegar otro / Quitar; portal.liquidez_consolidado_guardar / _jubilar) y la lectura B del retiro al lado de la A (propuesta: el mismo retiro cada semana hasta el próximo corte sin bajar del colchón; no registra nada). Para todos, el cierre del mes en caja al pie de Cuatro semanas. En el cuadre de Chase, lo que tu consolidado marca como "ya llegó". El retiro oficial no cambia. | v5 - 20-oct-2026 CHASE A LA VISTA: en La agencia la tarjeta de la caja trae el saldo de Chase con su fecha y el botón Actualizar Chase (socios; si Chase pasó del límite de días, el campo ya sale abierto) y deja de ser un enlace entero ("Ver Liquidez →" aparte); aviso arriba en las tres pestañas cuando Chase pasó del límite ("Poner el saldo de hoy"); en la franja de Liquidez el ✎ pasa a un botón visible Actualizar con la fecha del saldo debajo; al guardar sale el cuadre de Chase (anterior + ventas que entraron − pagos vencidos = esperado, contra el real); sello de Chase en La agencia. Misma función caja_actualizar_saldo_v2; la base no cambia. | v4 - 14-oct-2026 (auditoría en producción): si la base está ocupada y liquidez_panel falla al entrar, un reintento automático a los 2.5 s antes del aviso; si La agencia ya cargó, se queda a la vista y el aviso habla solo de la liquidez; singular y plural en las tarjetas ("1 negativo", "1 venta", "1 persona"). | v3 - 14-oct-2026 01 LA AGENCIA (solo direccion_total, portal.liquidez_agencia): el macro de dirección en tarjetas con anillos — la franja del mes (entró contra lo que necesita: nómina, fijos y retiro mínimo, con la barrita del "debería ir hoy"), las tres áreas con la cara chiquita de su líder adentro del anillo (Ventas nuevas · Brahian, Renovaciones · Karen, Endosos · Jhon Ramírez), el mes cerrado y el año en dos anillos con el aviso de comisiones de agentes sin cargar, y la caja en una tarjeta chiquita. Abre ahí para dirección; Jorge y los demás siguen en Liquidez y Retiros sin cambios. | v2 - 13-oct-2026 el retiro se lee con la semana contra sí misma (Caja + Entra − Sale de esta semana − colchón, entre los socios, hasta el objetivo); las 4 semanas solo avisan. Lo que vencía antes del último saldo de Chase se da por pagado (pie en Sale). | v1 - 12-oct-2026 GABI LIQUIDEZ EN EL PORTAL: una pantalla de dirección que sale entera de portal.liquidez_panel() — franja (caja, entra, sale, queda y anillo del retiro por socio), ingresos semana/mes, por entrar, la cola de pagos con un clic (liquidez_decidir), cuatro semanas y fijos del mes; pestaña Retiros (registrar, corregir, cerrar la semana) y carga del corte de Jeff. Cero barras, guion cuando no hay dato, sin almacenamiento del navegador.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;
