@@ -194,6 +194,32 @@ body{font-family:var(--font-text);color:var(--ink);background:var(--papel);min-h
 .brk-ahora-no{font:inherit;font-size:13px;font-weight:600;color:var(--muted);background:none;border:none;padding:8px 4px;cursor:pointer;}
 .brk-ahora-no:hover{color:var(--navy);text-decoration:underline;}
 @media (max-width:480px){.brk-caja-horas{grid-template-columns:1fr;}}
+/* v42 · Mi Jornada: cada persona escoge su turno (cuadro "Escoge tu horario" y líneas del turno en las tarjetas) */
+.brk-turnos{display:flex;flex-direction:column;gap:12px;min-width:0;margin:0 0 16px;padding:16px 18px;background:var(--surface);border:1px solid #D9A520;border-left-width:5px;border-radius:var(--r-md);box-shadow:var(--shadow-2);}
+.brk-turnos[hidden]{display:none;}
+.brk-turnos-tit{margin:0;font-family:var(--font-title);font-weight:700;font-size:16px;color:var(--navy);}
+.brk-turnos-sub{margin:-6px 0 0;font-size:13px;color:var(--muted);line-height:1.45;}
+.brk-tg{display:flex;flex-direction:column;gap:7px;min-width:0;}
+.brk-tg-t{font-size:12.5px;font-weight:700;color:var(--navy);}
+.brk-tg-fijo{font-size:13px;font-weight:600;color:var(--teal-2);overflow-wrap:anywhere;}
+.brk-tchips{display:grid;grid-template-columns:repeat(4,minmax(0,170px));gap:8px;}
+.brk-tchip{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0;font:inherit;padding:9px 8px;border:1px solid var(--hairline);border-radius:var(--r-md);background:var(--mint-ghost);color:var(--navy);cursor:pointer;text-align:center;}
+.brk-tchip:hover:not(:disabled){border-color:var(--teal);}
+.brk-tchip:focus-visible{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(34,154,130,.25);}
+.brk-tchip.brk-on{background:var(--teal);border-color:var(--teal);color:#fff;}
+.brk-tchip:disabled{opacity:.55;cursor:not-allowed;}
+.brk-tchip-h{font-family:var(--font-mono);font-size:13.5px;font-weight:600;white-space:nowrap;}
+.brk-tchip-n{font-size:11px;color:var(--muted);}
+.brk-tchip.brk-on .brk-tchip-n{color:var(--mint-soft);}
+.brk-taviso{margin:0;padding:8px 12px;background:#FBF3DC;border-radius:var(--r-sm);font-size:12.5px;font-weight:600;color:#6b5200;line-height:1.45;overflow-wrap:anywhere;}
+.brk-tconf{display:flex;flex-direction:column;gap:10px;padding:12px 14px;background:#FBF3DC;border:1px solid #D9A520;border-radius:var(--r-md);}
+.brk-tconf-txt{margin:0;font-size:13px;font-weight:600;color:var(--navy);line-height:1.45;overflow-wrap:anywhere;}
+.brk-turnos .brk-caja-acc{justify-content:flex-start;}
+.brk-tlinea{font-size:12px;color:var(--muted);line-height:1.4;}
+.brk-tlinea.brk-tlinea-ok{color:var(--teal-2);font-weight:600;}
+.brk-tlinea.brk-tlinea-tarde{color:#9a6b00;font-weight:600;}
+.brk-tprox{font-size:11.5px;font-weight:600;color:var(--teal-2);line-height:1.4;}
+@media (max-width:480px){.brk-turnos{padding:14px;}.brk-tchips{grid-template-columns:repeat(2,minmax(0,1fr));}}
 
 /* ============================================================
    MURO DE NOVEDADES (v15) · estandar visual GABI/ProtectGo
@@ -578,6 +604,7 @@ body{font-family:var(--font-text);color:var(--ink);background:var(--papel);min-h
 <div class="brk-clock" id="brkClock">--:--:-- --</div>
 </div>
 <p class="brk-sub">Marca antes de salir y apenas regreses.</p>
+<div class="brk-turnos" id="brkTurnos" role="group" aria-labelledby="brkTurnosTit" hidden></div>
 <div class="brk-aviso" id="brkAviso" hidden></div>
 <div class="brk-grid">
 <div class="brk-card" id="brk-card-break_am"><div id="brk-body-break_am">
@@ -1059,6 +1086,10 @@ window.pgOnSesion(function(s){
 // sola pasado 5 min, aviso "Justifica"). La hora que marca el servidor NUNCA se cambia: la
 // justificacion es una capa aparte (lee mis_justif_breaks_hoy, escribe marcas_breaks_justif)
 // y la valida Andres Lopez en el Reporte de Breaks. Si esa capa falla, marcar sigue igual.
+// v42 (6-nov-2026): turnos. Cada persona escoge UNA sola vez su hora de break mañana, almuerzo y
+// break tarde (cuadro "Escoge tu horario", escribe elegir_mi_horario_breaks); "Salir" solo en su
+// turno, con el margen de la base, cuando breaks_turnos_modo lo exige (la guardia de la base manda;
+// la pantalla solo avisa antes). Lee mis_turnos_breaks FAIL-OPEN: si falla, todo queda como v41.
 var SUPABASE_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var SUPABASE_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var sb=null;
@@ -1072,6 +1103,11 @@ var JUST={};        // v37: espacio -> la justificacion de hoy que manda (la viv
 var CAJA=null;      // v37: casilla abierta {espacio, origen, conMarca, el}. Solo una a la vez.
 var CARGADO=false;  // v37: true tras la primera carga buena (antes el reloj no re-pinta tarjetas)
 var ENVIANDO=false; // v37: una justificacion en camino
+var TURNOS=null;    // v42: filas de mis_turnos_breaks (null = sin capa de turnos: todo como v41)
+var SEL={};         // v42: espacio -> "HH:MM" escogido en el cuadro (aun sin guardar)
+var TCONF=false;    // v42: el cuadro esta pidiendo confirmacion
+var TGUARD=false;   // v42: elegir_mi_horario_breaks en camino
+var TMSG="";        // v42: mensaje (de la base) dentro del cuadro
 
 // Ventanas: las mismas de portal.v_marcas_breaks y portal.v_marcas_breaks_justif (si cambian, se cambian en los tres).
 var ESPACIOS={
@@ -1181,6 +1217,87 @@ function linkHtml(espacio,txt){
 return '<button type="button" class="brk-link brk-acc" data-brk-act="justificar" data-brk-espacio="'+espacio+'">'+txt+'</button>';
 }
 
+// ---------- v42 · turnos (mis_turnos_breaks) ----------
+// Todo lo de aqui solo pinta y avisa: la regla la hace cumplir la base (trg_marcas_breaks_turno_guardia).
+var TURNO_TXT={
+break_am:{largo:"Break de la mañana",corto:"Mañana",arg:"p_break_am"},
+almuerzo:{largo:"Almuerzo",corto:"Almuerzo",arg:"p_almuerzo"},
+break_pm:{largo:"Break de la tarde",corto:"Tarde",arg:"p_break_pm"}
+};
+var DIAS_C=["dom","lun","mar","mié","jue","vie","sáb"];
+var MESES_C=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+function armarTurnos(rows){
+if(!Array.isArray(rows)) return null;
+var t=rows.filter(function(x){ return !!x && Object.prototype.hasOwnProperty.call(ESPACIOS,x.espacio) && !!hhmm(x.hora_ini); });
+return t.length ? t : null;
+}
+function turnosDe(espacio){ return TURNOS ? TURNOS.filter(function(r){ return r.espacio===espacio; }) : []; }
+function turnoMio(espacio){ return turnosDe(espacio).filter(function(r){ return r.es_mio===true; })[0]||null; }
+function turnoProx(espacio){ return turnosDe(espacio).filter(function(r){ return r.es_proximo===true; })[0]||null; }
+// El modo del dia viene repetido en cada fila: obligatorio_hoy, obligatorio_desde, margen_min.
+function modoT(){
+var r=(TURNOS&&TURNOS[0])||{};
+var mg=parseInt(r.margen_min,10); if(isNaN(mg)||mg<0) mg=5;
+return {oblig:r.obligatorio_hoy===true, desde:r.obligatorio_desde||null, margen:mg};
+}
+// Lo que la persona todavia tiene que escoger: sin turno hoy y sin uno ya programado.
+function faltantes(){ return Object.keys(ESPACIOS).filter(function(e){ return turnosDe(e).length>0 && !turnoMio(e) && !turnoProx(e); }); }
+function segDe(str){ var t=hhmm(str); if(!t) return null; var p=t.split(":"); return parseInt(p[0],10)*3600+parseInt(p[1],10)*60; }
+function segAhora(){ var d=serverNow(); return d.getHours()*3600+d.getMinutes()*60+d.getSeconds(); }
+function hhmmSeg(s){ s=((s%86400)+86400)%86400; return pad2(Math.floor(s/3600))+":"+pad2(Math.floor(s/60)%60); }
+function h12(str){ var t=hhmm(str); if(!t) return "—"; var p=t.split(":"), h=parseInt(p[0],10)%12; if(h===0) h=12; return h+":"+p[1]; }
+function sufijo(str){ var t=hhmm(str); return (t && parseInt(t.split(":")[0],10)>=12) ? "p.m." : "a.m."; }
+function horaTxt(str){ return h12(str)+" "+sufijo(str); }
+// ("10:00","10:15") -> "10:00 – 10:15 a.m."; si cruza el mediodia lleva los dos sufijos.
+function rangoTxt(a,b,sep){ sep=sep||" – "; return sufijo(a)===sufijo(b) ? h12(a)+sep+h12(b)+" "+sufijo(b) : horaTxt(a)+sep+horaTxt(b); }
+function permTurno(r){ var p=parseInt(r&&r.permitido_min,10); return isNaN(p) ? ESPACIOS[r.espacio].permitido : p; }
+function finTurno(r){ return hhmm(r.hora_fin) ? r.hora_fin : hhmmSeg(segDe(r.hora_ini)+permTurno(r)*60); }
+// "2026-11-10" -> "mar 10 nov" (se parte el texto: sin corrimiento de zona horaria).
+function fechaCorta(s){
+var m=/^(\d{4})-(\d{2})-(\d{2})/.exec(String(s||"")); if(!m) return "";
+var d=new Date(Date.UTC(+m[1],+m[2]-1,+m[3])); if(isNaN(d.getTime())||!MESES_C[+m[2]-1]) return "";
+return DIAS_C[d.getUTCDay()]+" "+(+m[3])+" "+MESES_C[+m[2]-1];
+}
+function personasTxt(n){ n=parseInt(n,10)||0; return n<=0 ? "nadie aún" : (n===1 ? "1 persona" : n+" personas"); }
+function articulo(seg){ return h12(hhmmSeg(seg)).indexOf("1:")===0 ? "la " : "las "; }
+// Estado de "Salir" sin marca: v41 (sin capa de turnos) · libre (la base aun no exige) ·
+// sin / sinhoy (exige y no hay turno hoy) · antes / en / tarde (segundos del dia del servidor).
+function estadoSalir(espacio){
+if(!TURNOS) return {k:"v41"};
+var mio=turnoMio(espacio), md=modoT();
+if(!md.oblig) return {k:"libre",mio:mio};
+if(!mio) return {k:turnoProx(espacio)?"sinhoy":"sin"};
+var ini=segDe(mio.hora_ini), fin=ini+md.margen*60, ahora=segAhora();
+return {k:(ahora<ini?"antes":(ahora<=fin?"en":"tarde")),mio:mio,ini:ini,fin:fin};
+}
+function puedeSalir(es){ return es.k==="v41"||es.k==="libre"||es.k==="en"; }
+// "Olvidé marcar" sale desde que empieza SU turno; sin turno, desde que abre la ventana (v41).
+function olvidoVisible(espacio){
+var mio=turnoMio(espacio);
+if(mio) return HORA_OK && segAhora()>=segDe(mio.hora_ini);
+return ventanaAbierta(espacio);
+}
+function claveEstado(espacio){ return estadoSalir(espacio).k+"|"+(olvidoVisible(espacio)?"1":"0"); }
+function lineaSalir(es){
+var t="", cls="brk-tlinea", md=modoT();
+if(es.k==="libre"){ var f=md.desde?fechaCorta(md.desde):""; if(es.mio&&f) t="Desde el "+f+" solo podrás salir en tu turno."; }
+else if(es.k==="sin") t="Primero escoge tu horario";
+else if(es.k==="sinhoy") t="Hoy no tienes turno. Pídeselo a RRHH, Andrés López o sales@.";
+// (las dos que terminan en "a.m."/"p.m." no llevan otro punto)
+else if(es.k==="antes") t="Puedes marcar de "+rangoTxt(hhmmSeg(es.ini),hhmmSeg(es.fin)," a ");
+else if(es.k==="en"){ t="Marca antes de "+articulo(es.fin)+horaTxt(hhmmSeg(es.fin)); cls+=" brk-tlinea-ok"; }
+else if(es.k==="tarde"){ t="Ya pasó tu hora para marcar ("+rangoTxt(hhmmSeg(es.ini),hhmmSeg(es.fin))+")."; cls+=" brk-tlinea-tarde"; }
+return t ? '<div class="'+cls+'">'+esc(t)+'</div>' : "";
+}
+// Linea de arriba de la tarjeta: con turno "Tu turno: 10:00 – 10:15 a.m. · 15 min"; sin turno, la ventana (v41).
+function metaDe(espacio){
+var cfg=ESPACIOS[espacio], mio=turnoMio(espacio), prox=turnoProx(espacio);
+var h = mio ? '<div class="brk-meta">Tu turno: '+esc(rangoTxt(mio.hora_ini,finTurno(mio)))+' · '+esc(permTurno(mio))+' min</div>'
+: '<div class="brk-meta">'+cfg.ventana+' · '+cfg.permitido+' min</div>';
+if(prox){ var f=fechaCorta(prox.proximo_desde); h+='<div class="brk-tprox">'+(f?'Desde el '+esc(f)+': ':'Próximo turno: ')+esc(rangoTxt(prox.hora_ini,finTurno(prox)))+'</div>'; }
+return h;
+}
+
 function renderCard(espacio){
 var cfg=ESPACIOS[espacio];
 var row=STATE[espacio];
@@ -1188,7 +1305,7 @@ var j=JUST[espacio];
 var body=cardBody(espacio);
 var card=cardEl(espacio);
 if(!body||!card) return;
-var metaHtml='<div class="brk-meta">'+cfg.ventana+' · '+cfg.permitido+' min</div>';
+var metaHtml=metaDe(espacio);
 var olvido="0";
 
 if(!row){
@@ -1202,14 +1319,18 @@ metaHtml+
 tagHtml(j)+comentHtml(j);
 } else {
 card.className="brk-card";
-olvido = ventanaAbierta(espacio) ? "1" : "0";
+// v42: con turno (y la base exigiendolo) "Salir" solo se prende de su hora a +margen.
+var es=estadoSalir(espacio);
+olvido = olvidoVisible(espacio) ? "1" : "0";
 var rech = !!j && j.estado==="rechazada";
 body.innerHTML =
 '<div class="brk-nombre">'+cfg.nombre+'</div>'+
 metaHtml+
-'<button class="brk-btn brk-acc" data-brk-act="salir" data-brk-espacio="'+espacio+'"'+(HORA_OK?'':' disabled')+'>Salir</button>'+
+'<button class="brk-btn brk-acc" data-brk-act="salir" data-brk-espacio="'+espacio+'"'+((HORA_OK&&puedeSalir(es))?'':' disabled')+'>Salir</button>'+
+lineaSalir(es)+
 (rech ? tagHtml(j)+comentHtml(j) : '')+
 (olvido==="1" ? linkHtml(espacio,"Olvidé marcar") : '');
+card.setAttribute("data-brk-estado",es.k+"|"+olvido);
 }
 card.setAttribute("data-brk-olvido",olvido);
 fijarCaja(espacio);
@@ -1441,12 +1562,13 @@ if(overEl) overEl.textContent = "";
 }
 
 // v37: cuando abre la ventana de un espacio sin marca, aparece "Olvidé marcar" sin recargar.
+// v42: lo mismo con el turno: "Salir" se prende a su hora y se apaga pasado el margen (data-brk-estado).
 function revisarVentanas(){
 if(!CARGADO) return;
 Object.keys(ESPACIOS).forEach(function(e){
 if(STATE[e]||esViva(JUST[e])) return;
 var c=cardEl(e); if(!c) return;
-if(c.getAttribute("data-brk-olvido")!==(ventanaAbierta(e)?"1":"0")) renderCard(e);
+if(c.getAttribute("data-brk-estado")!==claveEstado(e)) renderCard(e);
 });
 }
 
@@ -1478,17 +1600,27 @@ if(!r||r.error){ try{ console.warn("[mi jornada] sin justificaciones:", r&&r.err
 return r.data||[];
 },function(e){ try{ console.warn("[mi jornada] sin justificaciones:", e); }catch(e2){} return null; });
 }catch(e){ try{ console.warn("[mi jornada] sin justificaciones:", e); }catch(e2){} pJust=Promise.resolve(null); }
+// v42: turnos de hoy, igual de FAIL-OPEN: si mis_turnos_breaks falla, TURNOS=null y Mi Jornada queda como v41.
+var pTurnos;
+try{
+pTurnos=Promise.resolve(sb.rpc("mis_turnos_breaks")).then(function(r){
+if(!r||r.error){ try{ console.warn("[mi jornada] sin turnos:", r&&r.error&&r.error.message); }catch(e){} return null; }
+return r.data||[];
+},function(e){ try{ console.warn("[mi jornada] sin turnos:", e); }catch(e2){} return null; });
+}catch(e){ try{ console.warn("[mi jornada] sin turnos:", e); }catch(e2){} pTurnos=Promise.resolve(null); }
 var pMarcas=Promise.resolve(sb.rpc("mis_marcas_hoy")).then(null,function(e){ return {error:{message:(e&&e.message)||"sin conexión"}}; });
-Promise.all([pMarcas,pJust]).then(function(rr){
+Promise.all([pMarcas,pJust,pTurnos]).then(function(rr){
 var r=rr[0];
 if(!r||r.error){ errRow("No se pudo cargar el estado de hoy: "+((r&&r.error&&r.error.message)||"sin respuesta")); if(cb) cb(false); return; }
 STATE={};
 (r.data||[]).forEach(function(row){ STATE[row.espacio]=row; });
 JUST = rr[1] ? armarJust(rr[1]) : {};
+TURNOS = armarTurnos(rr[2]);
 CARGADO=true;
 errRow("");
 renderAll();
 pintarAviso();
+pintarTurnos();
 if(cb) cb(true);
 });
 }
@@ -1496,12 +1628,103 @@ if(cb) cb(true);
 function marcarSalida(espacio){
 if(!HORA_OK){ errRow("No se pudo confirmar la hora del servidor — recarga la página"); return; }
 sb.from("marcas_breaks").insert({espacio:espacio}).then(function(r){
+var msg="";
 if(r.error){
-if(r.error.code==="23505") errRow("Ya marcaste este espacio hoy");
-else errRow(r.error.message||"No se pudo marcar la salida");
-} else { errRow(""); }
-cargarTodo();
+if(r.error.code==="23505") msg="Ya marcaste este espacio hoy";
+else msg=r.error.message||"No se pudo marcar la salida";
+}
+errRow(msg);
+// v42: el mensaje de la base (p. ej. "Todavía no puedes salir.") sigue a la vista despues de recargar.
+cargarTodo(msg ? function(){ errRow(msg); } : undefined);
 });
+}
+
+// ---------- v42 · cuadro "Escoge tu horario" (dentro del panel, nunca una alerta del navegador) ----------
+function pintarTurnos(foco){
+var box=document.getElementById("brkTurnos"); if(!box) return;
+var falt=(TURNOS&&CARGADO) ? faltantes() : [];
+if(!falt.length){ box.hidden=true; box.innerHTML=""; TCONF=false; return; }
+// La seleccion vale solo si ese turno sigue en la lista y no esta lleno.
+falt.forEach(function(e){
+if(SEL[e] && !turnosDe(e).some(function(r){ return hhmm(r.hora_ini)===SEL[e] && r.lleno!==true; })) SEL[e]=null;
+});
+var completo=falt.every(function(e){ return !!SEL[e]; });
+if(!completo) TCONF=false;
+var md=modoT(), bloq=TGUARD;
+var h='<p class="brk-turnos-tit" id="brkTurnosTit">Escoge tu horario</p>'+
+'<p class="brk-turnos-sub">En el comedor no cabemos todos a la vez: cada quien tiene su turno. Lo escoges una sola vez.</p>';
+Object.keys(ESPACIOS).forEach(function(e){
+var filas=turnosDe(e); if(!filas.length) return;
+var tid="brk-tg-"+e, mio=turnoMio(e), prox=turnoProx(e);
+h+='<div class="brk-tg"><div class="brk-tg-t" id="'+tid+'">'+TURNO_TXT[e].largo+' · '+esc(permTurno(filas[0]))+' min</div>';
+if(mio) h+='<div class="brk-tg-fijo">Ya tienes '+esc(rangoTxt(mio.hora_ini,finTurno(mio)))+'</div>';
+else if(prox){ var f=fechaCorta(prox.proximo_desde); h+='<div class="brk-tg-fijo">'+(f?'Desde el '+esc(f)+' tienes ':'Ya tienes ')+esc(rangoTxt(prox.hora_ini,finTurno(prox)))+'</div>'; }
+else {
+var libres=filas.filter(function(r){ return r.lleno!==true; });
+var tabH=SEL[e] || (libres[0] ? hhmm(libres[0].hora_ini) : "");
+h+='<div class="brk-tchips" role="radiogroup" aria-labelledby="'+tid+'">';
+filas.forEach(function(r){
+var hh=hhmm(r.hora_ini), on=SEL[e]===hh, lleno=r.lleno===true;
+h+='<button type="button" class="brk-tchip'+(on?' brk-on':'')+'" role="radio" aria-checked="'+(on?'true':'false')+'"'+
+' tabindex="'+(hh===tabH?'0':'-1')+'"'+((lleno||bloq)?' disabled':'')+
+' data-brk-act="turno" data-brk-espacio="'+e+'" data-brk-hora="'+esc(hh)+'">'+
+'<span class="brk-tchip-h">'+esc(h12(hh)+' – '+h12(finTurno(r)))+'</span>'+
+'<span class="brk-tchip-n">'+esc(personasTxt(r.personas)+(lleno?' · lleno':''))+'</span></button>';
+});
+h+='</div>';
+}
+h+='</div>';
+});
+var fd=md.desde?fechaCorta(md.desde):"";
+var aviso = md.oblig ? 'Ya se exige el turno: escógelo para poder marcar.'
+: (fd ? 'Desde el '+fd+', "Salir" solo funciona en tu turno (tienes '+md.margen+' '+(md.margen===1?'minuto':'minutos')+' para marcar).' : '');
+if(aviso) h+='<p class="brk-taviso">'+esc(aviso)+'</p>';
+h+='<div class="brk-caja-msg" role="alert">'+esc(TMSG)+'</div>';
+if(TCONF){
+var res=falt.map(function(e){ return TURNO_TXT[e].corto+' '+h12(SEL[e]); }).join(' · ');
+h+='<div class="brk-tconf"><p class="brk-tconf-txt" id="brkTconfTxt">¿Seguro? '+esc(res)+'. Después solo lo cambian RRHH, Andrés López o sales@.</p>'+
+'<div class="brk-caja-acc"><button type="button" class="brk-btn" data-brk-act="turnos-si" aria-describedby="brkTconfTxt"'+(bloq?' disabled':'')+'>'+(bloq?'Guardando…':'Sí, guardar')+'</button>'+
+'<button type="button" class="brk-ahora-no" data-brk-act="turnos-revisar"'+(bloq?' disabled':'')+'>Revisar</button></div></div>';
+} else {
+h+='<div class="brk-caja-acc"><button type="button" class="brk-btn" data-brk-act="turnos-guardar"'+((completo&&!bloq)?'':' disabled')+'>Guardar mi horario</button></div>'+
+'<p class="brk-nota">Después solo lo pueden cambiar RRHH, Andrés López o sales@.</p>';
+}
+box.innerHTML=h;
+box.hidden=false;
+if(foco){ var el=box.querySelector(foco); if(el){ try{ el.focus({preventScroll:true}); }catch(e){} } }
+}
+
+function elegirChip(espacio,hora){
+if(TGUARD||!Object.prototype.hasOwnProperty.call(ESPACIOS,espacio)||faltantes().indexOf(espacio)<0) return;
+if(!turnosDe(espacio).some(function(r){ return hhmm(r.hora_ini)===hora && r.lleno!==true; })) return;
+SEL[espacio]=hora; TCONF=false; TMSG="";
+pintarTurnos('[data-brk-act="turno"][data-brk-espacio="'+espacio+'"][data-brk-hora="'+hora+'"]');
+}
+
+function pedirConfirmacion(){
+var falt=faltantes();
+if(TGUARD||!falt.length||!falt.every(function(e){ return !!SEL[e]; })) return;
+TCONF=true; TMSG="";
+pintarTurnos('[data-brk-act="turnos-si"]');
+}
+
+// Solo manda lo que falta; lo que ya puso un editor va en null (la base lo exige asi).
+function guardarTurnos(){
+if(TGUARD||!TURNOS) return;
+var falt=faltantes();
+if(!falt.length||!falt.every(function(e){ return !!SEL[e]; })){ TCONF=false; pintarTurnos(); return; }
+var args={p_break_am:null,p_almuerzo:null,p_break_pm:null};
+falt.forEach(function(e){ args[TURNO_TXT[e].arg]=SEL[e]; });
+TGUARD=true; TMSG=""; pintarTurnos();
+function fallo(m){ TGUARD=false; TCONF=false; TMSG=m; pintarTurnos('[data-brk-act="turnos-guardar"]'); }
+var p;
+try{ p=Promise.resolve(sb.rpc("elegir_mi_horario_breaks",args)); }catch(e){ p=Promise.reject(e); }
+p.then(function(r){
+if(!r||r.error){ fallo((r&&r.error&&r.error.message)||"No se pudo guardar tu horario. Intenta de nuevo."); return; }
+TGUARD=false; TCONF=false; TMSG="";
+// Al recargar, el cuadro se va solo (ya no falta nada). Si la recarga falla, vuelve a pintarse.
+cargarTodo(function(ok){ if(!ok) pintarTurnos(); });
+},function(){ fallo("No se pudo guardar tu horario. Revisa tu conexión e intenta de nuevo."); });
 }
 
 function marcarEntrada(espacio){
@@ -1524,6 +1747,20 @@ else if(act==="volver") marcarEntrada(espacio);
 else if(act==="justificar") abrirCaja(espacio,"boton");
 else if(act==="enviar-justif") enviarJustif(espacio);
 else if(act==="ahora-no") cerrarCaja();
+else if(act==="turno") elegirChip(espacio,b.getAttribute("data-brk-hora"));
+else if(act==="turnos-guardar") pedirConfirmacion();
+else if(act==="turnos-si") guardarTurnos();
+else if(act==="turnos-revisar"){ if(!TGUARD){ TCONF=false; pintarTurnos('[data-brk-act="turnos-guardar"]'); } }
+});
+// v42: en cada grupo de turnos las flechas mueven la seleccion (patron radiogroup).
+document.addEventListener("keydown",function(e){
+var b=(e.target&&e.target.closest)?e.target.closest('[data-brk-act="turno"]'):null; if(!b) return;
+var d=(e.key==="ArrowRight"||e.key==="ArrowDown")?1:((e.key==="ArrowLeft"||e.key==="ArrowUp")?-1:0); if(!d) return;
+var g=b.closest('[role="radiogroup"]'); if(!g) return;
+var bs=Array.prototype.slice.call(g.querySelectorAll('[data-brk-act="turno"]:not([disabled])')); if(!bs.length) return;
+var i=bs.indexOf(b), n=bs[((i<0?0:i)+d+bs.length)%bs.length];
+e.preventDefault();
+elegirChip(n.getAttribute("data-brk-espacio"),n.getAttribute("data-brk-hora"));
 });
 
 function iniciarCarga(){
@@ -1549,7 +1786,8 @@ function onAuthed(email){
 if(!marca(email)){ onSignedOut(); return; }
 setPanelVisible(true); iniciarCarga();
 }
-function onSignedOut(){ setPanelVisible(false); if(TICK){ clearInterval(TICK); TICK=null; } cerrarCaja(); CARGADO=false; }
+function onSignedOut(){ setPanelVisible(false); if(TICK){ clearInterval(TICK); TICK=null; } cerrarCaja(); CARGADO=false;
+TURNOS=null; SEL={}; TCONF=false; TGUARD=false; TMSG=""; pintarTurnos(); }
 
 // v24: cliente compartido y un solo aviso de sesión (antes hora_servidor y
 // mis_marcas_hoy se pedían dos veces por cada apertura del portal).
@@ -3012,7 +3250,7 @@ document.addEventListener("visibilitychange",function(){
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="index.html";
-var PGV_VERSION=41; // v41 (26-oct-2026) - tarjeta nueva Comisiones agentes (comisiones-agentes.html), visible por pantalla_acceso comisiones_agentes (director y socio). Nada mas cambia. // v40 (26-oct-2026) - la tarjeta de Jeff pasa a llamarse Statement · FAM y Mi statement dice ProtectGo Services LLC (sin 'de comisiones'). Nada mas cambia. // v39 (26-oct-2026) - dos tarjetas nuevas: Mi statement (mi-statement.html, pantalla_acceso mi_statement, todas las areas internas; cada quien ve solo lo suyo) y Comisiones · Statement (fam-comisiones.html, pantalla_acceso fam_comisiones, area fam y direccion). Nada mas cambia. // v38 (23-oct-2026) - Mi Jornada: el break de la mañana y el de la tarde pasan de 20 a 15 minutos (jornada de 9 a 5, aviso de Jorge López); las ventanas no cambian y el almuerzo sigue en 60. El contador ya lee permitido_min de la base (portal.breaks_reglas, vigente desde el 23-oct; la historia sigue con 20); aquí cambian los rótulos "· 15 min" y el respaldo ESPACIOS. Nada más cambia. // v37 (19-oct-2026) - Mi Jornada: justificar olvidos de marcación (Olvidé marcar, casilla que se abre sola pasado 5 min, aviso Justifica). Lee mis_justif_breaks_hoy; escribe marcas_breaks_justif. Nada más cambia. // v36 (14-oct-2026) - tarjeta nueva Propuesta Amazon Relay (amazon-propuesta.html), visible por pantalla_acceso amazon_propuesta (paquete amazon_propuesta: Valentina Londoño, Karen Dayanna Jaramillo, amazonaud@ y sales@). Nada más cambia. // v35 (13-oct-2026) - la tarjeta GABI 360 pasa a GABI Liquidez (gabi-liquidez.html, dentro del portal, misma pestaña); Liquidez semanal y GABI · Mi panel también apuntan ahí (en widgets_registro quedan apagadas para no repetir la tarjeta). La app de Vercel queda como histórico por enlace directo. // v34 - 13-oct-2026 el anillito de cancelaciones del saludo le sale a TODOS los que venden: con base (5+ vencidas) "llegan a renovar" como v33; sin base y con caídas "siguen vivas" (% de sus pólizas de 12 meses que no se cayeron); sin ninguna cancelada un chulito "sin cancelaciones". Lee portal.mi_cartera_saludo() (solo la fila de la persona; antes bajaba la vista de todo el equipo). // v33 - 9-oct-2026 el índice pasa a "llegan a renovación" (meta 80 %) y se ve como anillito arriba a la derecha del anillo de la meta; la pastilla de la fila se quita. Toca el anillito y abre Mi proceso. // v32 - 8-oct-2026 la pastilla de cancelaciones del saludo también sale en "ver como" (lee la persona del saludo, no mi_persona()). // v31 - 8-oct-2026 CANCELACIONES EN EL SALUDO: una pastilla más al final de la fila Racha · a cotizar · llamadas, mismo estilo (● 8 % cancelaciones · 1 de 13), solo asesores con 5+ liabilities; lee v_cartera_indice_visible + mi_persona(); no toca mi_hero ni la fila de cifras, la onda o el anillo. // v30 - 6-oct-2026 CARGA INMEDIATA: el saludo sale de portal.rapido('mi_hero') (cache por persona, ~10 ms) y se repinta solo si portal.refrescar trae algo mas nuevo (mas de 5 min); 'ver como' sigue en vivo. pg-sombra y pg-bonos se cargan en el head (antes los inyectaba pg-novedades despues de DOMContentLoaded) y arrancan con la sesion del portal. Montado encima de la v29 (cartera por persona de Renovaciones, commit 76170db), que queda intacta. | v29 - 6-oct-2026: el saludo de Renovaciones lee la cartera que le cuenta a la persona (nivel persona en v_renov_cartera_graficas_visible, via mi_persona) en vez de solo el area KAREN: a Karen le entra Retencion (sep y oct) y toda la cartera que la regla le asigna. Si no resuelve la persona, cae al area KAREN como antes. Cero cambios en la base. | v28 - 6-oct-2026: EL SALUDO DE RENOVACIONES. Karen Suaza (y quien tenga Renovaciones como herramienta principal) ve el saludo grande con su foto dentro del anillo, como direccion, pero con su cartera: renovado del mes, lo que vence, en juego, vencidas sin renovar, el % retenido contra el estandar del area (70 %, sale de estandar_pct), las dos curvas del año (vence punteada, quedo menta) y la linea "faltan $X para el 70 %". Mismos datos de renovaciones.html (v_renov_cartera_graficas_visible, nivel area KAREN), guion cuando faltan montos. Cero cambios en la base. La foto de Andres (sales@) entra por portal.fotos_personas. | v27 - 6-oct-2026: tarjeta nueva Guidelines MGA (guidelines.html), visible por pantalla_acceso guidelines_mga (todas las areas internas; sin externo ni cliente). De los externos, solo quoteautocomercial@gmail.com ve la tarjeta (candado EXTERNOS). | v26 - LA META CON CARA: en el saludo, quien tiene meta (asesor) o ve la del equipo (direccion) ve su foto DENTRO de un anillo grande (184 px) que se llena con su % de la meta, mint si va al ritmo del mes y ambar #D9A520 si va detras, con un comentario corto debajo (ritmo = meta x habiles corridos / habiles del mes, el mismo de la onda). La foto de la izquierda se quita para no repetirla. Y el muelle de abajo a la derecha (pg-sombra.js v2, lo carga pg-novedades.js v4.6): la bolita de la meta con el numero de la meta en miles adentro, roja sin ventas, ambar detras del ritmo, mint al ritmo; y pegada arriba la barrita con las caritas del Top fee y el Top premium, que los 3 primeros dias habiles del mes muestra el mes cerrado y despues el mes en curso. | v25 - ARRANQUE RAPIDO Y CASILLAS CON VOLUMEN. (1) Un solo cliente de Supabase y un solo aviso de sesion para toda la pagina (pgSB / pgOnSesion): antes habia seis clientes y cada consulta de arranque se hacia dos veces (mis_pantallas, widgets_registro, hora_servidor, mis_marcas_hoy, tareas_kam, novedades_muro). (2) Cero relojes: se quitaron los setTimeout de 60/90/150/220/400/1200 ms y el de 800 ms antes de acomodar las tarjetas; el acomodo arranca en cuanto contestan puertas + orden (Promise.all), no cuando lo dice un reloj. (3) La cuadricula arranca tapada (.pg-cargando) y se destapa UNA vez ya acomodada, fail-open a los 2,5 s: se acabo el parpadeo del orden viejo al nuevo. (4) El saludo oscuro se pinta de inmediato con el nombre del correo y la fecha (sin cifras) y mi_hero lo completa cuando llega. (5) widgets_registro se lee una vez y sirve a mantenimiento y a areas. (6) Fuentes por <link> con preconnect (no @import), preconnect a Supabase y al CDN, preload de supabase-js. (7) Las herramientas de los grupos por area dejan de ser pastillas: casillas con volumen (min 118 px), icono propio y SOLO el nombre, tres por fila y dos en el telefono. La principal y las de apoyo quedan igual. Del lado de la base, en la misma entrega: indice de expresion en bos_registros para es_venta_nueva (mi_hero 5,2 s -> 0,6 s). Se monto encima de la v24 (Firmas Renewals), que queda intacta. // v24 - 1-oct-2026: tarjeta nueva Firmas · Renewals (generador-firmas-renewal.html), visible por pantalla_acceso firmas_renewal (Karen Suaza, renewal@ y dirección). // v23 - tarjeta nueva: Kit de Referidos (kit-referidos.html), visible por pantalla_acceso kit_referidos. // v22 - Protect Index: las direcciones internas del sitio pasan a relativas (el sitio ya no depende de como se llame el repo). Las que viajan por correo (recuperar contrasena, fotos de firma, sello de RRHH) quedan absolutas apuntando a protect-index. // v21 - Amazon Relay entra al portal: la tarjeta apunta a amazon-relay/ (ruta relativa, mismo sitio) en vez del repo aparte de GitHub. El archivo llego con su historia via git subtree, identico al original (sha256 971d0582...b33a). Falta que widgets_registro deje de mandar la URL absoluta de ese widget. // v20 - el hero muestra la combinada (premium + fee x10) con su desglose; antes sumaba premium + fee y mostraba menos de lo que la persona lleva. La onda del mes quedo en la misma combinada y leyendo de bos_v, asi termina exactamente en el numero grande. El desglose lo ve tambien la direccion (hero de equipo) y dice lo que el fee APORTA (fee x10 ya multiplicado), no el fee suelto: las dos cifras de la linea chica suman exacto el numero grande. // v19 - El portal con relieve y el portal de otra persona: saludo por rol (mi_hero: quien tiene meta ve la suya, direccion y el lider ven la del equipo, el resto su nombre y su herramienta), onda del mes, una tarjeta principal que manda, novedades compactas y las herramientas agrupadas por area. Con ?ver_como=<correo> un director abre el portal tal como lo ve esa persona, en solo lectura. REGLA: este numero y portal.app_versiones.version deben ir juntos; si la tabla va adelante del archivo, el verificador recarga el portal en bucle para todo el mundo (paso el 4-sep-2026).
+var PGV_VERSION=42; // v42 (6-nov-2026) - Mi Jornada: cada persona escoge su turno (break mañana, almuerzo, break tarde) una sola vez; "Salir" solo en su turno con 5 min de margen cuando la base lo exige (breaks_turnos_modo); lee mis_turnos_breaks (fail-open) y escribe elegir_mi_horario_breaks. Nada más cambia. // v41 (26-oct-2026) - tarjeta nueva Comisiones agentes (comisiones-agentes.html), visible por pantalla_acceso comisiones_agentes (director y socio). Nada mas cambia. // v40 (26-oct-2026) - la tarjeta de Jeff pasa a llamarse Statement · FAM y Mi statement dice ProtectGo Services LLC (sin 'de comisiones'). Nada mas cambia. // v39 (26-oct-2026) - dos tarjetas nuevas: Mi statement (mi-statement.html, pantalla_acceso mi_statement, todas las areas internas; cada quien ve solo lo suyo) y Comisiones · Statement (fam-comisiones.html, pantalla_acceso fam_comisiones, area fam y direccion). Nada mas cambia. // v38 (23-oct-2026) - Mi Jornada: el break de la mañana y el de la tarde pasan de 20 a 15 minutos (jornada de 9 a 5, aviso de Jorge López); las ventanas no cambian y el almuerzo sigue en 60. El contador ya lee permitido_min de la base (portal.breaks_reglas, vigente desde el 23-oct; la historia sigue con 20); aquí cambian los rótulos "· 15 min" y el respaldo ESPACIOS. Nada más cambia. // v37 (19-oct-2026) - Mi Jornada: justificar olvidos de marcación (Olvidé marcar, casilla que se abre sola pasado 5 min, aviso Justifica). Lee mis_justif_breaks_hoy; escribe marcas_breaks_justif. Nada más cambia. // v36 (14-oct-2026) - tarjeta nueva Propuesta Amazon Relay (amazon-propuesta.html), visible por pantalla_acceso amazon_propuesta (paquete amazon_propuesta: Valentina Londoño, Karen Dayanna Jaramillo, amazonaud@ y sales@). Nada más cambia. // v35 (13-oct-2026) - la tarjeta GABI 360 pasa a GABI Liquidez (gabi-liquidez.html, dentro del portal, misma pestaña); Liquidez semanal y GABI · Mi panel también apuntan ahí (en widgets_registro quedan apagadas para no repetir la tarjeta). La app de Vercel queda como histórico por enlace directo. // v34 - 13-oct-2026 el anillito de cancelaciones del saludo le sale a TODOS los que venden: con base (5+ vencidas) "llegan a renovar" como v33; sin base y con caídas "siguen vivas" (% de sus pólizas de 12 meses que no se cayeron); sin ninguna cancelada un chulito "sin cancelaciones". Lee portal.mi_cartera_saludo() (solo la fila de la persona; antes bajaba la vista de todo el equipo). // v33 - 9-oct-2026 el índice pasa a "llegan a renovación" (meta 80 %) y se ve como anillito arriba a la derecha del anillo de la meta; la pastilla de la fila se quita. Toca el anillito y abre Mi proceso. // v32 - 8-oct-2026 la pastilla de cancelaciones del saludo también sale en "ver como" (lee la persona del saludo, no mi_persona()). // v31 - 8-oct-2026 CANCELACIONES EN EL SALUDO: una pastilla más al final de la fila Racha · a cotizar · llamadas, mismo estilo (● 8 % cancelaciones · 1 de 13), solo asesores con 5+ liabilities; lee v_cartera_indice_visible + mi_persona(); no toca mi_hero ni la fila de cifras, la onda o el anillo. // v30 - 6-oct-2026 CARGA INMEDIATA: el saludo sale de portal.rapido('mi_hero') (cache por persona, ~10 ms) y se repinta solo si portal.refrescar trae algo mas nuevo (mas de 5 min); 'ver como' sigue en vivo. pg-sombra y pg-bonos se cargan en el head (antes los inyectaba pg-novedades despues de DOMContentLoaded) y arrancan con la sesion del portal. Montado encima de la v29 (cartera por persona de Renovaciones, commit 76170db), que queda intacta. | v29 - 6-oct-2026: el saludo de Renovaciones lee la cartera que le cuenta a la persona (nivel persona en v_renov_cartera_graficas_visible, via mi_persona) en vez de solo el area KAREN: a Karen le entra Retencion (sep y oct) y toda la cartera que la regla le asigna. Si no resuelve la persona, cae al area KAREN como antes. Cero cambios en la base. | v28 - 6-oct-2026: EL SALUDO DE RENOVACIONES. Karen Suaza (y quien tenga Renovaciones como herramienta principal) ve el saludo grande con su foto dentro del anillo, como direccion, pero con su cartera: renovado del mes, lo que vence, en juego, vencidas sin renovar, el % retenido contra el estandar del area (70 %, sale de estandar_pct), las dos curvas del año (vence punteada, quedo menta) y la linea "faltan $X para el 70 %". Mismos datos de renovaciones.html (v_renov_cartera_graficas_visible, nivel area KAREN), guion cuando faltan montos. Cero cambios en la base. La foto de Andres (sales@) entra por portal.fotos_personas. | v27 - 6-oct-2026: tarjeta nueva Guidelines MGA (guidelines.html), visible por pantalla_acceso guidelines_mga (todas las areas internas; sin externo ni cliente). De los externos, solo quoteautocomercial@gmail.com ve la tarjeta (candado EXTERNOS). | v26 - LA META CON CARA: en el saludo, quien tiene meta (asesor) o ve la del equipo (direccion) ve su foto DENTRO de un anillo grande (184 px) que se llena con su % de la meta, mint si va al ritmo del mes y ambar #D9A520 si va detras, con un comentario corto debajo (ritmo = meta x habiles corridos / habiles del mes, el mismo de la onda). La foto de la izquierda se quita para no repetirla. Y el muelle de abajo a la derecha (pg-sombra.js v2, lo carga pg-novedades.js v4.6): la bolita de la meta con el numero de la meta en miles adentro, roja sin ventas, ambar detras del ritmo, mint al ritmo; y pegada arriba la barrita con las caritas del Top fee y el Top premium, que los 3 primeros dias habiles del mes muestra el mes cerrado y despues el mes en curso. | v25 - ARRANQUE RAPIDO Y CASILLAS CON VOLUMEN. (1) Un solo cliente de Supabase y un solo aviso de sesion para toda la pagina (pgSB / pgOnSesion): antes habia seis clientes y cada consulta de arranque se hacia dos veces (mis_pantallas, widgets_registro, hora_servidor, mis_marcas_hoy, tareas_kam, novedades_muro). (2) Cero relojes: se quitaron los setTimeout de 60/90/150/220/400/1200 ms y el de 800 ms antes de acomodar las tarjetas; el acomodo arranca en cuanto contestan puertas + orden (Promise.all), no cuando lo dice un reloj. (3) La cuadricula arranca tapada (.pg-cargando) y se destapa UNA vez ya acomodada, fail-open a los 2,5 s: se acabo el parpadeo del orden viejo al nuevo. (4) El saludo oscuro se pinta de inmediato con el nombre del correo y la fecha (sin cifras) y mi_hero lo completa cuando llega. (5) widgets_registro se lee una vez y sirve a mantenimiento y a areas. (6) Fuentes por <link> con preconnect (no @import), preconnect a Supabase y al CDN, preload de supabase-js. (7) Las herramientas de los grupos por area dejan de ser pastillas: casillas con volumen (min 118 px), icono propio y SOLO el nombre, tres por fila y dos en el telefono. La principal y las de apoyo quedan igual. Del lado de la base, en la misma entrega: indice de expresion en bos_registros para es_venta_nueva (mi_hero 5,2 s -> 0,6 s). Se monto encima de la v24 (Firmas Renewals), que queda intacta. // v24 - 1-oct-2026: tarjeta nueva Firmas · Renewals (generador-firmas-renewal.html), visible por pantalla_acceso firmas_renewal (Karen Suaza, renewal@ y dirección). // v23 - tarjeta nueva: Kit de Referidos (kit-referidos.html), visible por pantalla_acceso kit_referidos. // v22 - Protect Index: las direcciones internas del sitio pasan a relativas (el sitio ya no depende de como se llame el repo). Las que viajan por correo (recuperar contrasena, fotos de firma, sello de RRHH) quedan absolutas apuntando a protect-index. // v21 - Amazon Relay entra al portal: la tarjeta apunta a amazon-relay/ (ruta relativa, mismo sitio) en vez del repo aparte de GitHub. El archivo llego con su historia via git subtree, identico al original (sha256 971d0582...b33a). Falta que widgets_registro deje de mandar la URL absoluta de ese widget. // v20 - el hero muestra la combinada (premium + fee x10) con su desglose; antes sumaba premium + fee y mostraba menos de lo que la persona lleva. La onda del mes quedo en la misma combinada y leyendo de bos_v, asi termina exactamente en el numero grande. El desglose lo ve tambien la direccion (hero de equipo) y dice lo que el fee APORTA (fee x10 ya multiplicado), no el fee suelto: las dos cifras de la linea chica suman exacto el numero grande. // v19 - El portal con relieve y el portal de otra persona: saludo por rol (mi_hero: quien tiene meta ve la suya, direccion y el lider ven la del equipo, el resto su nombre y su herramienta), onda del mes, una tarjeta principal que manda, novedades compactas y las herramientas agrupadas por area. Con ?ver_como=<correo> un director abre el portal tal como lo ve esa persona, en solo lectura. REGLA: este numero y portal.app_versiones.version deben ir juntos; si la tabla va adelante del archivo, el verificador recarga el portal en bucle para todo el mundo (paso el 4-sep-2026).
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;
