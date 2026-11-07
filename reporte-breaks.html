@@ -789,7 +789,7 @@ h+='<div class="rv-line rv-dim">No declaró horas: solo explica lo que pasó.</d
 h+='<div class="rv-com">&quot;'+esc(j.comentario)+'&quot;</div>';
 h+='<div class="rv-meta">Enviada '+esc(fmtTsHora(j.created_at))+' &middot; '+(j.origen==="auto"?"se abrió sola":"con el botón")+'</div>';
 if(mode==="rev"){
-var por=esc(j.revisado_por||"—"), cuando=esc(fmtTsFechaHora(j.revisado_at));
+var por=esc(HOR_EDITORES[String(j.revisado_por||"").toLowerCase()]||j.revisado_por||"—"), cuando=esc(fmtTsFechaHora(j.revisado_at));
 if(j.estado==="aceptada"){
 h+='<div class="rv-status acc">&#10003; Aceptada por '+por+' &middot; '+cuando+'</div>';
 }else{
@@ -840,7 +840,7 @@ box.innerHTML=h;
 }
 
 function renderRev(){
-document.getElementById("rvNote").innerHTML=VALIDADOR?"":'<div class="rv-note">Solo Andrés López acepta o no acepta.</div>';
+document.getElementById("rvNote").innerHTML=VALIDADOR?"":'<div class="rv-note">Solo RRHH y Andrés López aceptan o no aceptan.</div>';
 renderPendList();
 renderRevisadas();
 }
@@ -1369,7 +1369,7 @@ if(currentTab!=="dia") switchTab("dia");
 }
 
 function bootstrap(){
-// v6: quien puede decidir (solo Andres Lopez) y cuantas justificaciones esperan
+// v6: quien puede decidir (v8: RRHH y Andres Lopez) y cuantas justificaciones esperan
 sb.rpc("es_validador_breaks").then(function(r){
 var v=r?r.data:null;
 if(Array.isArray(v)) v=v[0];
@@ -1464,7 +1464,7 @@ else setTimeout(init,60);
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="reporte-breaks.html";
-var PGV_VERSION=7; // v7 (6-nov-2026) - pestaña Horarios (horarios_breaks; RRHH, Andrés López y sales@ cambian con motivo: hoy, mañana o solo por hoy; Brahian solo ve), turno en Día, Por revisar y CSV. Nada más cambia. // v6 (19-oct-2026) - justificaciones de olvidos: pestaña Por revisar (Andrés López acepta o no), celdas con estado, cuadro por revisar, CSV con columnas de justificación. // v5 - Protect Index: las direcciones internas del sitio pasan a relativas (el sitio ya no depende de como se llame el repo). Las que viajan por correo (recuperar contrasena, fotos de firma, sello de RRHH) quedan absolutas apuntando a protect-index.
+var PGV_VERSION=8; // v8 (6-nov-2026) - RRHH también acepta o no acepta justificaciones, igual que Andrés López (marcas_breaks_validadores); la nota de quien no decide dice "Solo RRHH y Andrés López aceptan o no aceptan" y "Aceptada por" muestra el nombre. Nada más cambia. // v7 (6-nov-2026) - pestaña Horarios (horarios_breaks; RRHH, Andrés López y sales@ cambian con motivo: hoy, mañana o solo por hoy; Brahian solo ve), turno en Día, Por revisar y CSV. Nada más cambia. // v6 (19-oct-2026) - justificaciones de olvidos: pestaña Por revisar (Andrés López acepta o no), celdas con estado, cuadro por revisar, CSV con columnas de justificación. // v5 - Protect Index: las direcciones internas del sitio pasan a relativas (el sitio ya no depende de como se llame el repo). Las que viajan por correo (recuperar contrasena, fotos de firma, sello de RRHH) quedan absolutas apuntando a protect-index.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;
