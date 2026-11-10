@@ -7,7 +7,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,ital,wght@9..144,1,800&family=Montserrat:wght@500;600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="pg-pendientes-cancel.js"></script>
 <script src="ver-como-helper.js"></script>
 <style>
 :root {
@@ -593,6 +592,125 @@ body { margin: 0; background: var(--bg); font-family: var(--f-body); color: var(
 #p-cartera .ct-est button.c-canc{background:#EEF1F4;color:#6B7D89}
 #p-cartera .ct-est button.on{border-color:var(--ink);box-shadow:0 0 0 2px var(--ink) inset;font-weight:800}
 #p-cartera .ct-est button:focus-visible{outline:2px solid var(--mint);outline-offset:2px}
+
+/* ============================================================
+   v42 · 10-nov-2026 · UNA PANTALLA PARA KAREN: Mi mes · El área · Bolsa y bonos
+   Solo piezas nuevas; lo de arriba (estándar ProtectGo) no se toca.
+   ============================================================ */
+.pb{padding:14px 24px 20px}
+.tabs{display:flex;gap:6px;background:#fff;border:1px solid var(--line);border-radius:13px;padding:5px;margin:0 0 14px}
+.tab{flex:1;border:0;background:transparent;font-family:var(--f-tit);font-weight:700;font-size:12.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);padding:11px 8px;border-radius:9px;cursor:pointer;transition:all .15s}
+.tab:hover{color:var(--mint-deep)}
+.tab.on{background:var(--ink);color:#fff}
+.tab:focus-visible{outline:2px solid var(--mint);outline-offset:2px}
+.tab .b{display:inline-block;margin-left:7px;background:var(--ambar);color:#fff;font-family:var(--f-num);font-size:10.5px;border-radius:999px;padding:1px 7px;letter-spacing:0}
+.vista{display:none}.vista.on{display:block}
+.meses{display:flex;gap:6px;overflow-x:auto;padding:2px 0 8px;scrollbar-width:thin}
+.meses .chip{flex:0 0 auto;font-family:var(--f-tit);text-transform:uppercase;letter-spacing:.06em;font-size:11.5px}
+.meses .chip.fut{opacity:.72}
+.meses .chip.hoy:not(.on){border-color:var(--mint);color:var(--mint-deep)}
+.alerta{display:flex;align-items:center;gap:14px;justify-content:space-between;background:#FFF8E6;border:1px solid #F0D58A;border-left:4px solid var(--ambar);border-radius:13px;padding:13px 16px;margin:14px 0 0}
+.alerta .t{font-size:13.5px;color:#6B5310}
+.alerta .t b{font-family:var(--f-num)}
+.alerta.ok{background:#F2FAF8;border-color:var(--mint-soft);border-left-color:var(--mint)}
+.alerta.ok .t{color:#186F5D}
+.alerta.info{background:#fff;border-color:var(--line);border-left-color:#C9D4DC}
+.alerta.info .t{color:var(--muted)}
+.pcx{background:#fff;border:1px solid #F1C9C5;border-left:4px solid var(--rojo);border-radius:13px;margin:10px 0 0}
+.pcx-h{width:100%;display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px 16px;border:0;background:transparent;font:inherit;cursor:pointer;text-align:left;color:#8E2F27;font-size:13.5px}
+.pcx-h b{font-family:var(--f-num)}
+.pcx-h .ver{font-size:12px;font-weight:700;color:var(--rojo);white-space:nowrap}
+.pcx-b{display:none;padding:0 16px 12px}
+.pcx.ab .pcx-b{display:block}
+.pcx-r{display:grid;grid-template-columns:1.6fr .5fr 1fr .9fr .8fr;gap:10px;font-size:12.5px;padding:8px 0;border-top:1px solid #F4E3E1;align-items:center}
+.pcx-r.h{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600;border-top:0}
+.pcx-r .n{font-weight:600;color:var(--ink)}
+.pcx-r .m{font-family:var(--f-num);text-align:right}
+.pcx-r .mes{color:var(--rojo);font-weight:700}
+.lst-ctl{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:18px 0 12px}
+.lst-ctl .chips{margin:0}
+.bit{grid-column:1/-1;font-size:12.5px;color:var(--muted);margin-top:-8px;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.bit .sin{color:#8A6A14;font-weight:600}
+.bit .f{font-family:var(--f-num);font-size:11px;color:#9AA8B2;white-space:nowrap}
+.bit .pc{background:#FBE3E1;color:#A3362D;font-size:10.5px;font-weight:700;border-radius:999px;padding:2px 8px}
+.p-ven{background:#FBE3E1;color:#A3362D}.p-perd{background:#EEF1F4;color:#5A6B78;text-decoration:line-through}
+.p-falta{background:#FBF1D8;color:#8A6A14}
+.ficha2{grid-column:1/-1;border-top:1px dashed var(--line);padding-top:12px;margin-top:2px;cursor:default}
+.ficha2 .nota{font-size:12.5px;padding:7px 0;border-bottom:1px solid #F0F3F6;display:flex;gap:10px}
+.ficha2 .nota .f{font-family:var(--f-num);font-size:11px;color:var(--muted);min-width:92px}
+.ficha2 .nota .a{color:#9AA8B2;font-size:11px;margin-left:auto;white-space:nowrap}
+.ficha2 textarea{width:100%;font-family:var(--f-body);font-size:13px;border:1px solid var(--line);border-radius:9px;padding:9px 11px;margin:10px 0 8px;resize:vertical;min-height:44px;box-sizing:border-box}
+.ficha2 textarea:focus{outline:none;border-color:var(--mint)}
+.ficha2 .acc{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.ficha2 .acc .btn.sel{background:var(--mint-deep);border-color:var(--mint-deep);color:#fff}
+.ficha2 .msg{font-size:12px;margin-left:6px}
+.ficha2 .msg.err{color:var(--rojo)}.ficha2 .msg.ok{color:var(--mint-deep)}
+.vacia{font-size:12.5px;color:var(--muted);padding:6px 0}
+.anillos{display:grid;grid-template-columns:1.25fr 1fr 1fr 1fr;gap:14px;margin-bottom:14px}
+.an{background:#fff;border:1px solid var(--line);border-radius:15px;padding:18px 16px;text-align:center;min-width:0}
+.an.osc{background:linear-gradient(150deg,#1B2D3A,#26404F);border-color:#1B2D3A;color:#fff}
+.an .k{font-family:var(--f-tit);font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.an.osc .k{color:var(--mint)}
+.an .rpc{font-family:var(--f-num);font-weight:700;fill:var(--ink)}
+.an.osc .rpc{fill:#fff}
+.an .c{font-family:var(--f-num);font-size:14px;font-weight:700;color:var(--ink);margin-top:8px}
+.an.osc .c{color:#fff}
+.an .d{font-size:11.5px;color:var(--muted);margin-top:3px}
+.an.osc .d{color:rgba(255,255,255,.65)}
+.an .pal{font-size:11px;font-weight:700;margin-top:7px}
+.pal.ok{color:var(--mint-deep)}.pal.at{color:#8A6A14}
+.an.osc .pal.at{color:#F0C75A}.an.osc .pal.ok{color:var(--mint)}
+.rpc{font-family:var(--f-num);font-weight:700;fill:var(--ink)}
+.ring .rpc{fill:#fff}
+.gscroll{overflow-x:auto}
+.gscroll svg{min-width:680px;width:100%;height:auto;display:block}
+.gx{font-family:var(--f-tit);font-size:11px;font-weight:700;letter-spacing:.06em;fill:#6B7D89;text-transform:uppercase}
+.gy{font-family:var(--f-num);font-size:10.5px;fill:#9AA8B2}
+.gv{font-family:var(--f-num);font-size:10.5px;fill:#8A98A3}
+.gr{font-family:var(--f-num);font-size:11.5px;font-weight:700;fill:#186F5D}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.duo .lista{font-size:13px;margin-top:8px;line-height:1.9}
+.duo .lista span{font-family:var(--f-num);float:right}
+.idx{width:100%;border-collapse:collapse;font-size:13px}
+.idx th{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600;text-align:right;padding:8px 6px;border-bottom:1px solid var(--line)}
+.idx th:first-child{text-align:left}
+.idx td{padding:8px 6px;border-bottom:1px solid #F0F3F6;text-align:right;font-family:var(--f-num)}
+.idx td:first-child{text-align:left;font-family:var(--f-body);font-weight:600;color:var(--ink)}
+.idx tr.g td{font-family:var(--f-tit);font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--mint-deep);background:#F7FAFB;padding-top:12px}
+.idx .ri{display:inline-flex;align-items:center;gap:8px;justify-content:flex-end;min-width:74px}
+.idx .ri svg{flex:0 0 auto}
+.idx .chica{color:#9AA8B2}
+.mesb{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.mb{background:#fff;border:1px solid var(--line);border-radius:15px;padding:16px 18px;display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center}
+.mb .m{font-family:var(--f-tit);font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--mint-deep)}
+.mb .v{font-family:var(--f-num);font-size:24px;font-weight:700;color:var(--ink);margin-top:4px}
+.mb .d{font-size:11.5px;color:var(--muted);margin-top:3px}
+.bono{display:grid;grid-template-columns:auto 1fr;gap:26px;align-items:center}
+.bono .cap{font-size:11.5px;color:var(--muted);text-align:center;margin-top:6px}
+.tip.on{opacity:1}
+@media (max-width:760px){
+  .strip{grid-template-columns:1fr;padding:20px}
+  .st-big{font-size:38px}
+  .st-big small{display:block;margin:6px 0 0}
+  .card{grid-template-columns:1fr auto;gap:10px}
+  .card .pill{grid-column:1/-1;justify-self:start}
+  .alerta{flex-direction:column;align-items:flex-start}
+  .anillos{grid-template-columns:1fr 1fr}
+  .duo,.mesb{grid-template-columns:1fr}
+  .kpis{grid-template-columns:1fr 1fr}
+  .kp .v{font-size:24px}
+  .bono{grid-template-columns:1fr;justify-items:center}
+  .pel{grid-template-columns:74px 1fr}
+  .pel .b{grid-column:1/-1;text-align:left}
+  .idx .h-m{display:none}
+  .pcx-r{grid-template-columns:1.4fr .9fr .8fr}
+  .pcx-r .h-m{display:none}
+  .tab{font-size:11px;padding:10px 4px}
+  .buscar{margin-left:0;width:100%}
+  .buscar input{min-width:0;width:100%;box-sizing:border-box}
+  .top .acts{flex-wrap:wrap;justify-content:flex-end}
+}
+
 </style>
 <!-- ProtectGo · scripts compartidos (recuperacion de clave + novedades en tiempo real) -->
 <script src="pg-novedades.js"></script>
@@ -651,156 +769,68 @@ body { margin: 0; background: var(--bg); font-family: var(--f-body); color: var(
       <span class="sec" id="secLabel">Renovaciones</span></div>
     <div class="acts">
       <span class="pg-stamp" id="pg-stamp" style="font-size:11px;color:var(--muted);margin-right:2px">datos al —</span>
-      <span class="xp" id="xp"><button class="btn" type="button" id="xp-btn" aria-haspopup="true">Exportar ▾</button><span class="xp-menu" role="menu"><button type="button" data-xp="vista">Lo que estoy viendo<small>con los filtros de la pestaña Cartera</small></button><button type="button" data-xp="completa">Cartera completa<small>toda la cartera viva y lo caído en 30 días</small></button></span></span>
       <button class="btn" type="button" id="pg-btn-refresh">Actualizar</button>
-      <button class="btn" type="button" id="pg-btn-logout">Cerrar sesión</button>
       <button class="btn" type="button" id="btn-imprimir-mes">Imprimir el mes</button>
-      <button class="btn pri" type="button" id="btn-imprimir-ano">Imprimir el año</button>
+      <button class="btn" type="button" id="pg-btn-logout">Cerrar sesión</button>
     </div>
   </div>
 
   <div id="pg-acceso"></div>
 
   <div id="pg-shell" style="display:none">
-    <div class="nav" id="nav"></div>
+    <div class="tabs" id="tabs" role="tablist"></div>
 
-    <!-- 00 CARTERA (v38 · Este mes) -->
-    <div class="pane" id="p-cartera">
-      <div id="ct-avisos" style="display:none"></div>
-      <div data-pg-pend data-titulo="toda la agencia"></div>
-      <div class="rc-mes">
-        <button type="button" class="btn" id="rc-prev" aria-label="Mes anterior">‹</button>
-        <div class="rc-mes-t"><span id="rc-mes-n"></span><small id="rc-mes-s"></small></div>
-        <button type="button" class="btn" id="rc-next" aria-label="Mes siguiente">›</button>
-        <button type="button" class="btn" id="rc-hoy">Este mes</button>
-      </div>
-      <div class="ct-cifras" id="ct-cifras"></div>
-      <div class="ct-card">
-        <div class="ct-barra" style="padding:10px 14px;margin:0">
-          <div class="ct-filt" id="ct-cob"></div>
-          <div class="ct-ctl">
-            <select class="ct-sel" id="ct-area" aria-label="Área"><option value="">Todas las áreas</option><option value="AGENTES">Agentes</option><option value="JORGE">Jorge</option><option value="CARTERA SUELTA">Cartera suelta</option></select>
-            <input class="ct-busca" id="ct-q" type="search" placeholder="Buscar cuenta, DOT o agente" aria-label="Buscar cuenta">
-          </div>
-        </div>
-        <div class="ct-ley ct-est" id="ct-est" role="group" aria-label="Filtrar por estado"></div>
-        <div id="ct-lista"><div class="pg-skel" style="width:70%;margin:14px"></div></div>
-        <button type="button" class="ct-mas" id="ct-mas" style="display:none"></button>
-      </div>
-    </div>
+    <!-- ============ MI MES ============ -->
+    <section class="vista on" id="v-mes">
+      <div class="meses" id="meses"></div>
+      <div class="strip" id="franja"></div>
+      <div class="alerta" id="alerta" style="display:none"></div>
+      <div class="pcx" id="pcx" style="display:none"></div>
 
-    <!-- 01 MI COLA -->
-    <div class="pane" id="p-cola">
-      <div id="av-box"></div>
-      <div class="rc-cola-h"><div><b>Lo que no se ha trabajado</b><small>pólizas del mes sin ninguna marca y las vencidas que nadie cerró · al marcarlas salen de aquí</small></div><div class="rc-cola-n" id="rc-cola-n">—</div></div>
-      <div class="ct-card rc-cola-card" id="p-cola-lista"><div id="rc-cola"><div class="pg-skel" style="width:70%;margin:14px"></div></div></div>
-      <details class="ct-cambios" id="ct-cambios-box"><summary>¿Qué cambió desde ayer? <small id="ct-cambios-n"></small></summary><div id="ct-cambios"></div></details>
-      <div id="cola-vieja" style="display:none">
+      <div class="sec-t" id="lstT">Las del mes</div>
+      <div class="sec-s">Solo las cuentas que vencen en el mes. Toca una para abrir su bitácora y anotar qué pasó.</div>
+      <div class="lst-ctl"><div class="chips" id="chips"></div>
+        <div class="buscar"><input type="search" id="q" placeholder="Buscar cuenta, DOT o quién vendió" aria-label="Buscar cuenta"></div></div>
+      <div id="lista"><div class="pg-skel" style="width:70%"></div></div>
+    </section>
+
+    <!-- ============ EL ÁREA ============ -->
+    <section class="vista" id="v-area">
+      <div class="sec-t" style="margin-top:6px">Cómo va el área · desde el 1 de septiembre</div>
+      <div class="sec-s">Toda la cartera que se renueva en la agencia. La rayita de cada anillo es la meta del <span class="metaTxt">70</span> %.</div>
+      <div class="anillos" id="anillos"></div>
       <div class="panel">
-        <div class="ph">
-          <div><div class="pt">Tu año <span id="tuAnio"></span></div><div class="ps" id="rbSub"></div></div>
-          <div class="leg"><span><i style="background:#229A82"></i>Renovadas</span>
-            <span><i style="background:#5B6BD6"></i>Por renovar</span>
-            <span><i style="background:#D9A520"></i><span id="legMeta">Meta 70% del mes</span></span></div>
-        </div>
-        <div class="months-scroll"><div class="cinta-wrap" id="cintaSvg"></div><div class="months" id="months" role="tablist"></div></div>
+        <div class="ph"><div><div class="pt">Lo que vence y lo que se renovó, mes a mes</div><div class="ps">La línea punteada es el premium que vence cada mes; la línea menta, lo que ya quedó renovado.</div></div>
+          <div class="leg"><span><i style="background:#229A82"></i>Renovado</span><span><i style="background:#B6C2CB"></i>Vence</span></div></div>
+        <div class="pb"><div class="gscroll"><svg id="curva" viewBox="0 0 1000 290" role="img" aria-label="Premium que vence y premium renovado por mes"></svg></div></div>
       </div>
+      <div class="sec-t">Índice de renovaciones · quién vendió la cuenta</div>
+      <div class="sec-s">De septiembre a hoy, sobre las cuentas que ya vencieron: quién está renovando y a quién se le está cayendo.</div>
+      <div class="duo">
+        <div class="kp"><div class="k">Quién está renovando</div><div class="lista" id="mejor"></div></div>
+        <div class="kp"><div class="k">A quién se le está cayendo</div><div class="lista" id="peor"></div></div>
+      </div>
+      <div class="panel"><div class="pb" style="padding-top:8px">
+        <table class="idx"><thead><tr><th>Vendió</th><th class="h-m">Cuentas</th><th class="h-m">Ya vencieron</th><th>Renovadas</th><th>Se le cayeron</th><th>Índice</th></tr></thead><tbody id="idx"></tbody></table>
+        <div class="leg" style="margin-top:12px"><span><i style="background:#2DBFA3"></i><span class="metaTxt">70</span> % o más</span><span><i style="background:#D9A520"></i>por debajo</span><span><i style="background:#C9D4DC"></i>menos de 3 vencidas: todavía no dice mucho</span><span>"Se le cayeron" = vencidas sin renovar + perdidas</span></div>
+      </div></div>
+    </section>
 
-      <div class="strip">
-        <div>
-          <div class="st-eye" id="stMes"></div>
-          <div class="st-big"><span id="stC"></span><small id="stCsub">renovado este mes</small></div>
-          <div class="st-nums">
-            <div class="st-n"><div class="k">Que vence</div><div class="v" id="stP"></div></div>
-            <div class="st-n"><div class="k">En juego</div><div class="v" id="stS"></div></div>
-            <div class="st-n"><div class="k">Renovadas</div><div class="v mint" id="stX"></div></div>
-            <div class="st-n"><div class="k" id="stMk">Meta 70%</div><div class="v ambar" id="stM"></div></div>
-          </div>
-          <div class="st-aviso" id="stAviso" hidden></div>
+    <!-- ============ BOLSA Y BONOS ============ -->
+    <section class="vista" id="v-plata">
+      <div class="sec-t" style="margin-top:6px">La bolsa · desde el 1 de septiembre</div>
+      <div class="sec-s">Tu parte de los fees de renovación, mes a mes, y cuántas renovaciones salieron con fee.</div>
+      <div class="kpis" id="bolsaK"></div>
+      <div class="mesb" id="bolsaM"></div>
+      <div class="sec-t">Bonos · la escalera del año</div>
+      <div class="sec-s" id="bonoSub"></div>
+      <div class="panel"><div class="pb" style="padding-top:18px">
+        <div class="bono">
+          <div><div id="ringBono"></div><div class="cap">las rayitas son los escalones</div></div>
+          <div id="escalera"></div>
         </div>
-        <div>
-          <svg width="128" height="128" viewBox="0 0 128 128" class="ring">
-            <circle cx="64" cy="64" r="52" fill="none" stroke="rgba(255,255,255,.16)" stroke-width="13"/>
-            <circle id="arc" cx="64" cy="64" r="52" fill="none" stroke="var(--mint)" stroke-width="13"
-              stroke-linecap="round" transform="rotate(-90 64 64)" stroke-dasharray="0 327"
-              style="transition:stroke-dasharray .7s cubic-bezier(.2,.8,.2,1)"/>
-            <text class="pct" x="64" y="72" text-anchor="middle" id="arcT">0%</text></svg>
-          <div class="cap">renovado del mes</div>
-        </div>
-      </div>
-
-      <div class="sec-t">Mi cola</div>
-      <div class="sec-s" id="colaSub"></div>
-      <div class="chips-row"><div class="chips" id="chips"></div><div class="buscar"><input id="colaQ" type="search" autocomplete="off" placeholder="Buscar por empresa, DOT o vendedor" aria-label="Buscar en la cola de renovaciones"></div></div>
-      <div id="cola"></div>
-      </div><!-- /cola-vieja (v38: oculta, se jubila) -->
-    </div>
-
-    <!-- 02 VENDEDORES -->
-    <div class="pane" id="p-vend">
-      <div id="ct-ix-box" style="display:none">
-        <div class="ct-h2">Quién renueva y a quién se le cae <small id="ct-ix-sub">meta 80 % llega a renovación · cohorte de 12 meses · todos los ramos menos NTL</small></div>
-        <div class="ct-nota">Dos números por persona. <b>Llegan</b>: de lo que vendió y debía renovar, cuánto llegó vivo (verde 80 %+, ámbar 70–79, rojo &lt;70). <b>Renuevan</b>: de lo que llegó, cuánto se renovó (comparado con la agencia).</div>
-        <div class="ct-gente" id="ct-ix"></div>
-      </div>
-      <div class="panel">
-        <div class="ph">
-          <div><div class="pt">Lo que tiene cada vendedor para renovar, mes a mes</div>
-            <div class="ps">Cuentas y premium que vencen en cada mes del año. Toca un vendedor para ver sus cuentas mes por mes, o una celda para ver solo ese mes.</div></div>
-        </div>
-        <div id="vlist" style="padding:4px 0 8px"></div>
-      </div>
-      <div id="vr-box"></div>
-    </div>
-
-    <!-- 03 EL MURO -->
-    <div class="pane" id="p-muro">
-      <div class="grid2">
-        <div class="panel">
-          <div class="ph"><div><div class="pt">Cuentas grandes por vencer</div>
-            <div class="ps">Las que más pesan y están cerca. Estas se llaman primero.</div></div></div>
-          <div id="grandes" style="padding:12px 0 6px"></div>
-        </div>
-        <div class="panel">
-          <div class="ph"><div><div class="pt">Vende pero no renueva</div>
-            <div class="ps" id="vnrSub">Porcentaje renovado de cada vendedor en el año, contra el promedio del área y el estándar.</div></div></div>
-          <div id="vnr" style="padding:26px 0 12px"></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- 04 LA BOLSA -->
-    <div class="pane" id="p-bolsa">
-      <div class="kpis" id="bolsaKpis"></div>
-      <div class="panel">
-        <div class="ph">
-          <div><div class="pt">Tu bolsa mes a mes</div>
-            <div class="ps">Las barras son lo que entró a la bolsa. La línea es qué porcentaje de tus renovaciones llevó fee cobrado — ahí está la palanca real.</div></div>
-          <div class="leg"><span><i style="background:#229A82"></i>Bolsa del mes</span>
-            <span><i style="background:#D9A520"></i>Renovaciones con fee</span></div>
-        </div>
-        <svg id="svgBolsa" viewBox="0 0 820 260" preserveAspectRatio="xMidYMid meet" style="aspect-ratio:820/260;height:auto"></svg>
-      </div>
-    </div>
-
-    <!-- 05 BONOS -->
-    <div class="pane" id="p-bonos">
-      <div class="panel">
-        <div class="ph"><div><div class="pt">La escalera del año</div>
-          <div class="ps" id="bonoSub"></div></div></div>
-        <div class="esc" id="escalera"></div>
-      </div>
-    </div>
-
-    <!-- 06 EL ÁREA -->
-    <div class="pane" id="p-area">
-      <div class="kpis" id="areaKpis"></div>
-      <div class="panel">
-        <div class="ph"><div><div class="pt">Tu cartera hoy</div>
-          <div class="ps">Todas las cuentas del área, no solo las de este mes. "Sin señal" son las que llevan más de 180 días quietas y Financiera debe confirmar.</div></div></div>
-        <div class="estados" id="estados"></div>
-      </div>
-    </div>
+      </div></div>
+    </section>
 
     <div class="pie" id="pie"></div>
   </div>
@@ -969,1730 +999,447 @@ async function verificarAccesoYcargar(){
   shellEl.style.display = "block";
   await cargarTodo();
 }
+/* =====================================================================
+   3) v42 · 10-nov-2026 · UNA PANTALLA PARA KAREN
+   Mi mes (la cartera del mes + bitácora + alerta + pending cancellation)
+   · El área (métrica general + curva + índice por quién vendió)
+   · Bolsa y bonos. Todo desde el CORTE (1-sep-2026, cuando Karen recibió el área).
+   Cero SQL nuevo: lee las mismas vistas de la v41.
+   ===================================================================== */
+const CORTE = '2026-09-01';               /* el día que Karen recibió el área */
+let META_PCT = 70;                        /* sale de estandar_pct; 70 si no llega */
+const SOCIOS = ['jorge lopez','andres salcedo','brahian toro'];
+const ADMIN_VENDEN = ['karen suaza','john ramirez (mau ramirez)','mau ramirez','simon restrepo','juliana andrea restrepo bonilla'];
+const RETENCION = ['yenifer galvan rangel','andrea gimenez'];
+const NOM_MES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const MES_C = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+const $ = id => document.getElementById(id);
+function norm(v){ return String(v==null?'':v).normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().trim(); }
+const iso = d => d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const HOY = iso(new Date());
+const MES_HOY = HOY.slice(0,7)+'-01';
+function mesNom(m){ const k=Number(String(m).slice(5,7))-1, a=String(m).slice(0,4); return NOM_MES[k]+(a!==MES_HOY.slice(0,4)?' '+a:''); }
+function mesChip(m){ const k=Number(String(m).slice(5,7))-1, a=String(m).slice(2,4); return MES_C[k]+(String(m).slice(0,4)!==MES_HOY.slice(0,4)?' '+a:''); }
+function kk(n){ return n>=1e6 ? '$'+(n/1e6).toFixed(2)+'M' : '$'+Math.round(n/1000)+'K'; }
+function dias(v){ return Math.round((new Date(String(v).slice(0,10)+'T12:00:00') - new Date(HOY+'T12:00:00'))/864e5); }
+
+let TAB = 'mes', MES_SEL = null, FILTRO = 'todas', Q = '', ABIERTA = null;
+let FILAS = [], NOTAS = {}, PEND = [], BOLSA = [], ESCALERA = [], ROSTER = {};
+let MESES = [], RES = {};       /* resumen por mes (de v_renov_cartera_graficas_visible, nivel área) */
+
+/* ---------- anillo de la casa: extremos rectos, pista del mismo color más clarita, rayita en la meta ---------- */
+function colPct(p){ return p==null ? '#C9D4DC' : (p>=META_PCT ? '#2DBFA3' : '#D9A520'); }
+function ring(p,o){
+  o=o||{}; const s=o.s||120, w=o.w||12, r=(s-w)/2, c=2*Math.PI*r, col=o.col||colPct(p), cx=s/2;
+  const track = o.track || (col==='#2DBFA3'?'rgba(45,191,163,.22)':col==='#D9A520'?'rgba(217,165,32,.24)':'#EEF1F4');
+  let g='<svg width="'+s+'" height="'+s+'" viewBox="0 0 '+s+' '+s+'" aria-hidden="true"><circle cx="'+cx+'" cy="'+cx+'" r="'+r+'" fill="none" stroke="'+track+'" stroke-width="'+w+'"/>';
+  if(p!=null && p>0) g+='<circle cx="'+cx+'" cy="'+cx+'" r="'+r+'" fill="none" stroke="'+col+'" stroke-width="'+w+'" stroke-dasharray="'+(c*Math.min(p,100)/100).toFixed(1)+' '+c.toFixed(1)+'" transform="rotate(-90 '+cx+' '+cx+')"/>';
+  (o.ticks||[]).forEach(t=>{ g+='<line x1="'+cx+'" y1="-1" x2="'+cx+'" y2="'+(w+1)+'" stroke="'+(o.tickCol||'#1B2D3A')+'" stroke-width="2.5" transform="rotate('+(360*t/100)+' '+cx+' '+cx+')"/>'; });
+  if(o.txt!==false) g+='<text x="'+cx+'" y="'+(cx+(o.fs||22)*.36)+'" text-anchor="middle" class="rpc" style="font-size:'+(o.fs||22)+'px">'+(p==null?'—':(o.dec?p.toFixed(1):Math.round(p))+'%')+'</text>';
+  return g+'</svg>';
+}
+
+/* ---------- estado de una cuenta, como lo lee Karen ---------- */
+function perdidaKaren(r){ return ['perdido','retirado'].includes(r.estado_karen) && r.estado_final!=='renovada'; }
+function estado(r){
+  if(r.estado_final==='renovada') return 'renovada';
+  if(r.estado_final==='perdida' || r.estado_final==='retirada' || perdidaKaren(r)) return 'perdida';
+  if(r.estado_karen==='renovado') return 'falta_bos';
+  if(r.estado_final==='vencida_en_juego') return 'vencida';
+  return 'curso';
+}
+const notasDe = r => NOTAS[r.llave] || [];
+function sinTrabajar(r){ const e=estado(r); return (e==='curso'||e==='vencida') && !notasDe(r).length; }
+function filasMes(m){ return FILAS.filter(r=>String(r.mes).slice(0,10)===m && r.estado_final!=='retirada'); }
+function enPending(r){
+  const k=norm(r.llave), d=norm(r.dot), n=norm(r.cliente);
+  return PEND.some(p=> (k && norm(p.llave)===k) || (d && norm(p.dot)===d) || norm(p.cuenta_nombre)===n);
+}
 
 /* =====================================================================
-   3) DATOS EN VIVO — reemplazan las constantes JS de la maqueta
+   CARGA
    ===================================================================== */
-const NOM_MESES = ['','Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
-const PILL = {
-  pendiente:['p-pend','Pendiente'], contactado:['p-cont','Contactada'], cotizando:['p-cot','Cotizando'],
-  renovado:['p-ren','Renovada'], perdido:['p-per','Perdida'], retirado:['p-per','Cancelada / Retirada'],
-};
-const PILL_V30 = {
-  renovada:['p-ren','Renovada'], vencida_en_juego:['p-per','Vencida · en juego'],
-  perdida:['p-per','Perdida'], retirada:['p-per','Cancelada / Retirada'], en_curso:['p-cot','En curso'],
-};
-let VEND_SEL = null;   /* v30 · vendedor seleccionado en la pestaña Vendedores */
-let VEND_ABIERTO = null; /* v33 · {v, m}: vendedor desplegado en Vendedores (m=null = todos sus meses) */
-const ESTADOS_CARTERA_ORDEN = ['ACTIVA','ACTIVA SIN SENAL','RENOVADA','VENCIDA'];
-const ESTADOS_CARTERA_COLOR = {'ACTIVA':'#229A82','ACTIVA SIN SENAL':'#D9A520','RENOVADA':'#5B6BD6','VENCIDA':'#C9D4DC'};
-
-let AÑO_ACTUAL = null, MES_ACTUAL = null, MES_SEL = null;
-let IDX_MESES = [];      // v30.2 · resumen del mes calculado de la cola que ve la persona
-let AÑO_FILAS = [];      // v30 · v_renov_cartera_estado_visible (la cartera de HubSpot)
-let AGENTES_RESUMEN = [];// v30 · se calcula de la cola, por vendedor de la cuenta
-let PERSONAS_KAREN = [];  // v31.1 · la lista de Karen: roster_agentes ACTIVO / KAREN. Salen TODOS, tengan o no cuentas este mes.
-let ALERTA_VNR = [];     // v_alerta_vende_no_renueva_visible
-let ALERTA_GRANDES = []; // v_alerta_cuenta_grande_visible
-let BOLSA_FILAS = [];    // v_bolsa_persona_mensual, alias_bos='Karen Suaza', cuenta_en_firme
-let ESCALERA = [];       // bono_escalera, area=renovaciones tipo=anual activo=true
-let CARTERA = [];        // v_cartera_estado_v3_visible
-let CHIP_SEL = 'todas';
-let TAB = 'cartera';   /* v36 · la pestaña inicial es 00 Cartera */
-let COLA_Q = '';        // v29 · texto del buscador de la cola
-let META_PCT = 70;      // v29 · meta del area; sale de estandar_pct, no del codigo
-const $ = id => document.getElementById(id);
-/* --- v29 · helpers de la ronda visual --------------------------------- */
-function norm(v){ return String(v==null?'':v).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase(); }
-function skel(cont, cuantos, alto){
-  const el = (typeof cont==='string') ? $(cont) : cont; if(!el) return;
-  let h=''; for(let i=0;i<cuantos;i++) h += '<div class="pg-skel" style="height:'+alto+'px;margin:8px 24px"></div>';
-  el.innerHTML = h;
-}
-function errBloque(id, nombre){
-  const el = $(id); if(!el) return;
-  el.innerHTML = '<div class="bloque-err"><span>No se pudo cargar <b>'+nombre+'</b>.</span>'+
-    '<button type="button" class="mini" data-reintentar="1">Reintentar</button></div>';
-}
-function bloque(id, nombre, fn){
-  try{ fn(); }
-  catch(e){ console.warn('bloque '+nombre+':', e); errBloque(id, nombre); }
-}
-/* hash de navegacion — nunca pisa el hash de recuperacion de clave */
-function hashUsable(){ return !_IS_RECOVERY && !/access_token|type=recovery/.test(window.location.hash||''); }
-function leerHash(){
-  if(!hashUsable()) return null;
-  const h = (window.location.hash||'').replace(/^#/,''); if(!h) return null;
-  const o = {};
-  h.split('&').forEach(function(p){ const i=p.indexOf('='); if(i>0) o[decodeURIComponent(p.slice(0,i))]=decodeURIComponent(p.slice(i+1)); });
-  return Object.keys(o).length ? o : null;
-}
-function escribirHash(){
-  if(!hashUsable()) return;
-  const p = [];
-  if(TAB && TAB!=='cola') p.push('v='+TAB);
-  if(MES_SEL && MES_SEL!==MES_ACTUAL) p.push('m='+MES_SEL);
-  if(CHIP_SEL && CHIP_SEL!=='todas') p.push('f='+CHIP_SEL);
-  if(COLA_Q) p.push('q='+encodeURIComponent(COLA_Q));
-  if(FICHA_ABIERTA) p.push('c='+FICHA_ABIERTA);
-  const nuevo = p.length ? '#'+p.join('&') : '';
-  const actual = window.location.hash||'';
-  if(nuevo !== actual){
-    try{ history.replaceState(null,'',window.location.pathname+window.location.search+(nuevo||'#')); }catch(e){}
-  }
-}
-function aplicarHash(){
-  const o = leerHash(); if(!o) return;
-  if(o.v && TABS.some(function(t){return t[0]===o.v;})) TAB = o.v;
-  const m = Number(o.m); if(m>=1 && m<=12) MES_SEL = m;
-  if(o.f) CHIP_SEL = o.f;
-  if(o.q){ COLA_Q = o.q; const inp = $('colaQ'); if(inp) inp.value = o.q; }
-  if(o.c) FICHA_ABIERTA = o.c;
-}
-function rowIdAno(r){ return 'rf_'+String(r.id||(r.llave+'|'+r.vence)).replace(/[^a-zA-Z0-9]/g,'_'); }
-function mesISO(anio, mesNum){ return anio+'-'+String(mesNum).padStart(2,'0')+'-01'; }
-
 async function cargarTodo(){
   const stampEl = $('pg-stamp'); if(stampEl) stampEl.textContent = 'cargando…';
-  /* v38 (Rendimiento) · 00 Cartera es la pestaña que abre: arranca YA, a la par del resto, en vez de esperar
-     a que terminen las consultas de las otras pestañas (antes iba en fila, ~1,4 s). */
-  cargarCartera(); ctTiempoReal();
-  /* v29 · esqueleto por bloque mientras llegan las consultas */
-  skel('months',1,104); skel('cola',3,58); skel('vlist',4,36); skel('grandes',3,36);
-  skel('vnr',3,36); skel('escalera',3,58); skel('estados',4,36); skel('bolsaKpis',1,74);
-
-  /* v30 · el mes en curso es el de hoy: la cartera la monta Andres en HubSpot y puede tener
-     meses por delante sin cerrar. */
-  const hoy = new Date(); AÑO_ACTUAL = hoy.getFullYear(); MES_ACTUAL = hoy.getMonth()+1;
-  if(!MES_SEL) MES_SEL = MES_ACTUAL;
-  const sec = $('secLabel'); if(sec) sec.textContent = 'Renovaciones';   /* v36 · solo "Renovaciones" */
-  const tuAnio = $('tuAnio'); if(tuAnio) tuAnio.textContent = AÑO_ACTUAL;
-
-  /* v30 · la cola y las cifras salen de la CARTERA (lo que Andres monta en HubSpot).
-     El motor solo marca la renovacion cuando Jeff la registra en el BOS. */
-  const [idxR, añoR, agR, vnrR, grR, bolsaR, escR, cartR] = await Promise.all([
-    Promise.resolve({ data: [] }),   /* v30.2 · las cifras del mes se calculan de la cola */
-    fetchPaginado(()=> SB.from('v_renov_cartera_estado_visible').select('*')
-      .gte('mes', mesISO(AÑO_ACTUAL,1)).lte('mes', mesISO(AÑO_ACTUAL,12))),
-    SB.from('roster_agentes').select('nombre').eq('estado','ACTIVO').eq('area_renovaciones','KAREN').order('nombre',{ascending:true}),   /* v31.1 · la lista de Karen */
-    SB.from('v_alerta_vende_no_renueva_visible').select('*'),
-    SB.from('v_alerta_cuenta_grande_visible').select('*').order('dias_restantes',{ascending:true}),
-    SB.from('v_bolsa_persona_mensual').select('*').eq('alias_bos','Karen Suaza').eq('cuenta_en_firme',true).order('mes',{ascending:true}),
-    SB.from('bono_escalera').select('*').eq('area','renovaciones').eq('tipo','anual').eq('activo',true).order('umbral',{ascending:true}),
-    SB.from('v_cartera_estado_v3_visible').select('*'),
-  ]);
-
-  const errores = [idxR, añoR].filter(r=>r.error).map(r=>r.error.message);
-  if(errores.length){
-    $('pg-acceso').innerHTML = '<div class="pg-warn-box"><b>No se pudo cargar todo.</b> '+esc(errores.join(' · '))+'</div>';
+  /* v42 · la cartera va SOLA primero (es la consulta pesada, ~3 s) y el resumen del mes se calcula de ella con la
+     misma regla de v_renov_cartera_graficas: así no se piden dos vistas pesadas a la vez (timeout de 8 s). */
+  const fR = await fetchPaginado(()=> SB.from('v_renov_cartera_estado_visible').select('*').gte('mes', CORTE).order('vence',{ascending:true}));
+  if(fR.error){
+    $('pg-acceso').innerHTML = '<div class="pg-warn-box"><b>No se pudo cargar la cartera.</b> '+esc(fR.error.message)+' <button type="button" class="mini" id="reint">Reintentar</button></div>';
+    const b=$('reint'); if(b) b.onclick=cargarTodo;
+    if(stampEl) stampEl.textContent = 'sin datos';
+    return;
   }
+  const [nR, pR, bR, eR, rR, aR] = await Promise.all([
+    fetchPaginado(()=> SB.from('renov_notas').select('llave,nota,autor,created_at').order('created_at',{ascending:true})),
+    fetchPaginado(()=> SB.from('v_pending_cancel_visible').select('llave,dot,cuenta_nombre,agente,ramo,vence,premium_activo').order('vence',{ascending:true})),
+    SB.from('v_bolsa_persona_mensual').select('*').eq('alias_bos','Karen Suaza').eq('cuenta_en_firme',true).gte('mes', CORTE).order('mes',{ascending:true}),
+    SB.from('bono_escalera').select('*').eq('area','renovaciones').eq('tipo','anual').eq('activo',true).order('umbral',{ascending:true}),
+    SB.from('roster_agentes').select('nombre,estado'),
+    SB.from('v_alerta_vende_no_renueva_visible').select('estandar_pct').limit(1),
+  ]);
+  $('pg-acceso').innerHTML = '';
+  FILAS = fR.data || [];
+  NOTAS = {}; (nR.data||[]).forEach(n=>{ (NOTAS[n.llave] = NOTAS[n.llave] || []).push(n); });
+  PEND = pR.error ? [] : (pR.data || []);
+  BOLSA = bR.error ? [] : (bR.data || []);
+  ESCALERA = eR.error ? [] : (eR.data || []);
+  ROSTER = {}; ((rR && rR.data) || []).forEach(x=>{ ROSTER[norm(x.nombre)] = x.estado; });
+  const est = Number(((aR && aR.data) || [])[0] && aR.data[0].estandar_pct);
+  META_PCT = (est>0 && est<=100) ? est : 70;
+  document.querySelectorAll('.metaTxt').forEach(el=> el.textContent = META_PCT);
 
-  AÑO_FILAS = añoR.data || [];
-  IDX_MESES = resumirMeses(AÑO_FILAS);
-  AGENTES_RESUMEN = agR.data || [];
-  ALERTA_VNR = vnrR.data || [];
-  ALERTA_GRANDES = grR.data || [];
-  BOLSA_FILAS = bolsaR.data || [];
-  ESCALERA = escR.data || [];
-  CARTERA = cartR.data || [];
-
-  /* v29 · la meta del area sale del dato (estandar_pct), no del codigo */
-  const _est = Number((ALERTA_VNR[0]||{}).estandar_pct);
-  META_PCT = (_est>0 && _est<=100) ? _est : 70;
-  const _legM = $('legMeta'); if(_legM) _legM.textContent = 'Meta '+META_PCT+'% del mes';
-  const _stMk = $('stMk'); if(_stMk) _stMk.textContent = 'Meta '+META_PCT+'%';
-
-  /* v29 · el estado viene de la URL (casilla, mes, filtro, busqueda, ficha) */
+  /* resumen por mes con la regla de v_renov_cartera_graficas (el número de la medalla del index y de GABI → La agencia):
+     cuentas y renovadas = llaves distintas en base; vence = premium neto en base; renovado = renovado de las que tienen monto */
+  RES = {};
+  const _ll = {};
+  FILAS.forEach(g=>{
+    if(g.en_base===false || g.estado_final==='retirada') return;
+    const m = String(g.mes).slice(0,10);
+    const x = RES[m] || (RES[m] = { mes:m, cuentas:0, vence:0, renovadas:0, renovado:0, fee:0, sinMonto:0 });
+    const L = _ll[m] || (_ll[m] = { c:new Set(), r:new Set(), s:new Set() });
+    L.c.add(g.llave); if(g.estado_final==='renovada') L.r.add(g.llave); if(g.sin_monto) L.s.add(g.llave);
+    x.vence += Number(g.premium_vence_neto||0); x.fee += Number(g.fee_renovacion||0);
+    if(g.premium_vence_neto!=null) x.renovado += Number(g.premium_renovado||0);
+  });
+  Object.keys(RES).forEach(m=>{ RES[m].cuentas=_ll[m].c.size; RES[m].renovadas=_ll[m].r.size; RES[m].sinMonto=_ll[m].s.size; });
+  MESES = Object.keys(RES).sort();
+  if(!MES_SEL || !RES[MES_SEL]) MES_SEL = RES[MES_HOY] ? MES_HOY : (MESES[MESES.length-1] || MES_HOY);
   aplicarHash();
 
-  /* v29 · cada bloque se pinta aparte: si uno falla, los demas siguen vivos */
-  nav();
-  bloque('cola','tu cola del mes', pintarMes);
-  PERSONAS_KAREN = (agR && agR.data) ? agR.data.map(x=>x.nombre).filter(Boolean) : [];
-  bloque('vlist','vendedores', vend);
-  if(grR.error||vnrR.error) errBloque('grandes','el muro'); else bloque('grandes','el muro', muro);
-  if(bolsaR.error) errBloque('bolsaKpis','la bolsa'); else bloque('bolsaKpis','la bolsa', bolsa);
-  if(escR.error) errBloque('escalera','la escalera'); else bloque('escalera','la escalera', bonos);
-  if(cartR.error) errBloque('estados','tu cartera'); else bloque('estados','tu cartera', area);
+  tabs();
+  bloque('franja','tu mes', pintarMes);
+  bloque('anillos','el área', pintarArea);
+  bloque('bolsaK','la bolsa', pintarPlata);
   escribirHash();
-  /* v38 · cargarCartera() y ctTiempoReal() ahora arrancan al principio de cargarTodo(). */
-
   const hhmm = new Date().toLocaleTimeString('es-CO',{hour:'2-digit',minute:'2-digit'});
   if(stampEl) stampEl.textContent = 'datos al '+hhmm;
   cargarEstadoDato(hhmm);
 }
-
+function bloque(id, nombre, fn){
+  try{ fn(); }
+  catch(e){ console.warn('bloque '+nombre+':', e); const el=$(id); if(el) el.innerHTML='<div class="bloque-err"><span>No se pudo pintar <b>'+nombre+'</b>.</span></div>'; }
+}
 async function cargarEstadoDato(hhmm){
   const el = $('pie'); if(!el) return;
   let extra = '';
   try{
     const { data, error } = await SB.from('v_renov_estado_dato').select('*').maybeSingle();
-    /* v30 · nada mas */
-    if(!error && data){
-      const rojo = data.semaforo === 'rojo';
-      extra = ' · datos al minuto '+fmtHora(data.foto_at)+(rojo?' · revisar sincronización':'');
-    }
+    if(!error && data) extra = ' · datos al minuto '+fmtHora(data.foto_at)+(data.semaforo==='rojo'?' · revisar sincronización':'');
   }catch(e){}
-  el.textContent = 'Datos en vivo · actualizado a las '+hhmm+extra;
+  el.textContent = 'Datos en vivo · actualizado a las '+hhmm+extra+' · v42';
 }
 
-
-/* =====================================================================
-   v36 · 00 CARTERA — motor v3 (mv_cartera_timeline) en tiempo real.
-   Cada barra arranca HOY y mide lo que le queda a la póliza (§9).
-   Las marcas de Karen siguen yendo a renov_trabajo (llave = DOT, vence)
-   y las notas a renov_notas: mismo candado y motivo obligatorio de siempre.
-   ===================================================================== */
-const CT = { cuentas:[], trabajo:{}, rw:{}, detalle:[], indice:[], alertas:[], eventos:[],
-  filtro:'vencer', area:'', q:'', todas:false, cob:'', pend:[], roster:[], lleganDet:[], pendTodas:false, priv:false, abierta:null, canal:null, poll:null, ultFoto:null, tRec:null, cargando:false };
-const CT_MAXD = 365;
-const ctPos = d => Math.max(0, Math.min(100, d/CT_MAXD*100));
-function ctHoy(){ const h=new Date(); h.setHours(12,0,0,0); return h; }
-function ctD(s){ return s ? new Date(String(s).slice(0,10)+'T12:00:00') : null; }
-function ctDias(s){ const d=ctD(s); return d ? Math.round((d-ctHoy())/864e5) : null; }
-function ctISO(desplazaDias){ const d=ctHoy(); d.setDate(d.getDate()+desplazaDias); return d.toISOString().slice(0,10); }
-function ctFecha(s){ const d=ctD(s); if(!d) return '—'; return d.getDate()+' '+MESES_CORTOS[d.getMonth()]+(d.getFullYear()!==new Date().getFullYear()?' '+d.getFullYear():''); }
-function ctK(n){ if(n===null||n===undefined||isNaN(n)) return '—'; n=Number(n); return Math.abs(n)>=1e6 ? '$'+(n/1e6).toFixed(1)+'M' : Math.abs(n)>=1e3 ? '$'+Math.round(n/1e3)+'K' : '$'+Math.round(n); }
-function ctFechaCaida(p){ return p.fecha_cancelacion || p.fecha_negativo || null; }
-
-/* Clase de cada póliza: lo que la gente entiende (§6.1) */
-function ctClase(p){
-  const rw = CT.rw[p.termino_id];
-  if(rw && rw.reescrita) return 'rw';
-  if(p.fase==='CANCELADA') return 'canc';
-  if(p.fase==='PENDIENTE CANCELACION') return 'pend';
-  if(p.fase==='VENCIDA SIN RENOVAR') return 'vencida';
-  if(p.fase==='RENOVADA') return 'renov';
-  const d = ctDias(p.vence);
-  return d<=15 ? 'vencer' : d<=60 ? 'ventana' : 'ok';
-}
-const CT_TXT = { ok:'Al día', ventana:'Vence pronto', vencer:'Vence pronto', vencida:'Vencida', pend:'Confirmar con Financiera', canc:'Se cayó', rw:'Reescrita', renov:'Renovada' };
-/* Lo histórico no aparece: solo lo vivo y lo que se cayó o venció en los últimos 30 días */
-function ctVisible(p){
-  const c = ctClase(p);
-  if(p.es_viva) return true;
-  if(c==='canc' || c==='rw'){ const f=ctFechaCaida(p); return f ? ctDias(f) >= -30 : false; }
-  if(c==='vencida') return ctDias(p.vence) >= -30;
-  return false;
-}
-function ctCategorias(cta){
-  const s = new Set();
-  cta._pols.forEach(p=>{
-    const c = p._c, d = ctDias(p.vence);
-    if(c==='vencida' || (p.es_viva && c!=='pend' && d<=15)) s.add('vencer');
-    if(c==='vencida' || (p.es_viva && c!=='pend' && d<=60)) s.add('ventana');
-    if(c==='pend' || c==='canc') s.add('cayo');
-    if(p.es_viva) s.add('vivas');
-  });
-  return s;
-}
-function ctPrepara(rows){
-  return (rows||[]).map(r=>{
-    /* Un término que ya venció no puede seguir "vivo" aunque el motor lo deje como pendiente de cancelación
-       (CANC. DUDOSA / RECORTE GRANDE con vence pasado): en pantalla es Vencida y sale a los 30 días. TODO motor v3. */
-    const pols = (Array.isArray(r.polizas) ? r.polizas : []).map(p=>{
-      const q = Object.assign({}, p);
-      if(q.es_viva && ctDias(q.vence) < 0){ q.es_viva = false; q.fase = 'VENCIDA SIN RENOVAR'; q._eraPend = true; }
-      q._c = ctClase(q); return q;
-    }).filter(ctVisible);
-    const cta = Object.assign({}, r, { _pols: pols });
-    cta._cat = ctCategorias(cta);
-    cta._vivo = pols.filter(p=>p.es_viva).reduce((a,p)=>a+Number(p.premium_activo||0),0);
-    const dd = pols.filter(p=>p._c!=='canc'&&p._c!=='rw').map(p=>ctDias(p.vence)).filter(x=>x!==null);
-    cta._orden = dd.length ? Math.min.apply(null, dd) : 9999;
-    cta._buscar = [r.cuenta_nombre, r.insured, r.dot, r.agente].concat(pols.map(p=>p.agente)).join(' ').toLowerCase();
-    return cta;
-  }).filter(c=>c._pols.length);
-}
-
-async function cargarCartera(){
-  if(CT.cargando) return; CT.cargando = true;
-  try{
-    const desde36h = new Date(Date.now()-36*3600e3).toISOString();
-    const [cR, tR, aR, eR, iR, dR, gR, pR, fR, lR, nR] = await Promise.all([
-      fetchPaginado(()=> SB.from('v_cartera_cuentas_visible').select('*')),
-      fetchPaginado(()=> SB.from('renov_trabajo').select('llave,vence,estado,motivo_perdido,contactado,fecha_contacto,updated_at').gte('vence', ctISO(-150))),
-      SB.from('renov_alertas').select('*').is('visto_at', null).gte('creado_at', new Date(Date.now()-45*864e5).toISOString()).order('creado_at',{ascending:false}),
-      SB.from('v_renov_eventos_visible').select('*').gte('creado_at', desde36h).order('creado_at',{ascending:false}).limit(300),
-      SB.from('v_cartera_llegan_visible').select('*'),
-      fetchPaginado(()=> SB.from('v_cartera_indice_detalle_visible').select('termino_id,agente,cuenta_nombre,paquete,premium_paquete,efectiva,fecha_cancelacion,dias_vida,cancelada,reescrita,reescrita_en,reescrita_con,medio_termino,cuenta_para_indice')),
-      SB.from('gabi_accesos').select('rol,area').eq('user_id', SESION_UID).eq('activo', true),
-      fetchPaginado(()=> SB.from('v_pending_cancel_visible').select('*')),
-      SB.from('v_roster_fotos_visible').select('*'),
-      fetchPaginado(()=> SB.from('v_cartera_llegan_detalle_visible').select('agente,cuenta_nombre,ramo,efectiva,fc,cayo,reescrita,dias_vida')),
-      fetchPaginado(()=> SB.from('renov_notas').select('llave')),
-    ]);
-    if(cR.error){ errBloque('ct-lista','la cartera'); return; }
-    CT.priv = ((gR && gR.data)||[]).some(g=> g.rol==='director' || g.rol==='socio' || g.area==='renovaciones');
-    CT.rw = {}; CT.detalle = (dR && dR.data) || [];
-    CT.detalle.forEach(d=>{ CT.rw[d.termino_id] = d; });
-    CT.trabajo = {};
-    ((tR && tR.data)||[]).forEach(t=>{ (CT.trabajo[t.llave] = CT.trabajo[t.llave] || []).push(t); });
-    CT.indice = (iR && iR.data) || [];
-    CT.pend = (pR && pR.data) || []; CT.roster = (fR && fR.data) || []; CT.lleganDet = (lR && lR.data) || [];
-    CT.alertas = (aR && aR.data) || [];
-    CT.eventos = ((eR && eR.data) || []).filter(e=> e.tipo!=='POLIZA_NUEVA' || e.fase_ahora!=='RENOVADA');
-    CT.raw = cR.data || []; CT.notasLlaves = new Set(((nR && nR.data) || []).map(n=>n.llave));
-    CT.cuentas = ctPrepara(cR.data);
-    bloque('ct-lista','la cartera', ctPinta);
-    bloque('ct-cambios','los cambios', ctCambios);
-    bloque('ct-ix','el índice', ctIndice);
-    bloque('ct-avisos','las alertas', ctAvisos);
-    bloque('av-box','los avisos', ctAvisosCola);
-    bloque('vr-box','la renovación por vendedor', ctVendRenov);
-    nav();
-  } finally { CT.cargando = false; }
-}
-
-/* v37 · 00 Cartera simple: cifras, pending arriba, activas por cobertura con pastillas */
-function ctNorm(s){ return String(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\(.*?\)/g,'').toLowerCase().replace(/[^a-z ]/g,' ').replace(/\s+/g,' ').trim(); }
-const CT_COBS = ['AL','MTC','PD','GL','NTL'];
-function ctCobDe(r){ return CT_COBS.indexOf(r)>=0 ? r : 'OTRAS'; }
-function ctPasaFiltroTexto(c){
-  const q = (CT.q||'').trim().toLowerCase();
-  return (!CT.area || c.area===CT.area) && (!q || c._buscar.indexOf(q) >= 0);
-}
-function ctFiltradas(){ return CT.cuentas.filter(ctPasaFiltroTexto); }
-function ctPendFiltrada(){
-  const q = (CT.q||'').trim().toLowerCase();
-  return (CT.pend||[]).filter(p=> (!CT.area || p.area===CT.area) && (!q || [p.cuenta_nombre,p.dot,p.agente].join(' ').toLowerCase().indexOf(q)>=0));
-}
-function ctCifras(base){
-  const n = k => base.filter(c=>c._cat.has(k)).length;
-  const vivas = base.reduce((a,c)=>a+c._pols.filter(p=>p.es_viva).length,0);
-  const pv = base.reduce((a,c)=>a+c._vivo,0);
-  const pend = ctPendFiltrada();
-  const C = [
-    ['vencer','r', n('vencer'), 'vencen en 15 días'],
-    ['ventana','a', n('ventana'), 'vencen en 60 días'],
-    ['pend','x', pend.length, 'en pending cancellation · '+ctK(pend.reduce((a,p)=>a+Number(p.premium_activo||0),0))],
-    ['vivas','g', vivas, 'pólizas activas · '+base.filter(c=>c._cat.has('vivas')).length+' cuentas · '+ctK(pv)],
-  ];
-  $('ct-cifras').innerHTML = C.map(c=>'<button type="button" class="ct-ci '+c[1]+(CT.filtro===c[0]?' on':'')+'" data-f="'+c[0]+'"><span class="v">'+c[2]+'</span><span class="l">'+esc(c[3])+'</span></button>').join('');
-  document.querySelectorAll('#ct-cifras .ct-ci').forEach(el=> el.onclick = ()=>{ CT.filtro = el.dataset.f; CT.todas = false; ctPinta(); });
-}
-function ctLista(base){
-  let L;
-  if(CT.filtro==='todas') L = base.slice();
-  else if(CT.filtro==='pend') L = base.filter(c=> c._pols.some(p=>p._c==='pend'));
-  else L = base.filter(c=> c._cat.has(CT.filtro));
-  if(CT.cob) L = L.filter(c=> c._pols.some(p=> ctCobDe(p.ramo)===CT.cob));
-  L.sort((a,b)=> a._orden-b._orden || b._vivo-a._vivo);
-  return L;
-}
-function ctEstadoKaren(c){
-  const ts = CT.trabajo[c.dot || c.llave] || [];
-  if(!ts.length) return null;
-  return ts.slice().sort((a,b)=> String(b.updated_at||'').localeCompare(String(a.updated_at||'')))[0];
-}
-function ctChip(p){
-  const c = p._c, d = ctDias(p.vence);
-  let cls, txt;
-  if(c==='pend'){ cls='c-pend'; txt='pending cancellation'; }
-  else if(c==='canc'){ cls='c-canc'; const f=ctFechaCaida(p); txt='se cayó'+(f?' '+ctFecha(f):''); }
-  else if(c==='rw'){ cls='c-canc'; txt='reescrita'; }
-  else if(c==='vencida'){ cls='c-v15'; txt='venció hace '+(-d)+' d'; }
-  else if(c==='renov'){ cls='c-canc'; txt='renovada'; }
-  else if(d<=15){ cls='c-v15'; txt='vence '+ctFecha(p.vence)+' · '+d+' d'; }
-  else if(d<=60){ cls='c-v60'; txt='vence '+ctFecha(p.vence)+' · '+d+' d'; }
-  else { cls='c-ok'; txt='vence '+ctFecha(p.vence); }
-  const dim = (CT.cob && ctCobDe(p.ramo)!==CT.cob) || (CT.est && rcEst(p)!==CT.est) ? ' style="opacity:.4"' : '';
-  return '<span class="ct-chip '+cls+'"'+dim+'><i>'+esc(p.ramo)+'</i>'+esc(txt)+'</span>';
-}
-function ctFicha(c){
-  const filas = c._pols.map(p=>{
-    const rw = CT.rw[p.termino_id];
-    const extra = rw && rw.reescrita ? ' · reescrita con '+esc(rw.reescrita_con||'')+' el '+ctFecha(rw.reescrita_en) : '';
-    return '<div class="ct-pd"><b>'+esc(p.ramo)+'</b><span>'+esc(p.carrier||'—')+(p.policy_num?' · #'+esc(p.policy_num):'')+
-      ' · '+ctFecha(p.efectiva)+' → '+ctFecha(p.vence)+' · <b style="font-family:var(--f-body);color:var(--txt)">'+esc(CT_TXT[p._c]||'')+'</b>'+
-      (p.motivo?' · '+esc(p.motivo):'')+extra+'</span>'+
-      '<span class="num">vendido '+ctK(p.premium_vendido)+(Number(p.devuelto)>0?' · devuelto '+ctK(p.devuelto):'')+' · vivo '+ctK(p.es_viva?p.premium_activo:null)+'</span></div>';
-  }).join('');
-  const flags = [];
-  if(c.alerta_rewrite) flags.push('⚠ Se reemplazó una póliza sin fila de cancelación en el BOS (rewrite sin cancelación): confirmar con Financiera.');
-  if(c.alerta_concurrente) flags.push('⚠ Hay dos pólizas del mismo ramo vivas a la vez (rewrite temprano o DOT compartido).');
-  const t = ctEstadoKaren(c);
-  const estado = t ? 'Tu marca: <b>'+esc(estadoLabel(t.estado))+'</b>'+(t.motivo_perdido?' · '+esc(t.motivo_perdido):'')+' · '+fmtFecha(String(t.updated_at||'').slice(0,10)) : 'Sin marca todavía.';
-  const k = esc(c.llave);
-  return '<div class="ct-det" data-det="'+k+'">'+filas+flags.map(f=>'<div class="ct-flag">'+esc(f)+'</div>').join('')+
-    '<div style="font-size:11.5px;margin-top:6px">'+estado+' · <span style="color:var(--muted)">Área: '+esc(c.area||'—')+' · Agente: '+esc(c.agente||'—')+(c.dot?' · DOT '+esc(c.dot):'')+'</span></div>'+
-    '<div class="ct-ac">'+
-      '<button type="button" class="btn pri" data-ct="contactado" data-k="'+k+'">Contactado</button>'+
-      '<button type="button" class="btn" data-ct="renovado" data-k="'+k+'">Renovado</button>'+
-      '<button type="button" class="btn" data-ct="perdido" data-k="'+k+'">Perdido</button>'+
-      '<button type="button" class="btn" data-ct="nota" data-k="'+k+'">Nota</button>'+
-    '</div><div class="ct-notas" id="ct-notas-'+k.replace(/[^a-zA-Z0-9]/g,'_')+'"></div></div>';
-}
-function ctPend(){
-  const P = ctPendFiltrada().slice().sort((a,b)=> String(a.vence).localeCompare(String(b.vence)));
-  const tope = CT.pendTodas ? P.length : 8;
-  $('ct-pend-n').textContent = P.length ? P.length+' pólizas · llamar antes de que se caigan · la que vence primero arriba' : 'ninguna hoy';
-  $('ct-pend').innerHTML = P.length ? P.slice(0,tope).map(p=>'<div class="ct-pr" data-dot="'+esc(p.dot||'')+'" data-k="'+esc(p.llave)+'"><b>'+esc(p.cuenta_nombre||p.dot)+'</b>'+
-      '<span><span class="ct-chip c-pend" style="margin:0"><i>'+esc(p.ramo)+'</i></span></span><span class="mu hide">'+esc(p.agente||'—')+'</span>'+
-      '<span class="mu">desde '+ctFecha(p.desde)+' · vence '+ctFecha(p.vence)+'</span><span class="num">'+ctK(p.premium_activo)+'</span></div>').join('')
-    : '<div class="ct-vacio">No hay pólizas en pending cancellation.</div>';
-  const m = $('ct-pend-mas');
-  if(P.length > 8){ m.style.display='block'; m.textContent = CT.pendTodas ? 'ver menos' : 'ver las '+P.length+' →'; } else m.style.display='none';
-  document.querySelectorAll('#ct-pend .ct-pr').forEach(r=> r.onclick = ()=>{
-    CT.filtro='pend'; CT.cob=''; CT.abierta=r.dataset.k; ctPinta();
-    const e=document.querySelector('#ct-lista .ct-cta2[data-k="'+r.dataset.k+'"]'); if(e) e.scrollIntoView({behavior:'smooth',block:'center'});
-  });
-}
-function ctCobFiltro(base){
-  const cuenta = k => base.reduce((a,c)=> a + c._pols.filter(p=>p.es_viva && (k==='' || ctCobDe(p.ramo)===k)).length, 0);
-  const B = [['','Todas']].concat(CT_COBS.map(k=>[k,k])).concat([['OTRAS','Otras']]);
-  $('ct-cob').innerHTML = B.map(b=>'<button type="button" class="'+(CT.cob===b[0]?'on':'')+'" data-c="'+b[0]+'">'+b[1]+'<i>'+cuenta(b[0])+'</i></button>').join('');
-  document.querySelectorAll('#ct-cob button').forEach(b=> b.onclick = ()=>{ CT.cob = b.dataset.c; CT.todas=false; ctPinta(); });
-}
-function ctPinta(){
-  const base = ctFiltradas();
-  ctCifras(base); ctCobFiltro(base); ctPend();
-  const L = ctLista(base);
-  const tope = CT.todas ? L.length : 40;
-  const el = $('ct-lista');
-  el.innerHTML = L.length ? L.slice(0, tope).map(c=>{
-    const t = ctEstadoKaren(c);
-    const sub = (c.dot ? 'DOT '+esc(c.dot)+' · ' : '')+esc(c.agente||'—');
-    return '<div class="ct-cta2'+(CT.abierta===c.llave?' open':'')+'" tabindex="0" role="button" aria-expanded="'+(CT.abierta===c.llave)+'" data-k="'+esc(c.llave)+'">'+
-      '<div class="ct-n"><b>'+esc(c.cuenta_nombre||c.insured||c.llave)+'</b><small>'+sub+'</small></div>'+
-      '<div class="ct-chips">'+c._pols.map(ctChip).join('')+'</div>'+
-      '<div class="ct-p">'+(c._vivo?ctK(c._vivo):'—')+'<small>'+(t?esc(estadoLabel(t.estado)):'&nbsp;')+'</small></div>'+
-      ctFicha(c)+'</div>';
-  }).join('') : '<div class="ct-vacio">Nada aquí con este filtro.</div>';
-  const mas = $('ct-mas');
-  if(L.length > 40){ mas.style.display='block'; mas.textContent = CT.todas ? 'ver menos' : 'ver las '+L.length+' →'; } else mas.style.display='none';
-  $('ct-todas').textContent = CT.filtro==='todas' ? '← volver a lo que vence' : 'ver el estado de todas (incluye lo que se cayó o venció en 30 días) →';
-  el.querySelectorAll('.ct-cta2').forEach(row=>{
-    const abrir = ev=>{
-      if(ev.target.closest('.ct-det')) return;
-      const k = row.dataset.k;
-      CT.abierta = CT.abierta===k ? null : k;
-      el.querySelectorAll('.ct-cta2').forEach(r=>{ const on = r.dataset.k===CT.abierta; r.classList.toggle('open', on); r.setAttribute('aria-expanded', on); });
-      if(CT.abierta) ctNotas(CT.abierta);
-    };
-    row.onclick = abrir;
-    row.onkeydown = ev=>{ if((ev.key==='Enter'||ev.key===' ') && ev.target===row){ ev.preventDefault(); abrir(ev); } };
-  });
-  el.querySelectorAll('[data-ct]').forEach(b=> b.onclick = ev=>{ ev.stopPropagation(); ctAccion(b.dataset.ct, b.dataset.k); });
-  if(CT.abierta) ctNotas(CT.abierta);
-}
-
-async function ctNotas(llave){
-  const box = $('ct-notas-'+llave.replace(/[^a-zA-Z0-9]/g,'_')); if(!box) return;
-  const c = CT.cuentas.find(x=>x.llave===llave); const k = c ? (c.dot||c.llave) : llave;
-  const { data, error } = await SB.from('renov_notas').select('*').eq('llave', k).order('created_at',{ascending:false}).limit(5);
-  if(error){ box.textContent = 'No se pudieron cargar las notas.'; return; }
-  box.innerHTML = (data||[]).map(n=>'<div><span class="nm">'+esc(n.autor)+' · '+fmtFechaHora(n.created_at)+'</span><br>'+esc(n.nota)+'</div>').join('');
-}
-/* La marca va a la póliza más próxima de la cuenta (la que Karen está trabajando) */
-function ctPolizaObjetivo(c){
-  const vivas = c._pols.filter(p=>p.es_viva || p._c==='vencida').sort((a,b)=> ctDias(a.vence)-ctDias(b.vence));
-  return vivas[0] || c._pols[0];
-}
-async function ctAccion(acc, llave){
-  const c = CT.cuentas.find(x=>x.llave===llave); if(!c) return;
-  const k = c.dot || c.llave;
-  if(acc==='nota'){
-    const n = window.prompt('Nota para '+(c.cuenta_nombre||k)+':'); if(n===null || !n.trim()) return;
-    const { error } = await SB.from('renov_notas').insert({ llave: k, nota: n.trim(), autor: SESION_EMAIL||'', autor_user_id: SESION_UID||null });
-    if(error){ alert('No se pudo guardar la nota: '+error.message); return; }
-    ctNotas(llave); return;
-  }
-  const p = ctPolizaObjetivo(c); if(!p) return;
-  const row = { llave: k, vence: String(p.vence).slice(0,10) };
-  let payload;
-  if(acc==='contactado'){ const hoy = new Date().toISOString().slice(0,10); payload = { estado:'contactado', contactado:true, fecha_contacto:hoy, contacto_por:SESION_EMAIL||null }; }
-  else if(acc==='perdido'){
-    const m = window.prompt('Motivo de la pérdida (obligatorio):'); if(m===null) return;
-    if(!m.trim()){ alert('El motivo es obligatorio para marcar perdida.'); return; }
-    payload = { estado:'perdido', motivo_perdido:m.trim() };
-  } else payload = { estado:'renovado', motivo_perdido:null };
-  const ok = await escribirTrabajoDB(row, payload); if(!ok) return;
-  (CT.trabajo[k] = CT.trabajo[k] || []).push(Object.assign({}, row, payload, { updated_at: new Date().toISOString() }));
-  ctPinta();
-}
-
-function ctCambios(){
-  const T = { CANCELADA:'Se cayó', PENDIENTE_CANCELACION:'Confirmar', RENOVADA:'Renovada', VENCIDA_SIN_RENOVAR:'Venció', POR_VENCER:'Vence en 15 d',
-    ENTRO_A_VENTANA:'Entró a ventana', REACTIVADA:'Volvió', PREMIUM_CAMBIO:'Cambió premium', POLIZA_NUEVA:'Póliza nueva', FASE_CAMBIO:'Cambió' };
-  const E = CT.eventos;
-  $('ct-cambios-n').textContent = E.length ? E.length+' cambios' : 'sin cambios';
-  $('ct-cambios').innerHTML = E.length ? E.slice(0,60).map(e=>'<div class="ct-ev"><span class="t">'+esc(T[e.tipo]||e.tipo)+'</span><span><b>'+esc(e.cuenta_nombre||e.dot||'')+'</b> · '+esc(e.ramo||'')+
-      (e.tipo==='PREMIUM_CAMBIO' ? ' · '+ctK(e.premium_antes)+' → '+ctK(e.premium_ahora) : (e.vence?' · vence '+ctFecha(e.vence):''))+'</span><span class="h">'+fmtFechaHora(e.creado_at)+'</span></div>').join('')
-    : '<div class="ct-ev"><span class="t">—</span><span>Nada cambió en las últimas 36 horas.</span><span></span></div>';
-}
-
-function ctAvisos(){
-  const box = $('ct-avisos');
-  const A = CT.priv ? CT.alertas.filter(a=>a.tipo!=='D_CUENTA_REPETIDA').slice(0,3) : [];
-  box.innerHTML = A.map(a=>{
-    const quien = a.agente ? esc(a.agente)+' · ' : '';
-    const txt = a.tipo==='A_VENTA_SE_CAE' ? 'Venta que se cae: '+esc(a.cuenta_nombre||'')+' · '+esc(a.detalle||'')
-      : a.tipo==='B_PATRON' ? 'Patrón: '+esc(a.detalle||'') : 'Semáforo: '+esc(a.detalle||'');
-    return '<div class="ct-aviso'+(a.nivel==='ROJO'?'':' ambar')+'">⚠ <span><b>'+quien+'</b>'+txt+'</span><button type="button" class="btn" data-av="'+a.id+'">Visto</button></div>';
-  }).join('');
-  box.querySelectorAll('[data-av]').forEach(b=> b.onclick = async ()=>{
-    const { error } = await SB.rpc('renov_alerta_vista', { p_id: Number(b.dataset.av) });
-    if(error){ alert('No se pudo marcar: '+error.message); return; }
-    CT.alertas = CT.alertas.filter(a=>String(a.id)!==b.dataset.av); ctAvisos();
-  });
-}
-
-/* v37 · Quién vende y a quién se le cae: % que llega a renovación, con foto, todos los activos */
-function ctGente(){
-  const act = (CT.roster||[]).filter(r=> r.estado==='ACTIVO');
-  const porNom = {}; (CT.indice||[]).forEach(i=>{ porNom[ctNorm(i.agente)] = i; });
-  return act.map(r=>{ const i = porNom[ctNorm(r.nombre)] || null; return { nombre:r.nombre, foto:r.foto || (i&&i.foto) || null, i }; })
-    .sort((a,b)=>{ const pa=a.i&&a.i.semaforo!=='GRIS'?Number(a.i.pct):-1, pb=b.i&&b.i.semaforo!=='GRIS'?Number(b.i.pct):-1; return pb-pa || a.nombre.localeCompare(b.nombre); });
-}
-function ctAv(foto, nombre, cls){
-  const u = foto ? String(foto).replace(/["'()\\\s]/g,'') : '';
-  return '<div class="'+cls+'"'+(u?' style="background-image:url('+u+')"':'')+'>'+(u?'':esc(String(nombre||'').split(' ').slice(0,2).map(x=>x[0]).join('')))+'</div>';
-}
-function ctIndice(){
-  const box = $('ct-ix-box');
-  if(!CT.priv){ box.style.display='none'; return; }
-  box.style.display='block';
-  const ag = (CT.indice[0]||{}).pct_agencia;
-  $('ct-ix-sub').textContent = '% de las pólizas que llegan a renovación · meta 80 % · todos los ramos menos NTL'+(ag!=null?' · agencia '+Math.round(ag)+' %':'');
-  const col = { ROJO:'var(--rojo)', AMARILLO:'var(--ambar)', VERDE:'var(--verde)' };
-  const G = ctGente();
-  $('ct-ix').innerHTML = G.map((g,ix)=>{
-    const i = g.i, s = i ? i.semaforo : 'GRIS', medible = i && s!=='GRIS', p = medible ? Math.floor(Number(i.pct)) : null;   /* truncado: 79.6 se ve 79, nunca 80 */
-    const caidas = medible ? (CT.lleganDet||[]).filter(d=> ctNorm(d.agente)===ctNorm(g.nombre) && d.cayo && !d.reescrita)
-        .sort((a,b)=> String(b.fc).localeCompare(String(a.fc))) : [];
-    const sub = medible ? (i.llegan+' de '+i.polizas+' llegaron · '+i.cayeron+' se cayeron ('+i.medio_termino+' antes de 6 meses)')
-      : (i ? 'pocas pólizas todavía ('+i.polizas+')' : 'todavía sin pólizas que hayan llegado a renovar');
-    return '<div class="ct-per '+s+'" data-i="'+ix+'">'+ctAv(g.foto,g.nombre,'ct-av')+'<div><b>'+esc(g.nombre)+'</b><small>'+esc(sub)+'</small>'+
-      (medible?'<div class="ct-meta"><i style="width:'+Math.min(100,p)+'%;background:'+col[s]+'"></i><u></u></div>':'')+'</div>'+
-      '<div class="ct-big '+s+'">'+(medible?p+'%':'—')+'<small>'+(medible?'llegan':'sin medir')+'</small></div>'+
-      (caidas.length?'<div class="ct-perd">'+caidas.slice(0,12).map(d=>'✕ '+esc(d.cuenta_nombre)+' · '+esc(d.ramo)+' · se cayó el día '+esc(d.dias_vida)+' ('+ctFecha(d.fc)+')').join('<br>')+'</div>':'')+'</div>';
-  }).join('');
-  document.querySelectorAll('#ct-ix .ct-per').forEach(r=> r.onclick = ()=> r.classList.toggle('open'));
-}
-/* v37 · Avisos (01 Mi cola): las notificaciones juntas en un solo lugar */
-function ctAvisosItems(){
-  const it = [];
-  (CT.priv ? CT.alertas : []).forEach(a=> it.push({ ic:'%', col: a.nivel==='ROJO'?'var(--rojo)':'var(--ambar)', t:(a.agente?a.agente+' · ':'')+(a.tipo==='B_PATRON'?'Patrón de cancelaciones':a.tipo==='A_VENTA_SE_CAE'?'Venta que se cae':'Semáforo'), s:a.detalle||'', id:a.id }));
-  const hace7 = Date.now()-7*864e5;
-  (CT.pend||[]).filter(p=> p.entro_at && Date.parse(p.entro_at) >= hace7).forEach(p=> it.push({ ic:'!', col:'var(--rojo)', t:(p.cuenta_nombre||p.dot)+' · '+p.ramo+' en pending cancellation', s:(p.agente||'—')+' · '+(p.motivo||'')+' · vence '+ctFecha(p.vence), dot:p.llave }));
-  (CT.eventos||[]).filter(e=> e.tipo==='CANCELADA').forEach(e=> it.push({ ic:'✕', col:'#6B7D89', t:(e.cuenta_nombre||e.dot)+' · '+(e.ramo||'')+' se cayó', s:fmtFechaHora(e.creado_at), dot:e.llave }));
-  return it;
-}
-function ctAvisosCola(){
-  const box = $('av-box'); if(!box) return;
-  const it = ctAvisosItems();
-  box.innerHTML = '<div class="av-box"><div class="hd"><b>🔔 Avisos'+(it.length?' · '+it.length:'')+'</b><small style="color:var(--muted)">alertas de cancelación, pólizas que entraron a pending esta semana y lo que se cayó hoy</small></div>'+
-    (it.length ? it.map(a=>'<div class="av-it"><span class="ic" style="background:'+a.col+'">'+a.ic+'</span><div><b>'+esc(a.t)+'</b><small>'+esc(a.s)+'</small></div>'+
-        (a.id?'<button type="button" class="btn" data-av="'+a.id+'">Visto</button>':(a.dot?'<button type="button" class="btn" data-avk="'+esc(a.dot)+'">Ver</button>':'<span></span>'))+'</div>').join('')
-      : '<div class="av-it"><span class="ic" style="background:var(--verde)">✓</span><div><b>Nada pendiente</b><small>Las novedades del portal te salen al entrar, como siempre.</small></div><span></span></div>')+'</div>';
-  box.querySelectorAll('[data-av]').forEach(b=> b.onclick = async ()=>{
-    const { error } = await SB.rpc('renov_alerta_vista', { p_id: Number(b.dataset.av) });
-    if(error){ alert('No se pudo marcar: '+error.message); return; }
-    CT.alertas = CT.alertas.filter(a=>String(a.id)!==b.dataset.av); ctAvisosCola(); ctAvisos(); nav();
-  });
-  box.querySelectorAll('[data-avk]').forEach(b=> b.onclick = ()=>{ CT.filtro='todas'; CT.cob=''; CT.abierta=b.dataset.avk; setTab('cartera'); ctPinta();
-    setTimeout(()=>{ const e=document.querySelector('#ct-lista .ct-cta2[data-k="'+b.dataset.avk+'"]'); if(e) e.scrollIntoView({behavior:'smooth',block:'center'}); },80); });
-}
-/* v37 · 02 Vendedores: cómo le va a cada uno renovando */
-function ctVendRenov(){
-  const box = $('vr-box'); if(!box) return;
-  const porAg = {}; CT.cuentas.forEach(c=> c._pols.filter(p=>p.es_viva).forEach(p=>{ const k=ctNorm(p.agente||c.agente); (porAg[k]=porAg[k]||new Set()).add(c.llave); }));
-  const G = ctGente();
-  box.innerHTML = '<div class="panel" style="margin-top:14px"><div class="ph"><div><div class="pt">Cómo le va a cada vendedor renovando</div>'+
-    '<div class="ps">De lo que debía renovar en los últimos 12 meses: cuánto llegó vivo a su renovación, cuánto se renovó y cuánto se cayó antes. Meta: 80 % llega a renovación.</div></div></div>'+
-    '<div style="overflow-x:auto;padding:0 6px 8px"><table class="vr-tab"><thead><tr><th>Vendedor</th><th>Cuentas activas</th><th>Debían renovar</th><th>Llegaron</th><th>Renovaron</th><th>Se cayeron</th><th>Llegan a renovación</th></tr></thead><tbody>'+
-    G.map(g=>{ const i=g.i, medible=i&&i.semaforo!=='GRIS', act=(porAg[ctNorm(g.nombre)]||new Set()).size;
-      return '<tr><td>'+ctAv(g.foto,g.nombre,'vr-av')+esc(g.nombre)+'</td><td class="num">'+(act||'—')+'</td><td class="num">'+(i?i.polizas:'—')+'</td><td class="num">'+(i?i.llegan:'—')+'</td><td class="num">'+(i?i.renovadas:'—')+'</td><td class="num">'+(i?i.cayeron:'—')+'</td><td><span class="vr-pill '+(medible?i.semaforo:'')+'">'+(medible?Math.floor(Number(i.pct))+' %':'—')+'</span></td></tr>'; }).join('')+
-    '</tbody></table></div></div>';
-}
-
-/* tiempo real: Realtime + respaldo cada 60 s (mismo patrón de cartera-timeline) */
-function ctRecargarSuave(){ clearTimeout(CT.tRec); CT.tRec = setTimeout(()=>{ cargarCartera(); }, 1500); }
-function ctTiempoReal(){
-  if(CT.canal) return;
-  try{
-    CT.canal = SB.channel('renov-cartera-v36')
-      .on('postgres_changes',{event:'INSERT',schema:'public',table:'renov_eventos'}, ctRecargarSuave)
-      .on('postgres_changes',{event:'INSERT',schema:'public',table:'renov_alertas'}, ctRecargarSuave)
-      .on('postgres_changes',{event:'INSERT',schema:'public',table:'renov_refresh_log'}, ctRecargarSuave)
-      .subscribe();
-  }catch(e){ console.warn('realtime', e); }
-  CT.poll = setInterval(async ()=>{
-    try{
-      const { data } = await SB.from('v_renov_estado_dato').select('foto_at').maybeSingle();
-      if(data && data.foto_at && data.foto_at!==CT.ultFoto){ if(CT.ultFoto) ctRecargarSuave(); CT.ultFoto = data.foto_at; }
-    }catch(e){}
-  }, 60000);
-}
-
-/* Exportar con detalle (Edge Function exportar-cartera → .xlsx igual para todos) */
-async function ctExportar(alcance){
-  const xp = $('xp'); if(xp) xp.classList.remove('open');
-  const btn = $('xp-btn'); const txt = btn.textContent; btn.disabled = true; btn.textContent = 'Armando el Excel…';
-  try{
-    const { data, error } = await SB.functions.invoke('exportar-cartera', { body: { alcance, filtro: CT.filtro, area: CT.area, q: CT.q, mes: CT.mes } });
-    if(error) throw error;
-    const blob = data instanceof Blob ? data : new Blob([data], { type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'Cartera_Renovaciones_'+(alcance==='completa'?'completa':'vista')+'_'+new Date().toISOString().slice(0,10)+'.xlsx';
-    document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 1500);
-  }catch(e){ alert('No se pudo exportar: '+(e && e.message || e)); }
-  finally{ btn.disabled = false; btn.textContent = txt; }
-}
-(function ctInitControles(){
-  const q = $('ct-q'); if(q) q.addEventListener('input', ()=>{ CT.q = q.value; CT.todas = false; ctPinta(); });
-  const ar = $('ct-area'); if(ar) ar.addEventListener('change', ()=>{ CT.area = ar.value; CT.todas = false; ctPinta(); });
-  const mas = $('ct-mas'); if(mas) mas.addEventListener('click', ()=>{ CT.todas = !CT.todas; ctPinta(); });
-  const tod = $('ct-todas'); if(tod) tod.addEventListener('click', ()=>{ CT.filtro = CT.filtro==='todas' ? 'vencer' : 'todas'; CT.todas=false; ctPinta(); });
-  const pm = $('ct-pend-mas'); if(pm) pm.addEventListener('click', ()=>{ CT.pendTodas = !CT.pendTodas; ctPend(); });
-  const xb = $('xp-btn'); if(xb) xb.addEventListener('click', ev=>{ ev.stopPropagation(); $('xp').classList.toggle('open'); });
-  document.querySelectorAll('[data-xp]').forEach(b=> b.addEventListener('click', ()=> ctExportar(b.dataset.xp)));
-  document.addEventListener('click', ev=>{ const x=$('xp'); if(x && !ev.target.closest('#xp')) x.classList.remove('open'); });
-})();
-
-
-/* =====================================================================
-   v38 · ESTE MES — 00 Cartera por mes calendario, 01 Mi cola = lo no trabajado,
-   02 Vendedores = quién renueva y a quién se le cae. Reutiliza ficha, botones,
-   renov_trabajo/renov_notas, Exportar y tiempo real de la v37.
-   (Estas declaraciones reemplazan a las de la v37 con el mismo nombre.)
-   ===================================================================== */
-const RC_MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
-function rcMesHoy(){ const d=ctHoy(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
-function rcMesDe(s){ return String(s||'').slice(0,7); }
-function rcMesNom(k){ const p=k.split('-'); return RC_MESES[Number(p[1])-1]+' '+p[0]; }
-function rcMover(k, n){ const p=k.split('-'); const d=new Date(Number(p[0]), Number(p[1])-1+n, 1); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); }
-function rcTrab(k, vence){
-  const ts = (CT.trabajo[k]||[]).filter(t=> Math.abs((ctD(t.vence)-ctD(vence))/864e5) <= 20);
-  return ts.sort((a,b)=> String(b.updated_at||'').localeCompare(String(a.updated_at||'')))[0] || null;
-}
-function rcTieneNota(k){ return CT.notasLlaves ? CT.notasLlaves.has(k) : false; }
-/* estado de trabajo de una póliza del mes: lo marca Karen o lo dice el motor */
-function rcEstadoPol(c, p){
-  if(p._c==='canc' || p._c==='rw') return 'cayo';
-  if(p._c==='renov') return 'renovado';
-  const t = rcTrab(c.dot||c.llave, p.vence);
-  if(t) return t.estado || 'contactado';
-  return rcTieneNota(c.dot||c.llave) ? 'nota' : 'sin';
-}
-const RC_TXT = { renovado:'Renovada', contactado:'Contactada', perdido:'Perdida', retirado:'Retirada', cayo:'Se cayó', nota:'Con nota', sin:'Sin trabajar', pendiente:'Sin trabajar' };
-function rcEstadoCuenta(c){
-  const es = c._pols.map(p=>p._e);
-  if(es.every(e=>e==='renovado')) return 'renovado';
-  if(es.every(e=>e==='cayo')) return 'cayo';
-  if(es.includes('sin')) return 'sin';   /* queda algo por trabajar: la cuenta está sin trabajar */
-  for(const e of ['contactado','perdido','retirado','nota']) if(es.includes(e)) return e;
-  return 'sin';
-}
-/* las cuentas con algo que vence en el mes elegido (incluye lo renovado y lo caído) */
-function rcCuentasMes(mes){
-  const q=(CT.q||'').trim().toLowerCase(), out=[];
-  (CT.raw||[]).forEach(r=>{
-    if(CT.area && r.area!==CT.area) return;
-    const pols=(Array.isArray(r.polizas)?r.polizas:[]).filter(p=> rcMesDe(p.vence)===mes).map(p0=>{
-      const p=Object.assign({},p0); if(p.es_viva && ctDias(p.vence)<0){ p.es_viva=false; p.fase='VENCIDA SIN RENOVAR'; }
-      p._c=ctClase(p); return p; });
-    if(!pols.length) return;
-    const c=Object.assign({}, r, { _pols: pols, _mes: mes });
-    c._buscar=[r.cuenta_nombre,r.insured,r.dot,r.agente].concat(pols.map(p=>p.agente)).join(' ').toLowerCase();
-    if(q && c._buscar.indexOf(q)<0) return;
-    pols.forEach(p=>{ p._e = rcEstadoPol(c,p); });
-    c._estado = rcEstadoCuenta(c);
-    c._vivo = pols.reduce((a,p)=> a + Number((p.es_viva ? p.premium_activo : p.premium_vendido) || 0), 0);
-    c._orden = Math.min.apply(null, pols.map(p=> ctDias(p.vence)));
-    out.push(c);
-  });
-  return out;
-}
-function ctPolizaObjetivo(c){
-  const pols=(c._pols||[]).slice().sort((a,b)=> ctDias(a.vence)-ctDias(b.vence));
-  if(c._mes) return pols.find(p=>p._e && !['renovado','cayo'].includes(p._e)) || pols.find(p=>p._c!=='canc'&&p._c!=='rw') || pols[0];   /* la que falta por trabajar */
-  return pols.find(p=>p.es_viva || p._c==='vencida') || pols[0];
-}
-function ctEstadoKaren(c){ const p=ctPolizaObjetivo(c); return p ? rcTrab(c.dot||c.llave, p.vence) : null; }
-function ctChip(p){
-  const c=p._c, d=ctDias(p.vence); let cls, txt;
-  if(c==='pend'){ cls='c-pend'; txt='pending cancellation'; }
-  else if(c==='canc'){ cls='c-canc'; const f=ctFechaCaida(p); txt='se cayó'+(f?' '+ctFecha(f):''); }
-  else if(c==='rw'){ cls='c-canc'; txt='reescrita'; }
-  else if(c==='renov' || p._e==='renovado'){ cls='c-ok'; txt='renovada · '+ctFecha(p.vence); }
-  else if(c==='vencida'){ cls='c-v15'; txt='venció hace '+(-d)+' d'; }
-  else if(d<=15){ cls='c-v15'; txt='vence '+ctFecha(p.vence)+' · '+d+' d'; }
-  else { cls='c-v60'; txt='vence '+ctFecha(p.vence)+' · '+d+' d'; }
-  const dim = (CT.cob && ctCobDe(p.ramo)!==CT.cob) || (CT.est && rcEst(p)!==CT.est) ? ' style="opacity:.4"' : '';
-  return '<span class="ct-chip '+cls+'"'+dim+'><i>'+esc(p.ramo)+'</i>'+esc(txt)+'</span>';
-}
-
-/* v41 · filtro por estado: la leyenda son botones. rcEst(p) usa la misma regla de color de ctChip. */
-const RC_EST = [['ok','c-ok','Renovada / activa'],['ventana','c-v60','Por renovar'],['v15','c-v15','Vence en menos de 15 días o vencida'],['pend','c-pend','Pending cancellation'],['cayo','c-canc','Se cayó']];
-function rcEst(p){
-  const c=p._c, d=ctDias(p.vence);
-  if(c==='pend') return 'pend';
-  if(c==='canc' || c==='rw') return 'cayo';
-  if(c==='renov' || p._e==='renovado') return 'ok';
-  if(c==='vencida' || d<=15) return 'v15';
-  if(d<=60) return 'ventana';
-  return 'ok';
-}
-function rcEstFiltro(base){
-  const el=$('ct-est'); if(!el) return;
-  const cuenta = k => base.reduce((a,c)=> a + c._pols.filter(p=> rcEst(p)===k && (!CT.cob || ctCobDe(p.ramo)===CT.cob)).length, 0);
-  el.innerHTML = RC_EST.map(e=>'<button type="button" class="'+e[1]+(CT.est===e[0]?' on':'')+'" data-e="'+e[0]+'" aria-pressed="'+(CT.est===e[0])+'">'+e[2]+'<i>'+cuenta(e[0])+'</i></button>').join('');
-  el.querySelectorAll('button').forEach(b=> b.onclick = ()=>{ CT.est = CT.est===b.dataset.e ? '' : b.dataset.e; CT.todas=false; ctPinta(); });
-}
-function ctCifras(L){
-  const pols = L.reduce((a,c)=>a.concat(c._pols),[]);
-  const n = f => pols.filter(f).length;
-  const C = [
-    ['todas','x', pols.length, 'vencen en el mes · '+L.length+' cuentas'],
-    ['renov','g', n(p=>p._e==='renovado'), 'renovadas'],
-    ['contact','a', n(p=>p._e==='contactado'), 'contactadas'],
-    ['cayo','r', n(p=>p._e==='cayo'), 'se cayeron'],
-  ];
-  $('ct-cifras').innerHTML = C.map(c=>'<button type="button" class="ct-ci '+c[1]+(CT.filtro===c[0]?' on':'')+'" data-f="'+c[0]+'"><span class="v">'+c[2]+'</span><span class="l">'+esc(c[3])+'</span></button>').join('');
-  document.querySelectorAll('#ct-cifras .ct-ci').forEach(el=> el.onclick = ()=>{ CT.filtro = CT.filtro===el.dataset.f && el.dataset.f!=='todas' ? 'todas' : el.dataset.f; CT.todas=false; ctPinta(); });
-}
-function ctCobFiltro(base){
-  const cuenta = k => base.reduce((a,c)=> a + c._pols.filter(p=> k==='' || ctCobDe(p.ramo)===k).length, 0);
-  const B = [['','Todas']].concat(CT_COBS.map(k=>[k,k])).concat([['OTRAS','Otras']]);
-  $('ct-cob').innerHTML = B.map(b=>'<button type="button" class="'+(CT.cob===b[0]?'on':'')+'" data-c="'+b[0]+'">'+b[1]+'<i>'+cuenta(b[0])+'</i></button>').join('');
-  document.querySelectorAll('#ct-cob button').forEach(b=> b.onclick = ()=>{ CT.cob = b.dataset.c; CT.todas=false; ctPinta(); });
-}
-function ctPinta(){
-  if(!CT.mes) CT.mes = rcMesHoy();
-  const base = rcCuentasMes(CT.mes);
-  CT.mesCuentas = base;
-  $('rc-mes-n').textContent = rcMesNom(CT.mes);
-  $('rc-mes-s').textContent = CT.mes===rcMesHoy() ? 'este mes' : (CT.mes < rcMesHoy() ? 'mes pasado' : 'mes que viene');
-  ctCifras(base); ctCobFiltro(base); rcEstFiltro(base);
-  let L = base.slice();
-  if(CT.filtro==='renov') L = L.filter(c=> c._pols.some(p=>p._e==='renovado'));
-  else if(CT.filtro==='contact') L = L.filter(c=> c._pols.some(p=>p._e==='contactado'));
-  else if(CT.filtro==='cayo') L = L.filter(c=> c._pols.some(p=>p._e==='cayo'));
-  if(CT.cob) L = L.filter(c=> c._pols.some(p=> ctCobDe(p.ramo)===CT.cob));
-  if(CT.est) L = L.filter(c=> c._pols.some(p=> rcEst(p)===CT.est && (!CT.cob || ctCobDe(p.ramo)===CT.cob)));   /* v41 */
-  const ord = { sin:0, nota:1, contactado:2, perdido:3, retirado:3, renovado:4, cayo:5 };
-  L.sort((a,b)=> (ord[a._estado]-ord[b._estado]) || a._orden-b._orden);
-  const tope = CT.todas ? L.length : 60, el = $('ct-lista');
-  el.innerHTML = L.length ? L.slice(0,tope).map(c=>{
-    const sub=(c.dot?'DOT '+esc(c.dot)+' · ':'')+esc(c.agente||'—');
-    return '<div class="ct-cta2'+(CT.abierta===c.llave?' open':'')+'" tabindex="0" role="button" aria-expanded="'+(CT.abierta===c.llave)+'" data-k="'+esc(c.llave)+'">'+
-      '<div class="ct-n"><b>'+esc(c.cuenta_nombre||c.insured||c.llave)+'</b><small>'+sub+'</small></div>'+
-      '<div class="ct-chips">'+c._pols.map(ctChip).join('')+'</div>'+
-      '<div class="ct-p">'+(c._vivo?ctK(c._vivo):'—')+'<br><span class="ct-tr '+c._estado+'">'+esc(RC_TXT[c._estado]||c._estado)+'</span></div>'+
-      ctFicha(c)+'</div>';
-  }).join('') : '<div class="ct-vacio">Nada vence en '+esc(rcMesNom(CT.mes))+' con este filtro.</div>';
-  const mas = $('ct-mas');
-  if(L.length > 60){ mas.style.display='block'; mas.textContent = CT.todas ? 'ver menos' : 'ver las '+L.length+' →'; } else mas.style.display='none';
-  el.querySelectorAll('.ct-cta2').forEach(row=>{
-    const abrir = ev=>{ if(ev.target.closest('.ct-det')) return; const k=row.dataset.k; CT.abierta = CT.abierta===k ? null : k;
-      el.querySelectorAll('.ct-cta2').forEach(r=>{ const on=r.dataset.k===CT.abierta; r.classList.toggle('open',on); r.setAttribute('aria-expanded',on); });
-      if(CT.abierta) ctNotas(CT.abierta); };
-    row.onclick = abrir;
-    row.onkeydown = ev=>{ if((ev.key==='Enter'||ev.key===' ') && ev.target===row){ ev.preventDefault(); abrir(ev); } };
-  });
-  el.querySelectorAll('[data-ct]').forEach(b=> b.onclick = ev=>{ ev.stopPropagation(); ctAccion(b.dataset.ct, b.dataset.k); });
-  if(CT.abierta) ctNotas(CT.abierta);
-  rcCola();
-}
-async function ctAccion(acc, llave){
-  const c = (CT.mesCuentas||[]).find(x=>x.llave===llave) || CT.cuentas.find(x=>x.llave===llave); if(!c) return;
-  const k = c.dot || c.llave;
-  if(acc==='nota'){
-    const n = window.prompt('Nota para '+(c.cuenta_nombre||k)+':'); if(n===null || !n.trim()) return;
-    const { error } = await SB.from('renov_notas').insert({ llave: k, nota: n.trim(), autor: SESION_EMAIL||'', autor_user_id: SESION_UID||null });
-    if(error){ alert('No se pudo guardar la nota: '+error.message); return; }
-    (CT.notasLlaves = CT.notasLlaves || new Set()).add(k); ctNotas(llave); ctPinta(); nav(); return;
-  }
-  const p = ctPolizaObjetivo(c); if(!p) return;
-  const row = { llave: k, vence: String(p.vence).slice(0,10) };
-  let payload;
-  if(acc==='contactado'){ const hoy=new Date().toISOString().slice(0,10); payload = { estado:'contactado', contactado:true, fecha_contacto:hoy, contacto_por:SESION_EMAIL||null }; }
-  else if(acc==='perdido'){ const m=window.prompt('Motivo de la pérdida (obligatorio):'); if(m===null) return; if(!m.trim()){ alert('El motivo es obligatorio para marcar perdida.'); return; } payload = { estado:'perdido', motivo_perdido:m.trim() }; }
-  else payload = { estado:'renovado', motivo_perdido:null };
-  const ok = await escribirTrabajoDB(row, payload); if(!ok) return;
-  (CT.trabajo[k] = CT.trabajo[k] || []).push(Object.assign({}, row, payload, { updated_at: new Date().toISOString() }));
-  ctPinta(); nav();
-}
-/* 01 Mi cola: lo del mes en curso sin ninguna marca + lo vencido que nadie cerró */
-function rcColaItems(){
-  const mesHoy = rcMesHoy(), ini = ctD(mesHoy+'-01'), it = [];
-  (CT.raw||[]).forEach(r=>{
-    const k = r.dot || r.llave;
-    (Array.isArray(r.polizas)?r.polizas:[]).forEach(p0=>{
-      const p=Object.assign({},p0); if(p.es_viva && ctDias(p.vence)<0){ p.es_viva=false; p.fase='VENCIDA SIN RENOVAR'; }
-      p._c = ctClase(p);
-      if(p._c==='canc' || p._c==='rw' || p._c==='renov') return;
-      const v = ctD(p.vence), t = rcTrab(k, p.vence);
-      if(rcMesDe(p.vence)===mesHoy){
-        if(t || rcTieneNota(k)) return;
-        it.push({ r, p, venc: p._c==='vencida' });
-      } else if(p._c==='vencida' && v < ini && ctDias(p.vence) >= -90){
-        if(t && ['renovado','perdido','retirado'].includes(t.estado)) return;
-        it.push({ r, p, venc: true });
-      }
-    });
-  });
-  return it;
-}
-function rcCola(){
-  const box = $('rc-cola'); if(!box) return;
-  const it = rcColaItems();
-  const porC = {};
-  it.forEach(x=>{ const k=x.r.llave+'|'+rcMesDe(x.p.vence); (porC[k]=porC[k]||{ r:x.r, mes:rcMesDe(x.p.vence), pols:[], venc:false }).pols.push(x.p); if(x.venc) porC[k].venc=true; });
-  const G = Object.values(porC).sort((a,b)=> (b.venc-a.venc) || (Math.min.apply(null,a.pols.map(p=>ctDias(p.vence))) - Math.min.apply(null,b.pols.map(p=>ctDias(p.vence)))));
-  $('rc-cola-n').textContent = it.length ? it.length+' pólizas' : '0';
-  box.innerHTML = G.length ? G.map(g=>{
-    const d = Math.min.apply(null, g.pols.map(p=>ctDias(p.vence)));
-    const prem = g.pols.reduce((a,p)=>a+Number(p.premium_activo||p.premium_vendido||0),0);
-    return '<div class="rc-it'+(g.venc?' venc':'')+'" data-k="'+esc(g.r.llave)+'" data-m="'+g.mes+'"><div><b>'+esc(g.r.cuenta_nombre||g.r.insured||g.r.llave)+'</b><small>'+(g.r.dot?'DOT '+esc(g.r.dot)+' · ':'')+esc(g.r.agente||'—')+'</small></div>'+
-      '<div>'+g.pols.map(p=>'<span class="ct-chip'+(g.venc?' v':'')+'"><i>'+esc(p.ramo)+'</i>'+ctFecha(p.vence)+'</span>').join('')+'</div>'+
-      '<div class="num h">'+ctK(prem)+'</div><div class="cu">'+(d<0?'venció hace '+(-d)+' d':'vence en '+d+' d')+'</div></div>';
-  }).join('') : '<div class="ct-vacio">✓ Todo lo del mes tiene marca. Nada vencido sin cerrar.</div>';
-  box.querySelectorAll('.rc-it').forEach(r=> r.onclick = ()=>{
-    CT.mes = r.dataset.m; CT.filtro='todas'; CT.cob=''; CT.abierta = r.dataset.k; setTab('cartera'); ctPinta();
-    setTimeout(()=>{ const e=document.querySelector('#ct-lista .ct-cta2[data-k="'+r.dataset.k+'"]'); if(e) e.scrollIntoView({behavior:'smooth',block:'center'}); },80);
-  });
-}
-/* 02 Vendedores: dos índices por persona */
-function rcRenuevan(i){ return i && Number(i.llegan)>0 ? 100*Number(i.renovadas||0)/Number(i.llegan) : null; }
-function rcAgRenuevan(){ const A=(CT.indice||[]); const l=A.reduce((a,i)=>a+Number(i.llegan||0),0), r=A.reduce((a,i)=>a+Number(i.renovadas||0),0); return l ? 100*r/l : null; }
-function rcSemRenuevan(v, ag){ if(v==null) return 'GRIS'; if(ag==null) return 'GRIS'; return v >= ag ? 'VERDE' : (v >= ag-10 ? 'AMARILLO' : 'ROJO'); }
-function ctIndice(){
-  const box = $('ct-ix-box'); if(!box) return;
-  if(!CT.priv){ box.style.display='none'; return; }
-  box.style.display='block';
-  const ag = (CT.indice[0]||{}).pct_agencia, agR = rcAgRenuevan();
-  $('ct-ix-sub').textContent = 'meta 80 % llega a renovación · agencia '+(ag!=null?Math.floor(ag)+' %':'—')+' llega · '+(agR!=null?Math.floor(agR)+' %':'—')+' renueva · 12 meses · todos los ramos menos NTL';
-  const col = { ROJO:'var(--rojo)', AMARILLO:'var(--ambar)', VERDE:'var(--verde)' };
-  $('ct-ix').innerHTML = ctGente().map((g,ix)=>{
-    const i=g.i, s=i?i.semaforo:'GRIS', medible=i&&s!=='GRIS', p=medible?Math.floor(Number(i.pct)):null;
-    const rv = medible ? rcRenuevan(i) : null, sR = medible ? rcSemRenuevan(rv, agR) : 'GRIS';
-    const caidas = medible ? (CT.lleganDet||[]).filter(d=> ctNorm(d.agente)===ctNorm(g.nombre) && d.cayo && !d.reescrita).sort((a,b)=> String(b.fc).localeCompare(String(a.fc))) : [];
-    const sub = medible ? (i.llegan+' de '+i.polizas+' llegaron · '+(i.renovadas||0)+' renovadas · '+i.cayeron+' se cayeron') : (i ? 'pocas pólizas todavía ('+i.polizas+')' : 'todavía sin pólizas que hayan llegado a renovar');
-    return '<div class="ct-per '+s+'" data-i="'+ix+'">'+ctAv(g.foto,g.nombre,'ct-av')+'<div><b>'+esc(g.nombre)+'</b><small>'+esc(sub)+'</small>'+
-      (medible?'<div class="ct-meta"><i style="width:'+Math.min(100,p)+'%;background:'+col[s]+'"></i><u></u></div>':'')+'</div>'+
-      '<div class="ct-dos"><div class="ct-big '+s+'">'+(medible?p+'%':'—')+'<small>llegan</small></div><div class="ct-big '+sR+'">'+(rv!=null?Math.floor(rv)+'%':'—')+'<small>renuevan</small></div></div>'+
-      (caidas.length?'<div class="ct-perd">'+caidas.slice(0,12).map(d=>'✕ '+esc(d.cuenta_nombre)+' · '+esc(d.ramo)+' · se cayó el día '+esc(d.dias_vida)+' ('+ctFecha(d.fc)+')').join('<br>')+'</div>':'')+'</div>';
-  }).join('');
-  document.querySelectorAll('#ct-ix .ct-per').forEach(r=> r.onclick = ()=> r.classList.toggle('open'));
-}
-function ctVendRenov(){
-  const box = $('vr-box'); if(!box) return;
-  const porAg = {}; (CT.raw||[]).forEach(c=> (c.polizas||[]).filter(p=>p.es_viva && ctDias(p.vence)>=0).forEach(p=>{ const k=ctNorm(p.agente||c.agente); (porAg[k]=porAg[k]||new Set()).add(c.llave); }));
-  const agR = rcAgRenuevan();
-  box.innerHTML = '<div class="panel" style="margin-top:14px"><div class="ph"><div><div class="pt">Renovación por vendedor</div>'+
-    '<div class="ps">Lo que debía renovar en los últimos 12 meses: cuánto llegó vivo, cuánto se renovó y cuánto se cayó antes.</div></div></div>'+
-    '<div style="overflow-x:auto;padding:0 6px 8px"><table class="vr-tab"><thead><tr><th>Vendedor</th><th>Cuentas activas</th><th>Debían renovar</th><th>Llegaron</th><th>Renovaron</th><th>Se cayeron</th><th>% llegan</th><th>% renuevan</th></tr></thead><tbody>'+
-    ctGente().map(g=>{ const i=g.i, medible=i&&i.semaforo!=='GRIS', act=(porAg[ctNorm(g.nombre)]||new Set()).size, rv=medible?rcRenuevan(i):null;
-      return '<tr><td>'+ctAv(g.foto,g.nombre,'vr-av')+esc(g.nombre)+'</td><td class="num">'+(act||'—')+'</td><td class="num">'+(i?i.polizas:'—')+'</td><td class="num">'+(i?i.llegan:'—')+'</td><td class="num">'+(i?(i.renovadas||0):'—')+'</td><td class="num">'+(i?i.cayeron:'—')+'</td>'+
-        '<td><span class="vr-pill '+(medible?i.semaforo:'')+'">'+(medible?Math.floor(Number(i.pct))+' %':'—')+'</span></td>'+
-        '<td><span class="vr-pill '+(rv!=null?rcSemRenuevan(rv,agR):'')+'">'+(rv!=null?Math.floor(rv)+' %':'—')+'</span></td></tr>'; }).join('')+
-    '</tbody></table></div></div>';
-}
-(function rcInit(){
-  CT.filtro = 'todas'; CT.mes = rcMesHoy(); CT.est = '';
-  const pv=$('rc-prev'), nx=$('rc-next'), hy=$('rc-hoy');
-  if(pv) pv.addEventListener('click', ()=>{ CT.mes = rcMover(CT.mes,-1); CT.todas=false; CT.abierta=null; ctPinta(); });
-  if(nx) nx.addEventListener('click', ()=>{ CT.mes = rcMover(CT.mes, 1); CT.todas=false; CT.abierta=null; ctPinta(); });
-  if(hy) hy.addEventListener('click', ()=>{ CT.mes = rcMesHoy(); CT.todas=false; ctPinta(); });
-})();
-
-/* ---------- navegación ---------- */
-const TABS = [['cartera','00','Cartera'],['cola','01','Mi cola'],['vend','02','Vendedores'],   /* v37 · El muro se quita */
-  ['bolsa','04','La bolsa'],['bonos','05','Bonos'],['area','06','El área']];
-function nav(){
-  const badges = { cartera: (CT.pend||[]).length, cola: (typeof rcColaItems==='function' && CT.raw ? rcColaItems().length : 0) };
-  const navEl = $('nav'); if(navEl && !navEl.getAttribute('role')) navEl.setAttribute('role','tablist');
-  $('nav').innerHTML = TABS.map(([k,n,t])=>{
-    const b = badges[k]||0;
-    return '<button type="button" role="tab" aria-selected="'+(TAB===k?'true':'false')+'" class="nv'+(TAB===k?' on':'')+'" data-tab="'+k+'"><span class="k">'+n+'</span><span class="t">'+t+'</span>'+(b?'<span class="b">'+b+'</span>':'')+'</button>';
-  }).join('');
-  document.querySelectorAll('#nav .nv').forEach(el=> el.onclick = ()=> setTab(el.dataset.tab));
-  TABS.forEach(([k])=>{ const p = $('p-'+k); if(p) p.classList.toggle('on', k===TAB); });
-}
-function setTab(k){ TAB=k; nav(); escribirHash(); window.scrollTo({top:0,behavior:'smooth'}); }
-
-/* ---------- tooltip ---------- */
-function tip(e, html){
-  const t = $('tip'); t.innerHTML = html; t.style.opacity = 1;
-  t.style.left = Math.min(e.clientX+14, innerWidth-250)+'px';
-  t.style.top = (e.clientY-62)+'px';
-}
-function ocultar(){ $('tip').style.opacity = 0; }
-
-/* =====================================================================
-   4) 01 MI COLA — cinta del año, franja del mes, chips, cola
-   ===================================================================== */
-function pctAno(){
-  /* v30 · el ano se lee en premium sobre los meses que ya tienen todos sus montos */
-  const con = IDX_MESES.filter(m=>m.monto_completo && Number(m.premium_vence||0)>0);
-  const v = con.reduce((a,m)=>a+Number(m.premium_vence||0),0);
-  const r = con.reduce((a,m)=>a+Number(m.premium_renovado_comp||0),0);
-  return v ? 100*r/v : null;
-}
-/* v30.2 · Un mes se resume desde las filas que esta persona ve. Asi el hero, la cinta y la
-   cola siempre cuentan lo mismo, sea Karen, retencion o direccion: una sola fuente. */
-function resumirMeses(filas){
-  const porMes = {};
-  (filas||[]).forEach(r=>{
-    const k = String(r.mes).slice(0,10);
-    const m = porMes[k] || (porMes[k] = { mes:k, _base:new Set(), _ren:new Set(), _juego:new Set(),
-      _venc:new Set(), _perd:new Set(), _ret:new Set(), _sinm:new Set(), _senal:new Set(), _sinbos:new Set(),
-      premium_vence:0, premium_renovado:0, premium_renovado_comp:0, en_juego_premium:0, vencidas_premium:0,
-      fee_renovacion:0, _hayVence:false });
-    if(r.en_base){
-      m._base.add(r.llave);
-      if(r.sin_monto) m._sinm.add(r.llave);
-      else { m.premium_vence += Number(r.premium_vence_neto||0); m._hayVence = true; }
-      m.premium_renovado += Number(r.premium_renovado||0);
-      if(!r.sin_monto) m.premium_renovado_comp += Number(r.premium_renovado||0);
-      m.fee_renovacion += Number(r.fee_renovacion||0);
-      if(r.estado_final==='renovada') m._ren.add(r.llave);
-    }
-    if(r.en_juego){ m._juego.add(r.llave); if(!r.sin_monto) m.en_juego_premium += Number(r.premium_vence_neto||0); }
-    if(r.estado_final==='vencida_en_juego'){ m._venc.add(r.llave); if(!r.sin_monto) m.vencidas_premium += Number(r.premium_vence_neto||0); }
-    if(r.estado_final==='perdida') m._perd.add(r.llave);
-    if(r.estado_final==='retirada') m._ret.add(r.llave);
-    if(r.senal_equipo_perdida) m._senal.add(r.llave);
-    if(r.renovada_hubspot_sin_bos) m._sinbos.add(r.llave);
-  });
-  return Object.values(porMes).map(m=>{
-    const completo = m._sinm.size === 0 && m._hayVence;
-    return {
-      mes: m.mes,
-      cuentas: m._base.size,
-      renovadas: m._ren.size,
-      premium_vence: m._hayVence ? m.premium_vence : null,
-      premium_renovado: m.premium_renovado || 0,
-      premium_renovado_comp: m.premium_renovado_comp || 0,
-      monto_completo: completo,
-      sin_monto_n: m._sinm.size,
-      pct_cuentas: m._base.size ? Math.round(1000*m._ren.size/m._base.size)/10 : null,
-      pct_premium: (completo && m.premium_vence>0) ? Math.round(1000*m.premium_renovado_comp/m.premium_vence)/10 : null,
-      en_juego_n: m._juego.size, en_juego_premium: m.en_juego_premium || null,
-      vencidas_n: m._venc.size, vencidas_premium: m.vencidas_premium || null,
-      perdidas_n: m._perd.size, retiradas_n: m._ret.size,
-      senal_equipo_n: m._senal.size, sin_registro_bos_n: m._sinbos.size,
-      fee_renovacion: m.fee_renovacion || 0,
-    };
-  }).sort((a,b)=> a.mes < b.mes ? -1 : 1);
-}
-
-function pintarMes(){ cinta(); franja(); chips(); cola(); bloque('vlist','vendedores', vend); }
-
-function cinta(){
-  /* v30 · cero barras: dos curvas (lo que vence y lo que quedo) y un boton por mes.
-     Un mes sin cartera sale en guion, nunca en cero. */
-  const cont = $('months'); cont.innerHTML = '';
-  const svgBox = $('cintaSvg'); if(svgBox) svgBox.innerHTML = '';
-  const porMes = {}; IDX_MESES.forEach(x=>{ porMes[Number(String(x.mes).slice(5,7))] = x; });
-  const W = 1200, H = 118, PT = 14, PB = 10;
-  const n = 12, paso = W/n, cx = i => paso*i + paso/2;
-  const vals = IDX_MESES.map(x=>Math.max(Number(x.premium_vence||0), Number(x.premium_renovado||0)));
-  const max = Math.max(1, ...vals);
-  const cy = v => H - PB - (H-PT-PB)*(Math.max(0,Number(v||0))/max);
-
-  const ptsV = [], ptsQ = [], marcas = [];
-  for(let m=1;m<=12;m++){
-    const x = porMes[m]; if(!x) continue;
-    const hayMonto = x.monto_completo && Number(x.premium_vence||0)>0;
-    const yv = hayMonto ? cy(x.premium_vence) : (H-PB) - (H-PT-PB)*0.5;
-    ptsV.push([cx(m-1), yv, hayMonto]);
-    if(Number(x.premium_renovado||0)>0) ptsQ.push([cx(m-1), cy(x.premium_renovado)]);
-    marcas.push({m, x:cx(m-1), y:yv, hayMonto, q:Number(x.premium_renovado||0)});
-  }
-  if(ptsV.length){
-    const dV = ptsV.map((p,i)=> (i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
-    const dQ = ptsQ.map((p,i)=> (i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
-    const dA = ptsQ.length ? dQ+' L'+ptsQ[ptsQ.length-1][0].toFixed(1)+' '+(H-PB)+' L'+ptsQ[0][0].toFixed(1)+' '+(H-PB)+' Z' : '';
-    const selX = cx(MES_SEL-1);
-    svgBox.innerHTML = '<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" aria-hidden="true">'+
-      (dA?'<path class="cx-area" d="'+dA+'"/>':'')+
-      '<path class="cx-vence" d="'+dV+'"/>'+
-      (dQ?'<path class="cx-quedo" d="'+dQ+'"/>':'')+
-      marcas.map(k=> k.q>0 ? '<circle class="cx-p" cx="'+k.x.toFixed(1)+'" cy="'+cy(k.q).toFixed(1)+'" r="4.5"/>' : '').join('')+
-      marcas.filter(k=>!k.hayMonto).map(k=> '<circle class="cx-p hueco" cx="'+k.x.toFixed(1)+'" cy="'+k.y.toFixed(1)+'" r="4"/>').join('')+
-      '<line class="cx-sel" x1="'+(selX-paso*0.34).toFixed(1)+'" y1="'+(H-PB+6)+'" x2="'+(selX+paso*0.34).toFixed(1)+'" y2="'+(H-PB+6)+'" opacity=".85"/>'+
-      '</svg>';
-  }
-
-  for(let m=1;m<=12;m++){
-    const x = porMes[m];
-    const d = document.createElement('button');
-    d.type='button'; d.setAttribute('role','tab');
-    d.setAttribute('aria-selected', m===MES_SEL ? 'true':'false');
-    d.className = 'mo'+(m===MES_SEL?' on':'')+(m>MES_ACTUAL?' futuro':'')+(x?'':' nocart');
-    const c = x ? Number(x.cuentas||0) : null;
-    const q = x ? Number(x.premium_renovado||0) : 0;
-    d.innerHTML = '<div class="bar"></div><div class="lbl">'+MESES_CORTOS[m-1]+'</div>'+
-      '<div class="num">'+(x? c : '—')+'</div>'+
-      '<span class="sc">'+(x ? (q>0?fmtUSD(q):'—') : 'sin cartera')+'</span>';
-    d.onclick = ()=>{ MES_SEL=m; CHIP_SEL='todas'; pintarMes(); escribirHash(); };
-    d.dataset.tip = x
-      ? '<span class="tt">'+NOM_MESES[m]+' '+AÑO_ACTUAL+'</span><b>'+c+'</b> cuentas · <b>'+(x.renovadas||0)+'</b> renovadas<br>'+
-        'vence '+(x.monto_completo?fmtUSD(x.premium_vence):'—')+' · quedo '+(q>0?fmtUSD(q):'—')+
-        (x.monto_completo?'':'<br><i>faltan '+(x.sin_monto_n||0)+' montos en HubSpot</i>')
-      : '<span class="tt">'+NOM_MESES[m]+' '+AÑO_ACTUAL+'</span>Sin cartera cargada todavia.';
-    cont.appendChild(d);
-  }
-  const tot = IDX_MESES.reduce((a,x)=>a+Number(x.cuentas||0),0);
-  const tq  = IDX_MESES.reduce((a,x)=>a+Number(x.premium_renovado||0),0);
-  const pa  = pctAno();
-  const cola = (pa===null || pa===0)
-    ? 'el % del año espera montos en HubSpot'
-    : 'meses con monto completo: <b style="font-family:var(--f-num)">'+pa.toFixed(1)+'%</b> retenido';
-  $('rbSub').innerHTML = '<b style="font-family:var(--f-num)">'+tot+'</b> cuentas en cartera este año · '+
-    '<b style="font-family:var(--f-num)">'+(tq>0?fmtUSD(tq):'—')+'</b> ya renovado · '+cola;
-}
-
-function franja(){
-  /* v30 · la plata primero: cuanto vence, cuanto quedo, y el % despues.
-     Guion, nunca cero, cuando a HubSpot le faltan montos. */
-  const x = IDX_MESES.find(m=> Number(String(m.mes).slice(5,7))===MES_SEL);
-  $('stMes').textContent = NOM_MESES[MES_SEL]+' '+AÑO_ACTUAL;
-  const av = $('stAviso');
-  if(!x){
-    $('stC').textContent = '—'; $('stCsub').textContent = 'sin cartera cargada este mes';
-    $('stP').textContent = '—'; $('stS').textContent = '—'; $('stX').textContent = '—'; $('stM').textContent = '—';
-    $('arc').style.strokeDasharray = '0 327'; $('arcT').textContent = '—';
-    if(av){ av.hidden = false; av.textContent = 'Este mes todavia no tiene cartera montada en HubSpot.'; }
-    return;
-  }
-  const completo = !!x.monto_completo;
-  const quedo = Number(x.premium_renovado||0);
-  $('stC').textContent = quedo>0 ? fmtUSD(quedo) : '—';
-  $('stCsub').textContent = (x.renovadas||0)+' de '+(x.cuentas||0)+' cuentas renovadas';
-  $('stP').textContent = completo ? fmtUSD(x.premium_vence) : '—';
-  $('stS').textContent = (completo && x.en_juego_premium!=null && Number(x.en_juego_premium)>0)
-    ? fmtUSD(x.en_juego_premium) : (x.en_juego_n||0)+' cuentas';
-  $('stX').textContent = (x.renovadas||0)+' cuentas';
-  $('stM').textContent = Math.ceil(Number(x.cuentas||0)*(META_PCT/100))+' cuentas';
-  const pct = (x.pct_premium==null) ? null : Number(x.pct_premium);
-  const C = 2*Math.PI*52;
-  if(pct===null){
-    const pc = Number(x.pct_cuentas||0);
-    $('arc').style.strokeDasharray = (C*Math.min(pc,100)/100)+' '+C;
-    $('arcT').textContent = pc.toFixed(0)+'%';
-    $('arc').setAttribute('stroke','#6B7D89');
-  } else {
-    $('arc').style.strokeDasharray = (C*Math.min(pct,100)/100)+' '+C;
-    $('arcT').textContent = pct.toFixed(0)+'%';
-    $('arc').setAttribute('stroke','var(--mint)');
-  }
-  const capEl = document.querySelector('.strip .cap');
-  if(capEl) capEl.textContent = pct===null ? 'renovado del mes (en cuentas)' : 'del premium retenido';
-  if(av){
-    const partes = [];
-    if(!completo) partes.push('Faltan <b>'+(x.sin_monto_n||0)+'</b> montos en HubSpot — por eso el <b>que vence</b> y el <b>% retenido</b> salen en guion.');
-    if(Number(x.sin_registro_bos_n||0)>0) partes.push('<b>'+x.sin_registro_bos_n+'</b> renovaron en HubSpot y falta registrarlas en el BOS.');
-    if(Number(x.senal_equipo_n||0)>0) partes.push('<b>'+x.senal_equipo_n+'</b> el equipo las da por perdidas y esperan tu decision.');
-    av.hidden = partes.length===0;
-    av.innerHTML = partes.join(' ');
-  }
-}
-
-function filasDelMes(){
-  const iso = mesISO(AÑO_ACTUAL, MES_SEL);
-  return AÑO_FILAS.filter(r=> String(r.mes)===iso);
-}
-function buscadas(){
-  const f = filasDelMes();
-  let base = f;
-  if(VEND_SEL) base = base.filter(r=> (r.persona||'Cartera agencia') === VEND_SEL);
-  if(!COLA_Q) return base;
-  const q = norm(COLA_Q);
-  return base.filter(r=> norm(r.cliente||r.llave).includes(q)
-                      || norm(r.dot).includes(q)
-                      || norm(r.persona).includes(q)
-                      || norm(r.vendedor).includes(q)
-                      || norm(r.trabaja).includes(q));
-}
-function filtradas(){
-  let f = buscadas();
-  if(CHIP_SEL==='juego') f = f.filter(r=>r.en_juego);
-  if(CHIP_SEL==='venc')  f = f.filter(r=>r.estado_final==='vencida_en_juego');
-  if(CHIP_SEL==='ren')   f = f.filter(r=>r.estado_final==='renovada');
-  if(CHIP_SEL==='sen')   f = f.filter(r=>r.senal_equipo_perdida);
-  if(CHIP_SEL==='cerr')  f = f.filter(r=>r.estado_final==='perdida'||r.estado_final==='retirada');
-  const ord = { vencida_en_juego:0, en_curso:1, renovada:2, perdida:3, retirada:4 };
-  return f.slice().sort((a,b)=>{
-    const d = (ord[a.estado_final]??9) - (ord[b.estado_final]??9);
-    if(d) return d;
-    return Number(b.premium_vence_neto||0) - Number(a.premium_vence_neto||0);
-  });
-}
-function chips(){
-  const f = buscadas();
-  const nCerr = f.filter(r=>r.estado_final==='perdida'||r.estado_final==='retirada').length;
-  const d = [
-    ['todas','Todas', f.length],
-    ['juego','En juego', f.filter(r=>r.en_juego).length],
-    ['venc','Vencidas', f.filter(r=>r.estado_final==='vencida_en_juego').length],
-    ['ren','Renovadas', f.filter(r=>r.estado_final==='renovada').length],
-    ['sen','Señal del equipo', f.filter(r=>r.senal_equipo_perdida).length],
-  ];
-  if(nCerr) d.push(['cerr','Cerradas', nCerr]);
-  $('chips').innerHTML = d.map(([k,t,n])=> '<button type="button" class="chip'+(CHIP_SEL===k?' on':'')+'" data-chip="'+k+'">'+t+'<span class="n">'+n+'</span></button>').join('');
-  document.querySelectorAll('#chips .chip').forEach(b=> b.onclick = ()=>{ CHIP_SEL = b.dataset.chip; chips(); cola(); escribirHash(); });
-}
-
-function filaCola(r){
-  const id = rowIdAno(r);
-  const estado = r.estado_karen || 'pendiente';
-  /* v31 · si el motor ya cerró la cuenta (renovada/perdida/retirada) manda el motor; si no,
-     se ve LA MARCA DE KAREN. "Renovada" marcada por ella sin BOS todavía = ámbar, no cuenta. */
-  const cerradaMotor = (r.estado_final==='renovada'||r.estado_final==='perdida'||r.estado_final==='retirada');
-  let pillInfo;
-  if(cerradaMotor) pillInfo = PILL_V30[r.estado_final];
-  else if(estado==='renovado') pillInfo = ['p-cot','Renovada · falta el BOS'];
-  else if(r.estado_karen) pillInfo = PILL[estado] || PILL.pendiente;
-  else pillInfo = PILL_V30[r.estado_final] || PILL.pendiente;
-  let uClase = { rojo:'u-rojo', ambar:'u-ambar', gris:'u-gris' }[r.urgencia] || 'u-gris';
-  if(r.estado_final==='renovada') uClase = 'u-mint';
-  if(r.estado_final==='perdida'||r.estado_final==='retirada') uClase = 'u-gris';
-  const hecha = r.estado_final==='renovada' ? ' hecha' : '';
-  const abierta = (FICHA_ABIERTA===id) ? ' abierta' : '';
-  const fe = fmtFecha(r.vence).replace(/ de \d{4}$/,'');
-  const cuando = r.estado_final==='renovada' ? 'vencia ' : 'vence ';
-  const dias = r.dias_vencida>0 ? '<span class="sen">vencida hace '+r.dias_vencida+' d</span>'
-             : (r.dias_para_vencer!=null && r.dias_para_vencer<=7 && r.estado_final!=='renovada'
-                ? '<span class="sen">'+(r.dias_para_vencer===0?'vence hoy':'vence en '+r.dias_para_vencer+' d')+'</span>' : '');
-
-  const senales = [];
-  if(r.senal_equipo_perdida) senales.push('<div class="c-sen"><b>⚠ El equipo la da por perdida — decide tú.</b>'+
-    (r.estado_karen ? '<br>Karen: '+esc(r.estado_karen)+(r.motivo_karen?' · '+esc(r.motivo_karen):'') : '')+
-    (r.etapa_hubspot ? '<br>Etapa HubSpot: '+esc(r.etapa_hubspot) : '')+'</div>');
-  if(r.renovada_hubspot_sin_bos) senales.push('<div class="c-sen"><b>⚠ Renovó y falta registrarla en el BOS.</b><br>HubSpot: '+esc(r.etapa_hubspot||'')+'</div>');
-  if(r.posible_renovacion) senales.push('<div class="c-sen"><b>⚠ Hay una venta nueva en la ventana</b> — puede ser esta renovación sin marcar como renewal.</div>');
-  if(r.sin_premium) senales.push('<div class="c-sen"><b>⚠ Renovada con premium $0 en el BOS.</b></div>');
-  if(r.duplicado_hubspot) senales.push('<div class="c-sen"><b>⚠ Esta cuenta está dos veces en HubSpot este mes.</b></div>');
-  if(r.llave_ambigua) senales.push('<div class="c-sen"><b>⚠ El DOT sirve a dos empresas en el BOS.</b></div>');
-  if(r.estado_andres && r.estado_andres!=='ACTIVA') senales.push('<div class="c-sen"><b>Andrés la marcó '+esc(r.estado_andres)+'.</b>'+(r.estado_andres_nota?'<br>'+esc(r.estado_andres_nota):'')+'</div>');
-
-  const ren = r.estado_final==='renovada'
-    ? '<div class="c-ren"><b>Renovada'+(r.fecha_renovacion?' el '+fmtFecha(r.fecha_renovacion).replace(/ de \d{4}$/,''):'')+
-      (r.agente_renovacion?' por '+esc(r.agente_renovacion):'')+'</b>'+
-      (Number(r.premium_renovado||0)>0 ? '<br>Quedó '+fmtUSD(r.premium_renovado) : '<br>Quedó —')+
-      (r.coberturas_renovadas?' · '+esc(r.coberturas_renovadas):'')+'</div>'
-    : '';
-
-  return '<div class="card '+uClase+hecha+abierta+'" data-id="'+id+'" tabindex="0" role="button" '+
-      'aria-expanded="'+(FICHA_ABIERTA===id?'true':'false')+'" '+
-      'aria-label="'+esc(r.cliente||r.llave)+' — abrir ficha">'+
-      '<div><div class="c-nom">'+esc(r.cliente||r.llave)+'</div>'+
-        '<div class="c-meta"><span class="mono">DOT '+esc(r.dot||'—')+'</span><span class="dot"></span>'+
-          '<span>'+esc(r.persona||'Cartera agencia')+'</span><span class="dot"></span><span class="mono">'+cuando+fe+'</span>'+dias+
-          (r.vendedor && norm(r.vendedor)!==norm(r.persona||'') ? '<span class="dot"></span><span style="color:var(--muted)">vendió '+esc(r.vendedor)+'</span>' : '')+'</div>'+
-        '<div class="acciones">'+
-          '<button type="button" class="mini" data-marcar="contactado">Contactada</button>'+
-          '<button type="button" class="mini" data-marcar="cotizando">Cotizando</button>'+
-          '<button type="button" class="mini" data-marcar="renovado">Renovada</button>'+
-          '<button type="button" class="mini" data-marcar="perdido">Perdida</button>'+
-          '<button type="button" class="mini" data-marcar="retirado">Cancelada / Retirada</button>'+
-        '</div>'+ senales.join('') + ren +
-      '</div>'+
-      '<div class="c-prem">'+(r.sin_monto ? '—' : fmtUSD(r.premium_vence_neto))+
-        '<span class="pz">'+(r.sin_monto ? 'sin monto' : 'que vence')+'</span></div>'+
-      '<div><span class="pill '+pillInfo[0]+'">'+pillInfo[1]+'</span></div>'+
-    '</div>';
-}
-function cola(){
-  const f = filtradas(), tot = filasDelMes();
-  const nCuentas = new Set(tot.map(r=>r.llave)).size;
-  const dup = tot.length - nCuentas;
-  $('colaSub').innerHTML = tot.length
-    ? NOM_MESES[MES_SEL]+' '+AÑO_ACTUAL+': '+nCuentas+' cuenta'+(nCuentas===1?'':'s')+' en la cartera de este mes.'
-      + (dup>0 ? ' <span style="color:#8A6A14">'+dup+' está'+(dup===1?'':'n')+' dos veces en la cartera.</span>' : '')
-      + (VEND_SEL ? ' · filtrando por <b>'+esc(VEND_SEL)+'</b> <button type="button" class="chip" id="limpiarVend" style="padding:2px 8px;font-size:11px">quitar</button>' : '')
-    : NOM_MESES[MES_SEL]+' '+AÑO_ACTUAL+' todavía no tiene cartera cargada.';
-  $('cola').innerHTML = f.length ? f.map(filaCola).join('') : '<div class="vacio">No hay cuentas con este filtro.</div>';
-  const lv = $('limpiarVend'); if(lv) lv.onclick = ()=>{ VEND_SEL=null; chips(); cola(); };
-  if(FICHA_ABIERTA){
-    const card = document.querySelector('.card[data-id="'+FICHA_ABIERTA+'"]');
-    const row = card ? AÑO_FILAS.find(r=>rowIdAno(r)===FICHA_ABIERTA) : null;
-    if(card && row){
-      if(FICHA_ESTADO_SEL == null) FICHA_ESTADO_SEL = row.estado_karen || 'pendiente';
-      card.classList.add('abierta');
-      card.setAttribute('aria-expanded','true');
-      card.insertAdjacentHTML('afterend', fichaHtml(row));
-      cablearFicha(row);
-      cargarNotasFicha(row);
-    } else {
-      FICHA_ABIERTA = null;
-    }
-  }
-}
-$('cola').addEventListener('click', (e)=>{
-  const accionBtn = e.target.closest('[data-marcar],[data-verificar]');
-  if(accionBtn){
-    const card = e.target.closest('.card'); if(!card) return;
-    const id = card.dataset.id;
-    if(accionBtn.dataset.marcar) marcar(id, accionBtn.dataset.marcar);
-    else verificar(id);
-    return;
-  }
-  const chip = e.target.closest('[data-ficha-estado]');
-  if(chip){ seleccionarEstadoFicha(chip.dataset.fichaEstado); return; }
-  if(e.target.closest('[data-ficha-toggle-fecha]')){ toggleFechaForm(); return; }
-  const btnGuardar = e.target.closest('[data-ficha-guardar]');
-  if(btnGuardar){ const f = e.target.closest('.ficha'); if(f) guardarFicha(f.dataset.id); return; }
-  const btnGuardarFecha = e.target.closest('[data-ficha-guardar-fecha]');
-  if(btnGuardarFecha){ const f = e.target.closest('.ficha'); if(f) guardarAjusteFecha(f.dataset.id); return; }
-  if(e.target.closest('.ficha')) return;
-  const card = e.target.closest('.card');
-  if(card) toggleFicha(card.dataset.id);
-});
-/* v29 · la cola se abre tambien con el teclado (Enter / Espacio sobre la tarjeta) */
-$('cola').addEventListener('keydown', (e)=>{
-  if(e.key!=='Enter' && e.key!==' ' && e.key!=='Spacebar') return;
-  if(e.target.closest('.ficha')) return;
-  if(e.target.closest('button,input,textarea,select,a')) return;
-  const card = e.target.closest('.card'); if(!card) return;
-  e.preventDefault();
-  toggleFicha(card.dataset.id);
-});
-/* v29 · buscador: repinta SOLO los conteos y la lista, nunca el input */
-(function(){
-  const inp = $('colaQ'); if(!inp) return;
-  let t = null;
-  inp.addEventListener('input', ()=>{
-    COLA_Q = inp.value.trim();
-    clearTimeout(t);
-    t = setTimeout(()=>{ chips(); cola(); escribirHash(); }, 90);
-  });
-  inp.addEventListener('search', ()=>{ COLA_Q = inp.value.trim(); chips(); cola(); escribirHash(); });
-})();
-/* v29 · un solo tooltip para toda la pantalla (delegado, sin onmousemove por elemento) */
-let _TIP_ON = false;
-document.addEventListener('mousemove', (e)=>{
-  const el = e.target.closest ? e.target.closest('[data-tip]') : null;
-  if(el){ tip(e, el.dataset.tip); _TIP_ON = true; }
-  else if(_TIP_ON){ ocultar(); _TIP_ON = false; }
-}, true);
-/* v29 · volver a pintar cuando cambia el hash (link compartido, atras del navegador) */
-window.addEventListener('hashchange', ()=>{
+/* hash: pestaña y mes (nunca pisa el de recuperación de clave) */
+function hashUsable(){ return !_IS_RECOVERY && !/access_token|type=recovery/.test(window.location.hash||''); }
+function aplicarHash(){
   if(!hashUsable()) return;
-  aplicarHash(); nav(); pintarMes();
-});
-/* v29 · reintentar desde cualquier bloque que fallo */
-document.addEventListener('click', (e)=>{
-  if(e.target.closest && e.target.closest('[data-reintentar]')) cargarTodo();
-});
-
-/* ---- escritura en renov_trabajo (mismo candado y motivo obligatorio de siempre) ---- */
-async function escribirTrabajoDB(row, payloadDB){
-  const payload = Object.assign({ llave: row.llave, vence: row.vence, updated_at: new Date().toISOString(), updated_by: SESION_UID||null }, payloadDB);
-  const { error } = await SB.from('renov_trabajo').upsert(payload, { onConflict: 'llave,vence' });
-  if(error){ alert('No se pudo guardar: '+error.message); return false; }
-  return true;
+  const h=(window.location.hash||'').replace(/^#/,''); if(!h) return;
+  h.split('&').forEach(p=>{ const [k,v]=p.split('=');
+    if(k==='v' && ['mes','area','plata'].includes(v)) TAB=v;
+    if(k==='m' && RES[v]) MES_SEL=v; });
 }
-async function marcar(id, accion){
-  const row = AÑO_FILAS.find(r=>rowIdAno(r)===id); if(!row) return;
-  const estadoActual = row.estado_karen || 'pendiente';
-  let payloadDB, localPatch;
-  if(accion==='contactado'){
-    const hoy = new Date().toISOString().slice(0,10);
-    payloadDB = { estado:'contactado', contactado:true, fecha_contacto:hoy, contacto_por: SESION_EMAIL||null };
-    localPatch = { estado_karen:'contactado', contactado_karen:true, fecha_contacto_karen:hoy };
-  } else if(accion==='perdido' || accion==='retirado'){
-    /* v34 · Cancelada / Retirada también exige motivo (la base lo pide: renov_trabajo_motivo_chk).
-       Antes solo se pedía en Perdida y Cancelada/Retirada fallaba al guardar. */
-    const esPerdida = accion==='perdido';
-    const sugerido = row.motivo_karen || (row.senal_equipo_perdida && row.etapa_hubspot ? String(row.etapa_hubspot) : '');
-    const m = window.prompt(esPerdida ? 'Motivo de la pérdida (obligatorio):' : 'Motivo de la cancelación o retiro (obligatorio):', sugerido);
-    if(m===null) return;
-    if(!m.trim()){ alert(esPerdida ? 'El motivo es obligatorio para marcar perdida.' : 'El motivo es obligatorio para marcar cancelada o retirada.'); return; }
-    payloadDB = { estado: accion, motivo_perdido: m.trim() };
-    localPatch = { estado_karen: accion, motivo_karen: m.trim() };
-  } else {
-    payloadDB = { estado: accion, motivo_perdido: null };
-    localPatch = { estado_karen: accion, motivo_karen: null };
-  }
-  const ok = await escribirTrabajoDB(row, payloadDB);
-  if(!ok) return;
-  Object.assign(row, localPatch);
-  chips(); cola();
-  vend();
-  IDX_MESES = resumirMeses(AÑO_FILAS); cinta(); franja();
-}
-async function verificar(id){
-  const row = AÑO_FILAS.find(r=>rowIdAno(r)===id); if(!row) return;
-  const payloadDB = { verificado_financiera:true, verificado_por: SESION_EMAIL||null, verificado_at: new Date().toISOString() };
-  const ok = await escribirTrabajoDB(row, payloadDB);
-  if(!ok) return;
-  Object.assign(row, payloadDB);
-  cola();
+function escribirHash(){
+  if(!hashUsable()) return;
+  const p=[]; if(TAB!=='mes') p.push('v='+TAB); if(MES_SEL && MES_SEL!==MES_HOY) p.push('m='+MES_SEL);
+  try{ history.replaceState(null,'',window.location.pathname+window.location.search+(p.length?'#'+p.join('&'):'')); }catch(e){}
 }
 
 /* =====================================================================
-   4b) FICHA DE LA CUENTA — se abre al hacer clic en una tarjeta de la cola.
-   Cuatro bloques: Estado, Por qué (motivo/nota), Corregir fecha, y el
-   aviso a Financiera (automático: cae solo en v_ajustes_pendientes_bos,
-   nada que construir aquí).
+   PESTAÑAS
    ===================================================================== */
-const ESTADOS_FICHA = ['pendiente','contactado','cotizando','renovado','perdido','retirado'];
-let FICHA_ABIERTA = null;
-let FICHA_ESTADO_SEL = null;
-function estadoLabel(e){ return (PILL[e]||PILL.pendiente)[1]; }
-
-function fichaHtml(row){
-  const id = rowIdAno(row);
-  return '<div class="ficha" id="ficha_'+id+'" data-id="'+id+'">'+
-    '<div class="fi-bloque"><div class="fi-tit">Estado</div>'+
-      '<div class="fi-chips" id="fichips_'+id+'">'+ESTADOS_FICHA.map(e=>{
-        const on = e===FICHA_ESTADO_SEL;
-        const perdidoCls = on && (e==='perdido'||e==='retirado') ? ' perdido' : '';
-        return '<span class="fi-chip'+(on?' on'+perdidoCls:'')+'" data-ficha-estado="'+e+'">'+esc(estadoLabel(e))+'</span>';
-      }).join('')+'</div>'+
-    '</div>'+
-    '<div class="fi-bloque"><div class="fi-tit">Por qué</div>'+
-      '<textarea id="fimotivo_'+id+'" placeholder="Motivo del cambio, o una nota suelta…"></textarea>'+
-      '<div class="fi-req" id="fireq_'+id+'" style="display:none">Obligatorio para Perdida o Cancelada / Retirada.</div>'+
-      '<button type="button" class="mini fi-guardar" id="figuardar_'+id+'" data-ficha-guardar>Guardar</button>'+
-      '<div class="fi-notas" id="finotas_'+id+'"><div class="pg-limite">Cargando notas…</div></div>'+
-    '</div>'+
-    '<div class="fi-bloque">'+
-      '<span class="fi-fecha-link" data-ficha-toggle-fecha>La fecha no es esa</span>'+
-      '<div class="fi-fecha-form" id="fifecha_'+id+'" style="display:none">'+
-        '<label>Fecha correcta de renovación</label>'+
-        '<input type="date" id="fifechanueva_'+id+'">'+
-        '<label>Motivo (mínimo 5 caracteres)</label>'+
-        '<textarea id="fifechamotivo_'+id+'" placeholder="Por qué cambia la fecha… (la fecha manda desde HubSpot: corrígela también allá)"></textarea>'+
-        '<div class="fi-aviso" id="fiaviso_'+id+'" style="display:none"></div>'+
-        '<button type="button" class="mini fi-guardar" id="figuardarfecha_'+id+'" data-ficha-guardar-fecha disabled>Guardar fecha</button>'+
-      '</div>'+
-    '</div>'+
-  '</div>';
+function tabs(){
+  const nSin = MES_SEL<=MES_HOY ? filasMes(MES_SEL).filter(sinTrabajar).length : 0;
+  const T=[['mes','Mi mes'],['area','El área'],['plata','Bolsa y bonos']];
+  $('tabs').innerHTML = T.map(([k,t])=>'<button type="button" role="tab" aria-selected="'+(TAB===k)+'" class="tab'+(TAB===k?' on':'')+'" data-t="'+k+'">'+t+(k==='mes'&&nSin?'<span class="b">'+nSin+'</span>':'')+'</button>').join('');
+  document.querySelectorAll('#tabs .tab').forEach(b=> b.onclick=()=>{ TAB=b.dataset.t; tabs(); escribirHash(); window.scrollTo({top:0}); });
+  ['mes','area','plata'].forEach(k=> $('v-'+k).classList.toggle('on', k===TAB));
 }
 
-function toggleFicha(id){
-  if(FICHA_ABIERTA===id){
-    const existing = $('ficha_'+id); if(existing) existing.remove();
-    const abierta = document.querySelector('.card[data-id="'+id+'"]');
-    if(abierta){ abierta.classList.remove('abierta'); abierta.setAttribute('aria-expanded','false'); }
-    FICHA_ABIERTA = null;
-    FICHA_ESTADO_SEL = null;
-    escribirHash();
-    return;
-  }
-  document.querySelectorAll('.ficha').forEach(f=>f.remove());
-  document.querySelectorAll('.card.abierta').forEach(c=>{ c.classList.remove('abierta'); c.setAttribute('aria-expanded','false'); });
-  const row = AÑO_FILAS.find(r=>rowIdAno(r)===id); if(!row) return;
-  const card = document.querySelector('.card[data-id="'+id+'"]'); if(!card) return;
-  card.classList.add('abierta');
-  card.setAttribute('aria-expanded','true');
-  FICHA_ABIERTA = id;
-  FICHA_ESTADO_SEL = row.estado_karen || 'pendiente';
-  card.insertAdjacentHTML('afterend', fichaHtml(row));
-  cablearFicha(row);
-  cargarNotasFicha(row);
-  escribirHash();
-}
+/* =====================================================================
+   MI MES
+   ===================================================================== */
+function pintarMes(){
+  /* chips de meses */
+  $('meses').innerHTML = MESES.map(m=>'<button type="button" class="chip'+(m===MES_SEL?' on':'')+(m>MES_HOY?' fut':'')+(m===MES_HOY?' hoy':'')+'" data-m="'+m+'">'+mesChip(m)+'</button>').join('');
+  document.querySelectorAll('#meses .chip').forEach(b=> b.onclick=()=>{ MES_SEL=b.dataset.m; FILTRO='todas'; ABIERTA=null; pintarMes(); tabs(); escribirHash(); });
+  const on = document.querySelector('#meses .chip.on'); if(on) on.scrollIntoView({block:'nearest',inline:'center'});
 
-function seleccionarEstadoFicha(estado){
-  if(!FICHA_ABIERTA) return;
-  FICHA_ESTADO_SEL = estado;
-  document.querySelectorAll('#fichips_'+FICHA_ABIERTA+' .fi-chip').forEach(c=>{
-    const on = c.dataset.fichaEstado===estado;
-    c.classList.toggle('on', on);
-    c.classList.toggle('perdido', on && (estado==='perdido'||estado==='retirado'));
-  });
-  actualizarBotonGuardarFicha(FICHA_ABIERTA);
-}
+  /* franja */
+  const x = RES[MES_SEL] || { cuentas:0, vence:0, renovadas:0, renovado:0, fee:0, sinMonto:0 };
+  const filas = filasMes(MES_SEL);
+  const venc = filas.filter(r=>estado(r)==='vencida').length;
+  const pct = x.vence>0 ? 100*x.renovado/x.vence : null;
+  const falta = x.vence>0 ? Math.max(0, x.vence*META_PCT/100 - x.renovado) : null;
+  const futuro = MES_SEL > MES_HOY;
+  $('franja').innerHTML =
+    '<div><div class="st-eye">'+mesNom(MES_SEL)+' · '+(futuro?'lo que viene':MES_SEL===MES_HOY?'lo que llevas':'cómo cerró')+'</div>'+
+    '<div class="st-big">'+(futuro?fmtUSD(x.vence):fmtUSD(x.renovado))+'<small>'+(futuro?'vence en '+x.cuentas+' cuentas':'renovado de '+fmtUSD(x.vence))+'</small></div>'+
+    '<div class="st-nums">'+
+      '<div class="st-n"><div class="k">Fees cobrados</div><div class="v mint">'+(futuro&&!x.fee?'—':fmtUSD(x.fee))+'</div></div>'+
+      '<div class="st-n"><div class="k">Renovadas</div><div class="v">'+x.renovadas+' de '+x.cuentas+'</div></div>'+
+      '<div class="st-n"><div class="k">Para el '+META_PCT+' % faltan</div><div class="v ambar">'+(falta==null?'—':fmtUSD(falta))+'</div></div>'+
+      '<div class="st-n"><div class="k">Vencidas sin renovar</div><div class="v'+(venc?' neg':'')+'">'+(futuro?'—':venc)+'</div></div>'+
+    '</div>'+(x.sinMonto?'<div class="st-aviso">'+x.sinMonto+' cuenta'+(x.sinMonto===1?'':'s')+' sin monto en la cartera: el % puede quedarse corto.</div>':'')+'</div>'+
+    '<div class="ring">'+ring(pct,{s:132,w:12,ticks:[META_PCT],tickCol:'#fff',fs:26})+'<div class="cap">meta '+META_PCT+' % · la rayita</div></div>';
 
-function actualizarBotonGuardarFicha(id){
-  const btn = $('figuardar_'+id), req = $('fireq_'+id), campo = $('fimotivo_'+id);
-  if(!btn || !campo) return;
-  const motivo = (campo.value||'').trim();
-  const necesitaMotivo = FICHA_ESTADO_SEL==='perdido' || FICHA_ESTADO_SEL==='retirado';
-  req.style.display = necesitaMotivo ? 'block' : 'none';
-  btn.disabled = necesitaMotivo && !motivo;
-}
-
-function toggleFechaForm(){
-  if(!FICHA_ABIERTA) return;
-  const el = $('fifecha_'+FICHA_ABIERTA); if(!el) return;
-  el.style.display = el.style.display==='none' ? 'block' : 'none';
-}
-
-function cablearFicha(row){
-  const id = rowIdAno(row);
-  const campoMotivo = $('fimotivo_'+id);
-  if(campoMotivo) campoMotivo.addEventListener('input', ()=> actualizarBotonGuardarFicha(id));
-  actualizarBotonGuardarFicha(id);
-
-  const fechaInput = $('fifechanueva_'+id), fechaMotivo = $('fifechamotivo_'+id);
-  if(!fechaInput || !fechaMotivo) return;
-  const actualizarFecha = ()=>{
-    const val = fechaInput.value;
-    const motivoOk = (fechaMotivo.value||'').trim().length>=5;
-    const aviso = $('fiaviso_'+id);
-    if(val){
-      const d = new Date(val+'T12:00:00');
-      aviso.style.display = 'block';
-      aviso.textContent = 'La cuenta se mueve a '+NOM_MESES[d.getMonth()+1]+' '+d.getFullYear()+'. Financiera queda avisada — y acuérdate de corregir la Fecha de Renovación en HubSpot, que es la que manda.';
+  /* alerta de lo no trabajado */
+  const al = $('alerta');
+  if(futuro){
+    al.className='alerta info'; al.style.display='flex';
+    al.innerHTML='<div class="t">Mes por venir: '+x.cuentas+' cuentas, '+fmtUSD(x.vence)+' en premium. Puedes adelantarte y dejarles nota desde ya.</div>';
+  } else {
+    const ns = filas.filter(sinTrabajar), nv = ns.filter(r=>dias(r.vence)<0);
+    al.style.display='flex';
+    if(ns.length){
+      al.className='alerta';
+      al.innerHTML='<div class="t">⚠ <b>'+ns.length+'</b> de '+filas.length+' cuentas del mes no tienen nada en la bitácora.'+(nv.length?' <b>'+nv.length+'</b> ya se '+(nv.length===1?'venció':'vencieron')+' sin un comentario.':'')+'</div><button type="button" class="btn pri" id="vsin">Ver sin trabajar</button>';
+      $('vsin').onclick=()=>{ FILTRO='sin'; ABIERTA=null; pintarLista(); $('chips').scrollIntoView({behavior:'smooth',block:'start'}); };
     } else {
-      aviso.style.display = 'none';
+      al.className='alerta ok'; al.innerHTML='<div class="t">✓ Todas las cuentas del mes tienen algo en la bitácora.</div>';
     }
-    $('figuardarfecha_'+id).disabled = !(val && motivoOk);
-  };
-  fechaInput.addEventListener('change', actualizarFecha);
-  fechaMotivo.addEventListener('input', actualizarFecha);
-}
-
-async function cargarNotasFicha(row){
-  const id = rowIdAno(row);
-  const el = $('finotas_'+id); if(!el) return;
-  const { data, error } = await SB.from('renov_notas').select('*').eq('llave', row.llave).order('created_at',{ascending:false});
-  if(!$('finotas_'+id)) return;
-  if(error){ el.innerHTML = '<div class="pg-limite">No se pudieron cargar las notas.</div>'; return; }
-  const notas = data || [];
-  el.innerHTML = notas.length
-    ? notas.map(n=> '<div class="fi-nota"><div class="fi-nota-meta">'+esc(n.autor)+' · '+fmtFechaHora(n.created_at)+'</div>'+esc(n.nota)+'</div>').join('')
-    : '<div class="pg-limite">Sin notas todavía.</div>';
-}
-
-async function guardarFicha(id){
-  const row = AÑO_FILAS.find(r=>rowIdAno(r)===id); if(!row) return;
-  const campoMotivo = $('fimotivo_'+id);
-  const motivo = (campoMotivo.value||'').trim();
-  const esPerdidoORetirado = FICHA_ESTADO_SEL==='perdido' || FICHA_ESTADO_SEL==='retirado';
-  if(esPerdidoORetirado && !motivo){ actualizarBotonGuardarFicha(id); return; }
-  const btn = $('figuardar_'+id); btn.disabled = true;
-  const payloadDB = { estado: FICHA_ESTADO_SEL, motivo_perdido: esPerdidoORetirado ? motivo : null };
-  const ok = await escribirTrabajoDB(row, payloadDB);
-  if(!ok){ btn.disabled = false; return; }
-  Object.assign(row, { estado_karen: FICHA_ESTADO_SEL, motivo_karen: payloadDB.motivo_perdido });
-  if(motivo && !esPerdidoORetirado){
-    const { error } = await SB.from('renov_notas').insert({ llave: row.llave, nota: motivo, autor: SESION_EMAIL||'', autor_user_id: SESION_UID||null });
-    if(error) alert('El estado se guardó, pero la nota no se pudo guardar: '+error.message);
   }
-  chips(); cola();
-  vend();
-  IDX_MESES = resumirMeses(AÑO_FILAS); cinta(); franja();
+
+  /* pending cancellation */
+  const pc = $('pcx');
+  if(PEND.length){
+    const tot = PEND.reduce((s,p)=>s+Number(p.premium_activo||0),0);
+    const mes = PEND.filter(p=>String(p.vence).slice(0,7)===MES_SEL.slice(0,7)).length;
+    pc.style.display='block';
+    pc.innerHTML='<button type="button" class="pcx-h" aria-expanded="false"><span><b>'+PEND.length+'</b> pólizas en pending cancellation · <b>'+fmtUSD(tot)+'</b> en premium'+(mes?' · <b>'+mes+'</b> vencen en '+mesNom(MES_SEL).toLowerCase():'')+'</span><span class="ver">Ver ▾</span></button>'+
+      '<div class="pcx-b"><div class="pcx-r h"><span>Cuenta</span><span class="h-m">Póliza</span><span>Vendió</span><span class="h-m">Vence</span><span style="text-align:right">Premium</span></div>'+
+      PEND.map(p=>'<div class="pcx-r"><span class="n">'+esc(p.cuenta_nombre||p.llave)+'</span><span class="h-m">'+esc(p.ramo||'—')+'</span><span>'+esc(p.agente||'—')+'</span><span class="h-m'+(String(p.vence).slice(0,7)===MES_SEL.slice(0,7)?' mes':'')+'">'+fmtFecha(String(p.vence).slice(0,10))+'</span><span class="m">'+fmtUSD(p.premium_activo)+'</span></div>').join('')+'</div>';
+    const h = pc.querySelector('.pcx-h');
+    h.onclick=()=>{ const ab=pc.classList.toggle('ab'); h.setAttribute('aria-expanded', ab); h.querySelector('.ver').textContent = ab?'Cerrar ▴':'Ver ▾'; };
+  } else pc.style.display='none';
+
+  $('lstT').textContent = 'Las de '+mesNom(MES_SEL).toLowerCase();
+  pintarLista();
 }
 
-async function guardarAjusteFecha(id){
-  const row = AÑO_FILAS.find(r=>rowIdAno(r)===id); if(!row) return;
-  const fechaNueva = $('fifechanueva_'+id).value;
-  const motivo = ($('fifechamotivo_'+id).value||'').trim();
-  if(!fechaNueva || motivo.length<5) return;
-  const btn = $('figuardarfecha_'+id); btn.disabled = true;
-  const payload = {
-    llave: row.llave,
-    vence_original: row.vence,
-    vence_corregido: fechaNueva,
-    motivo: motivo,
-    ajustado_por: SESION_EMAIL||null,
-    ajustado_user_id: SESION_UID||null,
+function cuentaFiltro(f, filas){
+  return filas.filter(r=>{ const e=estado(r);
+    if(f==='sin') return sinTrabajar(r);
+    if(f==='ven') return e==='vencida';
+    if(f==='ren') return e==='renovada' || e==='falta_bos';
+    if(f==='per') return e==='perdida';
+    return true; });
+}
+function pintarLista(){
+  const filas = filasMes(MES_SEL);
+  const F=[['todas','Todas'],['sin','Sin trabajar'],['ven','Vencidas'],['ren','Renovadas'],['per','Perdidas']];
+  $('chips').innerHTML = F.map(([k,t])=>'<button type="button" class="chip'+(FILTRO===k?' on':'')+'" data-f="'+k+'">'+t+'<span class="n">'+cuentaFiltro(k,filas).length+'</span></button>').join('');
+  document.querySelectorAll('#chips .chip').forEach(b=> b.onclick=()=>{ FILTRO=b.dataset.f; ABIERTA=null; pintarLista(); });
+  const q = norm(Q);
+  const vis = cuentaFiltro(FILTRO, filas).filter(r=> !q || norm(r.cliente+' '+(r.dot||'')+' '+(r.vendedor||'')+' '+(r.llave||'')).includes(q));
+  $('lista').innerHTML = vis.map(tarjeta).join('') || '<div class="vacia">Nada en este filtro.</div>';
+  document.querySelectorAll('#lista .card').forEach(el=>{
+    el.onclick=()=>{ ABIERTA = ABIERTA===el.dataset.id ? null : el.dataset.id; pintarLista(); };
+    el.onkeydown=(e)=>{ if((e.key==='Enter'||e.key===' ') && e.target===el){ e.preventDefault(); el.click(); } };
+  });
+  const fi = document.querySelector('#lista .ficha2'); if(fi) armarFicha(fi);
+}
+function tarjeta(r){
+  const e = estado(r), d = dias(r.vence), id = String(r.id);
+  const u = e==='renovada'?'u-mint':e==='perdida'?'u-gris':e==='falta_bos'?'u-ambar':d<0?'u-rojo':d<=7?'u-ambar':'u-gris';
+  const PILLS = { renovada:'<span class="pill p-ren">Renovada</span>', falta_bos:'<span class="pill p-falta">Renovada · falta el BOS</span>',
+    perdida:'<span class="pill p-perd">Perdida</span>', vencida:'<span class="pill p-ven">Vencida</span>' };
+  let pill = PILLS[e];
+  if(!pill) pill = r.estado_karen==='contactado' ? '<span class="pill p-cont">Contactada</span>' : r.estado_karen==='cotizando' ? '<span class="pill p-cot">Cotizando</span>' : '<span class="pill p-pend">En curso</span>';
+  const cuando = d<0 ? 'venció hace '+(-d)+' d' : d===0 ? 'vence hoy' : 'vence en '+d+' d';
+  const prem = e==='renovada' ? fmtUSD(r.premium_renovado)+'<span class="pz">renovó · fee '+fmtUSD(r.fee_renovacion||0)+'</span>' : fmtUSD(r.premium_vence)+'<span class="pz">vence</span>';
+  const ns = notasDe(r), ult = ns[ns.length-1];
+  let bit = ult ? '<span>✎ '+esc(ult.nota)+'</span><span class="f">'+fmtFechaHora(ult.created_at)+'</span>'
+    : e==='renovada' ? '<span>Renovada en el BOS'+(r.agente_renovacion?' · '+esc(r.agente_renovacion):'')+'</span>'
+    : e==='perdida' ? '<span>Perdida'+(r.motivo_karen?': '+esc(r.motivo_karen):r.estado_andres_nota?': '+esc(r.estado_andres_nota):'')+'</span>'
+    : '<span class="sin">● Sin bitácora</span>';
+  if(e!=='renovada' && enPending(r)) bit += '<span class="pc">Pending cancellation</span>';
+  const abierta = ABIERTA===id;
+  let ficha = '';
+  if(abierta){
+    ficha = '<div class="ficha2" data-id="'+esc(id)+'">'+(ns.length ? ns.map(n=>'<div class="nota"><span class="f">'+fmtFechaHora(n.created_at)+'</span><span>'+esc(n.nota)+'</span><span class="a">'+esc(String(n.autor||'').split('@')[0])+'</span></div>').join('') : '<div class="vacia">Todavía no hay nada anotado.</div>')+
+      '<textarea placeholder="¿Qué pasó? Una línea basta: llamé, no contestó, pidió cotización…" aria-label="Nota de la bitácora"></textarea>'+
+      '<div class="acc"><button type="button" class="btn" data-est="contactado">Contacté</button><button type="button" class="btn" data-est="cotizando">Cotizando</button><button type="button" class="btn" data-est="renovado">Renovada</button><button type="button" class="btn" data-est="perdido">Perdida</button><button type="button" class="btn pri" data-guardar="1">Guardar</button><span class="msg"></span></div></div>';
+  }
+  return '<div class="card '+u+(abierta?' abierta':'')+'" tabindex="0" data-id="'+esc(id)+'"><div><div class="c-nom">'+esc(r.cliente)+'</div><div class="c-meta"><span class="mono">'+String(r.vence).slice(8,10)+' '+MES_C[Number(String(r.vence).slice(5,7))-1]+'</span><span class="dot"></span><span>'+cuando+'</span><span class="dot"></span><span>vendió '+esc(r.vendedor||r.agente_renovacion||'—')+'</span></div></div><div class="c-prem">'+prem+'</div>'+pill+'<div class="bit">'+bit+'</div>'+ficha+'</div>';
+}
+function armarFicha(fi){
+  fi.onclick = e => e.stopPropagation();
+  fi.onkeydown = e => e.stopPropagation();
+  const r = FILAS.find(x=>String(x.id)===fi.dataset.id); if(!r) return;
+  let EST = null;
+  const ta = fi.querySelector('textarea'), msg = fi.querySelector('.msg');
+  fi.querySelectorAll('[data-est]').forEach(b=> b.onclick=()=>{
+    EST = EST===b.dataset.est ? null : b.dataset.est;
+    fi.querySelectorAll('[data-est]').forEach(x=>x.classList.toggle('sel', x.dataset.est===EST));
+    if(EST==='perdido'){ ta.placeholder='Escribe el motivo (obligatorio): no contestó, se fue con otra agencia, vendió el camión…'; ta.focus(); }
+  });
+  fi.querySelector('[data-guardar]').onclick = async (ev)=>{
+    const btn = ev.currentTarget, txt = ta.value.trim();
+    msg.className='msg';
+    if(!txt && !EST){ msg.className='msg err'; msg.textContent='Escribe una nota o escoge un estado.'; return; }
+    if(EST==='perdido' && !txt){ msg.className='msg err'; msg.textContent='Perdida necesita el motivo.'; ta.focus(); return; }
+    btn.disabled = true; msg.textContent = 'Guardando…';
+    const ETXT = { contactado:'Contacté', cotizando:'Cotizando', renovado:'Renovada', perdido:'Perdida' };
+    const nota = EST ? (ETXT[EST]+(txt?' — '+txt:'')) : txt;
+    if(EST){
+      const payload = { llave:r.llave, vence:String(r.vence).slice(0,10), estado:EST, updated_at:new Date().toISOString(), updated_by:SESION_UID||null };
+      if(EST==='contactado'){ payload.contactado=true; payload.fecha_contacto=HOY; payload.contacto_por=SESION_EMAIL||null; }
+      if(EST==='perdido') payload.motivo_perdido = txt;
+      const { error } = await SB.from('renov_trabajo').upsert(payload, { onConflict:'llave,vence' });
+      if(error){ btn.disabled=false; msg.className='msg err'; msg.textContent='No se pudo guardar el estado: '+error.message; return; }
+      r.estado_karen = EST; if(EST==='perdido') r.motivo_karen = txt;
+    }
+    const { data, error } = await SB.from('renov_notas').insert({ llave:r.llave, nota, autor:SESION_EMAIL||'', autor_user_id:SESION_UID||null }).select('llave,nota,autor,created_at');
+    if(error){ btn.disabled=false; msg.className='msg err'; msg.textContent='No se pudo guardar la nota: '+error.message; return; }
+    const fila = (data && data[0]) || { llave:r.llave, nota, autor:SESION_EMAIL, created_at:new Date().toISOString() };
+    (NOTAS[r.llave] = NOTAS[r.llave] || []).push(fila);
+    pintarMes(); tabs();
   };
-  const { error } = await SB.from('renov_ajustes').upsert(payload, { onConflict: 'llave,vence_original' });
-  if(error){ alert('No se pudo guardar el ajuste de fecha: '+error.message); btn.disabled = false; return; }
-  await cargarTodo();
 }
 
 /* =====================================================================
-   5) 02 VENDEDORES
+   EL ÁREA
    ===================================================================== */
-function vend(){
-  /* v32 · una tabla: cada vendedor de la lista de Karen x cada mes con cartera este año.
-     Sale TODA la lista (aunque tengan cero), y lo que no es de la lista cae a la persona de la
-     regla de trabajo (Karen en sep-oct). Clic en una celda = Mi cola de esa persona en ese mes. */
-  const el = $('vlist');
-  const filas = AÑO_FILAS.filter(r=>r.en_base);
-  const meses = [...new Set(filas.map(r=>String(r.mes).slice(0,10)))].sort();
-  if(!meses.length){ el.innerHTML = '<div class="vacio">Este año todavía no tiene cartera cargada.</div>'; return; }
-  const P = {};
-  PERSONAS_KAREN.forEach(n=>{ P[n] = { v:n, meses:{}, totN:0, totV:0, totR:0 }; });
-  filas.forEach(r=>{
-    const k = r.persona || 'Cartera agencia';
-    const p = P[k] || (P[k] = { v:k, meses:{}, totN:0, totV:0, totR:0 });
-    const m = String(r.mes).slice(0,10);
-    const c = p.meses[m] || (p.meses[m] = { llaves:new Set(), ren:new Set(), vence:0, faltan:0, filas:[] });
-    if(!c.llaves.has(r.llave)) c.filas.push(r);   /* v33 · las cuentas de esa celda, para desplegarlas */
-    c.llaves.add(r.llave);
-    if(r.estado_final==='renovada') c.ren.add(r.llave);
-    if(r.sin_monto) c.faltan++; else c.vence += Number(r.premium_vence_neto||0);
-  });
-  const arr = Object.values(P);
-  arr.forEach(p=> meses.forEach(m=>{ const c=p.meses[m]; if(c){ p.totN+=c.llaves.size; p.totV+=c.vence; p.totR+=c.ren.size; } }));
-  arr.sort((a,b)=> b.totV-a.totV || b.totN-a.totN || a.v.localeCompare(b.v));
-  const mesSel = mesISO(AÑO_ACTUAL, MES_SEL);
-  const nomMes = m => MESES_CORTOS[Number(m.slice(5,7))-1];
-  const celda = (c, extra) => c
-    ? '<td class="celda'+extra+'"><span class="cn">'+c.llaves.size+' cta'+(c.llaves.size===1?'':'s')+'</span>'+
-      '<span class="cp">'+(c.vence>0?fmtUSD(c.vence):'—')+(c.faltan?' · '+c.faltan+' sin monto':'')+'</span>'+
-      (c.ren.size?'<span class="cr">'+c.ren.size+' renovada'+(c.ren.size===1?'':'s')+'</span>':'')+'</td>'
-    : '<td class="vacia'+extra+'">—</td>';
-  const th = '<tr><th>Vendedor</th>'+meses.map(m=>'<th'+(m===mesSel?' class="on"':'')+'>'+nomMes(m)+'</th>').join('')+'<th class="tot">Año</th></tr>';
-  const rows = arr.map(p=>{
-    const cells = meses.map(m=>{
-      const c = p.meses[m]; const on = (m===mesSel?' on':'');
-      const sel = (VEND_ABIERTO && VEND_ABIERTO.v===p.v && VEND_ABIERTO.m===m) ? ' sel' : '';
-      return c ? celda(c, on+sel).replace('<td class="celda'+on+sel+'"', '<td class="celda'+on+sel+'" data-v="'+esc(p.v)+'" data-m="'+m+'"') : celda(null, on);
-    }).join('');
-    const tot = p.totN
-      ? '<td class="tot"><span class="cn">'+p.totN+' cta'+(p.totN===1?'':'s')+'</span><span class="cp">'+(p.totV>0?fmtUSD(p.totV):'—')+'</span>'+(p.totR?'<span class="cr">'+p.totR+' renovada'+(p.totR===1?'':'s')+'</span>':'')+'</td>'
-      : '<td class="tot vacia">—</td>';
-    const abierto = !!(VEND_ABIERTO && VEND_ABIERTO.v===p.v);
-    const cls = [p.totN?'':'cero', abierto?'abierto':''].filter(Boolean).join(' ');
-    const fila = '<tr'+(cls?' class="'+cls+'"':'')+'><td class="vp"'+(p.totN?' data-vp="'+esc(p.v)+'" tabindex="0" role="button" aria-expanded="'+abierto+'"':'')+'>'+
-      (p.totN?'<span class="fl">▶</span>':'')+esc(p.v)+(p.totN?'':'<small>sin cuentas este año</small>')+'</td>'+cells+tot+'</tr>';
-    return fila + (abierto ? '<tr class="det"><td colspan="'+(meses.length+2)+'">'+vendDetalle(p, meses, VEND_ABIERTO.m)+'</td></tr>' : '');
-  }).join('');
-  const totM = meses.map(m=>{ let n=0,v=0,r=0; arr.forEach(p=>{ const c=p.meses[m]; if(c){ n+=c.llaves.size; v+=c.vence; r+=c.ren.size; } }); return {n,v,r}; });
-  const tA = totM.reduce((s,x)=>({n:s.n+x.n, v:s.v+x.v, r:s.r+x.r}), {n:0,v:0,r:0});
-  const tf = '<tr><td class="vp">Área</td>'+totM.map((x,i)=>'<td'+(meses[i]===mesSel?' class="on"':'')+'><span class="cn">'+x.n+' cta'+(x.n===1?'':'s')+'</span><span class="cp">'+(x.v>0?fmtUSD(x.v):'—')+'</span>'+(x.r?'<span class="cr">'+x.r+' renovada'+(x.r===1?'':'s')+'</span>':'')+'</td>').join('')+
-    '<td class="tot"><span class="cn">'+tA.n+' cta'+(tA.n===1?'':'s')+'</span><span class="cp">'+(tA.v>0?fmtUSD(tA.v):'—')+'</span>'+(tA.r?'<span class="cr">'+tA.r+' renovada'+(tA.r===1?'':'s')+'</span>':'')+'</td></tr>';
-  el.innerHTML = '<div class="vtw"><table class="vt"><thead>'+th+'</thead><tbody>'+rows+'</tbody><tfoot>'+tf+'</tfoot></table></div>';
-  const tecla = (n)=>{ n.onkeydown = (e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); n.click(); } }; };
-  el.querySelectorAll('td.celda[data-v]').forEach(td=>{
-    td.onclick = ()=>{
-      const v = td.dataset.v, m = td.dataset.m;
-      VEND_ABIERTO = (VEND_ABIERTO && VEND_ABIERTO.v===v && VEND_ABIERTO.m===m) ? null : { v, m };
-      vend();
-    };
-    td.tabIndex = 0; td.setAttribute('role','button'); tecla(td);
-  });
-  el.querySelectorAll('td.vp[data-vp]').forEach(td=>{
-    td.onclick = ()=>{
-      const v = td.dataset.vp;
-      VEND_ABIERTO = (VEND_ABIERTO && VEND_ABIERTO.v===v && VEND_ABIERTO.m===null) ? null : { v, m:null };
-      vend();
-    };
-    tecla(td);
-  });
-  el.querySelectorAll('button[data-ircola]').forEach(b=>{
-    b.onclick = ()=>{ VEND_SEL = b.dataset.v; MES_SEL = Number(b.dataset.ircola.slice(5,7)); CHIP_SEL='todas'; pintarMes(); setTab('cola'); };
-  });
-  /* el panel ocupa el ancho visible de la tabla, no el ancho total (que en celular desliza) */
-  const w = el.querySelector('.vtw');
-  el.querySelectorAll('.vdet').forEach(d=>{ if(w) d.style.width = w.clientWidth+'px'; });
+function grupo(v){
+  const n = norm(v);
+  if(!n) return 'Retención y cartera de quienes ya no están';
+  if(SOCIOS.includes(n)) return 'Socios y dirección';
+  if(ADMIN_VENDEN.includes(n)) return 'Administradores que venden';
+  if(n.startsWith('retention team') || RETENCION.includes(n)) return 'Retención';
+  if(ROSTER[n]==='ACTIVO') return 'Equipo comercial';
+  return 'Retención y cartera de quienes ya no están';
 }
-
-/* v33 · las cuentas de un vendedor, mes por mes (o solo el mes tocado). Misma etiqueta que la
-   tarjeta de Mi cola: si el motor cerró la cuenta manda el motor; si no, la marca de Karen. */
-function vendEstado(r){
-  const estado = r.estado_karen || 'pendiente';
-  const cerradaMotor = (r.estado_final==='renovada'||r.estado_final==='perdida'||r.estado_final==='retirada');
-  if(cerradaMotor) return PILL_V30[r.estado_final];
-  if(estado==='renovado') return ['p-cot','Renovada · falta el BOS'];
-  if(r.estado_karen) return PILL[estado] || PILL.pendiente;
-  return PILL_V30[r.estado_final] || PILL.pendiente;
+function pintarArea(){
+  /* anillos: meses cerrados + los últimos tres hasta hoy */
+  const cer = MESES.filter(m=>m<MES_HOY).map(m=>RES[m]);
+  const v = cer.reduce((s,m)=>s+m.vence,0), r = cer.reduce((s,m)=>s+m.renovado,0), p = v>0 ? 100*r/v : null;
+  const pal = x => x==null ? '' : x>=META_PCT ? '<div class="pal ok">En la meta</div>' : '<div class="pal at">Faltan '+(META_PCT-x).toFixed(1)+' puntos</div>';
+  let h = '<div class="an osc"><div class="k">Meses cerrados'+(cer.length?' · '+cer.map(m=>MES_C[Number(m.mes.slice(5,7))-1]).join(', '):'')+'</div>'+ring(p,{s:128,w:13,ticks:[META_PCT],tickCol:'#fff',dec:1,fs:24})+
+    '<div class="c">'+fmtUSD(r)+' de '+fmtUSD(v)+'</div><div class="d">'+cer.reduce((s,m)=>s+m.renovadas,0)+' de '+cer.reduce((s,m)=>s+m.cuentas,0)+' cuentas</div>'+pal(p)+'</div>';
+  MESES.filter(m=>m<=MES_HOY).slice(-3).forEach(m=>{ const x=RES[m], q = x.vence>0 ? 100*x.renovado/x.vence : null;
+    h += '<div class="an"><div class="k">'+mesNom(m)+(m===MES_HOY?' · en curso':'')+'</div>'+ring(q,{s:104,w:11,ticks:[META_PCT],dec:1,fs:19})+
+      '<div class="c">'+fmtUSD(x.renovado)+'</div><div class="d">'+x.renovadas+' de '+x.cuentas+' cuentas · fees '+fmtUSD(x.fee)+'</div>'+pal(q)+'</div>'; });
+  $('anillos').innerHTML = h;
+  curva(); indice();
 }
-function vendDetalle(p, meses, soloMes){
-  const ms = meses.filter(m=> p.meses[m] && (!soloMes || m===soloMes));
-  if(!ms.length) return '<div class="vdet"><div class="vacio">Sin cuentas.</div></div>';
-  return '<div class="vdet">'+ms.map(m=>{
-    const c = p.meses[m];
-    const filas = c.filas.slice().sort((a,b)=> String(a.vence||'').localeCompare(String(b.vence||'')) || String(a.cliente||'').localeCompare(String(b.cliente||'')));
-    const li = filas.map(r=>{
-      const pi = vendEstado(r);
-      const prem = r.sin_monto ? '<span class="pr sm">sin monto</span>' : '<span class="pr">'+fmtUSD(r.premium_vence_neto)+'</span>';
-      return '<li><span class="cu">'+esc(r.cliente||r.llave||'—')+(r.dot?'<small>DOT '+esc(r.dot)+'</small>':'')+'</span>'+
-        '<span class="fe">vence '+fmtFecha(r.vence).replace(/ de \d{4}$/,'')+'</span>'+prem+
-        '<span class="pill '+pi[0]+'">'+esc(pi[1])+'</span></li>';
-    }).join('');
-    return '<div class="vdet-mes"><div class="vdet-h"><b>'+NOM_MESES[Number(m.slice(5,7))]+'</b>'+
-      '<span>'+c.llaves.size+' cuenta'+(c.llaves.size===1?'':'s')+' · '+(c.vence>0?fmtUSD(c.vence):'—')+
-      (c.ren.size?' · '+c.ren.size+' renovada'+(c.ren.size===1?'':'s'):'')+(c.faltan?' · '+c.faltan+' sin monto':'')+'</span>'+
-      '<button type="button" class="ir" data-ircola="'+m+'" data-v="'+esc(p.v)+'">Trabajarlas en Mi cola →</button></div>'+
-      '<ul class="vdet-l">'+li+'</ul></div>';
-  }).join('')+'</div>';
-}
-
-/* =====================================================================
-   6) 03 EL MURO
-   ===================================================================== */
-function muro(){
-  const elG = $('grandes');
-  elG.innerHTML = ALERTA_GRANDES.length ? ALERTA_GRANDES.map(g=>{
-    const d = Number(g.dias_restantes||0);
-    const cls = d<7?'r':d<31?'a':'g';
-    return '<div class="al"><div><div class="n">'+esc(g.cuenta_nombre||'—')+'</div>'+
-      '<div class="m">'+esc(g.dueno_ultima_venta||'—')+' · '+(g.n_polizas||1)+' póliza'+((g.n_polizas||1)>1?'s':'')+(g.sin_senal?' · <span style="color:#8A6A14;font-weight:600">sin señal de vida</span>':'')+'</div></div>'+
-      '<div><div class="p">'+fmtUSD(g.premium_activo)+'</div><span class="dch '+cls+'">'+d+' días</span></div></div>';
-  }).join('') : '<div class="vacio">Sin cuentas grandes por vencer.</div>';
-
-  const elV = $('vnr');
-  if(!ALERTA_VNR.length){ elV.innerHTML = '<div class="vacio">Sin datos de vendedores.</div>'; return; }
-  const promArea = Number(ALERTA_VNR[0].promedio_area||0);
-  const estandar = Number(ALERTA_VNR[0].estandar_pct||70);
-  const ordenados = ALERTA_VNR.slice().sort((a,b)=> Number(a.pct_renovado||0)-Number(b.pct_renovado||0));
-  elV.innerHTML = ordenados.map(v=>{
-    const pct = Number(v.pct_renovado||0);
-    const col = pct>=estandar?'#229A82':(v.en_alerta?'#D5594F':'#D9A520');
-    return '<div class="barrow">'+
-      '<div style="font-size:13px;font-weight:600;color:var(--ink)">'+esc(v.dueno)+'</div>'+
-      '<div class="track">'+
-        '<div class="fillb" data-w="'+pct+'" style="width:0;background:'+col+'"></div>'+
-        '<div class="mk prom" style="left:'+promArea+'%"></div>'+
-        '<div class="mk est" style="left:'+estandar+'%"></div>'+
-      '</div>'+
-      '<div style="text-align:right"><span class="vpct '+(pct>=estandar?'bien':(v.en_alerta?'':'bajo'))+'" style="'+(v.en_alerta?'background:#FAE7E5;color:#A63F36':'')+'">'+pct.toFixed(1)+'%</span></div></div>';
-  }).join('') +
-  '<div style="padding:10px 24px 0;font-size:11.5px;color:var(--muted)">'+
-    '<span style="display:inline-block;width:2px;height:11px;background:#8FA3B0;vertical-align:-1px;margin-right:6px"></span>Promedio del área '+promArea.toFixed(1)+'%'+
-    '&nbsp;&nbsp;<span style="display:inline-block;width:2px;height:11px;background:#D9A520;vertical-align:-1px;margin-right:6px"></span>Estándar '+estandar+'%</div>';
-  document.querySelectorAll('#vnr .barrow').forEach((row,i)=>{
-    const v = ordenados[i];
-    row.dataset.tip = '<span class="tt">'+esc(v.dueno)+'</span>Renovó <b>'+(v.renovaron||0)+'</b> de <b>'+(v.vencieron||0)+'</b><br>Premium perdido: '+fmtUSD(v.premium_perdido);
-  });
-  requestAnimationFrame(()=>document.querySelectorAll('.fillb').forEach(b=>b.style.width=b.dataset.w+'%'));
-}
-
-/* =====================================================================
-   7) 04 LA BOLSA
-   ===================================================================== */
-function bolsa(){
-  if(!BOLSA_FILAS.length){ $('bolsaKpis').innerHTML=''; $('svgBolsa').innerHTML=''; return; }
-  const filas = BOLSA_FILAS.slice().sort((a,b)=> String(a.mes) < String(b.mes) ? -1 : (String(a.mes) > String(b.mes) ? 1 : 0));
-  const tot = filas.reduce((s,b)=>s+Number(b.bolsa_persona||0),0);
-  const ren = filas.reduce((s,b)=>s+Number(b.renovaciones||0),0);
-  const fee = filas.reduce((s,b)=>s+Number(b.renovaciones_con_fee||0),0);
-  const mej = filas.reduce((a,b)=> Number(b.bolsa_persona||0)>Number(a.bolsa_persona||0)?b:a);
-  const esteMes = filas.find(b=>String(b.mes)===mesISO(AÑO_ACTUAL, MES_ACTUAL));
-  $('bolsaKpis').innerHTML =
-   '<div class="kp oscuro"><div class="k">Acumulado del año</div><div class="v">'+fmtUSD2(tot)+'</div>'+
-     '<div class="d">'+filas.length+' mes'+(filas.length===1?'':'es')+' de bolsa</div></div>'+
-   '<div class="kp"><div class="k">Este mes (en firme)</div><div class="v">'+(esteMes?fmtUSD2(esteMes.bolsa_persona):'—')+'</div>'+
-     '<div class="d">'+NOM_MESES[MES_ACTUAL].toLowerCase()+', aún abierto</div></div>'+
-   '<div class="kp"><div class="k">Renovaciones con fee</div><div class="v">'+(ren?(100*fee/ren).toFixed(1)+'%':'—')+'</div>'+
-     '<div class="d">'+fee+' de '+ren+' en el año</div></div>'+
-   '<div class="kp"><div class="k">Tu mejor mes</div><div class="v" style="font-size:28px">'+fmtUSD2(mej.bolsa_persona)+'</div>'+
-     '<div class="d">'+mesCorto(mej.mes)+'</div></div>';
-  dibujarSvgBolsa(filas);
-}
-function dibujarSvgBolsa(filas){
-  const W=820,H=260,ML=52,MR=44,MT=18,MB=32, iw=W-ML-MR, ih=H-MT-MB;
-  const max = Math.max(1, ...filas.map(b=>Number(b.bolsa_persona||0)))*1.1;
-  const bw = iw/filas.length, bar = bw*.5;
+function curva(){
+  const T = MESES.map(m=>RES[m]); if(T.length<2){ $('curva').innerHTML=''; return; }
+  const W=1000,H=290,ML=58,MR=24,MT=30,MB=40,iw=W-ML-MR,ih=H-MT-MB,n=T.length,PX=34;
+  const top = Math.max(...T.map(m=>m.vence),1)*1.08; const mag = Math.pow(10,Math.floor(Math.log10(top/4))); const paso = [1,1.5,2,2.5,3,4,5,6,8,10].map(k=>k*mag).find(k=>k*4>=top); const max = paso*4;
+  const x=i=>ML+PX+(iw-2*PX)*i/(n-1), y=v=>MT+ih-ih*v/max, colW=(iw-2*PX)/(n-1);
   let s='';
-  [0,.25,.5,.75,1].forEach(f=>{
-    const y = MT+ih-ih*f;
-    s += '<line class="gl" x1="'+ML+'" y1="'+y+'" x2="'+(W-MR)+'" y2="'+y+'"/>'+
-         '<text class="axn" x="'+(ML-8)+'" y="'+(y+4)+'" text-anchor="end">$'+Math.round(max*f)+'</text>';
-  });
-  filas.forEach((b,i)=>{
-    const x = ML+bw*i+(bw-bar)/2, h = ih*Number(b.bolsa_persona||0)/max, y = MT+ih-h;
-    s += '<g><rect x="'+(ML+bw*i)+'" y="'+MT+'" width="'+bw+'" height="'+ih+'" fill="transparent" data-idx="'+i+'"/>'+
-      '<rect x="'+x+'" y="'+y+'" width="'+bar+'" height="'+h+'" rx="4" fill="#229A82"/>'+
-      '<text class="ax" x="'+(x+bar/2)+'" y="'+(H-10)+'" text-anchor="middle">'+mesCorto(b.mes)+'</text></g>';
-  });
-  const pts = filas.map((b,i)=>[ML+bw*i+bw/2, MT+ih-ih*Number(b.pct_cobertura_fee||0)/100]);
-  s += '<polyline points="'+pts.map(p=>p.join(',')).join(' ')+'" fill="none" stroke="#D9A520" stroke-width="2.5" stroke-linejoin="round"/>';
-  pts.forEach(p=>{ s += '<circle cx="'+p[0]+'" cy="'+p[1]+'" r="4.5" fill="#fff" stroke="#D9A520" stroke-width="2.5"/>'; });
-  [0,50,100].forEach(v=>{ const y=MT+ih-ih*v/100; s+='<text class="axn" x="'+(W-MR+8)+'" y="'+(y+4)+'" fill="#8A6A14">'+v+'%</text>'; });
-  $('svgBolsa').innerHTML = s;
-  $('svgBolsa').querySelectorAll('rect[data-idx]').forEach(rect=>{
-    const b = filas[Number(rect.dataset.idx)];
-    rect.dataset.tip = '<span class="tt">'+mesCorto(b.mes)+'</span>Bolsa <b>'+fmtUSD2(b.bolsa_persona)+'</b><br><b>'+(b.renovaciones_con_fee||0)+'</b> de <b>'+(b.renovaciones||0)+'</b> renovaciones con fee (<b>'+Number(b.pct_cobertura_fee||0).toFixed(1)+'%</b>)';
-  });
-}
-
-/* =====================================================================
-   8) 05 BONOS — la escalera del año (bono_escalera, area=renovaciones)
-   ===================================================================== */
-function bonos(){
-  const p = pctAno();
-  const sig = ESCALERA.find(e=> Number(e.umbral) > p);
-  $('bonoSub').innerHTML = 'Vas en <b style="font-family:var(--f-num);color:var(--ink)">'+p.toFixed(1)+'%</b> sobre los meses cerrados.'+
-    (sig ? ' Te faltan <b style="font-family:var(--f-num);color:#8A6A14">'+(Number(sig.umbral)-p).toFixed(1)+' puntos</b> para el escalón de '+sig.umbral+'%.' : ' Ya pasaste el último escalón.');
-  $('escalera').innerHTML = ESCALERA.map(e=>{
-    const ok = p >= Number(e.umbral);
-    const es = sig && Number(sig.umbral)===Number(e.umbral);
-    return '<div class="pel '+(ok?'logrado':es?'siguiente':'futuro')+'">'+
-      '<div><div class="u">'+e.umbral+'%</div>'+
-        (ok?'<span class="badge ok">Logrado</span>':es?'<span class="badge next">Vas por este</span>':'')+'</div>'+
-      '<div><div style="font-weight:600;font-size:13.5px;color:var(--ink)">Renovar el '+e.umbral+'% del año</div>'+
-        '<div class="d">'+(e.notas?esc(e.notas):'&nbsp;')+'</div></div>'+
-      '<div class="b">$'+Number(e.bono_usd).toLocaleString('en-US')+'<small>COP '+Number(e.bono_cop).toLocaleString('es-CO')+'</small></div></div>';
-  }).join('');
-}
-
-/* =====================================================================
-   9) 06 EL ÁREA
-   ===================================================================== */
-function area(){
-  const act = CARTERA.find(x=>x.estado==='ACTIVA') || {cuentas:0,premium:0};
-  const sen = CARTERA.find(x=>x.estado==='ACTIVA SIN SENAL') || {cuentas:0,premium:0};
-  const totP = CARTERA.reduce((s,x)=>s+Number(x.premium||0),0);
-  const tot = IDX_MESES.reduce((s,m)=>s+Number(m.vencieron||0),0);
-  const tr = IDX_MESES.reduce((s,m)=>s+Number(m.renovaron||0),0);
-  const tp = IDX_MESES.reduce((s,m)=>s+Number(m.premium_vencido||0),0);
-  $('areaKpis').innerHTML =
-   '<div class="kp oscuro"><div class="k">Cartera viva</div><div class="v">'+(Number(act.cuentas||0)+Number(sen.cuentas||0))+'</div>'+
-     '<div class="d">'+fmtUSD(totP)+' en premium</div></div>'+
-   '<div class="kp"><div class="k">Sin señal de vida</div><div class="v">'+(sen.cuentas||0)+'</div>'+
-     '<div class="d">'+fmtUSD(sen.premium)+' · las confirma Financiera</div></div>'+
-   '<div class="kp"><div class="k">Renuevan este año</div><div class="v">'+tot+'</div>'+
-     '<div class="d">'+fmtUSD(tp)+' en juego</div></div>'+
-   '<div class="kp"><div class="k">Renovadas del año</div><div class="v">'+tr+'</div>'+
-     '<div class="d">'+pctAno().toFixed(1)+'% en meses cerrados</div></div>';
-  const max = Math.max(1, ...CARTERA.map(x=>Number(x.cuentas||0)));
-  const ordenados = ESTADOS_CARTERA_ORDEN.map(e=>CARTERA.find(x=>x.estado===e)).filter(Boolean);
-  $('estados').innerHTML = ordenados.map(x=>{
-    const col = ESTADOS_CARTERA_COLOR[x.estado]||'#8FA3B0';
-    return '<div class="er"><div class="l"><i style="background:'+col+'"></i>'+esc(etiqueta(x.estado))+'</div>'+
-      '<div class="t"><i data-w="'+(100*Number(x.cuentas||0)/max)+'" style="width:0;background:'+col+'"></i></div>'+
-      '<div class="n">'+(x.cuentas||0)+'<small>'+(x.premium?fmtUSD(x.premium):'—')+'</small></div></div>';
-  }).join('');
-  requestAnimationFrame(()=>document.querySelectorAll('.er .t i').forEach(b=>b.style.width=b.dataset.w+'%'));
-}
-
-/* =====================================================================
-   10) REPORTE IMPRIMIBLE — mes y año, con @media print
-   ===================================================================== */
-function imprimir(alc){
-  const esAno = alc==='ano';
-  const filas = esAno ? AÑO_FILAS : filasDelMes();
-  const tit = esAno ? ('Año '+AÑO_ACTUAL) : (NOM_MESES[MES_SEL]+' '+AÑO_ACTUAL);
-  let cc, rr, pp;
-  if(esAno){
-    cc = IDX_MESES.reduce((s,x)=>s+Number(x.vencieron||0),0);
-    rr = IDX_MESES.reduce((s,x)=>s+Number(x.renovaron||0),0);
-    pp = IDX_MESES.reduce((s,x)=>s+Number(x.premium_vencido||0),0);
-  } else {
-    const x = IDX_MESES.find(m=>Number(String(m.mes).slice(5,7))===MES_SEL) || {vencieron:0,renovaron:0,premium_vencido:0};
-    cc = Number(x.vencieron||0); rr = Number(x.renovaron||0); pp = Number(x.premium_vencido||0);
+  for(let k=0;k<=4;k++){ const v=max*k/4; s+='<line x1="'+ML+'" y1="'+y(v)+'" x2="'+(W-MR)+'" y2="'+y(v)+'" stroke="#EEF2F5"/><text class="gy" x="'+(ML-9)+'" y="'+(y(v)+4)+'" text-anchor="end">'+(v?kk(v):'$0')+'</text>'; }
+  const hoy = MESES.indexOf(MES_HOY);
+  if(hoy>=0) s+='<rect x="'+(x(hoy)-26)+'" y="'+(MT-8)+'" width="52" height="'+(ih+8)+'" rx="8" fill="rgba(45,191,163,.09)"/><text x="'+x(hoy)+'" y="'+(MT-14)+'" text-anchor="middle" class="gx" style="fill:#229A82">hoy</text>';
+  const ren = T.map((m,i)=>[i,m]).filter(a=>a[1].mes<=MES_HOY);
+  if(ren.length){
+    s+='<polygon points="'+x(ren[0][0])+','+y(0)+' '+ren.map(a=>x(a[0])+','+y(a[1].renovado)).join(' ')+' '+x(ren[ren.length-1][0])+','+y(0)+'" fill="rgba(45,191,163,.14)"/>';
   }
-  const pct = cc ? (100*rr/cc) : 0;
-  const filasOrdenadas = filas.slice().sort((a,b)=> Number(b.premium_activo||0)-Number(a.premium_activo||0));
+  s+='<polyline points="'+T.map((m,i)=>x(i)+','+y(m.vence)).join(' ')+'" fill="none" stroke="#B6C2CB" stroke-width="2" stroke-dasharray="5 5" stroke-linejoin="round"/>';
+  if(ren.length>1) s+='<polyline points="'+ren.map(a=>x(a[0])+','+y(a[1].renovado)).join(' ')+'" fill="none" stroke="#229A82" stroke-width="3" stroke-linejoin="round"/>';
+  T.forEach((m,i)=>{
+    s+='<circle cx="'+x(i)+'" cy="'+y(m.vence)+'" r="3.5" fill="#fff" stroke="#B6C2CB" stroke-width="2"/><text class="gv" x="'+x(i)+'" y="'+(y(m.vence)-10)+'" text-anchor="middle">'+kk(m.vence)+'</text>';
+    if(m.mes<=MES_HOY) s+='<circle cx="'+x(i)+'" cy="'+y(m.renovado)+'" r="5" fill="#fff" stroke="#229A82" stroke-width="3"/><text class="gr" x="'+x(i)+'" y="'+(y(m.renovado)+19)+'" text-anchor="middle">'+kk(m.renovado)+'</text>';
+    s+='<text class="gx" x="'+x(i)+'" y="'+(H-12)+'" text-anchor="middle"'+(m.mes===MES_HOY?' style="fill:#229A82"':'')+'>'+mesChip(m.mes)+'</text>';
+    const tipTxt = '<span class=tt>'+mesNom(m.mes)+(m.mes===MES_HOY?' · en curso':'')+'</span>Vence <b>'+fmtUSD(m.vence)+'</b> · '+m.cuentas+' cuentas'+(m.mes<=MES_HOY?'<br>Renovado <b>'+fmtUSD(m.renovado)+'</b>'+(m.vence?' ('+(100*m.renovado/m.vence).toFixed(1)+' %)':''):'<br>Todavía no empieza');
+    s+='<rect x="'+(x(i)-colW/2)+'" y="'+MT+'" width="'+colW+'" height="'+ih+'" fill="transparent" data-tip="'+tipTxt+'"/>';
+  });
+  $('curva').innerHTML = s;
+}
+function indice(){
+  const P = {};
+  FILAS.filter(r=>String(r.mes).slice(0,10)<=MES_HOY && r.estado_final!=='retirada').forEach(r=>{
+    const k = r.vendedor || r.agente_renovacion || '(sin vendedor)';
+    const p = P[k] || (P[k] = { n:k, cuentas:0, vencieron:0, ren:0, caidas:0 });
+    const e = estado(r);
+    p.cuentas++;
+    if(e==='renovada' || dias(r.vence)<0 || e==='perdida') p.vencieron++;
+    if(e==='renovada') p.ren++;
+    if(e==='vencida' || e==='perdida') p.caidas++;
+  });
+  const G = ['Equipo comercial','Administradores que venden','Socios y dirección','Retención','Retención y cartera de quienes ya no están'];
+  const todos = Object.values(P).map(p=>Object.assign(p,{ g:grupo(p.n), pct: p.vencieron ? 100*p.ren/p.vencieron : null }));
+  let rows = '';
+  G.forEach(g=>{
+    const ps = todos.filter(p=>p.g===g).sort((a,b)=>b.cuentas-a.cuentas); if(!ps.length) return;
+    rows += '<tr class="g"><td colspan="6">'+g+'</td></tr>';
+    ps.forEach(p=>{ const chica = p.vencieron<3;
+      rows += '<tr><td>'+esc(p.n)+'</td><td class="h-m">'+p.cuentas+'</td><td class="h-m">'+p.vencieron+'</td><td>'+p.ren+'</td><td>'+(p.caidas||'—')+'</td><td><span class="ri'+(chica?' chica':'')+'">'+ring(p.pct,{s:24,w:5,txt:false,col:chica?'#B6C2CB':undefined})+(p.pct==null?'—':Math.round(p.pct)+' %')+'</span></td></tr>'; });
+  });
+  $('idx').innerHTML = rows || '<tr><td colspan="6" class="vacia">Todavía no hay cuentas vencidas en el tramo.</td></tr>';
+  $('mejor').innerHTML = todos.filter(t=>t.vencieron>=3).sort((a,b)=>b.pct-a.pct||b.ren-a.ren).slice(0,3).map(t=>esc(t.n)+'<span>'+t.ren+' de '+t.vencieron+'</span>').join('<br>') || '—';
+  $('peor').innerHTML = todos.filter(t=>t.caidas>0).sort((a,b)=>b.caidas-a.caidas).slice(0,3).map(t=>esc(t.n)+'<span>'+t.caidas+' de '+t.vencieron+'</span>').join('<br>') || '—';
+}
+
+/* =====================================================================
+   BOLSA Y BONOS
+   ===================================================================== */
+function pintarPlata(){
+  if(!BOLSA.length){ $('bolsaK').innerHTML='<div class="vacia">Todavía no hay bolsa en firme desde septiembre.</div>'; $('bolsaM').innerHTML=''; }
+  else {
+    const tot=BOLSA.reduce((s,b)=>s+Number(b.bolsa_persona||0),0), ren=BOLSA.reduce((s,b)=>s+Number(b.renovaciones||0),0), fee=BOLSA.reduce((s,b)=>s+Number(b.renovaciones_con_fee||0),0);
+    const mej=BOLSA.reduce((a,b)=>Number(b.bolsa_persona||0)>Number(a.bolsa_persona||0)?b:a), hoy=BOLSA.find(b=>String(b.mes).slice(0,10)===MES_HOY);
+    $('bolsaK').innerHTML='<div class="kp oscuro"><div class="k">Bolsa del tramo</div><div class="v">'+fmtUSD2(tot)+'</div><div class="d">'+BOLSA.length+' mes'+(BOLSA.length===1?'':'es')+', desde septiembre</div></div>'+
+      '<div class="kp"><div class="k">Este mes</div><div class="v">'+(hoy?fmtUSD2(hoy.bolsa_persona):'—')+'</div><div class="d">'+mesNom(MES_HOY).toLowerCase()+', aún abierto</div></div>'+
+      '<div class="kp"><div class="k">Renovaciones con fee</div><div class="v">'+fee+' de '+ren+'</div><div class="d">'+(ren?Math.round(100*fee/ren)+' % del tramo':'—')+'</div></div>'+
+      '<div class="kp"><div class="k">Tu mejor mes</div><div class="v">'+fmtUSD2(mej.bolsa_persona)+'</div><div class="d">'+mesNom(String(mej.mes).slice(0,10)).toLowerCase()+'</div></div>';
+    $('bolsaM').innerHTML=BOLSA.map(b=>{ const r=Number(b.renovaciones||0), f=Number(b.renovaciones_con_fee||0);
+      return '<div class="mb"><div><div class="m">'+mesNom(String(b.mes).slice(0,10))+'</div><div class="v">'+fmtUSD2(b.bolsa_persona)+'</div><div class="d">'+f+' de '+r+' renovaciones con fee</div></div><div>'+ring(r?100*f/r:null,{s:74,w:9,fs:15,col:'#2DBFA3'})+'</div></div>'; }).join('');
+  }
+  const cer = MESES.filter(m=>m<MES_HOY).map(m=>RES[m]);
+  const v = cer.reduce((s,m)=>s+m.vence,0), p = v>0 ? 100*cer.reduce((s,m)=>s+m.renovado,0)/v : null;
+  const sig = p==null ? null : ESCALERA.find(e=>Number(e.umbral)>p);
+  $('bonoSub').innerHTML = p==null ? 'Todavía no hay meses cerrados desde septiembre.' :
+    'Vas en <b style="font-family:var(--f-num);color:var(--ink)">'+p.toFixed(1)+' %</b> sobre los meses cerrados ('+cer.map(m=>mesNom(m.mes).toLowerCase()).join(', ')+').'+
+    (sig?' Te faltan <b style="font-family:var(--f-num);color:#8A6A14">'+(Number(sig.umbral)-p).toFixed(1)+' puntos</b> para el escalón de '+sig.umbral+' %.':' Ya pasaste el último escalón.');
+  $('ringBono').innerHTML = ring(p,{s:168,w:16,ticks:ESCALERA.map(e=>Number(e.umbral)),dec:1,fs:28,col:'#2DBFA3'});
+  $('escalera').innerHTML = ESCALERA.map(e=>{ const u=Number(e.umbral), ok=p!=null&&p>=u, es=sig&&Number(sig.umbral)===u;
+    return '<div class="pel '+(ok?'logrado':es?'siguiente':'futuro')+'"><div><div class="u">'+u+'%</div>'+(ok?'<span class="badge ok">Logrado</span>':es?'<span class="badge next">Vas por este</span>':'')+'</div>'+
+      '<div><div style="font-weight:600;font-size:13.5px;color:var(--ink)">Renovar el '+u+' % del año</div><div class="d">'+(e.notas?esc(e.notas):'&nbsp;')+'</div></div>'+
+      '<div class="b">$'+Number(e.bono_usd).toLocaleString('en-US')+'<small>COP '+Number(e.bono_cop).toLocaleString('es-CO')+'</small></div></div>'; }).join('');
+}
+
+/* =====================================================================
+   BUSCADOR, TOOLTIP, REPORTE
+   ===================================================================== */
+(function(){ let t=null; const inp=$('q'); if(!inp) return;
+  inp.addEventListener('input', ()=>{ clearTimeout(t); t=setTimeout(()=>{ Q=inp.value.trim(); ABIERTA=null; pintarLista(); }, 90); });
+})();
+document.addEventListener('mousemove', e=>{
+  const el = e.target.closest ? e.target.closest('[data-tip]') : null, tip = $('tip');
+  if(!el){ tip.classList.remove('on'); return; }
+  tip.innerHTML = el.dataset.tip; tip.classList.add('on');
+  tip.style.left = Math.min(e.clientX+14, window.innerWidth-260)+'px'; tip.style.top = (e.clientY+14)+'px';
+}, true);
+function imprimir(){
+  const filas = filasMes(MES_SEL).slice().sort((a,b)=>String(a.vence).localeCompare(String(b.vence)));
+  const x = RES[MES_SEL] || { cuentas:0, vence:0, renovadas:0, renovado:0, fee:0 };
+  const ET = { renovada:'Renovada', falta_bos:'Renovada · falta el BOS', perdida:'Perdida', vencida:'Vencida', curso:'En curso' };
   $('reporte').innerHTML =
-   '<div class="rp-h"><h1>Reporte de renovaciones — '+esc(tit)+'</h1>'+
-     '<div class="m">Karen Suaza · Área de Renovaciones · ProtectGo Services · '+
-       'Generado el '+new Date().toLocaleDateString('es-CO',{day:'2-digit',month:'long',year:'numeric'})+'</div></div>'+
-   '<div class="rp-k">'+
-     '<div><div class="k">Entraron a renovar</div><div class="v">'+cc+'</div></div>'+
-     '<div><div class="k">Renovadas</div><div class="v">'+rr+'</div></div>'+
-     '<div><div class="k">% renovado</div><div class="v">'+pct.toFixed(1)+'%</div></div>'+
-     '<div><div class="k">Meta '+META_PCT+'%</div><div class="v">'+Math.ceil(cc*(META_PCT/100))+'</div></div>'+
-     '<div><div class="k">Premium en juego</div><div class="v">'+fmtUSD(pp)+'</div></div></div>'+
-   '<table><thead><tr><th>Cuenta</th><th>DOT</th><th>Vendedor</th><th>Vence</th>'+
-     '<th style="text-align:right">Premium</th><th>Estado final</th></tr></thead><tbody>'+
-   filasOrdenadas.map(c=>{
-     const pillInfo = PILL[c.estado_trabajo||'pendiente']||PILL.pendiente;
-     return '<tr><td>'+esc(c.cuenta_nombre||c.llave)+'</td><td class="n">'+esc(c.dot||'—')+'</td>'+
-       '<td>'+esc(c.agente||'—')+'</td><td class="n">'+fmtFecha(c.vence)+'</td><td class="n">'+fmtUSD(c.premium_activo)+'</td><td>'+esc(pillInfo[1])+'</td></tr>';
-   }).join('')+
-   '</tbody></table>'+
-   '<div class="rp-f"><div>Karen Suaza — Renovaciones</div><div>Visto bueno — Dirección</div></div>';
+   '<div class="rp-h"><h1>Reporte de renovaciones — '+esc(mesNom(MES_SEL))+' '+MES_SEL.slice(0,4)+'</h1>'+
+     '<div class="m">Karen Suaza · Renovaciones y Retención · ProtectGo Services · Generado el '+new Date().toLocaleDateString('es-CO',{day:'2-digit',month:'long',year:'numeric'})+'</div></div>'+
+   '<div class="rp-k"><div><div class="k">Cuentas</div><div class="v">'+x.cuentas+'</div></div><div><div class="k">Renovadas</div><div class="v">'+x.renovadas+'</div></div>'+
+     '<div><div class="k">Premium renovado</div><div class="v">'+fmtUSD(x.renovado)+'</div></div><div><div class="k">De lo que vence</div><div class="v">'+(x.vence?(100*x.renovado/x.vence).toFixed(1)+'%':'—')+'</div></div>'+
+     '<div><div class="k">Fees cobrados</div><div class="v">'+fmtUSD(x.fee)+'</div></div></div>'+
+   '<table><thead><tr><th>Cuenta</th><th>DOT</th><th>Vendió</th><th>Vence</th><th style="text-align:right">Premium</th><th>Estado</th><th>Última nota</th></tr></thead><tbody>'+
+   filas.map(r=>{ const ns=notasDe(r), u=ns[ns.length-1];
+     return '<tr><td>'+esc(r.cliente)+'</td><td class="n">'+esc(r.dot||'—')+'</td><td>'+esc(r.vendedor||'—')+'</td><td class="n">'+fmtFecha(String(r.vence).slice(0,10))+'</td><td class="n">'+fmtUSD(estado(r)==='renovada'?r.premium_renovado:r.premium_vence)+'</td><td>'+ET[estado(r)]+'</td><td>'+(u?esc(u.nota):'—')+'</td></tr>'; }).join('')+
+   '</tbody></table><div class="rp-f"><div>Karen Suaza — Renovaciones</div><div>Visto bueno — Dirección</div></div>';
   window.print();
 }
-$('btn-imprimir-mes').addEventListener('click', ()=> imprimir('mes'));
-$('btn-imprimir-ano').addEventListener('click', ()=> imprimir('ano'));
+$('btn-imprimir-mes').addEventListener('click', imprimir);
+window.addEventListener('hashchange', ()=>{ if(!hashUsable()) return; aplicarHash(); tabs(); pintarMes(); });
 
 /* =====================================================================
-   11) ARRANQUE
+   ARRANQUE
    ===================================================================== */
 (async function init() {
   if (_IS_RECOVERY) { mostrarSetPassword(); return; }
   const { data: { session } } = await SB.auth.getSession();
   if (session) await mostrarApp();
 })();
+
 </script>
 <script>
 (function(){
@@ -2700,7 +1447,7 @@ $('btn-imprimir-ano').addEventListener('click', ()=> imprimir('ano'));
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="renovaciones.html";
-var PGV_VERSION=41; // v41 - 13-oct-2026 FILTRO POR ESTADO: la leyenda de colores de 00 Cartera pasa a ser botones de filtro (Renovada/activa · Por renovar · Vence en menos de 15 días o vencida · Pending cancellation · Se cayó), un botón a la vez, con conteo, combinable con mes, cobertura, área y buscador. Incluye la nota del semáforo 80/70 (v41 de otra ronda, solo texto). // v41 - 13-oct-2026 nota del semáforo 80/70 (solo texto). // v39 - 12-oct-2026 ESTE MES: 00 Cartera por mes calendario con flechas (cifras del mes, lista por cuenta con estado de trabajo, pending en una línea roja cerrada), 01 Mi cola = lo no trabajado (sin marca del mes + vencidas sin cerrar), 02 Vendedores = quién renueva (fotos, % llegan y % renuevan). Bolsa, bonos y área intactos. Incluye el ajuste de la ronda Rendimiento (v38): 00 Cartera se pide a la par de las demás consultas. // v38 - 12-oct-2026 RENDIMIENTO: 00 Cartera (la pestaña que abre) se pide a la par de las demás consultas en vez de esperar a que terminen (~1,4 s menos). Cero cambios de datos. // v37 - 9-oct-2026 LLEGAN A RENOVACIÓN: 00 Cartera sin timeline (pending cancellation arriba, pólizas activas por cuenta con una pastilla por cobertura y filtro por cobertura, ver el estado de todas), Quién vende con foto y % de pólizas que llegan a renovación (meta 80 %, todos los activos), Avisos en Mi cola, Vendedores con su renovación, El muro fuera. // v36 - 00 Cartera (motor v3): cuatro cifras que filtran, la lista es el timeline (cada barra mide lo que le queda a la póliza desde hoy), ficha con pólizas + Contactado/Renovado/Perdido/Nota (renov_trabajo/renov_notas de siempre), qué cambió desde ayer, alertas e índice de cancelación (solo dirección/renovaciones), Exportar ▾ (exportar-cartera), tiempo real. Rótulo: Renovaciones. Lo demás de v35 intacto. // v35 - Protect Index: las direcciones internas del sitio pasan a relativas (el sitio ya no depende de como se llame el repo). Las que viajan por correo (recuperar contrasena, fotos de firma, sello de RRHH) quedan absolutas apuntando a protect-index. // v34 (21-sep-2026) ARREGLO: el boton Cancelada / Retirada de la tarjeta fallaba con \"violates check constraint renov_trabajo_motivo_chk\" porque mandaba el estado sin motivo; ahora pide el motivo igual que Perdida (sugiere la etapa de HubSpot cuando el equipo ya la dio por perdida). --- v33 (21-sep-2026) VENDEDORES DESPLIEGA LAS CUENTAS: tocar el nombre de un vendedor abre debajo de su fila, mes por mes, el nombre de cada cuenta (DOT, fecha de vencimiento, premium y la misma etiqueta de estado de Mi cola); tocar una celda abre solo ese mes. El salto a Mi cola queda como boton \"Trabajarlas en Mi cola\" en cada mes. Mismos datos que ya cargaba la pantalla (v_renov_cartera_estado_visible), cero consultas nuevas, cero barras. --- v32 (18-sep-2026) VENDEDORES MES A MES: una tabla vendedor x mes con las cuentas y el premium que vencen en cada mes del ano (y cuantas ya renovaron), toda la lista de Karen aunque tengan cero, fila Area al pie, clic en una celda lleva a Mi cola de esa persona en ese mes. Ya no depende del mes escogido arriba. Cero barras. --- v31.1 (18-sep-2026) Vendedores muestra a TODA la lista de Karen (roster ACTIVO/KAREN), tengan o no cuentas este mes; y lo que no es de la lista (Jorge, Retencion) cae a la persona de la regla de trabajo (Karen en sep-oct), no a Cartera agencia. --- v31 (18-sep-2026) LA CARTERA ES EL EXCEL DE ANDRES y "cada gente" es LA PERSONA DEL EXCEL: Vendedores, la tarjeta y el filtro agrupan por persona (solo la lista de Karen: roster ACTIVO/KAREN; el resto se recoge como Cartera agencia). Quien vendio la poliza segun el BOS queda como dato chico. Y la marca de Karen SE VE: si el motor no ha cerrado la cuenta, la etiqueta es la de ella; Renovada sin BOS sale en ambar como "Renovada - falta el BOS" y no cuenta hasta que Jeff la registre. --- v30.2 (17-sep-2026) ARREGLO: el hero y la cinta se calculan de la MISMA cola que ve cada persona. Antes salian de la vista agregada por mes, que solo ve direccion: a Karen le aparecia \"sin cartera cargada este mes\" con su cola llena debajo. Ahora hero, cinta, vendedores y cola cuentan siempre lo mismo. --- v30 (17-sep-2026) LA CARTERA SALE DE HUBSPOT: la cola, la cinta y la franja leen v_renov_cartera_estado_visible y v_renov_cartera_graficas_visible — lo que Andres monta en HubSpot es la lista, y el motor solo marca la renovacion cuando Jeff la registra en el BOS (Sale - Renewal en la ventana -60/+150 de la fecha de HubSpot), con fecha, quien y CUANTO QUEDO. Hero en premium (que vence · que quedo · % retenido) con GUION, nunca cero, cuando a HubSpot le faltan montos: un % sobre base incompleta miente (septiembre daba 310%). La cinta deja de ser barras y pasa a dos curvas (vence punteada, quedo en menta); meses sin cartera salen "sin cartera". Filtros nuevos: En juego / Vencidas / Renovadas / Senal del equipo. Cinco avisos en ambar que NO cierran cuentas: el equipo la da por perdida, renovo y falta registrarla en el BOS, hay una venta nueva en la ventana, renovada con premium $0, esta dos veces en HubSpot. Una cuenta solo se pierde cuando Andres la marca (renov_cartera_marcar). Vendedores se calcula de la misma cola, por vendedor de la cuenta, y filtra la cola al hacer clic. La bolsa filtra cuenta_en_firme (arranca el 1-sep). --- v29 (15-sep-2026) RONDA VISUAL, cero cambios de datos: buscador en la cola (empresa/DOT/vendedor, repinta solo la lista); teclado real (casillas y meses son <button role=tab>, la tarjeta abre con Enter/Espacio, foco menta visible); movil de verdad a 1080 y 860 (la cinta desliza en su propio carril, franja/tarjeta/filas a una columna); el estado vive en la URL (#v casilla, #m mes, #f filtro, #q busqueda, #c ficha abierta) sin pisar el hash de recuperacion de clave; esqueleto de carga y error por bloque con Reintentar (un bloque caido ya no deja la pantalla en blanco); un solo tooltip delegado en vez de cuatro onmousemove; la meta del area sale de estandar_pct y no del codigo (estaba quemada en 3 sitios); svgBolsa con xMidYMid meet; clases que faltaban del estandar (.card.abierta, .u-mint, .st-n .v.ambar, .st-aviso, --rojo-claro); Arial fuera del boton Volver y JetBrains Mono 700 en el link de fuentes. --- v28: Ficha de cuenta: se abre al hacer clic en una tarjeta de la cola (acordeon, no modal). Cuatro bloques: Estado (los mismos de siempre, "retirado" ahora se lee "Cancelada / Retirada"), Por que (motivo obligatorio a renov_trabajo.motivo_perdido en Perdida/Cancelada-Retirada, opcional como nota suelta a renov_notas en cualquier otro estado, con historial de notas), Corregir fecha de renovacion (inserta en renov_ajustes con ajustado_user_id=SESION_UID -- mismo bug de uuid que se acaba de arreglar, aviso claro antes de guardar), y el aviso a Financiera que es automatico (v_ajustes_pendientes_bos). Nada se borra.
+var PGV_VERSION=42; // v42 - 10-nov-2026 UNA PANTALLA PARA KAREN: tres pestañas (Mi mes: la cartera del mes con bitácora, alerta de lo no trabajado y pending cancellation · El área: anillos contra el 70 %, curva vence/renovado e índice por quién vendió · Bolsa y bonos). Desde el corte 1-sep-2026. Cero SQL nuevo; la cartera se pide sola y el resumen del mes se calcula de ella (regla de v_renov_cartera_graficas). // v41 - 13-oct-2026 FILTRO POR ESTADO: la leyenda de colores de 00 Cartera pasa a ser botones de filtro (Renovada/activa · Por renovar · Vence en menos de 15 días o vencida · Pending cancellation · Se cayó), un botón a la vez, con conteo, combinable con mes, cobertura, área y buscador. Incluye la nota del semáforo 80/70 (v41 de otra ronda, solo texto). // v41 - 13-oct-2026 nota del semáforo 80/70 (solo texto). // v39 - 12-oct-2026 ESTE MES: 00 Cartera por mes calendario con flechas (cifras del mes, lista por cuenta con estado de trabajo, pending en una línea roja cerrada), 01 Mi cola = lo no trabajado (sin marca del mes + vencidas sin cerrar), 02 Vendedores = quién renueva (fotos, % llegan y % renuevan). Bolsa, bonos y área intactos. Incluye el ajuste de la ronda Rendimiento (v38): 00 Cartera se pide a la par de las demás consultas. // v38 - 12-oct-2026 RENDIMIENTO: 00 Cartera (la pestaña que abre) se pide a la par de las demás consultas en vez de esperar a que terminen (~1,4 s menos). Cero cambios de datos. // v37 - 9-oct-2026 LLEGAN A RENOVACIÓN: 00 Cartera sin timeline (pending cancellation arriba, pólizas activas por cuenta con una pastilla por cobertura y filtro por cobertura, ver el estado de todas), Quién vende con foto y % de pólizas que llegan a renovación (meta 80 %, todos los activos), Avisos en Mi cola, Vendedores con su renovación, El muro fuera. // v36 - 00 Cartera (motor v3): cuatro cifras que filtran, la lista es el timeline (cada barra mide lo que le queda a la póliza desde hoy), ficha con pólizas + Contactado/Renovado/Perdido/Nota (renov_trabajo/renov_notas de siempre), qué cambió desde ayer, alertas e índice de cancelación (solo dirección/renovaciones), Exportar ▾ (exportar-cartera), tiempo real. Rótulo: Renovaciones. Lo demás de v35 intacto. // v35 - Protect Index: las direcciones internas del sitio pasan a relativas (el sitio ya no depende de como se llame el repo). Las que viajan por correo (recuperar contrasena, fotos de firma, sello de RRHH) quedan absolutas apuntando a protect-index. // v34 (21-sep-2026) ARREGLO: el boton Cancelada / Retirada de la tarjeta fallaba con \"violates check constraint renov_trabajo_motivo_chk\" porque mandaba el estado sin motivo; ahora pide el motivo igual que Perdida (sugiere la etapa de HubSpot cuando el equipo ya la dio por perdida). --- v33 (21-sep-2026) VENDEDORES DESPLIEGA LAS CUENTAS: tocar el nombre de un vendedor abre debajo de su fila, mes por mes, el nombre de cada cuenta (DOT, fecha de vencimiento, premium y la misma etiqueta de estado de Mi cola); tocar una celda abre solo ese mes. El salto a Mi cola queda como boton \"Trabajarlas en Mi cola\" en cada mes. Mismos datos que ya cargaba la pantalla (v_renov_cartera_estado_visible), cero consultas nuevas, cero barras. --- v32 (18-sep-2026) VENDEDORES MES A MES: una tabla vendedor x mes con las cuentas y el premium que vencen en cada mes del ano (y cuantas ya renovaron), toda la lista de Karen aunque tengan cero, fila Area al pie, clic en una celda lleva a Mi cola de esa persona en ese mes. Ya no depende del mes escogido arriba. Cero barras. --- v31.1 (18-sep-2026) Vendedores muestra a TODA la lista de Karen (roster ACTIVO/KAREN), tengan o no cuentas este mes; y lo que no es de la lista (Jorge, Retencion) cae a la persona de la regla de trabajo (Karen en sep-oct), no a Cartera agencia. --- v31 (18-sep-2026) LA CARTERA ES EL EXCEL DE ANDRES y "cada gente" es LA PERSONA DEL EXCEL: Vendedores, la tarjeta y el filtro agrupan por persona (solo la lista de Karen: roster ACTIVO/KAREN; el resto se recoge como Cartera agencia). Quien vendio la poliza segun el BOS queda como dato chico. Y la marca de Karen SE VE: si el motor no ha cerrado la cuenta, la etiqueta es la de ella; Renovada sin BOS sale en ambar como "Renovada - falta el BOS" y no cuenta hasta que Jeff la registre. --- v30.2 (17-sep-2026) ARREGLO: el hero y la cinta se calculan de la MISMA cola que ve cada persona. Antes salian de la vista agregada por mes, que solo ve direccion: a Karen le aparecia \"sin cartera cargada este mes\" con su cola llena debajo. Ahora hero, cinta, vendedores y cola cuentan siempre lo mismo. --- v30 (17-sep-2026) LA CARTERA SALE DE HUBSPOT: la cola, la cinta y la franja leen v_renov_cartera_estado_visible y v_renov_cartera_graficas_visible — lo que Andres monta en HubSpot es la lista, y el motor solo marca la renovacion cuando Jeff la registra en el BOS (Sale - Renewal en la ventana -60/+150 de la fecha de HubSpot), con fecha, quien y CUANTO QUEDO. Hero en premium (que vence · que quedo · % retenido) con GUION, nunca cero, cuando a HubSpot le faltan montos: un % sobre base incompleta miente (septiembre daba 310%). La cinta deja de ser barras y pasa a dos curvas (vence punteada, quedo en menta); meses sin cartera salen "sin cartera". Filtros nuevos: En juego / Vencidas / Renovadas / Senal del equipo. Cinco avisos en ambar que NO cierran cuentas: el equipo la da por perdida, renovo y falta registrarla en el BOS, hay una venta nueva en la ventana, renovada con premium $0, esta dos veces en HubSpot. Una cuenta solo se pierde cuando Andres la marca (renov_cartera_marcar). Vendedores se calcula de la misma cola, por vendedor de la cuenta, y filtra la cola al hacer clic. La bolsa filtra cuenta_en_firme (arranca el 1-sep). --- v29 (15-sep-2026) RONDA VISUAL, cero cambios de datos: buscador en la cola (empresa/DOT/vendedor, repinta solo la lista); teclado real (casillas y meses son <button role=tab>, la tarjeta abre con Enter/Espacio, foco menta visible); movil de verdad a 1080 y 860 (la cinta desliza en su propio carril, franja/tarjeta/filas a una columna); el estado vive en la URL (#v casilla, #m mes, #f filtro, #q busqueda, #c ficha abierta) sin pisar el hash de recuperacion de clave; esqueleto de carga y error por bloque con Reintentar (un bloque caido ya no deja la pantalla en blanco); un solo tooltip delegado en vez de cuatro onmousemove; la meta del area sale de estandar_pct y no del codigo (estaba quemada en 3 sitios); svgBolsa con xMidYMid meet; clases que faltaban del estandar (.card.abierta, .u-mint, .st-n .v.ambar, .st-aviso, --rojo-claro); Arial fuera del boton Volver y JetBrains Mono 700 en el link de fuentes. --- v28: Ficha de cuenta: se abre al hacer clic en una tarjeta de la cola (acordeon, no modal). Cuatro bloques: Estado (los mismos de siempre, "retirado" ahora se lee "Cancelada / Retirada"), Por que (motivo obligatorio a renov_trabajo.motivo_perdido en Perdida/Cancelada-Retirada, opcional como nota suelta a renov_notas en cualquier otro estado, con historial de notas), Corregir fecha de renovacion (inserta en renov_ajustes con ajustado_user_id=SESION_UID -- mismo bug de uuid que se acaba de arreglar, aviso claro antes de guardar), y el aviso a Financiera que es automatico (v_ajustes_pendientes_bos). Nada se borra.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;
@@ -2735,4 +1482,3 @@ setInterval(pgvCheck,600000);
 </script>
 <script>window.addEventListener('DOMContentLoaded',function(){ if(window.pgNovedadesAuto) pgNovedadesAuto('renovaciones'); });</script>
 </body>
-</html>
