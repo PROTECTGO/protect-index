@@ -1,6 +1,8 @@
 /* =====================================================================
    ms-statement.js · Monthly Account Statement (Operyx Group × ProtectGo)
    Ronda 13 · 5-oct-2026. Lo usan amazon-relay/index.html y fam.html.
+   Ronda 16 · 12-nov-2026: semana / rango (WEEKLY / ACCOUNT STATEMENT), marca DRAFT en borrador,
+   línea "Approved by ProtectGo" y columnas Cycle / Approved en Excel/CSV.
    Ronda 15 · 7-oct-2026: si la liquidación tiene código bancario (codigo_banco_operyx)
    el PDF, el Excel/CSV y el correo dicen "Paid · Confirmation #".
    Necesita pdf-lib (window.PDFLib) ya cargado. Carta vertical, inglés.
@@ -17,7 +19,13 @@
   function d(s) { if (!s) return null; var x = new Date(String(s).length === 10 ? s + 'T12:00:00' : s); return isNaN(x) ? null : x; }
   function fUS(s) { var x = d(s); return x ? MESES[x.getMonth()].slice(0, 3) + ' ' + String(x.getDate()).padStart(2, '0') + ', ' + x.getFullYear() : '-'; }
   function fCorta(s) { var x = d(s); return x ? String(x.getMonth() + 1).padStart(2, '0') + '/' + String(x.getDate()).padStart(2, '0') + '/' + x.getFullYear() : '-'; }
-  function mes(st) { var x = d(st.desde); return x ? MESES[x.getMonth()] + ' ' + x.getFullYear() : (st.numero || ''); }
+  function mes(st) {
+    if (st.periodo_tipo === 'semana' || st.periodo_tipo === 'rango') return fUS(st.desde) + ' - ' + fUS(st.hasta);
+    var x = d(st.desde); return x ? MESES[x.getMonth()] + ' ' + x.getFullYear() : (st.numero || '');
+  }
+  function titulo(st) { return st.periodo_tipo === 'semana' ? 'WEEKLY ACCOUNT STATEMENT' : (st.periodo_tipo === 'rango' ? 'ACCOUNT STATEMENT' : 'MONTHLY ACCOUNT STATEMENT'); }
+  function borrador(st) { return st && st.ciclo === 'borrador'; }
+  function aprobado(st) { return st && st.aprobado_at ? 'Approved by ProtectGo · ' + fUS(st.aprobado_at) : ''; }
   function n(v) { var x = Number(v); return isFinite(x) ? x : 0; }
   function usd(v) { return (n(v) < 0 ? '-$' : '$') + Math.abs(n(v)).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
   function pct(v) { var x = n(v); return (Math.round(x * 100) / 100).toString(); }
@@ -46,7 +54,8 @@
         Date: l.fecha || '', Client: l.cliente || '', DOT: l.dot || '', 'Load ID / Ref': l.ref || '', Type: tipoEN(l.tipo), Service: l.tipo || '',
         Gross: n(l.gross), 'Service fee': n(l.fee), 'Rate / Split': (l.rate || '') + ' · ' + pct(l.pct_operyx) + '/' + pct(100 - n(l.pct_operyx)),
         'Due Operyx': n(l.operyx), 'Retained ProtectGo': n(l.protectgo), 'Transaction #': l.transaccion || '',
-        'Bank confirmation # (Operyx)': st.codigo_banco_operyx || '', 'Transfer date': st.fecha_transferencia || ''
+        'Bank confirmation # (Operyx)': st.codigo_banco_operyx || '', 'Transfer date': st.fecha_transferencia || '',
+        Cycle: st.ciclo === 'borrador' ? 'DRAFT' : (st.ciclo === 'aprobado' ? 'Approved' : (st.ciclo === 'notificado_fam' ? 'Sent to FAM' : '')), Approved: st.aprobado_at ? String(st.aprobado_at).slice(0, 10) : ''
       };
     });
   }
@@ -67,7 +76,7 @@
   async function pdfBytes(st, pagoTxt) {
     var P = window.PDFLib; if (!P) throw new Error('pdf-lib no está cargado');
     var doc = await P.PDFDocument.create();
-    doc.setTitle(w('Monthly Account Statement ' + (st.numero || '')));
+    doc.setTitle(w((borrador(st) ? 'DRAFT · ' : '') + titulo(st).replace(/\w\S*/g, function (t) { return t.charAt(0) + t.slice(1).toLowerCase(); }) + ' ' + (st.numero || '')));
     doc.setAuthor('ProtectGo Services'); doc.setCreator('Amazon Relay · ProtectGo');
     var F = await doc.embedFont(P.StandardFonts.Helvetica), B = await doc.embedFont(P.StandardFonts.HelveticaBold);
     var C = { ink: P.rgb(0, 0.184, 0.239), mint: P.rgb(0.133, 0.604, 0.51), amb: P.rgb(0.851, 0.647, 0.125), mut: P.rgb(0.42, 0.49, 0.54), line: P.rgb(0.86, 0.89, 0.91), soft: P.rgb(0.95, 0.97, 0.97), white: P.rgb(1, 1, 1), txt: P.rgb(0.1, 0.13, 0.16) };
@@ -86,7 +95,7 @@
     nueva();
     rect(0, H - 92, W, 92, C.ink);
     tx('OPERYX GROUP × PROTECTGO SERVICES', M, H - 42, { b: true, s: 15, c: C.white });
-    tx('MONTHLY ACCOUNT STATEMENT', M, H - 62, { b: true, s: 10.5, c: P.rgb(0.55, 0.85, 0.77) });
+    tx((borrador(st) ? 'DRAFT · ' : '') + titulo(st), M, H - 62, { b: true, s: 10.5, c: P.rgb(0.55, 0.85, 0.77) });
     tx(mes(st), W - M, H - 42, { b: true, s: 12, c: C.white, r: true });
     tx('Statement No. ' + (st.numero || '-'), W - M, H - 62, { s: 9.5, c: P.rgb(0.8, 0.88, 0.9), r: true });
     y = H - 118;
@@ -167,11 +176,14 @@
     espacio(40 + pl.length * 12);
     tx('PAYMENT INSTRUCTIONS', M, y, { b: true, s: 9, c: C.mint }); y -= 14;
     if (pagado(st)) { tx(pagado(st) + '.', M, y, { b: true, s: 9, c: C.mint, max: W - 2 * M }); y -= 14; }
+    else if (borrador(st)) { tx('DRAFT - pending approval by ProtectGo. Do not pay yet.', M, y, { b: true, s: 9, c: C.amb }); y -= 14; pl = []; }
     else { tx('Please remit ' + usd(st.total_operyx != null ? st.total_operyx : st.operario) + ' to Juan Pablo (Operyx Group) on or before ' + fUS(st.due_date) + '.', M, y, { s: 9 }); y -= 14; }
     pl.forEach(function (t) { espacio(14); tx(t, M, y, { s: 9, max: W - 2 * M }); y -= 12; });
 
     /* ---- pie en todas las páginas ---- */
+    if (aprobado(st) && !borrador(st)) { espacio(16); tx(aprobado(st) + '.', M, y, { s: 8.5, c: C.mut }); y -= 14; }
     pages.forEach(function (p, k) {
+      if (borrador(st)) { p.drawText('DRAFT · NOT APPROVED', { x: 95, y: 300, size: 54, font: B, color: P.rgb(0.85, 0.65, 0.13), opacity: 0.16, rotate: P.degrees(35) }); }
       pg = p; hr(M - 6);
       tx('ProtectGo Services · Operyx Group · ' + (st.numero || ''), M, M - 18, { s: 7.5, c: C.mut });
       tx('Page ' + (k + 1) + ' of ' + pages.length, W - M, M - 18, { s: 7.5, c: C.mut, r: true });
@@ -187,5 +199,5 @@
     return bytes;
   }
 
-  window.MSStatement = { pdfBytes: pdfBytes, descargarPDF: descargarPDF, filas: filas, nombre: nombre, correo: correo, mes: mes, usd: usd, pagado: pagado };
+  window.MSStatement = { titulo: titulo, pdfBytes: pdfBytes, descargarPDF: descargarPDF, filas: filas, nombre: nombre, correo: correo, mes: mes, usd: usd, pagado: pagado };
 })();
