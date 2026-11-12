@@ -739,7 +739,7 @@ const SB_URL='https://hivpqsepwsfmafamxkzy.supabase.co';
 const SB_KEY='sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt';
 const sb=window.supabase.createClient(SB_URL,SB_KEY,{db:{schema:'portal'}});
 /* ===== v6 ===== */
-const PGV_VERSION=18; // v18 - Ronda 15: menú retráctil (sin columna del top ni bonos), Enviar a FAM desde Invoices, estado del invoice = el de su cobro, barra con periodo, refresco cada 30 s, código bancario en la liquidación Operyx. Antes: v17 - carga pg-sombra/pg-bonos. v16 - Ronda 14
+const PGV_VERSION=19; // v19 - Ronda 16: Rentabilidad > Statements (solo dirección): vista previa por periodo, Borrador > Aprobado > Enviado a FAM > Pagado, candado en la base; la casilla 10 Liquidación Operyx entra aquí. Antes: v18 - Ronda 15
 let CARGADO_EN=Date.now();
 let RENT=[], RENOV=[], RENOV_RES=null, CONFIG={}, TRM=4000, ERRORES={}, ES_DIR=false;
 let MES_SEL=new Date().getMonth();
@@ -8540,6 +8540,347 @@ function r15LiqDecorar() {
     } else if (st.estado === 'pagado') {
       var acts = card.querySelector('.acts');
       if (acts) acts.insertAdjacentHTML('beforeend', '<button type="button" class="pg-btn sm mint" data-liq="codigo" data-id="' + st.id + '">Agregar código bancario</button>');
+    }
+  });
+}
+
+
+/* =====================================================================
+   AMAZON RELAY · v19 · RONDA 16 (12-nov-2026)
+   Rentabilidad › Statements (solo dirección): vista previa por periodo
+   (mes vencido · semana vencida · rango), ciclo Borrador → Aprobado →
+   Notificado a FAM → Pagado, con candado en la base.
+   La casilla 10 "Liquidación Operyx" se jubila y entra aquí.
+   Estas definiciones sobrescriben a las anteriores del archivo.
+   ===================================================================== */
+AMZ_VERSION = 19;
+
+(function () {
+  var st = document.createElement('style');
+  st.textContent =
+    '#navLiq{display:none!important}' +
+    '.r16tabs{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 14px}' +
+    '.r16per{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:4px 0 12px}' +
+    '.r16per .chip{cursor:pointer}' +
+    '.r16rango{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin:0 0 12px}' +
+    '.r16rango label{display:grid;gap:3px;font-size:11px;font-weight:600;color:var(--pg-muted,#5f7382)}' +
+    '.r16rango input{font:inherit;font-size:13px;padding:7px 10px;border:1px solid var(--pg-line,#e7edf2);border-radius:8px;background:#fff;min-width:0}' +
+    '.r16big{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:0 0 12px}' +
+    '.r16big div{background:#fff;border:1px solid var(--pg-line,#e7edf2);border-radius:12px;padding:14px 16px;min-width:0}' +
+    '.r16big div.op{background:var(--ink,#1B2D3A);color:#fff;border-color:transparent}' +
+    '.r16big span{display:block;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--pg-muted,#5f7382);font-weight:700}' +
+    '.r16big div.op span{color:#9fb3c0}' +
+    '.r16big b{display:block;font-family:var(--f-num,"JetBrains Mono",monospace);font-size:24px;margin-top:6px;overflow-wrap:anywhere}' +
+    '.r16big div.op b{color:#D9A520}' +
+    '.r16big small{display:block;font-size:11.5px;color:var(--pg-muted,#5f7382);margin-top:4px}.r16big div.op small{color:#b9c6d0}' +
+    '@media(max-width:700px){.r16big{grid-template-columns:1fr}}' +
+    '.r16tbl{overflow-x:auto;border:1px solid var(--pg-line,#e7edf2);border-radius:10px;background:#fff}' +
+    '.r16tbl table{width:100%;border-collapse:collapse;font-size:12.5px;min-width:760px}' +
+    '.r16tbl th{text-align:left;font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--pg-muted,#5f7382);padding:8px 10px;border-bottom:1px solid var(--pg-line,#e7edf2)}' +
+    '.r16tbl td{padding:7px 10px;border-bottom:1px solid #f0f3f5}.r16tbl td.r,.r16tbl th.r{text-align:right;font-family:var(--f-num,"JetBrains Mono",monospace)}' +
+    '.r16tbl tr.cli td{background:#f6f9fa;font-weight:700}.r16tbl tr.sub td{font-weight:700;border-bottom:1px solid var(--pg-line,#e7edf2)}' +
+    '.r16tbl tr.tot td{font-weight:800;border-top:2px solid var(--ink,#1B2D3A)}' +
+    '.r16tag{display:inline-block;font-size:10px;font-weight:700;padding:1px 7px;border-radius:999px;background:#FBF1D8;color:#8A6A14;margin-left:6px}' +
+    '.r16fuera{font-size:12px;color:var(--pg-muted,#5f7382);margin:10px 0 0}' +
+    '.r16crear{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px;font-size:12px;color:var(--pg-muted,#5f7382)}' +
+    '.r16est{font-size:12px;margin:2px 0 8px;color:var(--pg-muted,#5f7382)}.r16est b{color:var(--txt,#1B2D3A)}' +
+    '.r16liq.borr{border-left-color:#8da0ad;background:repeating-linear-gradient(135deg,#fff,#fff 14px,#fafbfc 14px,#fafbfc 28px)}' +
+    '.r16liq.apr{border-left-color:#1B2D3A}.r16liq.notif{border-left-color:#D9A520}' +
+    '.r16cod{margin:6px 0 8px;font-size:12px;padding:7px 10px;border-radius:8px;background:#E4F2EB;color:#1a7a68}.r16cod b{font-family:var(--f-num,monospace)}' +
+    '.r16desc{font-size:11.5px;color:var(--pg-muted,#5f7382);margin-top:6px}' +
+    '[data-r16="crear"]:disabled{opacity:.4;cursor:not-allowed;filter:grayscale(1)}';
+  document.head.appendChild(st);
+})();
+
+/* ---------------------------------------------------------- estado */
+var R16_TAB = 'rent';            /* 'rent' | 'st' */
+var R16_PER = { tipo: 'mes', desde: '', hasta: '' };
+var R16_PREV = null, R16_PREV_KEY = '', R16_PREV_ERR = '', R16_CARGANDO = false;
+
+function r16Hoy() { return famHoy(); }
+function r16ISO(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+function r16D(iso) { return new Date(iso + 'T12:00:00'); }
+function r16Rango(tipo) {
+  var h = r16D(r16Hoy());
+  if (tipo === 'mes') {
+    var a = new Date(h.getFullYear(), h.getMonth() - 1, 1), b = new Date(h.getFullYear(), h.getMonth(), 0);
+    return { desde: r16ISO(a), hasta: r16ISO(b) };
+  }
+  if (tipo === 'semana') {
+    var dow = h.getDay() || 7; /* lunes = 1 */
+    var lun = new Date(h); lun.setDate(h.getDate() - dow + 1 - 7);
+    var dom = new Date(lun); dom.setDate(lun.getDate() + 6);
+    return { desde: r16ISO(lun), hasta: r16ISO(dom) };
+  }
+  return { desde: R16_PER.desde || r16ISO(new Date(h.getFullYear(), h.getMonth(), 1)), hasta: R16_PER.hasta || r16Hoy() };
+}
+function r16Periodo() {
+  var r = r16Rango(R16_PER.tipo);
+  if (R16_PER.tipo === 'rango') { r.desde = R16_PER.desde || r.desde; r.hasta = R16_PER.hasta || r.hasta; }
+  return r;
+}
+function r16FechaCorta(iso) { return iso ? ui.fecha(iso) : '—'; }
+function r16Ciclo(s) {
+  if (s.ciclo === 'borrador') return 'borrador';
+  if (s.ciclo === 'aprobado') return 'aprobado';
+  if (s.ciclo === 'descartado') return 'descartado';
+  if (s.estado === 'pagado') return 'pagado';
+  return 'notificado'; /* notificado_fam o antiguo sin ciclo */
+}
+var R16_PILL = {
+  borrador: { cls: 'p-pend', txt: 'Borrador' },
+  aprobado: { cls: 'p-cot', txt: 'Aprobado · falta enviar a FAM' },
+  notificado: { cls: 'p-cot', txt: 'En FAM · por pagar' },
+  pagado: { cls: 'p-ren', txt: 'Pagado' }
+};
+function r16LabelPeriodo(s) {
+  var t = s.periodo_tipo === 'semana' ? 'Semana' : (s.periodo_tipo === 'rango' ? 'Rango' : 'Mes');
+  return t + ' · ' + r16FechaCorta(s.desde) + ' → ' + r16FechaCorta(s.hasta);
+}
+
+/* ---------------------------------------------------------- vista previa (rpc) */
+function r16CargarPreview(forzar) {
+  var p = r16Periodo(), key = p.desde + '|' + p.hasta;
+  if (!forzar && (R16_PREV_KEY === key) && (R16_PREV || R16_PREV_ERR)) return;
+  if (R16_CARGANDO && R16_PREV_KEY === key) return;
+  R16_PREV_KEY = key; R16_PREV = null; R16_PREV_ERR = ''; R16_CARGANDO = true;
+  sb.rpc('amazon_liq_preview', { p_desde: p.desde, p_hasta: p.hasta }).then(function (r) {
+    R16_CARGANDO = false;
+    if (R16_PREV_KEY !== key) return;
+    if (r.error) R16_PREV_ERR = r.error.message; else R16_PREV = r.data || {};
+    r16PintarPreview();
+  }, function (e) { R16_CARGANDO = false; R16_PREV_ERR = (e && e.message) || 'sin conexión'; r16PintarPreview(); });
+}
+function r16PintarPreview() {
+  var el = $('r16Prev'); if (!el) return;
+  el.innerHTML = r16PreviewHTML();
+  try { ui.mount(el); } catch (e) { }
+}
+function r16PreviewHTML() {
+  var p = r16Periodo();
+  if (R16_PREV_ERR) return ui.vacio('No se pudo calcular la vista previa: ' + esc(R16_PREV_ERR));
+  if (!R16_PREV) return '<div class="r16fuera">Calculando lo que entra entre el ' + esc(r16FechaCorta(p.desde)) + ' y el ' + esc(r16FechaCorta(p.hasta)) + '…</div>';
+  var P = R16_PREV, L = Array.isArray(P.lineas) ? P.lineas : [];
+  var m = function (v) { return Number(v) ? ui.money2(Number(v)) : '—'; };
+  var big = '<div class="r16big">' +
+    '<div><span>Gross total recaudado</span><b>' + m(P.gross) + '</b><small>' + (P.cobros || 0) + ' cobro(s) · fees ' + m(P.fees) + '</small></div>' +
+    '<div><span>Retención ProtectGo</span><b>' + m(P.protectgo) + '</b><small>margen de la agencia</small></div>' +
+    '<div class="op"><span>Neto a pagar a Operyx · Juan Pablo</span><b>' + m(P.operyx) + '</b><small>el número que se liquida</small></div></div>';
+  var tabla;
+  if (!L.length) tabla = ui.vacio('No hay cobros validados pendientes de liquidar hasta el ' + esc(r16FechaCorta(p.hasta)) + '.');
+  else {
+    var porCli = {}, orden = [];
+    L.forEach(function (l) { var k = l.cliente || '—'; if (!porCli[k]) { porCli[k] = []; orden.push(k); } porCli[k].push(l); });
+    var filas = '';
+    orden.forEach(function (k) {
+      var ls = porCli[k], sg = 0, sf = 0, so = 0, sp = 0;
+      filas += '<tr class="cli"><td colspan="9">' + esc(k) + (ls[0].dot ? ' <span style="font-weight:400;color:var(--pg-muted)">· DOT ' + esc(ls[0].dot) + '</span>' : '') + '</td></tr>';
+      ls.forEach(function (l) {
+        sg += Number(l.gross) || 0; sf += Number(l.fee) || 0; so += Number(l.operyx) || 0; sp += Number(l.protectgo) || 0;
+        filas += '<tr><td>' + esc(r16FechaCorta(l.fecha)) + (l.rezagado ? '<span class="r16tag" title="Validado tarde: es de antes del periodo">rezagado</span>' : '') + '</td><td>' + esc(l.ref || '—') + '</td><td>' + esc(l.tipo || '—') + '</td>' +
+          '<td class="r">' + ui.money2(Number(l.gross) || 0) + '</td><td class="r">' + ui.money2(Number(l.fee) || 0) + '</td><td>' + esc(l.rate || '') + ' · ' + esc(String(l.pct_operyx)) + '/' + esc(String(100 - (Number(l.pct_operyx) || 0))) + '</td>' +
+          '<td class="r">' + ui.money2(Number(l.operyx) || 0) + '</td><td class="r">' + ui.money2(Number(l.protectgo) || 0) + '</td><td class="mono" style="font-size:11px">' + esc(l.transaccion || '—') + '</td></tr>';
+      });
+      filas += '<tr class="sub"><td colspan="3">Subtotal ' + esc(k) + '</td><td class="r">' + ui.money2(sg) + '</td><td class="r">' + ui.money2(sf) + '</td><td></td><td class="r">' + ui.money2(so) + '</td><td class="r">' + ui.money2(sp) + '</td><td></td></tr>';
+    });
+    filas += '<tr class="tot"><td colspan="3">Total del statement</td><td class="r">' + ui.money2(Number(P.gross) || 0) + '</td><td class="r">' + ui.money2(Number(P.fees) || 0) + '</td><td></td><td class="r">' + ui.money2(Number(P.operyx) || 0) + '</td><td class="r">' + ui.money2(Number(P.protectgo) || 0) + '</td><td></td></tr>';
+    tabla = '<div class="r16tbl"><table><tr><th>Fecha</th><th>Referencia</th><th>Tipo</th><th class="r">Gross</th><th class="r">Fee</th><th>Tarifa · split</th><th class="r">A Operyx</th><th class="r">Retención</th><th># Transacción</th></tr>' + filas + '</table></div>';
+  }
+  var NOMB = { registrado: 'registrados', autorizado: 'autorizados', enviado_fam: 'en bandeja de FAM', programado: 'saldos programados' };
+  var fuera = (P.fuera || []).filter(function (f) { return f.n; }).map(function (f) { return f.n + ' ' + (NOMB[f.estado] || f.estado) + ' (' + ui.money2(Number(f.monto) || 0) + ')'; });
+  var fueraHTML = fuera.length ? '<div class="r16fuera">Fuera de este statement (todavía sin fondos validados): ' + esc(fuera.join(' · ')) + '.</div>' : '';
+  var rez = P.rezagados ? '<div class="r16fuera">Incluye ' + P.rezagados + ' cobro(s) rezagado(s): validados tarde, de antes del periodo. Nunca se pierden ni se duplican.</div>' : '';
+  var puede = (P.cobros || 0) > 0 && !P.borrador_abierto;
+  var porQue = P.borrador_abierto ? 'Ya hay un borrador abierto (' + esc(P.borrador_abierto) + '): apruébalo o descártalo primero.'
+    : ((P.cobros || 0) ? 'Reserva estos ' + P.cobros + ' cobro(s): no entran a otro statement mientras el borrador exista.' : 'No hay nada que liquidar en este periodo.');
+  var nombre = R16_PER.tipo === 'mes' ? 'MS-' + p.desde.slice(0, 7) : 'LQ-' + p.hasta.slice(0, 4) + '-###';
+  return big + tabla + rez + fueraHTML +
+    '<div class="r16crear"><button type="button" class="pg-btn sm mint" data-r16="crear"' + (puede ? '' : ' disabled') + '>Crear borrador ' + esc(nombre) + '</button><span>' + porQue + '</span></div>';
+}
+
+/* ---------------------------------------------------------- tarjetas del ciclo */
+function r16CardHTML(s) {
+  var c = r16Ciclo(s), pag = c === 'pagado';
+  var est = '';
+  if (c === 'borrador') est = 'Borrador · los cobros están reservados · creado ' + esc(famFechaHora(s.created_at) || '');
+  else if (c === 'aprobado') est = 'Cerrado · aprobado por <b>' + esc((s.aprobado_por || '').split('@')[0]) + '</b> ' + esc(famFechaHora(s.aprobado_at) || '') + ' · falta enviarlo a FAM';
+  else if (c === 'notificado') est = s.notificado_at ? 'En bandeja de FAM desde ' + esc(famFechaHora(s.notificado_at)) + ' · vence ' + esc(r16FechaCorta(s.due_date)) : 'En FAM · vence ' + esc(r16FechaCorta(s.due_date));
+  else if (pag) est = 'Pagado ' + esc(r16FechaCorta(s.fecha_transferencia || (s.pagado_at || '').slice(0, 10)));
+  var cod = s.codigo_banco_operyx ? '<div class="r16cod">🏦 Transferencia a Operyx · código <b>' + esc(s.codigo_banco_operyx) + '</b> · ' + esc(r16FechaCorta(s.fecha_transferencia)) + ' · ' + fmt$(s.monto_transferido != null ? s.monto_transferido : s.total_operyx) + (s.nota_transferencia ? '<div class="r16desc">' + esc(s.nota_transferencia).replace(/\n/g, ' · ') + '</div>' : '') + '</div>' : '';
+  var acts = '<button type="button" class="pg-btn sm" data-liq="pdf" data-id="' + s.id + '">' + (c === 'borrador' ? 'PDF (borrador)' : '📄 Descargar PDF') + '</button>';
+  if (c !== 'borrador') acts += '<button type="button" class="mini" data-liq="xlsx" data-id="' + s.id + '">Excel</button><button type="button" class="mini" data-liq="csv" data-id="' + s.id + '">CSV</button>';
+  if (c === 'borrador') acts += '<button type="button" class="pg-btn sm mint" data-r16="aprobar" data-id="' + s.id + '">Aprobar y Cerrar Statement</button><button type="button" class="mini" data-r16="descartar" data-id="' + s.id + '">Descartar borrador</button>';
+  if (c === 'aprobado') acts += '<button type="button" class="pg-btn sm mint" data-r16="notificar" data-id="' + s.id + '">✉ Enviar a FAM (Jeff)</button>';
+  if (c === 'notificado') acts += '<button type="button" class="mini" data-liq="correo" data-id="' + s.id + '">✉ Correo a Jeff</button><button type="button" class="pg-btn sm mint" data-liq="pagar" data-id="' + s.id + '">Registrar pago a Operyx</button>';
+  if (pag && !s.codigo_banco_operyx) acts += '<button type="button" class="pg-btn sm mint" data-liq="codigo" data-id="' + s.id + '">Agregar código bancario</button>';
+  var pill = R16_PILL[c] || R16_PILL.notificado;
+  return '<div class="r13liq r16liq' + (c === 'borrador' ? ' borr' : c === 'aprobado' ? ' apr' : c === 'notificado' ? ' notif' : ' pag') + '" data-st="' + s.id + '">' +
+    '<div class="h"><div><div class="n">' + esc(s.numero) + ' · ' + esc(r16LabelPeriodo(s)) + '</div><div class="s">' + (s.cobros || 0) + ' cobro(s) · vence ' + esc(r16FechaCorta(s.due_date)) + '</div></div>' +
+    '<span class="pill ' + pill.cls + '">' + esc(pill.txt) + '</span></div>' +
+    '<div class="r16est">' + est + '</div>' +
+    '<div class="g"><div><span>Gross gestionado</span><b>' + fmt$(s.gross) + '</b></div><div><span>Fees cobrados</span><b>' + fmt$(s.fees != null ? s.fees : s.cobrado) + '</b></div>' +
+    '<div><span>Retención ProtectGo</span><b>' + fmt$(s.total_protectgo) + '</b></div><div class="tot"><span>Neto a Operyx</span><b>' + fmt$(s.total_operyx) + '</b></div></div>' +
+    cod + '<div class="acts">' + acts + '</div></div>';
+}
+
+/* ---------------------------------------------------------- la vista */
+function vStatements() {
+  var per = R16_PER.tipo, p = r16Periodo();
+  var chips = '<div class="r16per" role="tablist">' + [
+    { id: 'mes', lbl: 'Mes vencido' }, { id: 'semana', lbl: 'Semana vencida' }, { id: 'rango', lbl: 'Rango' }
+  ].map(function (c) { return '<button type="button" class="chip' + (per === c.id ? ' on' : '') + '" data-r16per="' + c.id + '" role="tab" aria-selected="' + (per === c.id) + '">' + c.lbl + '</button>'; }).join('') +
+    '<span class="r16fuera" style="margin:0">' + esc(r16FechaCorta(p.desde)) + ' → ' + esc(r16FechaCorta(p.hasta)) + '</span></div>';
+  var rango = per === 'rango' ? '<div class="r16rango"><label>Desde<input type="date" id="r16Desde" value="' + esc(p.desde) + '" max="' + r16Hoy() + '"></label><label>Hasta<input type="date" id="r16Hasta" value="' + esc(p.hasta) + '" max="' + r16Hoy() + '"></label><button type="button" class="pg-btn sm" data-r16="ver">Ver</button></div>' : '';
+  var lista = (LIQ || []).filter(function (s) { return s.ciclo !== 'descartado'; });
+  var orden = { borrador: 0, aprobado: 1, notificado: 2, pagado: 3 };
+  lista.sort(function (a, b) { var d = orden[r16Ciclo(a)] - orden[r16Ciclo(b)]; return d || String(b.hasta).localeCompare(String(a.hasta)); });
+  var ndesc = (LIQ || []).length - lista.length;
+  var cards = lista.length ? lista.map(r16CardHTML).join('') : ui.vacio('Todavía no hay statements.');
+  var pago = CONFIG.operyx_pago ? (CONFIG.operyx_pago.texto || '') : '';
+  setTimeout(function () { r16CargarPreview(false); }, 0);
+  return '' +
+    '<div class="pg-eyebrow">Dirección · Operyx Group × ProtectGo</div><h1>Statements y liquidaciones</h1>' +
+    '<div class="pg-sub">Junta lo que FAM ya validó y todavía no está liquidado, lo revisas y lo cierras. Ciclo: <b>Borrador → Aprobado → Enviado a FAM → Pagado</b>. Lo aprobado queda sellado en la base: sus cobros no se pueden editar ni eliminar.</div>' +
+    r16TabsHTML() +
+    ui.panel({ tit: 'Generador de statement', sub: 'Vista previa en vivo del periodo. El cierre normal es el mes vencido; semana y rango son para excepciones (por ejemplo, pagar a mitad de mes).', body: '<div class="pb">' + chips + rango + '<div id="r16Prev">' + r16PreviewHTML() + '</div></div>' }) +
+    ui.panel({ tit: 'Statements', sub: 'El día 1 el sistema arma solo el borrador del mes anterior y te avisa. Nada le llega a FAM hasta que lo apruebas y le das "Enviar a FAM".', body: '<div class="pb">' + cards + (ndesc ? '<div class="r16desc">' + ndesc + ' borrador(es) descartado(s) quedan como registro.</div>' : '') + '</div>' }) +
+    ui.panel({ tit: 'Instrucciones de pago a Operyx', sub: 'Salen al final del PDF. Las escribe dirección aquí, una vez — nunca por chat ni correo.', body: '<div class="pb">' +
+      (famEsSales() ? '<textarea id="r13Pago" rows="4" placeholder="Banco, titular, cuenta o Zelle de Operyx Group…">' + esc(pago) + '</textarea><button type="button" class="pg-btn sm" style="margin-top:8px" data-liq="guardarpago">Guardar instrucciones</button>'
+        : '<div class="r13hint">' + (pago ? esc(pago).replace(/\n/g, '<br>') : 'Aún no están escritas: el PDF imprime “Payment details on file”. Las escribe sales@.') + '</div>') + '</div>' });
+}
+function r16TabsHTML() {
+  if (!esDir()) return '';
+  return '<div class="r16tabs" role="tablist"><button type="button" class="chip' + (R16_TAB === 'rent' ? ' on' : '') + '" data-r16tab="rent" role="tab">Rentabilidad</button>' +
+    '<button type="button" class="chip' + (R16_TAB === 'st' ? ' on' : '') + '" data-r16tab="st" role="tab">Statements' + (r16PorHacer() ? ' <span class="n">' + r16PorHacer() + '</span>' : '') + '</button></div>';
+}
+function r16PorHacer() { return (LIQ || []).filter(function (s) { return s.ciclo === 'borrador' || s.ciclo === 'aprobado'; }).length; }
+
+/* Rentabilidad: dirección ve las dos sub-pestañas; operación, igual que hoy */
+(function () {
+  var vr0 = vReportes;
+  vReportes = function () {
+    var html = vr0.apply(this, arguments);
+    if (!esDir()) return html;
+    var i = html.indexOf('</h1>');
+    if (i < 0) return r16TabsHTML() + html;
+    var j = html.indexOf('</div>', html.indexOf('pg-sub', i));
+    var k = j > 0 ? j + 6 : i + 5;
+    return html.slice(0, k) + r16TabsHTML() + html.slice(k);
+  };
+})();
+/* la casilla 10 se jubila: todo lo que iba a "liquidacion" cae en Rentabilidad › Statements */
+(function () {
+  var n0 = nav;
+  nav = function (v) {
+    if (v === 'liquidacion') { R16_TAB = 'st'; v = 'reportes'; }
+    return n0.call(this, v);
+  };
+  var r0 = render;
+  render = function () {
+    if (VIEW === 'liquidacion') { VIEW = 'reportes'; R16_TAB = 'st'; document.querySelectorAll('.pg-side a').forEach(function (a) { a.classList.toggle('on', a.dataset.v === 'reportes'); }); }
+    if (VIEW === 'reportes' && R16_TAB === 'st' && esDir()) {
+      var M = $('vista');
+      M.innerHTML = vStatements();
+      try { ui.mount(M); if ($('pie')) $('pie').textContent = ui.sello(CARGADO_EN); if ($('topSello')) $('topSello').textContent = 'datos al ' + ui.hora(CARGADO_EN); } catch (e) { }
+      return;
+    }
+    return r0.apply(this, arguments);
+  };
+})();
+/* aviso en el Resumen (dirección): lo que te toca hacer */
+r13LiqPend = function () { return (LIQ || []).filter(function (s) { return s.ciclo === 'borrador' || s.ciclo === 'aprobado'; }); };
+r13BannerHTML = function () {
+  var p = r13LiqPend(); if (!p.length) return '';
+  return p.map(function (st) {
+    var txt = st.ciclo === 'borrador' ? 'El borrador ' + esc(st.numero) + ' está listo para aprobar' : esc(st.numero) + ' está aprobado: falta enviarlo a FAM';
+    return '<div class="r13ban" onclick="nav(\'liquidacion\')" role="button" tabindex="0"><span>🔔</span><div><b>' + txt + '</b> · Neto a Operyx ' + fmt$(st.total_operyx) +
+      '<div class="d">' + esc(r16LabelPeriodo(st)) + ' · ' + (st.cobros || 0) + ' cobro(s)</div></div><span class="a">Abrir →</span></div>';
+  }).join('');
+};
+
+/* ---------------------------------------------------------- clics */
+document.addEventListener('click', function (e) {
+  var t = e.target.closest && e.target.closest('[data-r16tab]');
+  if (t) { e.preventDefault(); e.stopImmediatePropagation(); R16_TAB = t.dataset.r16tab; render(); return; }
+  var p = e.target.closest && e.target.closest('[data-r16per]');
+  if (p) {
+    e.preventDefault(); e.stopImmediatePropagation();
+    R16_PER.tipo = p.dataset.r16per;
+    if (R16_PER.tipo === 'rango' && !R16_PER.desde) { var r = r16Rango('rango'); R16_PER.desde = r.desde; R16_PER.hasta = r.hasta; }
+    render(); return;
+  }
+  var b = e.target.closest && e.target.closest('[data-r16]');
+  if (!b) return;
+  e.preventDefault(); e.stopImmediatePropagation();
+  if (b.disabled) return;
+  var act = b.dataset.r16, id = b.dataset.id, st = (LIQ || []).find(function (s) { return s.id === id; });
+  if (act === 'ver') {
+    var d = ($('r16Desde') || {}).value, h = ($('r16Hasta') || {}).value;
+    if (!d || !h || d > h) return toast('Escoge un rango válido');
+    if (h > r16Hoy()) return toast('El rango no puede terminar después de hoy');
+    R16_PER.desde = d; R16_PER.hasta = h; render(); return;
+  }
+  if (act === 'crear') return r16Crear();
+  if (act === 'aprobar' && st) return r16Aprobar(st);
+  if (act === 'descartar' && st) return r16Descartar(st);
+  if (act === 'notificar' && st) return r16Notificar(st);
+}, true);
+
+async function r16Despues(msg) {
+  await loadAll();
+  R16_PREV_KEY = ''; R16_PREV = null;
+  render();
+  if (msg) toast(msg);
+}
+function r16Crear() {
+  var p = r16Periodo(), P = R16_PREV || {};
+  pgConfirm({
+    titulo: 'Crear borrador del statement', peligro: false, textoBoton: 'Sí, crear borrador',
+    cuerpo: 'Periodo: <b>' + esc(r16FechaCorta(p.desde)) + ' → ' + esc(r16FechaCorta(p.hasta)) + '</b> (' + (R16_PER.tipo === 'mes' ? 'mes vencido' : R16_PER.tipo === 'semana' ? 'semana vencida' : 'rango') + ')<br>' +
+      'Cobros: <b>' + (P.cobros || 0) + '</b> · Gross ' + fmt$(P.gross) + ' · Retención ProtectGo ' + fmt$(P.protectgo) + '<br>Neto a Operyx: <b>' + fmt$(P.operyx) + '</b><br><br>' +
+      'Los cobros quedan reservados para este statement. Todavía no se cierra: después lo apruebas o lo descartas.',
+    onOk: async function () {
+      var r = await sb.rpc('amazon_liq_crear_borrador', { p_desde: p.desde, p_hasta: p.hasta, p_tipo: R16_PER.tipo });
+      if (r.error) return toast('Error: ' + r.error.message);
+      var d = r.data || {};
+      if (!d.creado) return toast(d.motivo || 'No había nada que liquidar');
+      await r16Despues('Borrador ' + d.numero + ' creado · ' + d.cobros + ' cobro(s) · ' + fmt$(d.total_operyx) + ' a Operyx');
+    }
+  });
+}
+function r16Aprobar(st) {
+  pgConfirm({
+    titulo: '¿Aprobar y cerrar ' + esc(st.numero) + '?', peligro: false, textoBoton: 'Sí, aprobar y cerrar',
+    cuerpo: esc(r16LabelPeriodo(st)) + '<br><br>' +
+      '· Gross gestionado: <b>' + fmt$(st.gross) + '</b><br>· Retención ProtectGo: <b>' + fmt$(st.total_protectgo) + '</b><br>· Neto a Operyx: <b>' + fmt$(st.total_operyx) + '</b><br>· Cobros: <b>' + (st.cobros || 0) + '</b><br><br>' +
+      'Al aprobar, sus cobros con fondos validados pasan a <b>Pagado · cerrado</b> y quedan <b>sellados</b>: nadie los puede editar ni eliminar, y el statement no se reabre.',
+    onOk: async function () {
+      var r = await sb.rpc('amazon_liq_aprobar', { p_id: st.id });
+      if (r.error) return toast('Error: ' + r.error.message);
+      await r16Despues(st.numero + ' aprobado y cerrado · ahora envíalo a FAM');
+    }
+  });
+}
+function r16Descartar(st) {
+  pgConfirm({
+    titulo: '¿Descartar el borrador ' + esc(st.numero) + '?', peligro: true, textoBoton: 'Sí, descartar',
+    cuerpo: 'Sus ' + (st.cobros || 0) + ' cobro(s) quedan libres para otro statement. El borrador queda como registro (no se borra).',
+    onOk: async function () {
+      var r = await sb.rpc('amazon_liq_descartar', { p_id: st.id });
+      if (r.error) return toast('Error: ' + r.error.message);
+      await r16Despues('Borrador descartado · ' + ((r.data || {}).liberados || 0) + ' cobro(s) liberados');
+    }
+  });
+}
+function r16Notificar(st) {
+  pgConfirm({
+    titulo: '¿Enviar ' + esc(st.numero) + ' a FAM?', peligro: false, textoBoton: 'Sí, enviar a FAM',
+    cuerpo: 'A Jeff (FAM) le llega el aviso en su widget y el statement aparece en su bandeja para pagarle a Juan Pablo (Operyx).<br><br>' +
+      '· Neto a Operyx: <b>' + fmt$(st.total_operyx) + '</b> · vence ' + esc(r16FechaCorta(st.due_date)),
+    onOk: async function () {
+      var r = await sb.rpc('amazon_liq_notificar_fam', { p_id: st.id });
+      if (r.error) return toast('Error: ' + r.error.message);
+      await r16Despues(st.numero + ' enviado a la bandeja de FAM');
     }
   });
 }
