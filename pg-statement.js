@@ -1,5 +1,6 @@
 /* ============================================================
    GABI · pg-statement.js v4 — el documento REPORTE DE COMISIONES (statement).
+   12-nov-2026 · v4.1: % sobre premium exacto (premium × % MGA × % persona) cuando cuadra con el monto.
    12-nov-2026 · v4 (R8): formato de Jeff, versión amigable. Banda "VENTAS <MES> <AÑO>",
    tabla de ventas con casillas (Mes · Cliente · MGA · Transaction · Premium · [Seller · Cargo] ·
    % sobre premium · Comisión · Notas), lo pendiente de statement de la MGA va DENTRO de la tabla
@@ -100,6 +101,9 @@
   /* % sobre el premium: lo que cobra la persona dividido por la prima (10 % de una comisión del 10 % = 1 %).
      En pendientes (sin monto) sale de % MGA × % de la persona. */
   function tasa(l) {
+    /* si el monto sale de premium × % MGA × % de la persona, se muestra ese % exacto (evita 14.99 % por redondeo) */
+    if (hay(l.prima) && hay(l.pct_mga) && hay(l.pct) && (l._pend || (hay(l.monto) && Math.abs(+l.prima * +l.pct_mga * +l.pct / 10000 - +l.monto) < 0.02)))
+      return rate(+l.pct_mga * +l.pct / 100);
     if (hay(l.prima) && +l.prima !== 0 && hay(l.monto) && !l._pend) return rate(Math.abs(+l.monto / +l.prima * 100));
     if (hay(l.pct_mga) && hay(l.pct)) return rate(+l.pct_mga * +l.pct / 100);
     return rate(l.pct);
