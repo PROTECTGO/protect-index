@@ -31,6 +31,8 @@
    vence el plazo (samu_mio().manual.limite) sin aprobar, el Index queda
    bloqueado con el quiz hasta aprobar. "Abrir SAMU" ya abre el SAMU nuevo
    (complemento en chatgpt.com), no el GPT que se apaga el 11-dic.
+   v1.3 (13-nov): examen corto (3 preguntas que cambian), rastro de lectura
+   (samu_manual_abrio al abrir el PDF) y mensajes limpios al fallar.
    v1.1 (9-oct): en teléfono (≤640 px) la carita sale como burbuja flotante
    abajo a la derecha (no se mete al encabezado, que ya va lleno), y dirección
    ve el enlace "Pulso del equipo →" (portal.samu_soy_direccion).
@@ -534,22 +536,22 @@
     if (m.bloquear) return true;
     var t = new Date(m.limite); return !isNaN(t) && Date.now() >= t.getTime();
   }
-  function enlacePdf(m, txt, cls) { var a = el('a', cls || 'pgs2-boton', txt); a.href = pdfUrl(m); a.target = '_blank'; a.rel = 'noopener'; a.addEventListener('click', function () { abrioManual = true; }); return a; }
+  function enlacePdf(m, txt, cls) { var a = el('a', cls || 'pgs2-boton', txt); a.href = pdfUrl(m); a.target = '_blank'; a.rel = 'noopener'; a.addEventListener('click', function () { abrioManual = true; try { if (cliGlobal && !verComoCorreo) cliGlobal.schema('portal').rpc('samu_manual_abrio').then(function () {}, function () {}); } catch (e) {} }); return a; }
   function bloqueManual(d) {
     var m = man(d); if (!m) return null;
     if (!m.aplica || m.aprobado) {
       var a1 = el('div', 'pgs2-man ok');
-      a1.appendChild(el('span', null, m.aprobado ? '✓ Manual SAMU leído y quiz aprobado' : 'Manual SAMU del equipo'));
+      a1.appendChild(el('span', null, m.aprobado ? '✓ Manual SAMU leído y examen aprobado' : 'Manual SAMU del equipo'));
       a1.appendChild(enlacePdf(m, 'Ver PDF →', 'pgs2-manlink'));
       return a1;
     }
     var b = el('div', 'pgs2-man');
     b.appendChild(el('b', null, 'Lectura obligatoria: Manual SAMU'));
     var f = fechaLim(m);
-    b.appendChild(el('div', 'pgs2-mant', 'Léelo y responde el quiz (6 preguntas, 2 minutos)' + (f ? ' antes de que termine el ' + f : '') + '. Si no, el Index se bloquea hasta que lo hagas.'));
+    b.appendChild(el('div', 'pgs2-mant', 'Léelo y pasa el examen corto' + (f ? ' antes de que termine el ' + f : '') + '. Sin el examen aprobado, el Index queda bloqueado.'));
     var acc = el('div', 'pgs2-manacc');
     acc.appendChild(enlacePdf(m, '1 · Leer el manual (PDF)', 'pgs2-boton'));
-    var q = el('button', 'pgs2-boton pgs2-b2', '2 · Responder el quiz'); q.type = 'button';
+    var q = el('button', 'pgs2-boton pgs2-b2', '2 · Presentar el examen'); q.type = 'button';
     q.addEventListener('click', function (e) { e.stopPropagation(); cerrar(false); abrirQuiz(false); });
     acc.appendChild(q); b.appendChild(acc);
     return b;
@@ -562,15 +564,15 @@
     var bx = el('div', 'pgsq-box'); ov.appendChild(bx);
     var cab = el('div', 'pgsq-cab'); cab.appendChild(cara());
     var tt = el('div');
-    tt.appendChild(el('div', 'pgs2-k', bloqueo ? 'Index bloqueado' : 'Manual SAMU · quiz'));
-    tt.appendChild(el('h3', null, bloqueo ? 'Responde el quiz del Manual SAMU para seguir' : 'Quiz del Manual SAMU'));
+    tt.appendChild(el('div', 'pgs2-k', bloqueo ? 'Index bloqueado' : 'Manual SAMU · examen'));
+    tt.appendChild(el('h3', null, bloqueo ? 'Pasa el examen del Manual SAMU para seguir' : 'Examen del Manual SAMU'));
     cab.appendChild(tt);
     if (!bloqueo) { var x = el('button', 'pgs2-x', '×'); x.type = 'button'; x.setAttribute('aria-label', 'Cerrar'); x.addEventListener('click', cerrarQuiz); cab.appendChild(x); }
     bx.appendChild(cab);
     var cuerpo = el('div', 'pgsq-cuerpo'); bx.appendChild(cuerpo);
     cuerpo.appendChild(el('p', 'pgsq-intro', bloqueo
-      ? 'Se venció el plazo para leer el Manual SAMU. Léelo y responde las 6 preguntas: hay que acertarlas todas (puedes repetir). Apenas apruebes, el Index se desbloquea.'
-      : 'Lee el manual y responde las 6 preguntas. Hay que acertarlas todas; si fallas una, te decimos cuál y vuelves a enviar.'));
+      ? 'El Index queda bloqueado hasta que pases el examen del Manual SAMU. Abre el manual, léelo completo y responde. Hay que acertarlas todas. Si fallas, salen preguntas distintas.'
+      : 'Abre el manual, léelo completo y responde. Hay que acertarlas todas. Si fallas, salen preguntas distintas.'));
     cuerpo.appendChild(enlacePdf(man(datos), 'Leer el manual (PDF) →', 'pgs2-boton pgsq-pdf'));
     var form = el('div', 'pgsq-form'); form.appendChild(el('div', 'pgsq-cargando', 'Cargando preguntas…')); cuerpo.appendChild(form);
     (document.body || document.documentElement).appendChild(ov);
@@ -579,10 +581,10 @@
       cliGlobal.schema('portal').rpc('samu_manual_estado').then(function (r) {
         var e = r && !r.error && r.data;
         while (form.firstChild) form.removeChild(form.firstChild);
-        if (!e || !Array.isArray(e.preguntas)) { form.appendChild(el('div', 'pgsq-error', 'No pude cargar el quiz. Recarga la página.')); return; }
+        if (!e || !Array.isArray(e.preguntas)) { form.appendChild(el('div', 'pgsq-error', 'No pude cargar el examen. Recarga la página.')); return; }
         if (e.aprobado) { aprobado(); return; }
         pintarPreguntas(form, e.preguntas);
-      }, function () { form.appendChild(el('div', 'pgsq-error', 'No pude cargar el quiz. Recarga la página.')); });
+      }, function () { form.appendChild(el('div', 'pgsq-error', 'No pude cargar el examen. Recarga la página.')); });
     } catch (e) {}
   }
   function pintarPreguntas(form, pr) {
@@ -607,7 +609,8 @@
       cliGlobal.schema('portal').rpc('samu_manual_responder', { p_respuestas: resp }).then(function (r) {
         env.disabled = false; env.textContent = 'Enviar respuestas';
         var x = r && !r.error && r.data;
-        if (!x || x.error) { msg.textContent = 'No se pudo enviar' + (x && x.error ? ': ' + x.error : '') + '. Intenta otra vez.'; return; }
+        if (!x) { msg.textContent = 'No se pudo enviar. Intenta otra vez.'; return; }
+        if (x.error) { msg.textContent = String(x.error) + '.'; return; }
         if (x.aprobado) { aprobado(); return; }
         msg.textContent = 'Tienes ' + x.correctas + ' de ' + x.total + '. Revisa las marcadas en rojo y vuelve a enviar.';
         (x.malas || []).forEach(function (mm) {
