@@ -25,6 +25,12 @@
    - Nada en localStorage ni sessionStorage. Sin dato: "—".
    - Cero gráficas de barras. Ámbar #D9A520.
    - API: window.pgSamuDatos y el evento 'pg-samu' en document.
+   v1.2 (12-nov): Manual SAMU obligatorio. Bloque "Lectura obligatoria" en la
+   tarjeta del Index, en Mi SAMU y en el panel (PDF + quiz de 6 preguntas que
+   califica la base: portal.samu_manual_estado / samu_manual_responder). Si se
+   vence el plazo (samu_mio().manual.limite) sin aprobar, el Index queda
+   bloqueado con el quiz hasta aprobar. "Abrir SAMU" ya abre el SAMU nuevo
+   (complemento en chatgpt.com), no el GPT que se apaga el 11-dic.
    v1.1 (9-oct): en teléfono (≤640 px) la carita sale como burbuja flotante
    abajo a la derecha (no se mete al encabezado, que ya va lleno), y dirección
    ve el enlace "Pulso del equipo →" (portal.samu_soy_direccion).
@@ -45,7 +51,7 @@
   var KEY_SB   = 'sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt';
   var EXTERNOS = ['gerencia@leonis-go.com', 'quoteautocomercial@gmail.com'];
   var SIN_PINTAR = /^(recuperar\.html|firma-protectgo\.html|samu-pulso\.html)$/i;
-  var GPT_URL  = 'https://chatgpt.com/g/g-6a55026171108191ad44ae49bf10cc4a-samu-mentor-de-riesgo-protectgo';
+  var GPT_URL  = 'https://chatgpt.com/';
   var MINT = '#2DBFA3', MINT_DEEP = '#1F9C84', AMBAR = '#D9A520', ROJO = '#E0614F', FONDO = '#0D3040', FONDO2 = '#0F4A52';
   var GRIS = '#7E95A4', GRIS_CLARO = '#9FB2BF';
   var REFRESCO_MS = 10 * 60 * 1000;
@@ -203,7 +209,39 @@
       'body.pgs2-con-burbuja #pgSamuFab{bottom:84px;}' +
       '@media (max-width:420px){#pgSamu .pgs2-lbl{display:none;}}' +
       '@media (prefers-reduced-motion:reduce){#pgSamu .pgs2-pill::after,#pgSamu .pgs2-chispa{animation:none;}#pgSamu.pgs2-nuevo .pgs2-pill{animation:none;}}' +
-      '@media print{#pgSamu,#pgSamuFab,#pgSamuAviso,.pgs2-card{display:none!important;}}';
+      /* manual + quiz (v1.2) */
+      '.pgs2-man{margin-top:12px;padding:11px 12px;border-radius:12px;background:rgba(217,165,32,.14);border:1px solid rgba(217,165,32,.55);font:600 11.5px/1.45 ' + F + ';color:#F3E2B0;}' +
+      '.pgs2-man b{display:block;color:' + AMBAR + ';font:800 12.5px/1.3 ' + T + ';}' +
+      '.pgs2-mant{margin-top:4px;}' +
+      '.pgs2-manacc{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}' +
+      '.pgs2-manacc .pgs2-boton{display:inline-block;padding:9px 12px;}' +
+      '.pgs2-boton.pgs2-b2{background:' + AMBAR + ';}' +
+      '.pgs2-man.ok{display:flex;justify-content:space-between;align-items:center;gap:10px;background:rgba(45,191,163,.10);border-color:rgba(45,191,163,.45);color:#CFEFE7;}' +
+      '.pgs2-manlink{color:' + MINT + '!important;text-decoration:none!important;font-weight:800;white-space:nowrap;}' +
+      '#pgSamu .pgs2-man{margin:12px 14px 0;}' +
+      '#pgSamuQuiz{position:fixed;inset:0;z-index:2147483000;background:rgba(6,24,33,.72);display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:28px 12px;box-sizing:border-box;font:500 13px/1.45 ' + F + ';text-align:left;}' +
+      '#pgSamuQuiz.bloq{background:rgba(6,24,33,.94);}' +
+      '.pgsq-box{width:min(620px,100%);background:#fff;color:#16323F;border-radius:18px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.4);}' +
+      '.pgsq-cab{position:relative;display:flex;align-items:center;gap:12px;padding:16px 46px 14px 16px;background:linear-gradient(135deg,' + FONDO2 + ',' + FONDO + ');color:#fff;}' +
+      '.pgsq-cab .pgs2-cara{width:46px;height:46px;box-shadow:0 0 0 2px ' + MINT + ';}' +
+      '.pgsq-cab .pgs2-k{font:800 9.5px/1 ' + T + ';letter-spacing:.16em;text-transform:uppercase;color:' + MINT + ';}' +
+      '.pgsq-cab h3{margin:5px 0 0;font:800 16px/1.25 ' + T + ';color:#fff;}' +
+      '.pgsq-cab .pgs2-x{position:absolute;top:12px;right:12px;background:rgba(255,255,255,.1);border:0;color:#fff;width:28px;height:28px;border-radius:50%;font:600 18px/28px ' + F + ';cursor:pointer;padding:0;}' +
+      '.pgsq-cuerpo{padding:16px 18px 18px;}' +
+      '.pgsq-intro{margin:0 0 12px;font-weight:600;}' +
+      '.pgsq-cuerpo .pgsq-pdf{display:inline-block;margin-bottom:14px;}' +
+      '.pgsq-q{border:1px solid #D6E2E7;border-radius:12px;padding:10px 12px 8px;margin:0 0 10px;}' +
+      '.pgsq-q.mal{border-color:' + ROJO + ';background:#FDF1EF;}' +
+      '.pgsq-q legend{font:700 13px/1.35 ' + F + ';padding:0 4px;}' +
+      '.pgsq-op{display:flex;gap:9px;align-items:flex-start;padding:6px 4px;cursor:pointer;font:500 12.5px/1.4 ' + F + ';}' +
+      '.pgsq-op input{margin-top:3px;accent-color:' + MINT_DEEP + ';}' +
+      '.pgsq-ex{margin-top:4px;font:600 11.5px/1.4 ' + F + ';color:#A3402F;}' +
+      '.pgsq-msg{min-height:18px;margin:6px 0 10px;font:700 12px/1.4 ' + F + ';color:#A3402F;}' +
+      '.pgsq-cuerpo .pgsq-enviar{display:block;width:100%;}' +
+      '.pgsq-ok{font:800 15px/1.4 ' + T + ';color:' + MINT_DEEP + ';margin:6px 0 14px;}' +
+      '.pgsq-error,.pgsq-cargando{padding:10px 0;color:' + GRIS + ';}' +
+      'html.pgsq-sin-scroll,html.pgsq-sin-scroll body{overflow:hidden!important;}' +
+      '@media print{#pgSamu,#pgSamuFab,#pgSamuAviso,#pgSamuQuiz,.pgs2-card{display:none!important;}}';
     (document.head || document.documentElement).appendChild(st);
   }
 
@@ -267,6 +305,7 @@
     });
     p.appendChild(ol);
     p.appendChild(el('div', 'pgs2-msg', consejo(d)));
+    var bm = bloqueManual(d); if (bm) p.appendChild(bm);
     var pie = el('div', 'pgs2-pie'); pie.appendChild(botonSamu(d)); if (esDireccion && !verComoCorreo) pie.appendChild(enlacePulso()); p.appendChild(pie);
     return p;
   }
@@ -375,6 +414,7 @@
     r1.appendChild(nn);
     c.appendChild(r1);
     c.appendChild(chips(d));
+    var bm = bloqueManual(d); if (bm) c.appendChild(bm);
     if (cls === 'pgs2-mp') c.appendChild(el('div', 'pgs2-msg2', consejo(d)));
     var r3 = el('div', 'pgs2-r3'); r3.appendChild(metaLinea(d));
     var acc = el('div'); if (esDireccion && !verComoCorreo) acc.appendChild(enlacePulso()); acc.appendChild(botonSamu(d)); r3.appendChild(acc); c.appendChild(r3);
@@ -481,6 +521,138 @@
     (document.body || document.documentElement).appendChild(b);
   }
 
+  /* ---------- 5. Manual SAMU + quiz (v1.2) ---------- */
+  var bloqueado = false, abrioManual = false;
+  function man(d) { return d && d.manual && typeof d.manual === 'object' ? d.manual : null; }
+  function pdfUrl(m) { var u = String((m && m.pdf) || ''); return /^https:\/\/[^"'\s]+\.pdf$/i.test(u) ? u : BASE + 'manual-samu.pdf'; }
+  function fechaLim(m) {
+    var t = new Date(m && m.limite); if (isNaN(t)) return '';
+    return new Date(t.getTime() - 60000).toLocaleDateString('es-CO', { weekday: 'long', day: 'numeric', month: 'long' });
+  }
+  function debeBloquear(d) {
+    var m = man(d); if (!m || !m.aplica || m.aprobado || verComoCorreo) return false;
+    if (m.bloquear) return true;
+    var t = new Date(m.limite); return !isNaN(t) && Date.now() >= t.getTime();
+  }
+  function enlacePdf(m, txt, cls) { var a = el('a', cls || 'pgs2-boton', txt); a.href = pdfUrl(m); a.target = '_blank'; a.rel = 'noopener'; a.addEventListener('click', function () { abrioManual = true; }); return a; }
+  function bloqueManual(d) {
+    var m = man(d); if (!m) return null;
+    if (!m.aplica || m.aprobado) {
+      var a1 = el('div', 'pgs2-man ok');
+      a1.appendChild(el('span', null, m.aprobado ? '✓ Manual SAMU leído y quiz aprobado' : 'Manual SAMU del equipo'));
+      a1.appendChild(enlacePdf(m, 'Ver PDF →', 'pgs2-manlink'));
+      return a1;
+    }
+    var b = el('div', 'pgs2-man');
+    b.appendChild(el('b', null, 'Lectura obligatoria: Manual SAMU'));
+    var f = fechaLim(m);
+    b.appendChild(el('div', 'pgs2-mant', 'Léelo y responde el quiz (6 preguntas, 2 minutos)' + (f ? ' antes de que termine el ' + f : '') + '. Si no, el Index se bloquea hasta que lo hagas.'));
+    var acc = el('div', 'pgs2-manacc');
+    acc.appendChild(enlacePdf(m, '1 · Leer el manual (PDF)', 'pgs2-boton'));
+    var q = el('button', 'pgs2-boton pgs2-b2', '2 · Responder el quiz'); q.type = 'button';
+    q.addEventListener('click', function (e) { e.stopPropagation(); cerrar(false); abrirQuiz(false); });
+    acc.appendChild(q); b.appendChild(acc);
+    return b;
+  }
+  function abrirQuiz(bloqueo) {
+    if (!cliGlobal || verComoCorreo) return;
+    var viejo = document.getElementById('pgSamuQuiz');
+    if (viejo) { if (bloqueo && !viejo.classList.contains('bloq')) viejo.parentNode.removeChild(viejo); else return; }
+    var ov = el('div', bloqueo ? 'bloq' : null); ov.id = 'pgSamuQuiz'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true');
+    var bx = el('div', 'pgsq-box'); ov.appendChild(bx);
+    var cab = el('div', 'pgsq-cab'); cab.appendChild(cara());
+    var tt = el('div');
+    tt.appendChild(el('div', 'pgs2-k', bloqueo ? 'Index bloqueado' : 'Manual SAMU · quiz'));
+    tt.appendChild(el('h3', null, bloqueo ? 'Responde el quiz del Manual SAMU para seguir' : 'Quiz del Manual SAMU'));
+    cab.appendChild(tt);
+    if (!bloqueo) { var x = el('button', 'pgs2-x', '×'); x.type = 'button'; x.setAttribute('aria-label', 'Cerrar'); x.addEventListener('click', cerrarQuiz); cab.appendChild(x); }
+    bx.appendChild(cab);
+    var cuerpo = el('div', 'pgsq-cuerpo'); bx.appendChild(cuerpo);
+    cuerpo.appendChild(el('p', 'pgsq-intro', bloqueo
+      ? 'Se venció el plazo para leer el Manual SAMU. Léelo y responde las 6 preguntas: hay que acertarlas todas (puedes repetir). Apenas apruebes, el Index se desbloquea.'
+      : 'Lee el manual y responde las 6 preguntas. Hay que acertarlas todas; si fallas una, te decimos cuál y vuelves a enviar.'));
+    cuerpo.appendChild(enlacePdf(man(datos), 'Leer el manual (PDF) →', 'pgs2-boton pgsq-pdf'));
+    var form = el('div', 'pgsq-form'); form.appendChild(el('div', 'pgsq-cargando', 'Cargando preguntas…')); cuerpo.appendChild(form);
+    (document.body || document.documentElement).appendChild(ov);
+    try { document.documentElement.classList.add('pgsq-sin-scroll'); } catch (e) {}
+    try {
+      cliGlobal.schema('portal').rpc('samu_manual_estado').then(function (r) {
+        var e = r && !r.error && r.data;
+        while (form.firstChild) form.removeChild(form.firstChild);
+        if (!e || !Array.isArray(e.preguntas)) { form.appendChild(el('div', 'pgsq-error', 'No pude cargar el quiz. Recarga la página.')); return; }
+        if (e.aprobado) { aprobado(); return; }
+        pintarPreguntas(form, e.preguntas);
+      }, function () { form.appendChild(el('div', 'pgsq-error', 'No pude cargar el quiz. Recarga la página.')); });
+    } catch (e) {}
+  }
+  function pintarPreguntas(form, pr) {
+    var resp = {};
+    pr.forEach(function (q) {
+      var f = el('fieldset', 'pgsq-q'); f.setAttribute('data-n', String(q.n));
+      f.appendChild(el('legend', null, q.n + '. ' + q.pregunta));
+      (Array.isArray(q.opciones) ? q.opciones : []).forEach(function (op, i) {
+        var lb = el('label', 'pgsq-op'), ra = document.createElement('input');
+        ra.type = 'radio'; ra.name = 'pgsq-' + q.n; ra.value = String(i);
+        ra.addEventListener('change', function () { resp[q.n] = i; f.classList.remove('mal'); var ex = f.querySelector('.pgsq-ex'); if (ex) ex.parentNode.removeChild(ex); });
+        lb.appendChild(ra); lb.appendChild(el('span', null, op)); f.appendChild(lb);
+      });
+      form.appendChild(f);
+    });
+    var msg = el('div', 'pgsq-msg'); form.appendChild(msg);
+    var env = el('button', 'pgs2-boton pgsq-enviar', 'Enviar respuestas'); env.type = 'button'; form.appendChild(env);
+    env.addEventListener('click', function () {
+      if (!abrioManual) { msg.textContent = 'Primero abre y lee el manual (botón "Leer el manual" de arriba). Después envías.'; return; }
+      if (Object.keys(resp).length < pr.length) { msg.textContent = 'Responde las ' + pr.length + ' preguntas.'; return; }
+      env.disabled = true; env.textContent = 'Revisando…'; msg.textContent = '';
+      cliGlobal.schema('portal').rpc('samu_manual_responder', { p_respuestas: resp }).then(function (r) {
+        env.disabled = false; env.textContent = 'Enviar respuestas';
+        var x = r && !r.error && r.data;
+        if (!x || x.error) { msg.textContent = 'No se pudo enviar' + (x && x.error ? ': ' + x.error : '') + '. Intenta otra vez.'; return; }
+        if (x.aprobado) { aprobado(); return; }
+        msg.textContent = 'Tienes ' + x.correctas + ' de ' + x.total + '. Revisa las marcadas en rojo y vuelve a enviar.';
+        (x.malas || []).forEach(function (mm) {
+          var f = form.querySelector('fieldset[data-n="' + Number(mm.n) + '"]'); if (!f) return;
+          f.classList.add('mal');
+          if (!f.querySelector('.pgsq-ex')) f.appendChild(el('div', 'pgsq-ex', 'Pista: ' + (mm.explicacion || 'vuelve a leer el manual.')));
+        });
+        var pm = form.querySelector('fieldset.mal'); if (pm && pm.scrollIntoView) pm.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      }, function () { env.disabled = false; env.textContent = 'Enviar respuestas'; msg.textContent = 'No se pudo enviar. Intenta otra vez.'; });
+    });
+  }
+  function aprobado() {
+    bloqueado = false;
+    var ov = document.getElementById('pgSamuQuiz');
+    if (ov) {
+      ov.classList.remove('bloq');
+      var bx = ov.querySelector('.pgsq-cuerpo');
+      if (bx) {
+        while (bx.firstChild) bx.removeChild(bx.firstChild);
+        bx.appendChild(el('p', 'pgsq-ok', '✓ ¡Aprobado! Ya sabes cómo se usa SAMU. Ahora, a usarlo con cada cliente.'));
+        var b = el('button', 'pgs2-boton', 'Listo'); b.type = 'button'; b.addEventListener('click', cerrarQuiz); bx.appendChild(b);
+      }
+    }
+    if (datos && datos.manual) { datos.manual.aprobado = true; datos.manual.bloquear = false; }
+    try { if (datos) recibir(datos); } catch (e) {}
+    setTimeout(pedir, 800);
+  }
+  function cerrarQuiz() {
+    if (bloqueado) return;
+    var ov = document.getElementById('pgSamuQuiz'); if (ov && ov.parentNode) ov.parentNode.removeChild(ov);
+    try { document.documentElement.classList.remove('pgsq-sin-scroll'); } catch (e) {}
+  }
+  function revisarBloqueo(d) {
+    if (!debeBloquear(d)) return;
+    bloqueado = true;
+    var ov = document.getElementById('pgSamuQuiz');
+    if (ov && ov.classList.contains('bloq')) return;
+    abrirQuiz(true);
+  }
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape' || !document.getElementById('pgSamuQuiz')) return;
+    if (bloqueado) { e.preventDefault(); e.stopPropagation(); } else cerrarQuiz();
+  }, true);
+  setInterval(function () { try { if (datos) revisarBloqueo(datos); } catch (e) {} }, 60000);
+
   /* ---------- datos ---------- */
   function cliente() {
     try { if (typeof global.pgSB === 'function') { var c = global.pgSB(); if (c) return c; } } catch (e) {}
@@ -496,6 +668,7 @@
     try { pintarIndex(d); } catch (e) {}
     try { pintarMiProceso(d); } catch (e) {}
     try { pintarFab(d); } catch (e) {}
+    try { revisarBloqueo(d); } catch (e) {}
     try { ubicar(); } catch (e) {}
     try { document.dispatchEvent(new CustomEvent('pg-samu', { detail: d })); } catch (e) {}
   }
