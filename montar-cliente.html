@@ -465,8 +465,11 @@ function pintarAuditoria(){
  $("nConf").textContent=a.conflictos.length; $("nBlo").textContent=a.bloquea.length; $("nFal").textContent=a.falta.length; $("nAle").textContent=a.alertas.length;
  $("lConf").innerHTML=a.conflictos.length?a.conflictos.map(function(c,ci){
   return '<li class="confl"><div class="et">'+esc(c.etiqueta)+'</div><div class="opts">'+c.opciones.map(function(o,i){
-   var f=o.fuente?'<span class="f">'+esc(o.etiqueta?o.etiqueta+" · ":"")+'Documento: '+esc(o.fuente.nombre)+(o.fuente.pagina?' · p. '+esc(o.fuente.pagina):'')+'</span>':(o.etiqueta?'<span class="f">'+esc(o.etiqueta)+'</span>':'');
-   return '<button type="button" class="opt'+(c.elegido===i?" sel":"")+'" data-c="'+ci+'" data-o="'+i+'" aria-pressed="'+(c.elegido===i)+'"><span class="v">'+esc(o.valor)+'</span>'+f+'</button>';
+   /* v2: si el valor es un código interno (p.ej. "cotizar_actuales"), se muestra la etiqueta como texto principal */
+   var codigo=/^[a-z_]+$/.test(String(o.valor||""))&&o.etiqueta&&o.etiqueta!==o.valor;
+   var princ=codigo?o.etiqueta:o.valor, sub=(!codigo&&o.etiqueta&&o.etiqueta!==o.valor)?o.etiqueta+" · ":"";
+   var f=o.fuente?'<span class="f">'+esc(sub)+'Documento: '+esc(o.fuente.nombre)+(o.fuente.pagina?' · p. '+esc(o.fuente.pagina):'')+'</span>':(sub?'<span class="f">'+esc(sub.slice(0,-3))+'</span>':'');
+   return '<button type="button" class="opt'+(c.elegido===i?" sel":"")+'" data-c="'+ci+'" data-o="'+i+'" aria-pressed="'+(c.elegido===i)+'"><span class="v">'+esc(princ)+'</span>'+f+'</button>';
   }).join("")+'</div></li>';
  }).join(""):'<li class="vacio" style="border:none;background:none;padding:0">—</li>';
  $("lBlo").innerHTML=listaItems(a.bloquea); $("lFal").innerHTML=listaItems(a.falta); $("lAle").innerHTML=listaItems(a.alertas);
@@ -773,7 +776,7 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="montar-cliente.html";
-var PGV_VERSION=1; // v1 - Montar cliente (Corte 1, piloto): Soltar, Revisar y Listo con auditoría de cuatro bloques, subida directa al bucket y descarga en ZIP.
+var PGV_VERSION=2; // v2 (13-nov-2026) - en los conflictos se ve el texto de la opción, no su código interno (cotizar_actuales/apagadas). // v1 - Montar cliente (Corte 1, piloto): Soltar, Revisar y Listo con auditoría de cuatro bloques, subida directa al bucket y descarga en ZIP.
 if(/[?&]demo=1\b/.test(location.search))return;
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
