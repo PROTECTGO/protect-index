@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ProtectGo · Montar cliente</title>
+<link rel="preconnect" href="https://hivpqsepwsfmafamxkzy.supabase.co">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="pg-estandar.css">
+<script src="pg-volver.js" defer></script>
+<!-- ===================================================================
+     Montar cliente · v1 (13-nov-2026) · Piloto 1 (Corte 1)
+     Tres pantallas: Soltar -> Revisar -> Listo. Habla con la función
+     functions/v1/montar-cliente (contrato en lib/tipos.ts) y sube los
+     archivos directo al bucket privado "montar-cliente".
+     - Nada en localStorage ni sessionStorage: "primera vez" = historial vacío.
+     - ?demo=1 solo funciona desde localhost, 127.0.0.1 o file: y usa
+       respuestas simuladas (sin red, sin sesión).
+     =================================================================== -->
+<style>
+:root{--ambar:#D9A520;--rojo:#D5594F;--ok:#1F9D6B}
+html,body{max-width:100%;overflow-x:hidden}
+[hidden]{display:none!important}
+body{font-size:14px}
+a{color:var(--mint-deep)}
+.mono{font-family:var(--f-num)}
+#bloqueo{display:none;max-width:560px;margin:80px auto;padding:22px 24px;border-radius:14px;background:#FFF8E8;border:1px solid #F0E2BC;color:#6b5718;font-size:15px;line-height:1.55}
+#app{display:none}
+.wrap{max-width:1240px;margin:0 auto;padding:22px 20px 90px}
+h1{font-family:var(--f-tit);font-weight:800;font-size:24px;color:var(--ink);margin:4px 0 2px}
+.top{display:flex;gap:14px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;margin-bottom:10px}
+.top .tit{min-width:0}
+.pg-sub{margin:4px 0 8px}
+.pasos{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 16px}
+.paso{display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;border:2px solid var(--line);background:#fff;font-weight:700;font-size:12.5px;color:var(--muted);cursor:default;font-family:var(--f-body)}
+.paso .n{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--line);color:var(--ink);font-size:11px;font-family:var(--f-num)}
+.paso.on{border-color:var(--mint-deep);color:var(--ink)}
+.paso.on .n{background:var(--mint-deep);color:#fff}
+.paso.ir{cursor:pointer;color:var(--ink)}
+.banner{padding:12px 16px;border-radius:12px;margin:0 0 14px;font-size:13.5px;line-height:1.5}
+.banner.err{background:#FCEEEC;border:1px solid #EFC3BE;color:#7a2a23}
+.banner.warn{background:#FBF0DC;border:1px solid #ECD08C;color:#6b4e0c}
+.banner button{margin-left:8px}
+details.manual{background:#fff;border:1px solid var(--line);border-radius:15px;padding:0;margin-bottom:16px}
+details.manual>summary{cursor:pointer;padding:14px 20px;font-family:var(--f-tit);font-weight:800;font-size:14.5px;color:var(--ink);list-style:none}
+details.manual>summary::-webkit-details-marker{display:none}
+details.manual>summary::after{content:"▾";float:right;color:var(--muted)}
+details.manual[open]>summary::after{content:"▴"}
+.manual .cuerpo{padding:0 20px 16px;font-size:13.5px;line-height:1.6;color:var(--txt)}
+.manual h3{font-family:var(--f-tit);font-size:15px;color:var(--ink);margin:6px 0 8px}
+.manual p{margin:0 0 10px}
+.manual ul,.manual ol{margin:0 0 10px;padding-left:22px}
+.manual li{margin-bottom:4px}
+.manual .sub-h{font-weight:700;color:var(--ink)}
+.zona{border:2px dashed #B7C6CF;border-radius:18px;background:#fff;padding:34px 18px;text-align:center;transition:border-color .15s,background .15s}
+.zona.sobre{border-color:var(--mint-deep);background:#F0FAF7}
+.zona .grande{font-family:var(--f-tit);font-weight:800;font-size:17px;color:var(--ink);margin-bottom:6px}
+.zona .peq{color:var(--muted);font-size:13px;margin-bottom:14px;line-height:1.5}
+.zona .acc{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.lista-arch{margin:14px 0 0;display:grid;gap:6px}
+.arch{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 12px;font-size:13px}
+.arch .nom{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.arch .tam{font-family:var(--f-num);color:var(--muted);font-size:11.5px}
+.arch .x{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;line-height:1;padding:2px 6px}
+.accion{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:16px}
+.pg-btn[disabled]{opacity:.45;cursor:not-allowed}
+.pg-btn.sec{background:transparent;color:var(--ink);border:2px solid var(--line)}
+.pg-btn.sec:hover{background:#fff}
+.pg-btn.grande{padding:12px 26px;font-size:14px}
+.prog{margin-top:14px;font-size:13.5px;color:var(--ink)}
+.prog .mono{font-weight:600}
+.rueda{display:inline-block;width:14px;height:14px;border:2px solid var(--mint-soft);border-top-color:var(--mint-deep);border-radius:50%;animation:gira .8s linear infinite;vertical-align:-2px;margin-right:6px}
+@keyframes gira{to{transform:rotate(360deg)}}
+.cols{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,6fr);gap:18px;align-items:start}
+@media(max-width:900px){.cols{grid-template-columns:minmax(0,1fr)}}
+.docrow{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.docrow:last-child{border-bottom:none}
+.docrow:hover{background:#FAFCFD}
+.docrow .tp{flex:0 0 auto}
+.docrow .nm{min-width:0;flex:1;font-size:12.5px;line-height:1.45;overflow-wrap:anywhere}
+.docrow .orig{color:var(--muted)}
+.docrow .flecha{color:var(--mint-deep);font-weight:700}
+.docrow .std{color:var(--ink);font-weight:600}
+.docrow .err{color:#7a2a23;font-size:12px;margin-top:3px}
+.sep{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;margin:14px 0 4px}
+.bloque{margin-bottom:16px}
+.bloque h2{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.bloque ul{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:8px}
+.bloque li{font-size:13px;line-height:1.5;padding:9px 12px;border-radius:10px;border:1px solid var(--line);background:#FAFCFD;overflow-wrap:anywhere}
+.bloque.b-bloquea li{border-color:#EFC3BE;background:#FDF5F4}
+.bloque.b-falta li{border-color:#ECD08C;background:#FDF8EC}
+.bloque.b-alertas li{border-color:#ECD08C;background:#FFFCF3}
+.bloque .fte{display:block;color:var(--muted);font-size:11.5px;margin-top:2px}
+.bloque .vacio{color:var(--muted);font-size:13px;margin-top:6px}
+.confl{border:1px solid var(--line);border-radius:12px;padding:11px 12px;background:#fff}
+.confl .et{font-weight:700;color:var(--ink);margin-bottom:8px;font-size:13px}
+.opts{display:grid;gap:8px}
+.opt{display:block;width:100%;text-align:left;border:2px solid var(--line);background:#fff;border-radius:10px;padding:9px 12px;cursor:pointer;font-family:var(--f-body);font-size:13px;color:var(--txt);line-height:1.4}
+.opt:hover{border-color:var(--mint)}
+.opt.sel{border-color:var(--mint-deep);background:#F0FAF7}
+.opt .v{font-family:var(--f-num);font-weight:600;color:var(--ink);overflow-wrap:anywhere}
+.opt .f{display:block;color:var(--muted);font-size:11.5px;margin-top:2px}
+.pie-montar{position:sticky;bottom:0;background:linear-gradient(to top,var(--bg) 70%,rgba(244,247,250,0));padding:18px 0 14px;margin-top:6px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.pie-montar .nota{font-size:12.5px;color:var(--muted);flex:1 1 220px}
+.enlaces{display:flex;gap:10px;flex-wrap:wrap;margin:6px 0 4px}
+a.pg-btn{display:inline-block;text-decoration:none}
+.pasoR{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:9px 0;border-bottom:1px solid var(--line);font-size:13px}
+.pasoR:last-child{border-bottom:none}
+.pasoR .t{font-weight:700;color:var(--ink);min-width:110px}
+.pasoR .m{flex:1 1 200px;color:var(--muted);overflow-wrap:anywhere}
+.campo{display:grid;gap:6px;margin:10px 0}
+.campo label{font-size:12.5px;font-weight:700;color:var(--ink)}
+.campo input,.campo textarea{width:100%;max-width:100%;border:1px solid #cfd9df;border-radius:10px;padding:9px 12px;font-family:var(--f-body);font-size:13.5px;color:var(--txt);background:#fff}
+.campo textarea{min-height:76px;resize:vertical}
+.fila-campo{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.fila-campo input{flex:1 1 220px;min-width:0}
+.hist{display:grid;gap:8px}
+.hrow{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:10px 12px;border:1px solid var(--line);border-radius:12px;background:#fff;cursor:pointer;font-size:13px}
+.hrow:hover{border-color:var(--mint)}
+.hrow .nm{flex:1 1 180px;min-width:0;font-weight:700;color:var(--ink);overflow-wrap:anywhere}
+.hrow .fe{color:var(--muted);font-size:12px;font-family:var(--f-num)}
+.conecta{display:flex;gap:14px;align-items:center;flex-wrap:wrap;background:#fff;border:1px solid var(--line);border-radius:15px;padding:16px 20px;margin-bottom:16px}
+.conecta .tx{flex:1 1 260px;font-size:13.5px;line-height:1.5}
+.conecta .tx b{color:var(--ink)}
+.cuenta{color:var(--muted);font-size:12.5px}
+.banner.ok{background:#E6F4EE;border:1px solid #B5DCC8;color:#1d5b3f}
+.lnkHub{background:none;border:none;padding:0;color:var(--muted);text-decoration:underline;cursor:pointer;font:inherit}
+.mc-toast{position:fixed;left:50%;right:auto;display:block;bottom:70px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:9px 16px;border-radius:999px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:99990;max-width:90vw;text-align:center}
+.mc-toast.on{opacity:1}
+.dem{display:inline-block;background:#FBF1D8;color:#8A6A14;border-radius:999px;padding:2px 10px;font-size:11px;font-weight:700;margin-left:8px}
+.pg-card{overflow-wrap:anywhere}
+@media(max-width:520px){.wrap{padding:16px 14px 90px}.pg-card{padding:16px 14px}h1{font-size:21px}.pasoR .t{min-width:0;flex:1 1 100%}}
+</style>
+</head>
+<body>
+<div id="bloqueo"></div>
+<div id="app">
+ <div class="wrap">
+  <div class="top">
+   <div class="tit">
+    <div class="pg-eyebrow">Protect Index · Ventas</div>
+    <h1>Montar cliente<span class="dem" id="demoTag" hidden>MODO DEMO</span></h1>
+    <p class="pg-sub">Suelta los documentos del cliente y te dejamos la Quick Quote armada, el cliente en tu HubSpot y los documentos con nombre estándar.</p>
+   </div>
+   <span class="cuenta">Conectado como <b id="yo">—</b><span id="hubEstado" hidden> · HubSpot: <b id="hubCorreo">conectado</b> <button class="lnkHub" id="btnDesHub" type="button">Desconectar</button></span></span>
+  </div>
+
+  <div id="err" class="banner err" role="alert" hidden></div>
+
+  <div class="conecta" id="conecta" hidden>
+   <div class="tx"><b>Primero conecta tu HubSpot.</b> Un clic, autorizas con tu usuario y listo. Lo que se cree queda a tu nombre.</div>
+   <button class="pg-btn mint" id="btnHub" type="button">Conectar mi HubSpot</button>
+  </div>
+
+  <details class="manual" id="manual">
+   <summary>Cómo se usa</summary>
+   <div class="cuerpo">
+    <h3>Montar cliente — cómo se usa</h3>
+    <p><b>Para qué sirve.</b> Sueltas los documentos del cliente como te lleguen y la herramienta te deja la Quick Quote armada, el cliente creado en tu HubSpot y los documentos ya nombrados como tú los nombras, listos para tu carpeta. Te ahorra digitar.</p>
+    <p><b>Solo la primera vez: conecta tu HubSpot.</b> Un clic, autorizas con tu usuario y listo. Lo que se cree queda a tu nombre.</p>
+    <p><b>1. Suelta todo.</b> Fotos de licencias, pantallazos, COI, dec pages, aplicaciones viejas, loss runs. En cualquier orden, con el nombre que traigan. Entre más documentos, mejor queda. Luego <b>Organizar</b>.</p>
+    <p><b>2. Revisa la auditoría.</b> Vas a ver cuatro cosas:</p>
+    <ul>
+     <li><b>Conflictos</b>: dos documentos dicen algo distinto. Escoge cuál manda.</li>
+     <li><b>Bloquea someter</b>: sin esto no se puede arrancar. Pídeselo al cliente.</li>
+     <li><b>Falta pero no bloquea</b>: se puede ir completando.</li>
+     <li><b>Alertas</b>: cosas para mirar con cuidado. Si dice "verifica contra la imagen", ábrela y compara.</li>
+    </ul>
+    <p><b>3. Dale Montar.</b> Te quedan la Quick Quote y el negocio en HubSpot, y el botón <b>Descargar documentos</b>: bájalos y suéltalos en la carpeta del cliente en tu CLIENTES, como siempre. Si un paso falla, dale "Reintentar"; no se duplica nada.</p>
+    <p class="sub-h">Lo que la herramienta NO hace</p>
+    <ul>
+     <li>No inventa. Si un dato no está en los documentos, queda vacío. Vacío es correcto.</li>
+     <li>No somete, no cotiza y no le escribe al cliente. Eso sigue siendo tuyo.</li>
+     <li>No mueve el negocio de etapa. Queda en Prospecto; lo mueves tú.</li>
+     <li>No toca clientes de otro asesor. Si ya existe con otro dueño, te avisa y se detiene.</li>
+    </ul>
+    <p class="sub-h">Tres reglas</p>
+    <ol>
+     <li>Antes de someter, abre la Quick Quote y léela. La herramienta ayuda, la responsable eres tú.</li>
+     <li>No rellenes a mano lo que quedó vacío con un estimado. Pide el documento.</li>
+     <li>Si algo quedó mal, escríbelo en "¿Algo quedó mal?". Con eso se corrige la herramienta.</li>
+    </ol>
+   </div>
+  </details>
+
+  <div class="pasos" id="pasos" role="tablist" aria-label="Pasos">
+   <button class="paso" data-v="soltar" type="button"><span class="n">1</span>Soltar</button>
+   <button class="paso" data-v="revisar" type="button"><span class="n">2</span>Revisar</button>
+   <button class="paso" data-v="listo" type="button"><span class="n">3</span>Listo</button>
+  </div>
+
+  <!-- ============ 1 · SOLTAR ============ -->
+  <section id="vSoltar">
+   <div class="zona" id="zona" tabindex="0" aria-label="Zona para soltar documentos">
+    <div class="grande">Arrastra aquí los documentos del cliente</div>
+    <div class="peq">También puedes pegarlos (Ctrl+V / Cmd+V) o elegirlos. Fotos, pantallazos, PDF, Word, Excel y texto, en cualquier orden y con el nombre que traigan.</div>
+    <div class="acc"><button class="pg-btn sec" id="btnElegir" type="button">Elegir archivos</button></div>
+    <input id="inp" type="file" multiple accept="image/*,.heic,.heif,.pdf,.doc,.docx,.xls,.xlsx,.csv,.txt" hidden>
+   </div>
+   <div class="lista-arch" id="listaArch"></div>
+   <div class="accion">
+    <button class="pg-btn mint grande" id="btnOrg" type="button" disabled>Organizar</button>
+    <span class="cuenta" id="cntArch">Aún no hay archivos.</span>
+   </div>
+   <div class="prog" id="prog" hidden></div>
+
+   <div class="pg-card" style="margin-top:22px">
+    <h2>Mis corridas anteriores</h2>
+    <div class="h2sub">Solo ves las tuyas.</div>
+    <div class="hist" id="hist"><div class="cuenta">Cargando…</div></div>
+   </div>
+  </section>
+
+  <!-- ============ 2 · REVISAR ============ -->
+  <section id="vRevisar" hidden>
+   <div class="prog" id="progR" hidden></div>
+   <div class="cols">
+    <div class="pg-card">
+     <h2>Documentos</h2>
+     <div class="h2sub">Nombre original → nombre estándar. Clic en uno para abrirlo.</div>
+     <div id="docsOk"></div>
+     <div id="docsNo"></div>
+    </div>
+    <div>
+     <div class="pg-card bloque b-conflictos"><h2>Conflictos <span class="pg-pill n" id="nConf">—</span></h2><div class="h2sub">Dos documentos dicen algo distinto. Escoge cuál manda.</div><ul id="lConf"></ul></div>
+     <div class="pg-card bloque b-bloquea"><h2>Bloquea someter <span class="pg-pill due" id="nBlo">—</span></h2><div class="h2sub">Sin esto no se puede arrancar. Pídeselo al cliente.</div><ul id="lBlo"></ul></div>
+     <div class="pg-card bloque b-falta"><h2>Falta pero no bloquea <span class="pg-pill warn" id="nFal">—</span></h2><div class="h2sub">Se puede ir completando.</div><ul id="lFal"></ul></div>
+     <div class="pg-card bloque b-alertas"><h2>Alertas <span class="pg-pill warn" id="nAle">—</span></h2><div class="h2sub">Cosas para mirar con cuidado.</div><ul id="lAle"></ul></div>
+    </div>
+   </div>
+   <div class="pie-montar">
+    <button class="pg-btn mint grande" id="btnMontar" type="button" disabled>Montar</button>
+    <span class="nota" id="notaMontar">Hasta aquí no se ha escrito nada en HubSpot, Drive ni en las Quick Quotes.</span>
+   </div>
+  </section>
+
+  <!-- ============ 3 · LISTO ============ -->
+  <section id="vListo" hidden>
+   <div class="pg-card">
+    <h2 id="listoTit">Listo</h2>
+    <div class="h2sub" id="listoSub"></div>
+    <div class="banner warn" id="listoPrueba" hidden>Corrida de prueba: no se creó nada real en la Quick Quote ni en HubSpot.</div>
+    <div class="enlaces" id="enlaces"></div>
+    <div id="pasosL" style="margin-top:12px"></div>
+   </div>
+   <div class="pg-card">
+    <h2>Documentos</h2>
+    <div class="h2sub">Bájalos y suéltalos en la carpeta del cliente en tu CLIENTES, como siempre.</div>
+    <div class="accion" style="margin-top:6px"><button class="pg-btn mint" id="btnDesc" type="button">Descargar documentos</button><span class="cuenta" id="msgDesc"></span></div>
+    <div class="campo">
+     <label for="inpDrive">Enlace de la carpeta de Drive (opcional)</label>
+     <div class="fila-campo"><input id="inpDrive" type="url" placeholder="Pega aquí el enlace de la carpeta" autocomplete="off"><button class="pg-btn sec sm" id="btnDrive" type="button">Guardar enlace</button></div>
+    </div>
+   </div>
+   <div class="cols">
+    <div class="pg-card bloque b-bloquea"><h2>Bloquea someter <span class="pg-pill due" id="nBloL">—</span></h2><ul id="lBloL"></ul></div>
+    <div class="pg-card bloque b-falta"><h2>Falta pero no bloquea <span class="pg-pill warn" id="nFalL">—</span></h2><ul id="lFalL"></ul></div>
+   </div>
+   <div class="pg-card">
+    <h2>¿Algo quedó mal?</h2>
+    <div class="h2sub">Escríbelo aquí. Con eso se corrige la herramienta. Las correcciones al cliente se hacen en la Quick Quote.</div>
+    <div class="campo"><textarea id="txtFb" aria-label="¿Algo quedó mal?" placeholder="Cuéntanos qué quedó mal (opcional)"></textarea></div>
+    <button class="pg-btn sec sm" id="btnFb" type="button">Enviar</button>
+   </div>
+   <div class="accion"><button class="pg-btn sec" id="btnOtro" type="button">Montar otro cliente</button></div>
+  </section>
+ </div>
+</div>
+<div class="mc-toast" id="toast" role="status"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function(){
+"use strict";
+var SB_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
+var SB_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
+var FN_URL=SB_URL+"/functions/v1/montar-cliente";
+/* Conectar HubSpot: montar-cliente {accion:"conectar_inicio"} devuelve {url}; HubSpot vuelve por mc-conectar a esta pantalla con ?hubspot=ok|error&motivo= */
+var MOTIVO_HUB={cancelado:"Cancelaste la autorización en HubSpot.",state_vencido:"El enlace de conexión venció (dura 10 minutos). Dale otra vez Conectar mi HubSpot.",state_invalido:"El enlace de conexión no es válido. Dale otra vez Conectar mi HubSpot.",otro_portal:"Autorizaste otra cuenta de HubSpot. Entra con tu usuario de ProtectGo.",sin_owner:"Tu usuario de HubSpot no aparece como propietario (owner). Avísale a Andrés.",sin_correo:"HubSpot no devolvió tu correo. Inténtalo de nuevo.",sin_acceso:"Tu cuenta no tiene acceso a Montar cliente. Avísale a Andrés.",config:"La conexión con HubSpot todavía no está configurada. Avísale a Andrés.",code:"HubSpot rechazó la autorización. Inténtalo de nuevo.",sin_code:"HubSpot no devolvió la autorización. Inténtalo de nuevo.",token:"HubSpot no entregó el acceso. Inténtalo de nuevo.",red:"No hubo conexión con HubSpot. Inténtalo de nuevo."};
+var BUCKET="montar-cliente";
+var MAX_LADO=3000;
+var CDN_HEIC="https://cdnjs.cloudflare.com/ajax/libs/heic2any/0.0.4/heic2any.min.js";
+/* TODO(mc): confirmar desde un navegador que estas dos rutas de cdnjs responden (el sandbox no llega a cdnjs). Si fallan, el archivo se sube igual sin lectura y la función lo marca ilegible con mensaje claro. */
+var CDN_MAMMOTH="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js";
+var CDN_XLSX="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+var MIME_DOCX="application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+var MIME_XLSX="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+var CDN_JSZIP="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js";
+var DEMO=/[?&]demo=1\b/.test(location.search)&&(location.protocol==="file:"||location.hostname==="localhost"||location.hostname==="127.0.0.1");
+
+var sb=null, uid=null;
+var S={vista:"soltar",archivos:[],corrida:null,est:null,hist:[],conex:{hubspot:{conectado:true,correo:null}},ocupado:false,pollTok:0,historialCargado:false};
+function $(id){return document.getElementById(id);}
+function esc(t){return String(t==null?"":t).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];});}
+function dash(v){return (v===null||v===undefined||v==="")?"—":esc(v);}
+function toast(t){var e=$("toast");e.textContent=t;e.classList.add("on");clearTimeout(toast._t);toast._t=setTimeout(function(){e.classList.remove("on");},2600);}
+function bloquear(html){$("bloqueo").innerHTML=html;$("bloqueo").style.display="block";$("app").style.display="none";}
+function mostrarError(msg){var e=$("err");e.className="banner err";e.setAttribute("role","alert");if(!msg){e.hidden=true;e.innerHTML="";return;}e.innerHTML=esc(msg);e.hidden=false;}
+function fecha(s){if(!s)return "—";try{var d=new Date(s);if(isNaN(d))return "—";return d.toLocaleString("es-CO",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"});}catch(e){return "—";}}
+function fmtTam(b){if(b==null)return "—";if(b<1024)return b+" B";if(b<1048576)return Math.round(b/1024)+" KB";return (b/1048576).toFixed(1)+" MB";}
+function cargarScript(src){return new Promise(function(res,rej){var s=document.createElement("script");s.src=src;s.onload=res;s.onerror=function(){rej(new Error("No se pudo cargar un componente. Revisa tu internet e inténtalo de nuevo."));};document.head.appendChild(s);});}
+
+/* ------------------------------------------------------------ API real */
+async function apiReal(accion,body){
+  var ses=await sb.auth.getSession(); var tok=ses&&ses.data&&ses.data.session&&ses.data.session.access_token;
+  if(!tok)throw new Error("Tu sesión venció. Entra de nuevo a Protect Index.");
+  var r;
+  try{
+    r=await fetch(FN_URL,{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+tok,"apikey":SB_KEY},body:JSON.stringify(Object.assign({accion:accion},body||{}))});
+  }catch(e){throw new Error("No hay conexión con el servidor. Revisa tu internet e inténtalo de nuevo.");}
+  var j=null; try{j=await r.json();}catch(e){}
+  if(!r.ok){
+    var m=j&&j.error&&j.error.mensaje;
+    if(!m){ m=r.status===401?"Tu sesión venció. Entra de nuevo a Protect Index.":r.status===403?"Tu cuenta no tiene acceso a Montar cliente. Avísale a Andrés.":"Algo falló en el servidor ("+r.status+"). Inténtalo de nuevo."; }
+    throw new Error(m);
+  }
+  return j;
+}
+
+/* ------------------------------------------------------------ API demo (simulada, sin red) */
+var DM={n:0,corrida:null,docsDemo:null,estado:"subiendo",polls:0,montarPolls:0,decisiones:{},feedback:null,drive:null};
+function demoDocs(){return [
+ {id:"d1",nombre_original:"IMG_4471.heic",nombre_estandar:"CDL - RAFAEL FRANCO.jpg",tipo:"CDL",persona:"RAFAEL FRANCO",estado_lectura:"leido",error:null},
+ {id:"d2",nombre_original:"Captura de pantalla 2026-11-10 a las 3.12.04 PM.png",nombre_estandar:"APPLICATION - RMB TRANSPORTATION LLC.png",tipo:"APPLICATION",persona:"RMB TRANSPORTATION LLC",estado_lectura:"leido",error:null},
+ {id:"d3",nombre_original:"dec page vieja.pdf",nombre_estandar:"DEC_PAGE - RMB TRANSPORTATION LLC.pdf",tipo:"DEC_PAGE",persona:"RMB TRANSPORTATION LLC",estado_lectura:"leido",error:null},
+ {id:"d4",nombre_original:"LOSS RUN 2025.pdf",nombre_estandar:"LOSS_RUN - RMB TRANSPORTATION LLC.pdf",tipo:"LOSS_RUN",persona:"RMB TRANSPORTATION LLC",estado_lectura:"leido",error:null},
+ {id:"d5",nombre_original:"WhatsApp Image 2026-11-11 at 9.40.11 AM.jpeg",nombre_estandar:"CAB_CARD - RMB TRANSPORTATION LLC.jpeg",tipo:"CAB_CARD",persona:"RMB TRANSPORTATION LLC",estado_lectura:"leido",error:null},
+ {id:"d6",nombre_original:"foto borrosa.jpg",nombre_estandar:null,tipo:null,persona:null,estado_lectura:"ilegible",error:"No se pudo leer: la foto está borrosa."}
+];}
+function demoAud(){
+ var f=function(id,n,p){return {doc_id:id,nombre:n,pagina:p,origen:"documento"};};
+ return {
+  conflictos:[
+   {id:"driver:FRANCO RAFAEL:licencia",campo:"drivers.licencia",etiqueta:"Licencia de Rafael Franco: dos documentos no coinciden",opciones:[{valor:"F652-4401-8830",etiqueta:"CDL",fuente:f("d1","IMG_4471.heic",1)},{valor:"F652-4401-8838",etiqueta:"Aplicación",fuente:f("d2","Captura de pantalla 2026-11-10…png",2)}],elegido:null},
+   {id:"cov_actuales",campo:"covOn",etiqueta:"Las coberturas salen de la póliza actual, no de lo que pidió el cliente",opciones:[{valor:"Cotizar las mismas de la póliza actual (lista)"},{valor:"Dejarlas apagadas; las pongo yo en la Quick Quote"}],elegido:null}
+  ],
+  bloquea:[
+   {id:"b1",texto:"Loss runs incompletos: solo hay un año (2025). Faltan los 4 años previos.",fuente:f("d4","LOSS RUN 2025.pdf")},
+   {id:"b2",texto:"El VIN 1FUJGLDR5CLBP8834 no pasa el dígito verificador.",fuente:f("d3","dec page vieja.pdf",1)}
+  ],
+  falta:[{id:"f1",texto:"Commodity: ningún documento dice qué carga."},{id:"f2",texto:"Fecha de contratación de los conductores."}],
+  alertas:[
+   {id:"a1",tipo:"owner_excluido",texto:"JOSÉ FRANCO figura como dueño y excluido: no entra en la tabla de conductores.",fuente:f("d2","Captura de pantalla…png")},
+   {id:"a2",tipo:"vin_anio",texto:"El año escrito (2018) no cuadra con el VIN: posibles 2008 o 2038.",fuente:f("d3","dec page vieja.pdf",1)},
+   {id:"a3",tipo:"doble_lectura",texto:"Licencia leída distinta en la segunda lectura: verifica contra la imagen.",fuente:f("d1","IMG_4471.heic",1)},
+   {id:"a4",tipo:"doc_sin_clasificar",texto:"foto borrosa.jpg no se pudo clasificar."}
+  ]
+ };
+}
+function demoEstado(){
+ var ya=DM.estado, docs=DM.docsDemo, aud=null, tot=docs.length, leidos=Math.min(tot,DM.polls*2);
+ var vistos=(ya==="revision"||ya==="montando"||ya==="listo");
+ if(vistos){aud=demoAud();aud.conflictos.forEach(function(c){var d=DM.decisiones[c.id];if(d!=null)c.elegido=d;});leidos=tot;}
+ var sinEscoger=aud?aud.conflictos.some(function(c){return c.elegido==null;}):true;
+ var pasos={quote:{estado:"pendiente"},hubspot:{estado:"pendiente"},drive:{estado:"no_aplica"}};
+ if(ya==="listo"){pasos.quote={estado:"listo",detalle:{simulado:false}};pasos.hubspot={estado:"listo",url:"https://app.hubspot.com/contacts/0/deal/0"};}
+ if(ya==="montando"){pasos.quote={estado:"listo"};pasos.hubspot={estado:"en_curso"};}
+ return {
+  corrida:{id:DM.corrida,estado:ya,es_prueba:false,account_name:vistos?"RMB TRANSPORTATION LLC":null,dot:vistos?"3456789":null,quote_number:ya==="listo"?"QC-2026-0151":null,quote_id:ya==="listo"?"00000000-0000-4000-8000-000000000151":null,drive_url:DM.drive,creado:new Date().toISOString(),montado:ya==="listo"?new Date().toISOString():null,pasos:pasos},
+  docs:docs.map(function(d){var o=Object.assign({},d);if(!vistos){o.estado_lectura=docs.indexOf(d)<leidos?"leido":"leyendo";}return o;}),
+  avance:{total:tot,leidos:leidos},
+  auditoria:aud,
+  resumen:vistos?{conductores:1,unidades:2,remolques:1,coberturas:["AUTO_LIABILITY","MOTOR_TRUCK_CARGO"]}:null,
+  conexiones:{hubspot:{conectado:true,correo:"demo@protectgoservices.com"}},
+  puede_montar:vistos&&ya==="revision"&&!sinEscoger
+ };
+}
+async function apiDemo(accion,b){
+ await new Promise(function(r){setTimeout(r,60);});
+ switch(accion){
+  case "conexion": return DM.hubOff?{hubspot:{conectado:false,correo:null}}:{hubspot:{conectado:true,correo:"demo@protectgoservices.com"}};
+  case "conectar_inicio": return {url:location.pathname+"?demo=1&hubspot=ok"};
+  case "desconectar": DM.hubOff=true; return {hubspot:{conectado:false,correo:null}};
+  case "historial": return {corridas:DM.corrida?[demoEstado().corrida]:[]};
+  case "crear": DM.n++;DM.corrida="demo-corrida-"+DM.n;DM.estado="subiendo";DM.polls=0;DM.decisiones={};DM.docsDemo=demoDocs();return {corrida_id:DM.corrida,prefijo:"demo/"+DM.corrida+"/"};
+  case "registrar_docs": return {ok:true};
+  case "analizar": DM.estado="analizando";DM.polls=0;return {ok:true};
+  case "estado": if(DM.estado==="analizando"){DM.polls++;if(DM.polls>=3)DM.estado="revision";}
+                 if(DM.estado==="montando"){DM.montarPolls++;if(DM.montarPolls>=2)DM.estado="listo";}
+                 return demoEstado();
+  case "decidir": DM.decisiones[b.conflicto_id]=b.opcion;return demoEstado();
+  case "reintentar_doc": return {ok:true};
+  case "montar": DM.estado="montando";DM.montarPolls=0;return demoEstado();
+  case "reintentar": return demoEstado();
+  case "url_doc": return {url:"data:text/plain;charset=utf-8,Documento%20de%20demostracion"};
+  case "descarga": return {archivos:DM.docsDemo.filter(function(d){return d.nombre_estandar;}).map(function(d){return {nombre:d.nombre_estandar,url:"data:text/plain;charset=utf-8,Contenido%20simulado%20de%20"+encodeURIComponent(d.nombre_estandar)};})};
+  case "enlace_carpeta": DM.drive=b.url;return demoEstado();
+  case "feedback": DM.feedback=b.texto;return {ok:true};
+ }
+ throw new Error("Acción desconocida: "+accion);
+}
+function api(a,b){return DEMO?apiDemo(a,b):apiReal(a,b);}
+
+/* ------------------------------------------------------------ navegación */
+function ver(v){
+ S.vista=v;
+ ["soltar","revisar","listo"].forEach(function(x){$("v"+x[0].toUpperCase()+x.slice(1)).hidden=(x!==v);});
+ var tiene={soltar:true,revisar:!!(S.est&&S.est.corrida),listo:!!(S.est&&S.est.corrida&&/montando|listo/.test(S.est.corrida.estado)||(S.est&&S.est.corrida&&S.est.corrida.estado==="error"&&S.est.auditoria))};
+ Array.prototype.forEach.call(document.querySelectorAll(".paso"),function(b){var k=b.getAttribute("data-v");b.classList.toggle("on",k===v);b.classList.toggle("ir",k!==v&&!!tiene[k]);b.setAttribute("aria-selected",k===v?"true":"false");});
+}
+function irPorEstado(est){
+ var e=est.corrida.estado;
+ if(e==="montando"||e==="listo")ver("listo");
+ else if(e==="error"&&est.corrida.pasos&&(est.corrida.pasos.quote.estado!=="pendiente"||est.corrida.pasos.hubspot.estado!=="pendiente"))ver("listo");
+ else if(e==="subiendo"||e==="analizando"||e==="revision"||e==="error")ver("revisar");
+}
+
+/* ------------------------------------------------------------ pintar */
+function pintarConexion(){ var h=S.conex&&S.conex.hubspot; $("conecta").hidden=!(h&&h.conectado===false); $("hubEstado").hidden=!(h&&h.conectado===true); if(h&&h.conectado)$("hubCorreo").textContent=h.correo||"conectado"; }
+function mostrarOk(msg){var e=$("err");e.className="banner ok";e.setAttribute("role","status");e.innerHTML=esc(msg);e.hidden=false;}
+function retornoHubspot(){
+ var q=new URLSearchParams(location.search), h=q.get("hubspot"); if(!h)return;
+ if(h==="ok"){ mostrarOk("Listo: tu HubSpot quedó conectado. Lo que montes queda a tu nombre."); }
+ else{ var m=q.get("motivo")||"servidor"; mostrarError("No se pudo conectar tu HubSpot. "+(MOTIVO_HUB[m]||"Algo falló en el servidor. Inténtalo de nuevo; si sigue, avísale a Andrés.")); }
+ q.delete("hubspot"); q.delete("motivo");
+ try{ history.replaceState(null,"",location.pathname+(q.toString()?"?"+q.toString():"")+location.hash); }catch(e){}
+}
+async function conectarHubspot(){
+ if(S.ocupado)return; var b=$("btnHub"); b.disabled=true;
+ try{ var r=await api("conectar_inicio",{}); if(!r||!r.url)throw new Error("El servidor no devolvió el enlace de HubSpot."); location.href=r.url; }
+ catch(e){ mostrarError(e.message); b.disabled=false; }
+}
+async function desconectarHubspot(){
+ if(!confirm("¿Desconectar tu HubSpot? Para volver a montar clientes tendrás que conectarlo otra vez."))return;
+ try{ S.conex=await api("desconectar",{}); pintarConexion(); toast("HubSpot desconectado."); }catch(e){ mostrarError(e.message); }
+}
+
+function pintarHistorial(){
+ var h=$("hist");
+ if(!S.hist.length){h.innerHTML='<div class="cuenta">Todavía no has montado ningún cliente.</div>';return;}
+ var pill={subiendo:"n",analizando:"n",revision:"warn",montando:"n",listo:"ok",error:"due"};
+ var nom={subiendo:"Subiendo",analizando:"Analizando",revision:"Por revisar",montando:"Montando",listo:"Listo",error:"Con error"};
+ h.innerHTML=S.hist.map(function(c,i){
+  return '<div class="hrow" data-i="'+i+'" role="button" tabindex="0"><span class="nm">'+dash(c.account_name)+(c.es_prueba?' <span class="pg-pill n">prueba</span>':'')+'</span><span class="mono cuenta">'+dash(c.quote_number)+'</span><span class="fe">'+fecha(c.creado)+'</span><span class="pg-pill '+(pill[c.estado]||"n")+'">'+(nom[c.estado]||dash(c.estado))+'</span></div>';
+ }).join("");
+}
+
+function listaItems(arr,tipo){
+ if(!arr||!arr.length)return '<li class="vacio" style="border:none;background:none;padding:0">—</li>';
+ return arr.map(function(x){
+  var f=x.fuente?'<span class="fte">Documento: '+esc(x.fuente.nombre)+(x.fuente.pagina?' · p. '+esc(x.fuente.pagina):'')+(x.fuente.origen==="FMCSA"?' · FMCSA':'')+'</span>':'';
+  return '<li>'+esc(x.texto)+f+'</li>';
+ }).join("");
+}
+
+function pintarDocs(){
+ var est=S.est, docs=est.docs||[];
+ var ok=[],no=[];
+ docs.forEach(function(d){ (d.tipo&&d.tipo!=="OTHER"&&d.tipo!=="ILEGIBLE"&&d.estado_lectura==="leido"?ok:no).push(d); });
+ function fila(d){
+  var cola="";
+  if(d.estado_lectura==="error"||d.estado_lectura==="ilegible"){cola='<div class="err">'+esc(d.error||(d.estado_lectura==="ilegible"?"No se pudo leer este documento.":"Falló la lectura."))+(d.estado_lectura==="error"?' <button class="pg-btn sm sec" data-reint="'+esc(d.id)+'" type="button">Reintentar</button>':'')+'</div>';}
+  else if(d.estado_lectura==="leyendo"||d.estado_lectura==="pendiente"){cola='<div class="cuenta"><span class="rueda"></span>Leyendo…</div>';}
+  return '<div class="docrow" data-doc="'+esc(d.id)+'" role="button" tabindex="0"><span class="tp pg-pill fin">'+dash(d.tipo)+'</span><div class="nm"><span class="orig">'+esc(d.nombre_original)+'</span>'+(d.nombre_estandar?' <span class="flecha">→</span> <span class="std">'+esc(d.nombre_estandar)+'</span>':'')+cola+'</div></div>';
+ }
+ $("docsOk").innerHTML=ok.length?ok.map(fila).join(""):'<div class="cuenta">—</div>';
+ $("docsNo").innerHTML=no.length?'<div class="sep">No se pudieron clasificar ('+no.length+')</div>'+no.map(fila).join(""):"";
+}
+
+function pintarAuditoria(){
+ var est=S.est, a=est.auditoria;
+ if(!a){["lConf","lBlo","lFal","lAle"].forEach(function(id){$(id).innerHTML='<li class="vacio" style="border:none;background:none;padding:0">—</li>';});["nConf","nBlo","nFal","nAle"].forEach(function(id){$(id).textContent="—";});return;}
+ $("nConf").textContent=a.conflictos.length; $("nBlo").textContent=a.bloquea.length; $("nFal").textContent=a.falta.length; $("nAle").textContent=a.alertas.length;
+ $("lConf").innerHTML=a.conflictos.length?a.conflictos.map(function(c,ci){
+  return '<li class="confl"><div class="et">'+esc(c.etiqueta)+'</div><div class="opts">'+c.opciones.map(function(o,i){
+   var f=o.fuente?'<span class="f">'+esc(o.etiqueta?o.etiqueta+" · ":"")+'Documento: '+esc(o.fuente.nombre)+(o.fuente.pagina?' · p. '+esc(o.fuente.pagina):'')+'</span>':(o.etiqueta?'<span class="f">'+esc(o.etiqueta)+'</span>':'');
+   return '<button type="button" class="opt'+(c.elegido===i?" sel":"")+'" data-c="'+ci+'" data-o="'+i+'" aria-pressed="'+(c.elegido===i)+'"><span class="v">'+esc(o.valor)+'</span>'+f+'</button>';
+  }).join("")+'</div></li>';
+ }).join(""):'<li class="vacio" style="border:none;background:none;padding:0">—</li>';
+ $("lBlo").innerHTML=listaItems(a.bloquea); $("lFal").innerHTML=listaItems(a.falta); $("lAle").innerHTML=listaItems(a.alertas);
+}
+
+function pintarRevisar(){
+ var est=S.est, c=est.corrida, an=(c.estado==="subiendo"||c.estado==="analizando");
+ var p=$("progR");
+ if(an){p.hidden=false;p.innerHTML='<span class="rueda"></span>Leyendo <span class="mono">'+est.avance.leidos+'</span> de <span class="mono">'+est.avance.total+'</span>…';}
+ else p.hidden=true;
+ pintarDocs(); pintarAuditoria();
+ var puede=!!est.puede_montar&&c.estado==="revision"&&!S.ocupado;
+ $("btnMontar").disabled=!puede;
+ var nota="Hasta aquí no se ha escrito nada en HubSpot, Drive ni en las Quick Quotes.";
+ if(an)nota="Estamos leyendo los documentos. Montar se habilita al terminar.";
+ else if(c.estado==="error")nota="La corrida terminó con error. Revisa el mensaje de arriba o monta otro cliente.";
+ else if(!est.puede_montar&&est.auditoria&&est.auditoria.conflictos.some(function(x){return x.elegido==null;}))nota="Escoge una opción en cada conflicto para poder montar.";
+ else if(!est.puede_montar)nota="Montar se habilita cuando todos los documentos estén leídos y no queden conflictos sin escoger.";
+ $("notaMontar").textContent=nota;
+ if(est.conexiones)S.conex=est.conexiones, pintarConexion();
+}
+
+var NOMPASO={quote:"Quick Quote",hubspot:"HubSpot",drive:"Drive"};
+var PILL={pendiente:["n","Pendiente"],en_curso:["n","En curso"],listo:["ok","Listo"],error:["due","Falló"],detenido:["warn","Detenido"],no_aplica:["n","No aplica"]};
+function pintarListo(){
+ var est=S.est, c=est.corrida, ps=c.pasos||{};
+ var montando=c.estado==="montando";
+ $("listoTit").innerHTML=montando?'<span class="rueda"></span>Montando…':'Listo'+(c.account_name?' · '+esc(c.account_name):'');
+ $("listoSub").innerHTML=(c.quote_number?'Quick Quote <span class="mono">'+esc(c.quote_number)+'</span>':'Quick Quote —')+' · DOT <span class="mono">'+dash(c.dot)+'</span>';
+ $("listoPrueba").hidden=!c.es_prueba;
+ var en=[];
+ /* TODO(mc): quick-quote.html hoy NO abre una quote por URL (solo desde el panel "Mis Quotes", openQuote(id)); el enlace ?id= quedará activo cuando el cotizador lo lea. */
+ if(c.quote_id&&!c.es_prueba)en.push('<a class="pg-btn mint" href="quick-quote.html?id='+encodeURIComponent(c.quote_id)+'">Abrir Quick Quote</a>');
+ var u=ps.hubspot&&ps.hubspot.url; if(u)en.push('<a class="pg-btn sec" href="'+esc(u)+'" target="_blank" rel="noopener">Abrir negocio en HubSpot</a>');
+ if(c.drive_url)en.push('<a class="pg-btn sec" href="'+esc(c.drive_url)+'" target="_blank" rel="noopener">Abrir carpeta de Drive</a>');
+ $("enlaces").innerHTML=en.length?en.join(""):'<span class="cuenta">—</span>';
+ var filas=["quote","hubspot","drive"].filter(function(k){return ps[k]&&ps[k].estado!=="no_aplica";}).map(function(k){
+  var p=ps[k], pl=PILL[p.estado]||["n",p.estado];
+  return '<div class="pasoR"><span class="t">'+NOMPASO[k]+'</span><span class="pg-pill '+pl[0]+'">'+pl[1]+'</span><span class="m">'+(p.mensaje?esc(p.mensaje):'')+'</span>'+(p.estado==="error"?'<button class="pg-btn sm" data-rp="'+k+'" type="button">Reintentar</button>':'')+'</div>';
+ });
+ $("pasosL").innerHTML=filas.join("")||'<div class="cuenta">—</div>';
+ var a=est.auditoria||{bloquea:[],falta:[]};
+ $("nBloL").textContent=a.bloquea.length; $("nFalL").textContent=a.falta.length;
+ $("lBloL").innerHTML=listaItems(a.bloquea); $("lFalL").innerHTML=listaItems(a.falta);
+ if(c.drive_url&&!$("inpDrive").value)$("inpDrive").value=c.drive_url;
+}
+
+function pintarTodo(){
+ if(!S.est)return;
+ pintarRevisar(); pintarListo(); pintarConexion();
+}
+
+/* ------------------------------------------------------------ sondeo cada 2 s */
+function sondear(){
+ var tok=++S.pollTok;
+ (async function bucle(){
+  while(tok===S.pollTok){
+   try{
+    var est=await api("estado",{corrida_id:S.corrida});
+    if(tok!==S.pollTok)return;
+    S.est=est; pintarTodo(); ver(S.vista);
+    var c=est.corrida.estado;
+    var leyendo=(est.docs||[]).some(function(d){return d.estado_lectura==="leyendo"||d.estado_lectura==="pendiente";});
+    if(c==="subiendo"||c==="analizando"||c==="montando"||(leyendo&&c!=="error")){ await new Promise(function(r){setTimeout(r,2000);}); continue; }
+    if(c==="error")irPorEstado(est);
+    return;
+   }catch(e){ if(tok!==S.pollTok)return; mostrarError(e.message); return; }
+  }
+ })();
+}
+
+/* ------------------------------------------------------------ subida */
+function extDe(f){var m=/\.([A-Za-z0-9]{1,8})$/.exec(f.name||"");var e=m?m[1].toLowerCase():"";if(!e){var t=f.type||"";e=t==="application/pdf"?"pdf":t==="image/png"?"png":t==="image/jpeg"?"jpg":t==="image/heic"?"heic":"bin";}return e;}
+function esHeic(f){return /^(heic|heif)$/.test(extDe(f))||/image\/hei[cf]/.test(f.type||"");}
+var MIME_EXT={pdf:"application/pdf",png:"image/png",jpg:"image/jpeg",jpeg:"image/jpeg",heic:"image/heic",heif:"image/heif",webp:"image/webp",gif:"image/gif",doc:"application/msword",docx:MIME_DOCX,xls:"application/vnd.ms-excel",xlsx:MIME_XLSX,csv:"text/csv",txt:"text/plain"};
+/* Mime real: el del navegador si lo trae (y no es genérico); si no, por extensión. */
+function mimeDe(f){var t=f.type;if(t&&t!=="application/octet-stream")return t;return MIME_EXT[extDe(f)]||t||"application/octet-stream";}
+function esDocx(f){return extDe(f)==="docx"||f.type===MIME_DOCX;}
+function esHoja(f){var e=extDe(f);return e==="xlsx"||e==="xls"||e==="csv";}
+function esTxt(f){return extDe(f)==="txt"||f.type==="text/plain";}
+function esDocViejo(f){return extDe(f)==="doc"||f.type==="application/msword";}
+function esAceptado(f){return esImg(f)||esHeic(f)||/pdf/.test(mimeDe(f))||esDocx(f)||esHoja(f)||esTxt(f)||esDocViejo(f);}
+/* Convierte Word/Excel a texto en el navegador. Devuelve un Blob text/plain o null si no se pudo (entonces se sube sin lectura). */
+async function aTexto(f){
+ try{
+  if(esDocx(f)){
+   if(!window.mammoth)await cargarScript(CDN_MAMMOTH);
+   var r=await window.mammoth.extractRawText({arrayBuffer:await f.arrayBuffer()});
+   return textoBlob(r&&r.value);
+  }
+  if(esHoja(f)){
+   if(!window.XLSX)await cargarScript(CDN_XLSX);
+   var wb=window.XLSX.read(await f.arrayBuffer(),{type:"array"});
+   var partes=wb.SheetNames.map(function(n){return "## Hoja: "+n+"\n"+window.XLSX.utils.sheet_to_csv(wb.Sheets[n]);});
+   return textoBlob(partes.join("\n\n"));
+  }
+  /* .doc viejo: no se intenta; la función lo marca no legible con "Guárdalo como PDF o .docx". */
+ }catch(e){}
+ return null;
+}
+function textoBlob(t){t=String(t||"").trim();return t?new Blob([t],{type:"text/plain"}):null;}
+function esImg(f){return /^image\//.test(mimeDe(f));}
+async function reducir(blob){
+ /* Devuelve un JPEG reducido (lado mayor <= MAX_LADO) o null si no hace falta. */
+ try{
+  var bmp=await createImageBitmap(blob); var w=bmp.width,h=bmp.height,m=Math.max(w,h);
+  if(m<=MAX_LADO){ if(bmp.close)bmp.close(); return null; }
+  var k=MAX_LADO/m, cv=document.createElement("canvas"); cv.width=Math.round(w*k); cv.height=Math.round(h*k);
+  cv.getContext("2d").drawImage(bmp,0,0,cv.width,cv.height); if(bmp.close)bmp.close();
+  return await new Promise(function(res){cv.toBlob(res,"image/jpeg",0.9);});
+ }catch(e){return null;}
+}
+async function subirUno(f,prefijo,doc_id){
+ var ext=extDe(f), pOrig=prefijo+doc_id+"/original."+ext, pLect=null, mime=mimeDe(f);
+ var lectura=null;
+ if(esHeic(f)){
+  if(!window.heic2any)await cargarScript(CDN_HEIC);
+  var r=await window.heic2any({blob:f,toType:"image/jpeg",quality:0.9}); lectura=Array.isArray(r)?r[0]:r;
+  var red=await reducir(lectura); if(red)lectura=red;
+ }else if(esImg(f)){ lectura=await reducir(f); }
+ var texto=(esDocx(f)||esHoja(f))?await aTexto(f):null;
+ var up=await sb.storage.from(BUCKET).upload(pOrig,f,{contentType:mime,upsert:false});
+ if(up.error)throw new Error("No se pudo subir «"+f.name+"»: "+up.error.message);
+ if(lectura){ pLect=prefijo+doc_id+"/lectura.jpg"; var up2=await sb.storage.from(BUCKET).upload(pLect,lectura,{contentType:"image/jpeg",upsert:false}); if(up2.error)throw new Error("No se pudo subir la copia de lectura de «"+f.name+"»: "+up2.error.message); }
+ if(texto){ pLect=prefijo+doc_id+"/lectura.txt"; var up3=await sb.storage.from(BUCKET).upload(pLect,texto,{contentType:"text/plain",upsert:false}); if(up3.error)throw new Error("No se pudo subir la versión en texto de «"+f.name+"»: "+up3.error.message); }
+ return {doc_id:doc_id,nombre_original:f.name,path_original:pOrig,path_lectura:pLect,mime:mime,bytes:f.size};
+}
+function uuid(){ if(window.crypto&&crypto.randomUUID)return crypto.randomUUID(); return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g,function(c){var r=Math.random()*16|0;return (c==="x"?r:(r&3|8)).toString(16);}); }
+
+async function organizar(){
+ if(S.ocupado||!S.archivos.length)return;
+ S.ocupado=true; mostrarError(""); $("btnOrg").disabled=true;
+ var p=$("prog"); p.hidden=false;
+ try{
+  p.innerHTML='<span class="rueda"></span>Preparando…';
+  var cr=await api("crear",{}); S.corrida=cr.corrida_id;
+  var docs=[], hechos=0, total=S.archivos.length, idx=0, falla=null;
+  async function obrero(){
+   while(idx<total&&!falla){
+    var f=S.archivos[idx++], id=uuid();
+    try{
+     var reg=DEMO?{doc_id:id,nombre_original:f.name,path_original:cr.prefijo+id+"/original."+extDe(f),path_lectura:null,mime:mimeDe(f),bytes:f.size}:await subirUno(f,cr.prefijo,id);
+     docs.push(reg); hechos++; p.innerHTML='<span class="rueda"></span>Subiendo <span class="mono">'+hechos+'</span> de <span class="mono">'+total+'</span>…';
+    }catch(e){falla=e;}
+   }
+  }
+  await Promise.all([obrero(),obrero(),obrero()]);
+  if(falla)throw falla;
+  p.innerHTML='<span class="rueda"></span>Registrando documentos…';
+  await api("registrar_docs",{corrida_id:S.corrida,docs:docs});
+  await api("analizar",{corrida_id:S.corrida});
+  S.archivos=[]; pintarArchivos();
+  p.hidden=true;
+  S.est=null; ver("revisar");
+  $("progR").hidden=false; $("progR").innerHTML='<span class="rueda"></span>Leyendo <span class="mono">0</span> de <span class="mono">'+total+'</span>…';
+  S.ocupado=false; sondear();
+ }catch(e){
+  S.ocupado=false; p.hidden=true; $("btnOrg").disabled=!S.archivos.length; mostrarError(e.message||"No se pudo organizar. Inténtalo de nuevo.");
+ }
+}
+
+/* ------------------------------------------------------------ archivos (soltar / pegar / elegir) */
+function agregar(files){
+ var n=0; Array.prototype.forEach.call(files,function(f){
+  if(!f||!f.name&&!f.type)return;
+  if(!esAceptado(f)){toast("«"+(f.name||"archivo")+"» no es un formato que sepamos leer; se omitió.");return;}
+  if(!f.name){ try{f=new File([f],"pegado-"+Date.now()+"-"+(n++)+"."+extDe(f),{type:f.type});}catch(e){} }
+  S.archivos.push(f);
+ });
+ pintarArchivos();
+}
+function pintarArchivos(){
+ $("listaArch").innerHTML=S.archivos.map(function(f,i){return '<div class="arch"><span class="nom">'+esc(f.name)+'</span><span class="tam">'+fmtTam(f.size)+'</span><button class="x" data-x="'+i+'" type="button" aria-label="Quitar">×</button></div>';}).join("");
+ $("cntArch").textContent=S.archivos.length?(S.archivos.length+(S.archivos.length===1?" archivo listo.":" archivos listos.")):"Aún no hay archivos.";
+ $("btnOrg").disabled=!S.archivos.length||S.ocupado;
+}
+
+/* ------------------------------------------------------------ acciones */
+async function abrirDoc(id){
+ var w=window.open("","_blank");
+ try{ var r=await api("url_doc",{doc_id:id}); if(w){ w.location=r.url; } else location.href=r.url; }
+ catch(e){ if(w)w.close(); mostrarError(e.message); }
+}
+async function decidir(ci,oi){
+ var c=S.est.auditoria.conflictos[ci]; mostrarError("");
+ try{ S.est=await api("decidir",{corrida_id:S.corrida,conflicto_id:c.id,opcion:oi}); pintarTodo(); }catch(e){mostrarError(e.message);}
+}
+async function montar(){
+ mostrarError(""); S.ocupado=true; $("btnMontar").disabled=true;
+ try{ S.est=await api("montar",{corrida_id:S.corrida}); S.ocupado=false; pintarTodo(); ver("listo"); if(S.est.corrida.estado==="montando")sondear(); }
+ catch(e){ S.ocupado=false; mostrarError(e.message); pintarTodo(); }
+}
+async function reintentarPaso(k){
+ mostrarError("");
+ try{ S.est=await api("reintentar",{corrida_id:S.corrida,paso:k}); pintarTodo(); if(S.est.corrida.estado==="montando")sondear(); }catch(e){mostrarError(e.message);}
+}
+async function reintentarDoc(id){
+ mostrarError("");
+ try{ await api("reintentar_doc",{doc_id:id}); toast("Reintentando la lectura…"); sondear(); }catch(e){mostrarError(e.message);}
+}
+async function descargar(){
+ var b=$("btnDesc"), m=$("msgDesc"); b.disabled=true; mostrarError(""); m.innerHTML='<span class="rueda"></span>Preparando…';
+ try{
+  var r=await api("descarga",{corrida_id:S.corrida}); var arch=r.archivos||[];
+  if(!arch.length)throw new Error("No hay documentos para descargar.");
+  if(!window.JSZip)await cargarScript(CDN_JSZIP);
+  var zip=new window.JSZip(), usados={}, n=0;
+  for(var i=0;i<arch.length;i++){
+   m.innerHTML='<span class="rueda"></span>Bajando <span class="mono">'+(i+1)+'</span> de <span class="mono">'+arch.length+'</span>…';
+   var resp=await fetch(arch[i].url); if(!resp.ok)throw new Error("No se pudo bajar «"+arch[i].nombre+"».");
+   var nom=arch[i].nombre; if(usados[nom]){ var d=nom.lastIndexOf("."); var k=++usados[nom]; nom=d>0?nom.slice(0,d)+" ("+k+")"+nom.slice(d):nom+" ("+k+")"; } else usados[nom]=1;
+   zip.file(nom,await resp.blob()); n++;
+  }
+  var blob=await zip.generateAsync({type:"blob"});
+  var a=document.createElement("a"); var base=(S.est.corrida.account_name||"cliente").replace(/[\\\/:*?"<>|]+/g,"").trim()||"cliente";
+  a.href=URL.createObjectURL(blob); a.download="Documentos - "+base+".zip"; document.body.appendChild(a); a.click();
+  setTimeout(function(){URL.revokeObjectURL(a.href);a.remove();},4000);
+  m.textContent=n+" documentos en el ZIP."; window.__mcZip={archivos:n,bytes:blob.size};
+ }catch(e){ m.textContent=""; mostrarError(e.message); }
+ b.disabled=false;
+}
+async function guardarDrive(){
+ var u=$("inpDrive").value.trim(); if(!u){toast("Pega primero el enlace.");return;}
+ if(!/^https?:\/\//i.test(u)){mostrarError("El enlace debe empezar por https://");return;}
+ mostrarError("");
+ try{ S.est=await api("enlace_carpeta",{corrida_id:S.corrida,url:u}); pintarTodo(); toast("Enlace guardado."); }catch(e){mostrarError(e.message);}
+}
+async function enviarFb(){
+ var t=$("txtFb").value.trim(); if(!t){toast("Escribe primero qué quedó mal.");return;}
+ mostrarError("");
+ try{ await api("feedback",{corrida_id:S.corrida,texto:t}); $("txtFb").value=""; toast("Gracias, quedó registrado."); }catch(e){mostrarError(e.message);}
+}
+async function abrirCorrida(i){
+ var c=S.hist[i]; if(!c)return; mostrarError(""); S.corrida=c.id;
+ try{ S.est=await api("estado",{corrida_id:c.id}); pintarTodo(); irPorEstado(S.est); if(/analizando|subiendo|montando/.test(S.est.corrida.estado))sondear(); }catch(e){mostrarError(e.message);}
+}
+async function cargarHistorial(){
+ try{ var r=await api("historial",{}); S.hist=r.corridas||[]; }catch(e){ S.hist=[]; mostrarError(e.message); }
+ S.historialCargado=true; pintarHistorial();
+ /* "primera vez" = historial vacío; no se guarda nada en el navegador */
+ $("manual").open=!S.hist.length;
+}
+function nueva(){ S.pollTok++; S.est=null; S.corrida=null; S.archivos=[]; pintarArchivos(); mostrarError(""); ver("soltar"); cargarHistorial(); }
+
+/* ------------------------------------------------------------ eventos */
+function enlazar(){
+ var z=$("zona");
+ $("btnElegir").addEventListener("click",function(){$("inp").click();});
+ z.addEventListener("click",function(e){ if(e.target===z||e.target.classList.contains("grande")||e.target.classList.contains("peq"))$("inp").click(); });
+ z.addEventListener("keydown",function(e){ if(e.key==="Enter"||e.key===" "){e.preventDefault();$("inp").click();} });
+ $("inp").addEventListener("change",function(e){ agregar(e.target.files); e.target.value=""; });
+ ["dragenter","dragover"].forEach(function(t){z.addEventListener(t,function(e){e.preventDefault();z.classList.add("sobre");});});
+ ["dragleave","drop"].forEach(function(t){z.addEventListener(t,function(e){e.preventDefault();z.classList.remove("sobre");});});
+ z.addEventListener("drop",function(e){ if(e.dataTransfer&&e.dataTransfer.files)agregar(e.dataTransfer.files); });
+ document.addEventListener("paste",function(e){ if(S.vista!=="soltar")return; var fs=e.clipboardData&&e.clipboardData.files; if(fs&&fs.length){e.preventDefault();agregar(fs);} });
+ $("listaArch").addEventListener("click",function(e){ var x=e.target.closest("[data-x]"); if(x){S.archivos.splice(+x.getAttribute("data-x"),1);pintarArchivos();} });
+ $("btnOrg").addEventListener("click",organizar);
+ $("btnMontar").addEventListener("click",montar);
+ $("btnDesc").addEventListener("click",descargar);
+ $("btnDrive").addEventListener("click",guardarDrive);
+ $("btnFb").addEventListener("click",enviarFb);
+ $("btnOtro").addEventListener("click",nueva);
+ $("btnHub").addEventListener("click",conectarHubspot);
+ $("btnDesHub").addEventListener("click",desconectarHubspot);
+ $("pasos").addEventListener("click",function(e){ var b=e.target.closest(".paso.ir"); if(b)ver(b.getAttribute("data-v")); });
+ $("hist").addEventListener("click",function(e){ var r=e.target.closest(".hrow"); if(r)abrirCorrida(+r.getAttribute("data-i")); });
+ $("hist").addEventListener("keydown",function(e){ if(e.key==="Enter"){var r=e.target.closest(".hrow"); if(r)abrirCorrida(+r.getAttribute("data-i"));} });
+ $("vRevisar").addEventListener("click",function(e){
+  var o=e.target.closest(".opt"); if(o){decidir(+o.getAttribute("data-c"),+o.getAttribute("data-o"));return;}
+  var rd=e.target.closest("[data-reint]"); if(rd){e.stopPropagation();reintentarDoc(rd.getAttribute("data-reint"));return;}
+  var d=e.target.closest("[data-doc]"); if(d)abrirDoc(d.getAttribute("data-doc"));
+ });
+ $("vRevisar").addEventListener("keydown",function(e){ if(e.key==="Enter"){var d=e.target.closest("[data-doc]"); if(d)abrirDoc(d.getAttribute("data-doc"));} });
+ $("pasosL").addEventListener("click",function(e){ var b=e.target.closest("[data-rp]"); if(b)reintentarPaso(b.getAttribute("data-rp")); });
+}
+
+/* ------------------------------------------------------------ arranque */
+async function arrancar(){
+ enlazar();
+ if(DEMO){
+  $("demoTag").hidden=false; $("yo").textContent="demo@protectgoservices.com"; $("app").style.display="block";
+  ver("soltar"); pintarArchivos(); retornoHubspot();
+  try{ S.conex=await api("conexion",{}); pintarConexion(); }catch(e){}
+  await cargarHistorial(); return;
+ }
+ /* pg-novedades.js (también carga el botón de volver) solo con sesión real */
+ var sn=document.createElement("script"); sn.src="pg-novedades.js"; document.body.appendChild(sn);
+ if(!(window.supabase&&window.supabase.createClient)){bloquear("No se pudo cargar la conexión. Revisa tu internet y recarga.");return;}
+ sb=window.supabase.createClient(SB_URL,SB_KEY,{db:{schema:"portal"}});
+ var ses=await sb.auth.getSession(); var user=ses&&ses.data&&ses.data.session&&ses.data.session.user;
+ if(!user){bloquear('Entra primero a <b>Protect Index</b> con tu usuario y abre Montar cliente desde su tarjeta.');return;}
+ uid=user.id; $("yo").textContent=user.email||"—"; $("app").style.display="block";
+ ver("soltar"); pintarArchivos(); retornoHubspot();
+ try{ S.conex=await api("conexion",{}); pintarConexion(); }catch(e){ mostrarError(e.message); }
+ await cargarHistorial();
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",arrancar); else arrancar();
+})();
+</script>
+
+<script>
+(function(){
+"use strict";
+var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
+var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
+var PGV_ARCHIVO="montar-cliente.html";
+var PGV_VERSION=1; // v1 - Montar cliente (Corte 1, piloto): Soltar, Revisar y Listo con auditoría de cuatro bloques, subida directa al bucket y descarga en ZIP.
+if(/[?&]demo=1\b/.test(location.search))return;
+try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
+function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
+  if(document.getElementById('pgvBar'))return;
+  var b=document.createElement('div');
+  b.id='pgvBar';
+  b.style.cssText='position:fixed;top:0;left:0;right:0;z-index:99999;background:#FFB400;color:#0D3040;font:600 13px Arial,Helvetica,sans-serif;padding:10px 16px;display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;text-align:center;box-shadow:0 2px 10px rgba(0,0,0,.18);';
+  b.innerHTML='Hay una versión nueva de esta página. <button id="pgvBtn" type="button" style="font:700 13px Arial,Helvetica,sans-serif;background:#0D3040;color:#fff;border:none;border-radius:6px;padding:7px 14px;cursor:pointer;">Actualizar ahora</button>';
+  document.body.appendChild(b);
+  document.getElementById('pgvBtn').addEventListener('click',function(){location.reload(true);});
+}
+function pgvRun(){
+  try{
+    var c=window.supabase.createClient(PGV_URL,PGV_KEY,{db:{schema:'portal'}});
+    c.from('app_versiones').select('version').eq('archivo',PGV_ARCHIVO).maybeSingle().then(function(r){
+      if(!r||r.error||!r.data)return;
+      if(Number(r.data.version)>PGV_VERSION)pgvBanner();
+    });
+  }catch(e){}
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){setTimeout(pgvRun,400);});
+else setTimeout(pgvRun,400);
+setInterval(pgvRun,600000);
+})();
+</script>
+</body>
+</html>
