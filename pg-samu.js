@@ -31,6 +31,11 @@
    vence el plazo (samu_mio().manual.limite) sin aprobar, el Index queda
    bloqueado con el quiz hasta aprobar. "Abrir SAMU" ya abre el SAMU nuevo
    (complemento en chatgpt.com), no el GPT que se apaga el 11-dic.
+   v1.4 (13-nov): el manual se lee DENTRO del Index y el examen va al final del
+   mismo manual; las preguntas aparecen solo tras el tiempo mínimo de lectura
+   (samu_manual_estado().min_lectura_seg) y de llegar al final.
+   v1.3 (13-nov): examen corto (3 preguntas que cambian), rastro de lectura
+   (samu_manual_abrio al abrir el PDF) y mensajes limpios al fallar.
    v1.1 (9-oct): en teléfono (≤640 px) la carita sale como burbuja flotante
    abajo a la derecha (no se mete al encabezado, que ya va lleno), y dirección
    ve el enlace "Pulso del equipo →" (portal.samu_soy_direccion).
@@ -241,6 +246,24 @@
       '.pgsq-ok{font:800 15px/1.4 ' + T + ';color:' + MINT_DEEP + ';margin:6px 0 14px;}' +
       '.pgsq-error,.pgsq-cargando{padding:10px 0;color:' + GRIS + ';}' +
       'html.pgsq-sin-scroll,html.pgsq-sin-scroll body{overflow:hidden!important;}' +
+      '.pgsq-box{width:min(780px,100%);}' +
+      '.pgsm-sec{margin:22px 0 10px;padding:9px 12px;border-radius:10px;background:' + FONDO + ';color:#fff;font:800 14px/1.3 ' + T + ';}' +
+      '.pgsm-h{margin:16px 0 6px;font:800 13.5px/1.3 ' + T + ';color:' + MINT_DEEP + ';}' +
+      '.pgsm-p{margin:0 0 8px;font:500 13.5px/1.55 ' + F + ';}' +
+      '.pgsm-li{margin:0 0 7px;padding-left:16px;position:relative;font:500 13.5px/1.5 ' + F + ';}' +
+      '.pgsm-li::before{content:"";position:absolute;left:2px;top:8px;width:6px;height:6px;border-radius:50%;background:' + MINT + ';}' +
+      '.pgsm-tu,.pgsm-samu{margin:6px 0;padding:9px 12px;border-radius:12px;font:500 13px/1.5 ' + F + ';max-width:88%;}' +
+      '.pgsm-tu{margin-left:auto;background:' + FONDO + ';color:#fff;}' +
+      '.pgsm-samu{background:#E8F7F3;border:1px solid ' + MINT + ';}' +
+      '.pgsm-tu small,.pgsm-samu small{display:block;font:800 9px/1 ' + T + ';letter-spacing:.12em;margin-bottom:4px;color:' + MINT + ';}' +
+      '.pgsm-clave{margin:8px 0 10px;padding:9px 12px;border-radius:10px;background:#FBF3DC;font:600 13px/1.5 ' + F + ';}' +
+      '.pgsm-caso{margin:0 0 9px;padding:9px 12px;border:1px solid #D6E2E7;border-radius:10px;}' +
+      '.pgsm-caso b{display:block;font:700 13.5px/1.35 ' + F + ';}' +
+      '.pgsm-caso i{display:block;margin:4px 0;font:500 12.5px/1.45 ' + M + ';font-style:normal;color:' + FONDO2 + ';}' +
+      '.pgsm-caso span{display:block;font:500 13px/1.5 ' + F + ';}' +
+      '.pgsm-ex{margin:26px 0 12px;padding:12px;border-radius:12px;background:' + AMBAR + ';color:' + FONDO + ';font:800 15px/1.3 ' + T + ';text-align:center;}' +
+      '.pgsm-espera{padding:16px;border:2px dashed #C9D6DC;border-radius:12px;text-align:center;font:700 13.5px/1.5 ' + F + ';color:' + GRIS + ';}' +
+      '.pgsm-espera b{display:block;font:800 24px/1.2 ' + M + ';color:' + FONDO + ';}' +
       '@media print{#pgSamu,#pgSamuFab,#pgSamuAviso,#pgSamuQuiz,.pgs2-card{display:none!important;}}';
     (document.head || document.documentElement).appendChild(st);
   }
@@ -534,56 +557,93 @@
     if (m.bloquear) return true;
     var t = new Date(m.limite); return !isNaN(t) && Date.now() >= t.getTime();
   }
-  function enlacePdf(m, txt, cls) { var a = el('a', cls || 'pgs2-boton', txt); a.href = pdfUrl(m); a.target = '_blank'; a.rel = 'noopener'; a.addEventListener('click', function () { abrioManual = true; }); return a; }
+  function enlacePdf(m, txt, cls) { var a = el('a', cls || 'pgs2-boton', txt); a.href = pdfUrl(m); a.target = '_blank'; a.rel = 'noopener'; a.addEventListener('click', function () { abrioManual = true; try { if (cliGlobal && !verComoCorreo) cliGlobal.schema('portal').rpc('samu_manual_abrio').then(function () {}, function () {}); } catch (e) {} }); return a; }
   function bloqueManual(d) {
     var m = man(d); if (!m) return null;
     if (!m.aplica || m.aprobado) {
       var a1 = el('div', 'pgs2-man ok');
-      a1.appendChild(el('span', null, m.aprobado ? '✓ Manual SAMU leído y quiz aprobado' : 'Manual SAMU del equipo'));
+      a1.appendChild(el('span', null, m.aprobado ? '✓ Manual SAMU leído y examen aprobado' : 'Manual SAMU del equipo'));
       a1.appendChild(enlacePdf(m, 'Ver PDF →', 'pgs2-manlink'));
       return a1;
     }
     var b = el('div', 'pgs2-man');
     b.appendChild(el('b', null, 'Lectura obligatoria: Manual SAMU'));
-    var f = fechaLim(m);
-    b.appendChild(el('div', 'pgs2-mant', 'Léelo y responde el quiz (6 preguntas, 2 minutos)' + (f ? ' antes de que termine el ' + f : '') + '. Si no, el Index se bloquea hasta que lo hagas.'));
+    b.appendChild(el('div', 'pgs2-mant', 'Lee el manual y pasa el examen que está al final del mismo manual. Sin el examen aprobado, el Index queda bloqueado.'));
     var acc = el('div', 'pgs2-manacc');
-    acc.appendChild(enlacePdf(m, '1 · Leer el manual (PDF)', 'pgs2-boton'));
-    var q = el('button', 'pgs2-boton pgs2-b2', '2 · Responder el quiz'); q.type = 'button';
+    var q = el('button', 'pgs2-boton pgs2-b2', 'Abrir el manual'); q.type = 'button';
     q.addEventListener('click', function (e) { e.stopPropagation(); cerrar(false); abrirQuiz(false); });
     acc.appendChild(q); b.appendChild(acc);
     return b;
   }
+  function bloqueTexto(b) {
+    var t = String(b.t || ''), n;
+    if (t === 'sec') return el('div', 'pgsm-sec', b.x);
+    if (t === 'h') return el('div', 'pgsm-h', b.x);
+    if (t === 'li') return el('div', 'pgsm-li', b.x);
+    if (t === 'clave') return el('div', 'pgsm-clave', b.x);
+    if (t === 'tu' || t === 'samu') { n = el('div', 'pgsm-' + t); n.appendChild(el('small', null, t === 'tu' ? 'TÚ' : 'SAMU')); n.appendChild(document.createTextNode(String(b.x || ''))); return n; }
+    if (t === 'caso') { n = el('div', 'pgsm-caso'); n.appendChild(el('b', null, b.a)); n.appendChild(el('i', null, 'Pídele a SAMU: "' + String(b.b || '') + '"')); n.appendChild(el('span', null, b.c)); return n; }
+    return el('p', 'pgsm-p', b.x);
+  }
+  var relojExamen = null;
   function abrirQuiz(bloqueo) {
     if (!cliGlobal || verComoCorreo) return;
     var viejo = document.getElementById('pgSamuQuiz');
     if (viejo) { if (bloqueo && !viejo.classList.contains('bloq')) viejo.parentNode.removeChild(viejo); else return; }
+    if (relojExamen) { clearInterval(relojExamen); relojExamen = null; }
     var ov = el('div', bloqueo ? 'bloq' : null); ov.id = 'pgSamuQuiz'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-modal', 'true');
     var bx = el('div', 'pgsq-box'); ov.appendChild(bx);
     var cab = el('div', 'pgsq-cab'); cab.appendChild(cara());
     var tt = el('div');
-    tt.appendChild(el('div', 'pgs2-k', bloqueo ? 'Index bloqueado' : 'Manual SAMU · quiz'));
-    tt.appendChild(el('h3', null, bloqueo ? 'Responde el quiz del Manual SAMU para seguir' : 'Quiz del Manual SAMU'));
+    tt.appendChild(el('div', 'pgs2-k', bloqueo ? 'Index bloqueado' : 'Lectura obligatoria'));
+    tt.appendChild(el('h3', null, bloqueo ? 'Lee el Manual SAMU y pasa el examen para seguir' : 'Manual SAMU'));
     cab.appendChild(tt);
     if (!bloqueo) { var x = el('button', 'pgs2-x', '×'); x.type = 'button'; x.setAttribute('aria-label', 'Cerrar'); x.addEventListener('click', cerrarQuiz); cab.appendChild(x); }
     bx.appendChild(cab);
     var cuerpo = el('div', 'pgsq-cuerpo'); bx.appendChild(cuerpo);
-    cuerpo.appendChild(el('p', 'pgsq-intro', bloqueo
-      ? 'Se venció el plazo para leer el Manual SAMU. Léelo y responde las 6 preguntas: hay que acertarlas todas (puedes repetir). Apenas apruebes, el Index se desbloquea.'
-      : 'Lee el manual y responde las 6 preguntas. Hay que acertarlas todas; si fallas una, te decimos cuál y vuelves a enviar.'));
-    cuerpo.appendChild(enlacePdf(man(datos), 'Leer el manual (PDF) →', 'pgs2-boton pgsq-pdf'));
-    var form = el('div', 'pgsq-form'); form.appendChild(el('div', 'pgsq-cargando', 'Cargando preguntas…')); cuerpo.appendChild(form);
+    cuerpo.appendChild(el('p', 'pgsq-intro', 'Lee el manual completo. El examen está al final y sale de lo que dice aquí: son pocas preguntas, hay que acertarlas todas y cambian en cada intento.'));
+    var manual = el('div', 'pgsm'); manual.appendChild(el('div', 'pgsq-cargando', 'Cargando el manual…')); cuerpo.appendChild(manual);
+    var form = el('div', 'pgsq-form'); cuerpo.appendChild(form);
     (document.body || document.documentElement).appendChild(ov);
     try { document.documentElement.classList.add('pgsq-sin-scroll'); } catch (e) {}
+    abrioManual = true;
+    try { cliGlobal.schema('portal').rpc('samu_manual_abrio').then(function () {}, function () {}); } catch (e) {}
     try {
       cliGlobal.schema('portal').rpc('samu_manual_estado').then(function (r) {
         var e = r && !r.error && r.data;
-        while (form.firstChild) form.removeChild(form.firstChild);
-        if (!e || !Array.isArray(e.preguntas)) { form.appendChild(el('div', 'pgsq-error', 'No pude cargar el quiz. Recarga la página.')); return; }
+        while (manual.firstChild) manual.removeChild(manual.firstChild);
+        if (!e || !Array.isArray(e.preguntas) || !Array.isArray(e.contenido)) { manual.appendChild(el('div', 'pgsq-error', 'No pude cargar el manual. Recarga la página.')); return; }
         if (e.aprobado) { aprobado(); return; }
-        pintarPreguntas(form, e.preguntas);
-      }, function () { form.appendChild(el('div', 'pgsq-error', 'No pude cargar el quiz. Recarga la página.')); });
+        e.contenido.forEach(function (b) { try { manual.appendChild(bloqueTexto(b || {})); } catch (er) {} });
+        form.appendChild(el('div', 'pgsm-ex', 'EXAMEN'));
+        var espera = el('div', 'pgsm-espera'); form.appendChild(espera);
+        var t0 = Date.now(), min = Math.max(0, Number(e.min_lectura_seg) || 0) + 3, alFinal = false, listo = false;
+        function mirar() { try { if (espera.getBoundingClientRect().top < global.innerHeight) alFinal = true; } catch (er) {} }
+        ov.addEventListener('scroll', mirar); mirar();
+        function tic() {
+          if (listo || !document.getElementById('pgSamuQuiz')) { clearInterval(relojExamen); relojExamen = null; return; }
+          var falta = Math.ceil(min - (Date.now() - t0) / 1000);
+          while (espera.firstChild) espera.removeChild(espera.firstChild);
+          if (falta > 0) {
+            espera.appendChild(document.createTextNode('Las preguntas aparecen aquí cuando termines de leer.'));
+            espera.appendChild(el('b', null, Math.floor(falta / 60) + ':' + ('0' + (falta % 60)).slice(-2)));
+            espera.appendChild(document.createTextNode('Sube y lee el manual: de ahí salen.'));
+            return;
+          }
+          mirar();
+          if (!alFinal) { espera.appendChild(document.createTextNode('Baja hasta aquí para ver las preguntas.')); return; }
+          listo = true; clearInterval(relojExamen); relojExamen = null;
+          espera.parentNode.removeChild(espera);
+          pintarPreguntas(form, e.preguntas);
+        }
+        relojExamen = setInterval(tic, 1000); tic();
+      }, function () { while (manual.firstChild) manual.removeChild(manual.firstChild); manual.appendChild(el('div', 'pgsq-error', 'No pude cargar el manual. Recarga la página.')); });
     } catch (e) {}
+  }
+  function reintentar() {
+    var ov = document.getElementById('pgSamuQuiz'); var eraBloqueo = !!(ov && ov.classList.contains('bloq')) || bloqueado;
+    if (ov && ov.parentNode) ov.parentNode.removeChild(ov);
+    abrirQuiz(eraBloqueo);
   }
   function pintarPreguntas(form, pr) {
     var resp = {};
@@ -607,7 +667,16 @@
       cliGlobal.schema('portal').rpc('samu_manual_responder', { p_respuestas: resp }).then(function (r) {
         env.disabled = false; env.textContent = 'Enviar respuestas';
         var x = r && !r.error && r.data;
-        if (!x || x.error) { msg.textContent = 'No se pudo enviar' + (x && x.error ? ': ' + x.error : '') + '. Intenta otra vez.'; return; }
+        if (!x) { msg.textContent = 'No se pudo enviar. Intenta otra vez.'; return; }
+        if (x.error) {
+          msg.textContent = String(x.error) + '.';
+          if (/^(No pasaste|Las preguntas cambiaron)/.test(String(x.error))) {
+            env.textContent = 'Volver a leer el manual e intentar de nuevo';
+            var nuevoB = env.cloneNode(true); env.parentNode.replaceChild(nuevoB, env); nuevoB.addEventListener('click', reintentar);
+            form.querySelectorAll('input').forEach(function (i) { i.disabled = true; });
+          }
+          return;
+        }
         if (x.aprobado) { aprobado(); return; }
         msg.textContent = 'Tienes ' + x.correctas + ' de ' + x.total + '. Revisa las marcadas en rojo y vuelve a enviar.';
         (x.malas || []).forEach(function (mm) {
