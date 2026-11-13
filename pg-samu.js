@@ -522,7 +522,7 @@
   }
 
   /* ---------- 5. Manual SAMU + quiz (v1.2) ---------- */
-  var bloqueado = false;
+  var bloqueado = false, abrioManual = false;
   function man(d) { return d && d.manual && typeof d.manual === 'object' ? d.manual : null; }
   function pdfUrl(m) { var u = String((m && m.pdf) || ''); return /^https:\/\/[^"'\s]+\.pdf$/i.test(u) ? u : BASE + 'manual-samu.pdf'; }
   function fechaLim(m) {
@@ -534,7 +534,7 @@
     if (m.bloquear) return true;
     var t = new Date(m.limite); return !isNaN(t) && Date.now() >= t.getTime();
   }
-  function enlacePdf(m, txt, cls) { var a = el('a', cls || 'pgs2-boton', txt); a.href = pdfUrl(m); a.target = '_blank'; a.rel = 'noopener'; return a; }
+  function enlacePdf(m, txt, cls) { var a = el('a', cls || 'pgs2-boton', txt); a.href = pdfUrl(m); a.target = '_blank'; a.rel = 'noopener'; a.addEventListener('click', function () { abrioManual = true; }); return a; }
   function bloqueManual(d) {
     var m = man(d); if (!m) return null;
     if (!m.aplica || m.aprobado) {
@@ -601,6 +601,7 @@
     var msg = el('div', 'pgsq-msg'); form.appendChild(msg);
     var env = el('button', 'pgs2-boton pgsq-enviar', 'Enviar respuestas'); env.type = 'button'; form.appendChild(env);
     env.addEventListener('click', function () {
+      if (!abrioManual) { msg.textContent = 'Primero abre y lee el manual (botón "Leer el manual" de arriba). Después envías.'; return; }
       if (Object.keys(resp).length < pr.length) { msg.textContent = 'Responde las ' + pr.length + ' preguntas.'; return; }
       env.disabled = true; env.textContent = 'Revisando…'; msg.textContent = '';
       cliGlobal.schema('portal').rpc('samu_manual_responder', { p_respuestas: resp }).then(function (r) {
