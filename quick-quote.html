@@ -1610,7 +1610,7 @@
             <div class="campo"><label>Account Name</label><input type="text" placeholder="Legal name / DBA"></div>
             <div class="campo"><label>Owner Name</label><input type="text" placeholder="Owner full name"></div>
             <div class="campo"><label>Owner Date of Birth <span class="helper-inline">MM/DD/YYYY</span></label><input type="text" class="qq-mdy" placeholder="MM/DD/YYYY" inputmode="numeric" maxlength="10"></div>
-            <div class="campo"><label>Representative</label><input type="text" placeholder="Name"></div>
+            <div class="campo"><label>Owner License # <span class="helper-inline">CDL / DL</span></label><input type="text" placeholder="License number" autocomplete="off"></div>
             <div class="campo"><label>Phone</label><input type="text" placeholder="(___) ___-____"></div>
             <div class="campo col3"><label>Email</label><input type="text" placeholder="email@company.com"></div>
             <div class="campo col3"><label>Mailing Address</label><input type="text" placeholder="Mailing address"></div>
@@ -4802,7 +4802,7 @@ pgRevisarNovedades(sb,'general');
 var PGV_URL="https://hivpqsepwsfmafamxkzy.supabase.co";
 var PGV_KEY="sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt";
 var PGV_ARCHIVO="quick-quote.html";
-var PGV_VERSION=14; // v14 - Quick Quote: el limite ya no se pierde al marcar reefer o simbolos (Hired / Non-owned); simbolos y reefer se imprimen debajo de la cobertura en los PDFs. // v13 - Protect Index: las direcciones internas del sitio pasan a relativas (el sitio ya no depende de como se llame el repo). Las que viajan por correo (recuperar contrasena, fotos de firma, sello de RRHH) quedan absolutas apuntando a protect-index.
+var PGV_VERSION=15; // v15 (16-nov-2026) - Quick Quote: Account Name (Legal name / DBA), Owner Name, Owner Date of Birth, Owner License # (campo nuevo), Mailing Address y Parking Address son obligatorios en las quotes nuevas; sin ellos no guarda, no imprime ni descarga PDF. Se quita el campo Representative. Las quotes creadas antes del montaje quedan exentas (pedido de Brahian). // v14 - Quick Quote: el limite ya no se pierde al marcar reefer o simbolos (Hired / Non-owned); simbolos y reefer se imprimen debajo de la cobertura en los PDFs. // v13 - Protect Index: las direcciones internas del sitio pasan a relativas (el sitio ya no depende de como se llame el repo). Las que viajan por correo (recuperar contrasena, fotos de firma, sello de RRHH) quedan absolutas apuntando a protect-index.
 try{document.addEventListener('input',function(){window.__pgTyped=1;window.__pgLastInput=Date.now();},true);}catch(e){}
 function pgvBanner(){if(!window.__pgTyped){try{location.reload(!0)}catch(e){location.reload()}return;}
   if(document.getElementById('pgvBar'))return;
@@ -6049,5 +6049,170 @@ setTimeout(wireBinderBtn,1500);
   }
   if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",stamp); else stamp();
   setTimeout(stamp,2000);
+})();
+</script>
+
+<!-- ============ v15 (16-nov-2026) OBLIGATORIOS DEL ASEGURADO: sin ellos no guarda, no imprime, no descarga PDF ============ -->
+<style>
+  .qq-ast{color:var(--danger,#c0392b);font-weight:700;margin:0 4px 0 1px;}
+  #sec-agency .campo.qq-fecha .helper-inline{display:none;} /* el placeholder ya dice MM/DD/YYYY; asi la etiqueta no se parte en dos lineas */
+  body.modo-propuesta .qq-ast, body.modo-doc .qq-ast, body.modo-propuesta .qq-falta-msg{display:none!important;}
+  .campo.qq-falta input{border-color:var(--danger,#c0392b)!important;background:var(--danger-soft,#fdeceb)!important;}
+  .campo.qq-falta .qq-falta-msg{display:block;}
+  .qq-falta-msg{display:none;margin-top:5px;font-size:11.5px;font-weight:600;color:var(--danger,#c0392b);}
+  #qqReqAviso{position:fixed;left:0;right:0;margin:0 auto;top:18px;width:fit-content;z-index:100000;max-width:min(520px,calc(100vw - 24px));box-sizing:border-box;
+    background:#fff;border:1px solid var(--danger,#c0392b);border-left:5px solid var(--danger,#c0392b);border-radius:10px;
+    box-shadow:0 10px 30px rgba(0,47,61,.18);padding:14px 40px 14px 16px;font:500 13.5px/1.45 Inter,system-ui,sans-serif;color:#0D141A;display:none;}
+  #qqReqAviso.show{display:block;}
+  #qqReqAviso b{display:block;font-weight:700;margin-bottom:4px;color:var(--danger,#c0392b);}
+  #qqReqAviso ul{margin:4px 0 0 18px;padding:0;}
+  #qqReqAviso button{position:absolute;right:8px;top:6px;border:0;background:none;font-size:20px;line-height:1;cursor:pointer;color:#5a686c;padding:4px 6px;}
+  @media print{
+    .qq-ast,.qq-falta-msg,#qqReqAviso{display:none!important;}
+    html.qq-bloq-print body > *{display:none!important;}
+    html.qq-bloq-print body::before{content:"Quick Quote incompleta: faltan datos obligatorios del asegurado (Account Name, Owner Name, Owner Date of Birth, Owner License #, Mailing Address, Parking Address). Complétalos antes de imprimir.";
+      display:block;padding:40px;font:600 16px/1.5 Arial,sans-serif;color:#000;}
+  }
+</style>
+<script>
+(function(){
+  "use strict";
+  /* Campos obligatorios de la seccion 01. La etiqueta es la llave (misma que usa snapshot), no se cambia el texto. */
+  var REQ=[
+    {re:/^account name$/i,            nombre:"Account Name (Legal name / DBA)"},
+    {re:/^owner name$/i,              nombre:"Owner Name"},
+    {re:/^owner date of birth$/i,     nombre:"Owner Date of Birth", fecha:true},
+    {re:/^owner license #$/i,         nombre:"Owner License #"},
+    {re:/^mailing address$/i,         nombre:"Mailing Address"},
+    {re:/^parking address$/i,         nombre:"Parking Address"}
+  ];
+  /* Solo quotes NUEVAS: las creadas antes del montaje de la v15 se guardan/imprimen como siempre.
+     Quote abierta = window.__qqCurrentId; su created_at se consulta una vez. Sin id = quote nueva = se exige. */
+  var CORTE=new Date("2026-11-16T15:15:00Z").getTime(); /* momento del montaje v15 */
+  var vieja={}, idVisto=null, cliente=null;
+  function sbc(){ if(cliente) return cliente; try{ if(window.supabase&&window.supabase.createClient) cliente=window.supabase.createClient("https://hivpqsepwsfmafamxkzy.supabase.co","sb_publishable_Kak00GbGVt2K3yGh6IBZvw_99IybVvt",{db:{schema:"portal"}}); }catch(_){} return cliente; }
+  function consultar(id){
+    if(!id || Object.prototype.hasOwnProperty.call(vieja,id)) return;
+    vieja[id]=null; var c=sbc(); if(!c) return;
+    c.from("quick_quotes").select("created_at").eq("id",id).maybeSingle().then(function(r){
+      if(r&&r.data&&r.data.created_at) vieja[id]=new Date(r.data.created_at).getTime()<CORTE; else delete vieja[id];
+      limpiarSiVieja();
+    },function(){ delete vieja[id]; });
+  }
+  function exento(){ var id=window.__qqCurrentId; if(!id) return false; consultar(id); return vieja[id]!==false; } /* vieja o aun sin respuesta: no se bloquea */
+  function limpiarSiVieja(){ if(exento()){ document.querySelectorAll("#sec-agency .campo.qq-falta").forEach(function(c){ c.classList.remove("qq-falta"); }); var a=document.getElementById("qqReqAviso"); if(a) a.classList.remove("show"); } }
+  setInterval(function(){ var id=window.__qqCurrentId||null; if(id!==idVisto){ idVisto=id; if(id) consultar(id); else limpiarSiVieja(); } },400);
+  function labelOf(c){ var l=c.querySelector("label"); if(!l) return ""; var n=l.childNodes[0]?l.childNodes[0].nodeValue:null; return (n||l.textContent||"").trim(); }
+  function campos(){
+    var out=[];
+    document.querySelectorAll("#sec-agency .campo").forEach(function(c){
+      var lab=labelOf(c);
+      REQ.forEach(function(r){ if(r.re.test(lab)) out.push({c:c,r:r,i:c.querySelector("input,select,textarea")}); });
+    });
+    return out;
+  }
+  function fechaOk(v){
+    var m=/^(\d{2})\/(\d{2})\/(\d{4})$/.exec(v); if(!m) return false;
+    var mo=+m[1], d=+m[2], y=+m[3]; var dt=new Date(y,mo-1,d);
+    if(dt.getFullYear()!==y||dt.getMonth()!==mo-1||dt.getDate()!==d) return false;
+    var hoy=new Date(); var edad=hoy.getFullYear()-y-((hoy.getMonth()<mo-1||(hoy.getMonth()===mo-1&&hoy.getDate()<d))?1:0);
+    return edad>=18 && edad<=100;
+  }
+  function msgDe(c){ var m=c.querySelector(".qq-falta-msg"); if(!m){ m=document.createElement("span"); m.className="qq-falta-msg"; c.appendChild(m); } return m; }
+  function revisar(marcar){
+    var faltan=[];
+    campos().forEach(function(x){
+      var v=x.i?String(x.i.value||"").trim():"";
+      var ok, txt="";
+      if(!v){ ok=false; txt="Obligatorio"; }
+      else if(x.r.fecha && !fechaOk(v)){ ok=false; txt="Fecha inválida (MM/DD/YYYY, mayor de 18)"; }
+      else ok=true;
+      if(!ok) faltan.push({x:x,txt:txt});
+      if(marcar || x.c.classList.contains("qq-falta")){
+        x.c.classList.toggle("qq-falta",!ok);
+        if(!ok) msgDe(x.c).textContent=txt;
+      }
+    });
+    return faltan;
+  }
+  function aviso(faltan,accion){
+    var a=document.getElementById("qqReqAviso");
+    if(!a){ a=document.createElement("div"); a.id="qqReqAviso"; a.setAttribute("role","alert"); document.body.appendChild(a);
+      a.addEventListener("click",function(e){ if(e.target.closest("button")) a.classList.remove("show"); }); }
+    a.innerHTML='<button type="button" aria-label="Cerrar">×</button><b></b><div>Completa estos datos del asegurado en <i>01 · Agency &amp; Applicant</i>:</div><ul></ul>';
+    a.querySelector("b").textContent="No se puede "+accion+" la Quick Quote";
+    var ul=a.querySelector("ul");
+    faltan.forEach(function(f){ var li=document.createElement("li"); li.textContent=f.x.r.nombre+(f.txt==="Obligatorio"?"":" — "+f.txt); ul.appendChild(li); });
+    a.classList.add("show");
+    clearTimeout(a.__t); a.__t=setTimeout(function(){ a.classList.remove("show"); },9000);
+  }
+  function irAlPrimero(faltan){
+    if(document.body.classList.contains("view-proposal")){ var b=document.querySelector('[data-seg="vista"] [data-view="captura"]'); if(b) b.click(); }
+    document.body.classList.remove("modo-doc");
+    var sec=document.getElementById("sec-agency"); if(sec) sec.open=true;
+    var i=faltan[0]&&faltan[0].x.i;
+    if(i){ setTimeout(function(){ try{ i.scrollIntoView({behavior:"smooth",block:"center"}); i.focus({preventScroll:true}); }catch(_){ i.focus(); } },60); }
+  }
+  /* true = puede seguir. false = bloqueado (avisa y lleva al campo). */
+  function puede(accion){
+    if(exento()) return true;
+    var faltan=revisar(true);
+    if(!faltan.length) return true;
+    aviso(faltan,accion); irAlPrimero(faltan);
+    return false;
+  }
+  window.__qqObligatoriosOk=function(){ return revisar(false).length===0; };
+
+  /* Asterisco en los obligatorios + se limpia el rojo a medida que escriben */
+  /* El asterisco va como <span> DESPUES del primer nodo de texto: la etiqueta (childNodes[0]) que usan snapshot y los PDFs no cambia */
+  function marcarReq(){ campos().forEach(function(x){ x.c.classList.add("qq-req"); if(x.r.fecha) x.c.classList.add("qq-fecha"); if(x.i) x.i.setAttribute("aria-required","true");
+    var l=x.c.querySelector("label"); if(l && !l.querySelector(".qq-ast") && l.childNodes[0]){ var a=document.createElement("span"); a.className="qq-ast"; a.setAttribute("aria-hidden","true"); a.textContent="*"; l.insertBefore(a,l.childNodes[0].nextSibling); } }); }
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",marcarReq); else marcarReq();
+  document.addEventListener("input",function(e){ if(e.target&&e.target.closest&&e.target.closest("#sec-agency .campo.qq-falta")) revisar(false); },true);
+
+  /* 1) Botones: Guardar, Export PDF, Print, Download PDF cliente, Binder PDF. Se atajan en captura, antes que cualquier otro listener. */
+  var BOTONES=[
+    {sel:'[data-act="save"]',        accion:"guardar"},
+    {sel:'[data-accion="exportar"]', accion:"descargar"},
+    {sel:'[data-accion="imprimir"]', accion:"imprimir"},
+    {sel:'#pvPdfBtn',                accion:"descargar"},
+    {sel:'#pvPrint',                 accion:"descargar"}
+  ];
+  window.addEventListener("click",function(e){
+    var t=e.target; if(!t||!t.closest) return;
+    for(var k=0;k<BOTONES.length;k++){
+      if(t.closest(BOTONES[k].sel)){
+        if(!puede(BOTONES[k].accion)){ e.preventDefault(); e.stopImmediatePropagation(); }
+        return;
+      }
+    }
+  },true);
+
+  /* 2) Respaldo: cualquier otro camino que llame directo a los generadores de PDF o a window.print */
+  function envolver(nombre,accion){
+    var f=window[nombre]; if(typeof f!=="function"||f.__qqReq) return;
+    var w=function(save){ if(save!==false && !puede(accion)) return null; return f.apply(this,arguments); };
+    w.__qqReq=true; window[nombre]=w;
+  }
+  function envolverTodo(){
+    envolver("__exportarCopiable","descargar");
+    envolver("__pvExportPDF","descargar");
+    envolver("__pvExportBinder","descargar");
+    if(!window.print.__qqReq){ var p=window.print; var wp=function(){ if(!puede("imprimir")) return; return p.apply(this,arguments); }; wp.__qqReq=true; window.print=wp; }
+  }
+  envolverTodo();
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",envolverTodo);
+  setTimeout(envolverTodo,1600);
+
+  /* 3) Ctrl+P / menú del navegador: no se puede cancelar, así que la hoja sale con el aviso en vez de la quote */
+  window.addEventListener("beforeprint",function(){
+    if(!exento() && revisar(false).length){ document.documentElement.classList.add("qq-bloq-print"); }
+  });
+  window.addEventListener("afterprint",function(){
+    if(document.documentElement.classList.contains("qq-bloq-print")){
+      document.documentElement.classList.remove("qq-bloq-print");
+      var f=revisar(true); if(f.length){ aviso(f,"imprimir"); irAlPrimero(f); }
+    }
+  });
 })();
 </script>
